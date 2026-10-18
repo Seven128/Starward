@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { copyFile, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, readdir, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { PNG } from "pngjs";
@@ -9,7 +9,7 @@ import { publishFixedTerrain } from "../../../data-pipelines/terrain/publish_fix
 import { TerrainService } from "./terrain-service.ts";
 import { createTerrainViewportRenderer } from "./terrain-viewport-renderer.ts";
 
-test("a new fixed release selects current spatial pointers and retains previous immutable URLs", async () => {
+test("a new fixed release selects current spatial pointers and retains previous immutable URLs", async t => {
   const root = await mkdtemp(path.join(tmpdir(), "starward-terrain-release-"));
   const bounds = displayRasterBounds({ grid: DISPLAY_RASTER_GRID, zoom: 12, x: 3344, y: 1700, span: 1, tilePixels: 256 });
   const dx = bounds.east - bounds.west, dy = bounds.north - bounds.south;
@@ -60,5 +60,27 @@ test("a new fixed release selects current spatial pointers and retains previous 
     await publishFixedTerrain({ cache: cache2, output: release2, previous: release1, targets: [target] });
     assert.deepEqual(await readFile(path.join(release2, "inventory.json")), committed);
     assert.deepEqual(await readFile(path.join(release1, "inventory.json")), oldInventory);
+    const forbiddenSource = t.mock.method(globalThis, "fetch", async () => { throw new Error("previous_product_must_not_read_source"); });
+    const carried = await publishFixedTerrain({ cache: path.join(root, "fresh-cache"), output: path.join(root, "release3"),
+      previous: release2, targets: [target] });
+    assert.equal(forbiddenSource.mock.callCount(), 0);
+    assert.deepEqual(carried.assets, current.assets);
+    assert.deepEqual(carried.retainedAssets, current.retainedAssets);
+    assert.equal(carried.publicationVersion, current.publicationVersion);
+    await assert.rejects(publishFixedTerrain({ cache: release2, output: path.join(root, "invalid-release"),
+      previous: release2, targets: [target] }), /terrain_publication_targets_invalid/u);
+    const alias = path.join(root, "previous-alias");
+    await symlink(release2, alias, process.platform === "win32" ? "junction" : "dir");
+    const previousFiles = (await readdir(release2)).sort();
+    for (const paths of [
+      { cache: path.join(release2, "future-cache"), output: path.join(root, "invalid-release") },
+      { cache: path.join(root, "unused-cache"), output: path.join(release2, "future-output") },
+      { cache: path.join(alias, "future-cache"), output: path.join(root, "invalid-release") },
+      { cache: path.join(root, "unused-cache"), output: path.join(alias, "future-output") },
+      { cache: root, output: path.join(root, "invalid-release") },
+    ]) await assert.rejects(publishFixedTerrain({ ...paths, previous: release2, targets: [target] }),
+      /terrain_publication_targets_invalid/u);
+    assert.deepEqual((await readdir(release2)).sort(), previousFiles, "invalid nested/aliased roots cannot write into the prior publication");
+    assert.deepEqual(await readFile(path.join(release2, "inventory.json")), committed);
   } finally { reader?.close(); await rm(root, { recursive: true, force: true }); }
 });

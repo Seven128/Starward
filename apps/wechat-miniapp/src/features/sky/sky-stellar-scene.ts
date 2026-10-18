@@ -1,18 +1,20 @@
 import { assertStellarGeometryFrame, assertStellarCatalogPublication, assertStellarCatalogReference,
   type StellarCatalogReference, type SkyGeometryReport, type SkyScene,
   type SkySceneCatalog, type SkySceneCatalogReference, type SkyScenePoint, type StellarCatalogPublication } from "@starward/miniapp-contracts";
-import { projectStellarMotion } from "@starward/astronomy-core/stellar-vectors";
+import { projectStellarMotion, type StellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 import { exactSkyObservationFrame } from "./sky-observation-frame";
 import { skySolarLightAt } from "./sky-solar-light";
 import { isAdmittedStellarCatalogPublication } from "../../services/stellar-catalog-client";
 
 import { skyStarDisplayColor, skyStarDisplayTransmission } from "./sky-star-appearance";
-import { prepareSkyDirection, type PreparedSkyDirection } from "./sky-view-projection";
+import { prepareSkyDirection, type PreparedSkyDirection, type SkyDirectionProjector, type SkyDirectionProjection } from "./sky-view-projection";
+import { createSkyStellarTransform } from "./sky-stellar-transform";
 
 // Palette projection belongs to this immutable local render model, not the
 // wire catalogue or report cache. Legacy controlled scenes may omit it.
-type RenderCatalog = SkySceneCatalog & SkySceneCatalogReference & { readonly displayColors?: readonly (string | null)[]; readonly magnitudeOrdered?: boolean };
+type RenderCatalog = SkySceneCatalog & SkySceneCatalogReference & { readonly displayColors?: readonly (string | null)[]; readonly magnitudeOrdered?: boolean;
+  readonly motionAt?: (index: number) => StellarMotion };
 
 export interface ResolvedStellarScene extends Omit<SkyScene, "catalog"> {
   catalog: RenderCatalog | null;
@@ -21,6 +23,11 @@ export interface ResolvedStellarScene extends Omit<SkyScene, "catalog"> {
 export interface ResolvedSkyReport extends Omit<SkyGeometryReport, "skyScene"> { skyScene: ResolvedStellarScene; }
 export interface ResolvedStellarFrame {
   at: string; state: "AVAILABLE"; points: readonly SkyScenePoint[];
+  /** Full catalogue size without materializing its angular point list. */
+  readonly pointCount?: number;
+  /** Batch at this frame's owner, preserving catalogue order and full content. */
+  forEachProjected?: (projector: SkyDirectionProjector, magnitudeLimit: number,
+    visit: (pointIndex: number, point: SkyScenePoint, projection: SkyDirectionProjection) => void) => void;
   /** Display-only altitude factor, in the same point order and exact-time lifetime. */
   displayTransmission?: (pointIndex: number) => number;
   /** Camera-independent projection input, prepared lazily at this exact time. */
@@ -77,6 +84,9 @@ export function attachSkyCatalog(report: SkyGeometryReport, publication: Stellar
           // brightness prefix; legacy/non-monotonic inputs keep a full scan.
           magnitudeOrdered: publication.rows.every((row,index)=>index===0 || row[2]>=publication.rows[index-1]![2]),
           displayColors: Object.freeze(publication.rows.map(row => skyStarDisplayColor(row[3]))),
+          ...(isAdmittedStellarCatalogPublication(publication)?{motionAt: (index: number): StellarMotion => {
+            const row=publication.rows[index]!;return [row[4],row[5],row[6],row[7],row[8],row[9]];
+          }}:{}),
           entries: Object.freeze(publication.rows.map(([sourceId, displayName, magnitude, colorIndex]) => Object.freeze({
             sourceId, objectRef: sourceId, displayName, magnitude, colorIndex, magnitudeBand: "V" as const, colorIndexBand: "B-V" as const,
           }))) });
@@ -99,6 +109,33 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
   if (cached?.at === at) return cached;
   try {
     assertStellarGeometryFrame(frame.geometry, { catalog: scene.publication, at: at!, observer: scene.observer });
+    if(scene.catalog.motionAt){
+      const pointCount=scene.publication.rows.length;
+      const transform=createSkyStellarTransform(pointCount,scene.catalog.motionAt,frame.geometry);
+      const magnitudeAt=(index:number)=>scene.publication!.rows[index]![2];
+      const positioned:Array<SkyScenePoint|undefined>=new Array(pointCount);
+      let allPoints:readonly SkyScenePoint[]|undefined;
+      const pointAt=(index:number)=>{
+        if(positioned[index]===undefined){
+          const position=transform.position(index);
+          positioned[index]=Object.freeze([index,position.azimuthDeg,position.altitudeDeg] as const);
+        }
+        return positioned[index]!;
+      };
+      const forEachProjected:NonNullable<ResolvedStellarFrame['forEachProjected']>=(projector,limit,visit)=>
+        transform.forEachProjected(projector,limit,magnitudeAt,(index,projection)=>visit(index,pointAt(index),projection),scene.catalog!.magnitudeOrdered);
+      const resolved:ResolvedStellarFrame=Object.freeze({at:at!,state:"AVAILABLE",pointCount,forEachProjected,
+        // Legacy list consumers still receive the complete original array.
+        // Mere availability/count checks and the painter do not expand it.
+        get points(){
+          if(!allPoints){for(let index=0;index<pointCount;index++)pointAt(index);
+            allPoints=Object.freeze(positioned as SkyScenePoint[]);}
+          return allPoints;
+        },displayDirection:transform.displayDirection,displayTransmission:transform.displayTransmission});
+      currentFrames.set(scene,resolved);return resolved;
+    }
+    // Older controlled scenes lack the local immutable publication adapter.
+    // Retain their original eager result and optional-accessor compatibility.
     const points: SkyScenePoint[] = [];
     scene.publication.rows.forEach((row, index) => {
       const position = projectStellarMotion([row[4], row[5], row[6], row[7], row[8], row[9]], frame.geometry!.julianYears, frame.geometry!.equatorialToEnu);

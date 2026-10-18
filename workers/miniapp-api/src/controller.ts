@@ -494,6 +494,21 @@ export class MiniappController {
       required(at, "observation_time_required"), await this.service.auth.optionalPrincipal(authorization));
   }
 
+  @Get("spots/:spotId/sky/geometry")
+  async skyGeometry(
+    @Param("spotId") spotId: string,
+    @Query("contextId") contextId?: string,
+    @Query("at") at?: string,
+    @Headers("authorization") authorization?: string,
+  ) {
+    const locationId = decodeURIComponent(spotId);
+    const userId = locationId.startsWith("contribution:")
+      ? await this.service.auth.requirePrincipal(authorization)
+      : await this.service.auth.optionalPrincipal(authorization);
+    return this.service.getSkyGeometryWindow(locationId, required(contextId, "observation_context_required"),
+      required(at, "observation_time_required"), userId);
+  }
+
   @Get("spots/:spotId/sky/objects/:reference")
   async celestialPosition(
     @Param("spotId") spotId: string,

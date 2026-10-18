@@ -1,10 +1,10 @@
 {
-  "bundleSha256": "29351b4197e64b6e3fe2365b19e01b85e2700795fbc592f44d61c3b6cc4fb732",
+  "bundleSha256": "94a82118b5ac70df656dcf15c43511ccc96daaf7ed014183d419edb08e5ecffa",
   "fileCount": 338,
-  "totalBytes": 4949193,
+  "totalBytes": 4962653,
   "packages": {
     "main": {
-      "bytes": 2012475,
+      "bytes": 2016740,
       "source_map_bytes": 0
     },
     "content": {
@@ -16,11 +16,11 @@
       "source_map_bytes": 0
     },
     "sky": {
-      "bytes": 1297005,
+      "bytes": 1306200,
       "source_map_bytes": 0
     }
   },
-  "mainHeadroomBytes": 84677,
+  "mainHeadroomBytes": 80412,
   "staticChecks": {
     "native_project": true,
     "filter_population": true,
@@ -34,8 +34,13 @@
     "package_budget": true,
     "route_files": true
   },
-  "sourceFiles": 112,
-  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-share-poster-package-1018",
-  "originClass": "physical-LAN-HTTP-MEMORY_TEST",
+  "sourceFiles": 176,
+  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-r17-integrated-1018",
+  "originClass": "physical-LAN-development-bridge-8795",
+  "backendBoundary": {
+    "geometry": "current-source",
+    "accountAndContext": "preserved-legacy-8791",
+    "publicMapProducts": "restored-8794"
+  },
   "frontendFixture": false
 }

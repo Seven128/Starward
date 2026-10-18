@@ -59,6 +59,7 @@ export interface MiniappRuntimeConfig {
   darkSkyDatasetVersion: string;
   terrainPublicationRoot?: string | null;
   nightLightPublicationRoot?: string | null;
+  mapStaticPublication?: { directory: string; publicationHash: string } | null;
   skyCatalogVersion: string;
   astronomyAlgorithmVersion: string;
   opportunityRuleVersion: string;
@@ -120,6 +121,10 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   if (terrainPublicationRoot && !path.isAbsolute(terrainPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_TERRAIN_PUBLICATION_ROOT");
   const nightLightPublicationRoot = value("MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
   if (nightLightPublicationRoot && !path.isAbsolute(nightLightPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
+  const mapStaticRoot = value("MINIAPP_MAP_STATIC_PUBLICATION_ROOT"), mapStaticHash = value("MINIAPP_MAP_STATIC_PUBLICATION_HASH");
+  if (Boolean(mapStaticRoot) !== Boolean(mapStaticHash) || mapStaticRoot && !path.isAbsolute(mapStaticRoot) ||
+      mapStaticHash && !/^[a-f0-9]{64}$/u.test(mapStaticHash)) throw new Error("runtime_config_invalid:MINIAPP_MAP_STATIC_PUBLICATION");
+  const mapStaticPublication = mapStaticRoot && mapStaticHash ? { directory: mapStaticRoot, publicationHash: mapStaticHash } : null;
   const releaseProfile = oneOf(
     "MINIAPP_RELEASE_PROFILE",
     value("MINIAPP_RELEASE_PROFILE"),
@@ -267,6 +272,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     darkSkyDatasetVersion,
     terrainPublicationRoot,
     nightLightPublicationRoot,
+    mapStaticPublication,
     skyCatalogVersion:
       value("MINIAPP_SKY_CATALOG_VERSION") ?? "iau-bright-targets-2026.1",
     astronomyAlgorithmVersion:

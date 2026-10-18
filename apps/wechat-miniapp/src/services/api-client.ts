@@ -1,4 +1,5 @@
 import { createAccountProfileClient } from "./account-profile-client";
+import { normalizeTerrainOverlayRequest } from "./terrain-overlay-request";
 import { createSpotEnvironmentClient } from "./spot-environment-client";
 import { ADOPTED_SKY_REPORT_CATALOG_VERSION, projectAdoptedSkyCatalog } from "./sky-report-catalog";
 import { createPlanChecklistClient } from "./plan-checklist-client";
@@ -986,6 +987,7 @@ export function getMapNightLight(viewport: import("@starward/miniapp-contracts")
 }
 
 export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal) {
+  input = normalizeTerrainOverlayRequest(input);
   const query = [
     `purpose=${input.purpose}`,
     `centerLat=${input.center.latitude.toFixed(7)}`,

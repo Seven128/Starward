@@ -1,20 +1,23 @@
 import {assertStellarGeometryFrame,type SaoIndexPublication,type SaoTilePublication,type StellarGeometryFrame} from '@starward/miniapp-contracts';
-import {projectStellarMotion} from '@starward/astronomy-core/stellar-vectors';
 import type {ResolvedStellarFrame,ResolvedStellarScene} from './sky-stellar-scene';
 import {exactSkyTimeFrame} from './sky-time-frame';
-import {prepareSkyDirection,type PreparedSkyDirection} from './sky-view-projection';
-import {skyStarDisplayTransmission} from './sky-star-appearance';
+import {createSkyStellarTransform} from './sky-stellar-transform';
+import type {SkyDirectionProjector,SkyDirectionProjection} from './sky-view-projection';
 
 export type SupplementPoint=readonly [reference:string,magnitude:number,azimuthDeg:number,altitudeDeg:number];
-export interface SkyStellarSupplementFrame extends Pick<ResolvedStellarFrame,'displayDirection'|'displayTransmission'> {
+export interface SkyStellarSupplementFrame extends Pick<ResolvedStellarFrame,'displayDirection'|'displayTransmission'|'pointCount'> {
   publicationHash:string;
   catalogVersion:string;
   geometry:StellarGeometryFrame;
   points:readonly SupplementPoint[];
+  forEachProjected?:(projector:SkyDirectionProjector,magnitudeLimit:number,
+    visit:(pointIndex:number,point:SupplementPoint,projection:SkyDirectionProjection)=>void)=>void;
 }
 // A tile retains only its most recent time transform. Camera gestures reuse
 // positions, and releasing a view's tile allows its derived points to be freed.
-const transformed=new WeakMap<SaoTilePublication,{geometry:StellarGeometryFrame;points:readonly SupplementPoint[]}>();
+type TileTransform={geometry:StellarGeometryFrame;transform:ReturnType<typeof createSkyStellarTransform>;
+  pointAt:(index:number)=>SupplementPoint};
+const transformed=new WeakMap<SaoTilePublication,TileTransform>();
 
 export function supplementGeometry(publication:SaoIndexPublication,scene:ResolvedStellarScene|undefined,at:string|undefined){
   const geometry=exactSkyTimeFrame(scene?.frames,at)?.geometry;
@@ -28,33 +31,54 @@ export function supplementGeometry(publication:SaoIndexPublication,scene:Resolve
 export function resolveSkyStellarSupplement(publication:SaoIndexPublication,tiles:readonly SaoTilePublication[],
   scene:ResolvedStellarScene|undefined,at:string|undefined):SkyStellarSupplementFrame|null{
   const geometry=supplementGeometry(publication,scene,at);if(!geometry)return null;
-  const points:SupplementPoint[]=[];
+  const spans:Array<{start:number;end:number;tile:SaoTilePublication;cached:TileTransform}>=[];
+  let pointCount=0;
   for(const tile of tiles){
     if(tile.publicationHash!==publication.publicationHash||tile.tile.catalogHash!==publication.index.catalogHash)
       throw Error('sao_tile_publication_mismatch');
     let cached=transformed.get(tile);
     if(cached?.geometry!==geometry){
-      const positioned:SupplementPoint[]=[];
-      for(const [reference,magnitude,x,y,z,vx,vy,vz] of tile.tile.rows){
-        const position=projectStellarMotion([x,y,z,vx,vy,vz],geometry.julianYears,geometry.equatorialToEnu);
-        positioned.push(Object.freeze([reference,magnitude,position.azimuthDeg,position.altitudeDeg] as const));
-      }
-      cached={geometry,points:Object.freeze(positioned)};transformed.set(tile,cached);
+      const rows=tile.tile.rows;
+      const transform=createSkyStellarTransform(rows.length,index=>{
+        const row=rows[index]!;return [row[2],row[3],row[4],row[5],row[6],row[7]];
+      },geometry);
+      const positioned:Array<SupplementPoint|undefined>=new Array(rows.length);
+      const pointAt=(index:number)=>{
+        if(positioned[index]===undefined){
+          const row=rows[index]!,position=transform.position(index);
+          positioned[index]=Object.freeze([row[0],row[1],position.azimuthDeg,position.altitudeDeg] as const);
+        }
+        return positioned[index]!;
+      };
+      cached={geometry,transform,pointAt};transformed.set(tile,cached);
     }
-    points.push(...cached.points);
+    spans.push({start:pointCount,end:pointCount+tile.tile.rows.length,tile,cached});
+    pointCount+=tile.tile.rows.length;
   }
-  // Like the BSC frame, retain camera-independent display work only with this
-  // exact time/selected-row frame. A new time or tile set gets new memos; no
-  // camera trail or second catalogue cache survives the frame's consumers.
-  const directions:Array<PreparedSkyDirection|null|undefined>=new Array(points.length);
-  const transmissions:Array<number|undefined>=new Array(points.length);
-  const displayDirection=(index:number)=>{
-    if(directions[index]===undefined)directions[index]=prepareSkyDirection(points[index]![2],points[index]![3]);
-    return directions[index]!;
+  // Keep tile-local work when the same exact-time tiles are aggregated again.
+  // A sequential scan needs one span lookup per tile; arbitrary readers still
+  // get the same row identity without retaining a flattened second catalogue.
+  let previousSpan=spans[0];
+  const locate=(index:number)=>{
+    if(previousSpan&&index>=previousSpan.start&&index<previousSpan.end)return previousSpan;
+    let lower=0,upper=spans.length-1;
+    while(lower<=upper){const middle=(lower+upper)>>>1,span=spans[middle]!;
+      if(index<span.start)upper=middle-1;
+      else if(index>=span.end)lower=middle+1;
+      else {previousSpan=span;return span;}}
+    throw Error('sao_point_index_invalid');
   };
-  const displayTransmission=(index:number)=>transmissions[index]??=skyStarDisplayTransmission(points[index]![3]);
-  return {publicationHash:publication.publicationHash,catalogVersion:publication.index.catalogVersion,geometry,points:Object.freeze(points),
-    displayDirection,displayTransmission};
+  const pointAt=(index:number)=>{const span=locate(index);return span.cached.pointAt(index-span.start);};
+  const displayDirection=(index:number)=>{const span=locate(index);return span.cached.transform.displayDirection(index-span.start);};
+  const displayTransmission=(index:number)=>{const span=locate(index);return span.cached.transform.displayTransmission(index-span.start);};
+  const forEachProjected:NonNullable<SkyStellarSupplementFrame['forEachProjected']>=(projector,limit,visit)=>{
+    for(const span of spans)span.cached.transform.forEachProjected(projector,limit,index=>span.tile.tile.rows[index]![1],
+      (index,projection)=>visit(span.start+index,span.cached.pointAt(index),projection));
+  };
+  let points:readonly SupplementPoint[]|undefined;
+  return {publicationHash:publication.publicationHash,catalogVersion:publication.index.catalogVersion,geometry,pointCount,
+    get points(){return points??=Object.freeze(Array.from({length:pointCount},(_,index)=>pointAt(index)));},
+    forEachProjected,displayDirection,displayTransmission};
 }
 
 export function currentStellarSupplement(frame:SkyStellarSupplementFrame|null|undefined,scene:ResolvedStellarScene|undefined,at:string|undefined){

@@ -7,7 +7,6 @@ export type SkyPanMode = "horizon" | "screen";
 const dot = (a: SkyVector, b: SkyVector) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a: SkyVector, b: SkyVector): SkyVector => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
 const TWO_PI = Math.PI * 2;
-const ELEVATION_LIMIT = Math.PI / 2;
 
 function rotateGrabbedRay(basis: SkyViewBasis, from: SkyVector, to: SkyVector): SkyViewBasis {
   // Unprojection inherits tiny basis-length errors. Rodrigues' sine/cosine
@@ -41,38 +40,21 @@ function levelView(azimuth: number, elevation: number, roll: number): SkyViewBas
   };
 }
 
-function elevationForGrab(targetUp: number, cameraUp: number, cameraForward: number, previous: number): number {
+function elevationForGrab(targetUp: number, cameraUp: number, cameraForward: number,
+  startingNorth: number, startingElevation: number): number {
   // In the horizon-level basis, targetUp = cameraUp*cos(elevation) + cameraForward*sin(elevation).
-  // Both inverse-sine branches matter when a wide field crosses the zenith.
+  // Keep the inverse branch of the originally grabbed ray. Choosing the root
+  // nearest the starting elevation on every move can change branches while
+  // the finger crosses a pole. The camera pitch may pass +/-90 degrees: only
+  // the real sky direction's altitude is bounded to that range.
   const amplitude = Math.hypot(cameraUp, cameraForward);
+  if (amplitude < 1e-12) return startingElevation;
   const phase = Math.atan2(cameraUp, cameraForward);
-  const candidates: number[] = [previous, -ELEVATION_LIMIT, ELEVATION_LIMIT];
-  if (amplitude > 1e-12) {
-    const principal = Math.asin(Math.max(-1, Math.min(1, targetUp / amplitude)));
-    for (const root of [principal - phase, Math.PI - principal - phase]) {
-      for (const revolution of [-1, 0, 1]) {
-        const elevation = root + revolution * TWO_PI;
-        if (elevation >= -ELEVATION_LIMIT && elevation <= ELEVATION_LIMIT) candidates.push(elevation);
-      }
-    }
-    // If exact tracking is geometrically impossible without rolling the sky,
-    // use the closest level view instead of introducing an abrupt camera roll.
-    for (const root of [Math.atan2(cameraForward, cameraUp), Math.atan2(cameraForward, cameraUp) + Math.PI]) {
-      for (const revolution of [-1, 0, 1]) {
-        const elevation = root + revolution * TWO_PI;
-        if (elevation >= -ELEVATION_LIMIT && elevation <= ELEVATION_LIMIT) candidates.push(elevation);
-      }
-    }
-  }
-  let best = previous, error = Infinity;
-  for (const elevation of candidates) {
-    const candidateError = Math.abs(cameraUp * Math.cos(elevation) + cameraForward * Math.sin(elevation) - targetUp);
-    if (candidateError < error - 1e-12 || (Math.abs(candidateError - error) <= 1e-12 && Math.abs(elevation - previous) < Math.abs(best - previous))) {
-      best = elevation;
-      error = candidateError;
-    }
-  }
-  return best;
+  // If an off-axis ray has no exact fixed-roll solution, the saturated sine
+  // is its closest level view. It joins the valid branch continuously.
+  const principal = Math.asin(Math.max(-1, Math.min(1, targetUp / amplitude)));
+  const elevation = (startingNorth < 0 ? Math.PI - principal : principal) - phase;
+  return elevation + Math.round((startingElevation - elevation) / TWO_PI) * TWO_PI;
 }
 
 /** Pan the camera so the grabbed sky ray follows the finger where a level view
@@ -106,7 +88,8 @@ export function dragSkyView(basis: SkyViewBasis, start: SkyScreenPoint, end: Sky
   const cameraRight = localRight * Math.cos(roll) - localUp * Math.sin(roll);
   const cameraUp = localRight * Math.sin(roll) + localUp * Math.cos(roll);
   const cameraForward = dot(endRay, basis.forward);
-  const nextElevation = elevationForGrab(target[2], cameraUp, cameraForward, elevation);
+  const startingNorth = target[0] * Math.sin(azimuth) + target[1] * Math.cos(azimuth);
+  const nextElevation = elevationForGrab(target[2], cameraUp, cameraForward, startingNorth, elevation);
   const north = cameraForward * Math.cos(nextElevation) - cameraUp * Math.sin(nextElevation);
   const nextAzimuth = Math.hypot(target[0], target[1]) > 1e-10
     ? Math.atan2(target[0], target[1]) - Math.atan2(cameraRight, north)

@@ -32,7 +32,7 @@ ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 assert.ok(page?.body);
 const names = ["skyInteractionRevision", "setPreviewIndex", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "skyDisplayCurrent", "skyTimeIntentRetirable", "cancelSkyTimePreview",
-  "toggleSkyTimePlayback", "advanceSkyTime", "commitInstant", "commitCivilDate", "onPreview", "selectCatalogObject",
+  "toggleSkyTimePlayback", "advanceSkyTime", "commitInstant", "commitCivilDate", "settleTimeIndex", "onPreview", "selectCatalogObject",
   "locateCatalogObject", "trackCatalogObject", "applyTrackedPosition", "selectSkyTarget", "selectSearchObject", "enterManualView",
   "setDatePickerOpen", "setSelectedCatalogObject", "setSkyControlPanel", "skyDisclosures"];
 const commands = page.body.statements.filter(node => ts.isVariableStatement(node) &&
@@ -58,13 +58,17 @@ function publicCallback(marker: string) {
 }
 const menu = skyMenuProps(source);
 const dockCallback = (kind: "time" | "list" | "calibration") => menu.dock(kind).getText(source);
-let rulerCancel = "", timeEffect = "", hideCallback = "", dateChange = "";
+let rulerCancel = "", rulerSettle = "", timeEffect = "", hideCallback = "", dateChange = "";
 function visitPage(node: ts.Node) {
   if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "OrientationTimeRuler") {
     const attribute = node.attributes.properties.find(property => ts.isJsxAttribute(property) &&
       property.name.getText(source) === "onCancel") as ts.JsxAttribute;
     assert.ok(attribute?.initializer && ts.isJsxExpression(attribute.initializer) && attribute.initializer.expression);
     rulerCancel = attribute.initializer.expression.getText(source);
+    const commit = node.attributes.properties.find(property => ts.isJsxAttribute(property) &&
+      property.name.getText(source) === "onCommit") as ts.JsxAttribute;
+    assert.ok(commit?.initializer && ts.isJsxExpression(commit.initializer) && commit.initializer.expression);
+    rulerSettle = commit.initializer.expression.getText(source);
   }
   if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" &&
     node.arguments[0]?.getText(source).includes("if (!timePlaying) return;")) {
@@ -83,7 +87,7 @@ function visitPage(node: ts.Node) {
   ts.forEachChild(node, visitPage);
 }
 visitPage(page);
-assert.ok(rulerCancel && timeEffect && hideCallback);
+assert.ok(rulerCancel && rulerSettle && timeEffect && hideCallback);
 const compile = (value: string) => ts.transpileModule(value, {
   compilerOptions: { target: ts.ScriptTarget.ES2022 },
 }).outputText;
@@ -91,7 +95,7 @@ const code = compile(commands.map(node => node.getText(source)).join("\n") +
   `\n({onPreview,commitInstant,locateCatalogObject,trackCatalogObject,applyTrackedPosition,
     selectCatalogObject,selectSearchObject,selectSkyTarget,setDatePickerOpen,setSelectedCatalogObject,
     play:toggleSkyTimePlayback, apply:()=>commitInstant(observationTime.snapshot().at),
-    cancel:()=>{if(skyTimeIntentCurrent())cancelSkyTimePreview();}, rulerCancel:${rulerCancel}, hide:${hideCallback}, dateChange:skyDisclosures.date,
+    cancel:()=>{if(skyTimeIntentCurrent())cancelSkyTimePreview();}, rulerCancel:${rulerCancel}, rulerSettle:${rulerSettle}, hide:${hideCallback}, dateChange:skyDisclosures.date,
     timeDock:${dockCallback("time")}, listDock:${dockCallback("list")}, calibrationDock:()=>skyDisclosures.toggle("calibration")});`);
 
 const committedAt = "2026-09-22T13:00:00.000Z";
@@ -138,7 +142,7 @@ function harness() {
     timeSaving: false, timeBinding, committedAt, requestedAt: committedAt, timePlaying: false,
     skyRulerTime, setTimeScrubbing: () => {},
     timeCommitContinuity: createSkyTimeCommitContinuity(skyForecastPresentation),
-    timeModel: { startAt: committedAt, endAt }, geometryReport: rawReportData,
+    timeModel: { startAt: committedAt, endAt }, timeGeometrySources: undefined, timeRows: rawReportData.hourly, geometryReport: rawReportData,
     report: { isError: false, data: { data: rawReportData, dataState: "FRESH" } },
     rawReportData, reportData: rawReportData, row: { at: committedAt },
     selectedCatalogObject: object, selectedCatalogObjectRef, datePickerOpen: false, datePickerOpenRef,
@@ -199,6 +203,7 @@ function chooseSearchResult(page: Harness, object: { reference: string; displayN
 
 const actions: [string, (page: Harness) => unknown][] = [
   ["preview", page => page.actions.onPreview!(1)],
+  ["ruler settle", page => page.actions.rulerSettle!(1)],
   ["play", page => page.actions.play!()],
   ["cancel", page => page.actions.cancel!()],
   ["commit", page => page.actions.commitInstant!(committedAt)],
@@ -322,6 +327,22 @@ test("apply submits the live selected instant rather than the captured committed
   assert.equal(page.requests.length, 1, "apply submits the newer preview rather than its captured committed instant");
   assert.equal(page.requests[0]!.patch.selectedAt, previewAt);
   page.requests[0]!.resolve({ data: { ...context, revision: 2, contextFingerprint: "fp:2", selectedAtUtc: page.requests[0]!.patch.selectedAt! } });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal((page.writes[0] as typeof context).selectedAtUtc, previewAt);
+});
+
+test("the public ruler settles its preview without a Context mutation; explicit Apply commits that instant", async () => {
+  const page = harness();
+  page.actions.onPreview!(0.5);
+  page.actions.rulerSettle!(1);
+  assert.equal(page.time.snapshot().at, previewAt);
+  assert.equal(page.time.snapshot().mode, "PREVIEW");
+  assert.equal(page.requests.length, 0, "releasing the ruler cannot submit a public Context edit");
+  assert.equal(page.writes.length, 0);
+  page.actions.apply!();
+  assert.equal(page.requests.length, 1);
+  assert.equal(page.requests[0]!.patch.selectedAt, previewAt);
+  page.requests[0]!.resolve({ data: { ...context, revision: 2, contextFingerprint: "fp:2", selectedAtUtc: previewAt } });
   await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal((page.writes[0] as typeof context).selectedAtUtc, previewAt);
 });

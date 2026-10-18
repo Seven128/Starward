@@ -7,9 +7,11 @@ import {
   sameSkyViewBasis,
   projectSkyDirection,
   prepareSkyDirection,
+  unprojectSkyPoint,
   type SkyViewBasis,
   type SkyVector,
 } from "./sky-view-projection.ts";
+import {stellarHorizontalPosition} from '@starward/astronomy-core/stellar-vectors';
 
 test("exact camera identity preserves copied views and every real component change", () => {
   const view = createSkyViewBasis(20, 70, 10)!;
@@ -230,4 +232,29 @@ test("a prepared projection preserves one accepted view and refreshes for the ne
   assert.equal(createSkyDirectionProjector(mutable,0,800,180), null);
   assert.equal(createSkyDirectionProjector(mutable,400,800,360), null);
   assert.equal(createSkyDirectionProjector(mutable,400,800,180,{x:NaN,y:0}), null);
+});
+
+test("vector early rejection preserves angular viewport edges, poles and the narrowest supported scale",()=>{
+  const width=390,height=844,center={x:177,y:461};
+  let accepted=0,rejected=0;
+  for(const pose of [[0,90,0],[359.999,179.999,17],[125,0,-20],[37,72,-18]] as const){
+    const basis=createSkyViewBasis(pose[0],pose[1],pose[2])!;
+    for(const fov of [.05,10.8,45,270]){
+      const projector=createSkyDirectionProjector(basis,width,height,fov,center)!;
+      for(const x of [-1e-9,0,width/2,width,width+1e-9])for(const y of [-1e-9,0,height/2,height,height+1e-9]){
+        const vector=unprojectSkyPoint(x,y,basis,width,height,fov,center)!;
+        const angles=stellarHorizontalPosition(vector);
+        if(projector.project(angles.azimuthDeg,angles.altitudeDeg)){
+          assert(projector.mayProjectVector(vector),'a conservative pretest must never withdraw an original edge point');accepted++;
+        }
+      }
+      const outside=unprojectSkyPoint(width+1e-4,height/2,basis,width,height,fov,center)!;
+      const angles=stellarHorizontalPosition(outside);
+      assert.equal(projector.project(angles.azimuthDeg,angles.altitudeDeg),null);
+      assert.equal(projector.mayProjectVector(outside),false,'a materially offscreen ray is rejected before angle work');rejected++;
+      const antipode=basis.forward.map(value=>-value) as unknown as SkyVector;
+      assert.equal(projector.mayProjectVector(antipode),false);
+    }
+  }
+  assert(accepted>100&&rejected===16,'the fixture must exercise real admitted and rejected directions');
 });

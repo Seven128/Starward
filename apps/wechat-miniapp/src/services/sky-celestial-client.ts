@@ -6,8 +6,24 @@ import { matchingCelestialSearchResponse } from "./celestial-search-response";
 import { matchingCelestialInformationResponse } from "./celestial-information-response";
 import { matchingCelestialPositionResponse, type CelestialPositionBinding } from "./celestial-position-response";
 import { matchingSkyTargetInstantResponse, type SkyTargetInstantBinding } from "./sky-target-instant-response";
+import { matchingSkyGeometryWindow, skyGeometryWindowKey, type SkyGeometryWindowBinding } from "./sky-geometry-window-response";
 import { isCelestialObjectReference, isDeepSkyObjectReference, CURRENT_DEEP_SKY_CATALOG_VERSION,
   DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION, SKY_LUMINARY_CATALOG_VERSION } from "@starward/miniapp-contracts";
+
+export function getSkyGeometryWindow(binding: SkyGeometryWindowBinding, signal?: AbortSignal) {
+  const { spotId, contextId, at } = binding;
+  if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
+    throw new Error("night_location_identity_invalid");
+  const key = skyGeometryWindowKey(binding).join(":");
+  return requestOperation(key, "spotSkyGeometryGet", {
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
+    pathParams: { spotId }, query: `contextId=${encodeURIComponent(contextId)}&at=${encodeURIComponent(at)}`,
+    ...(signal ? { signal } : {}),
+  }).then(response => {
+    try { return matchingSkyGeometryWindow(response, binding); }
+    catch (error) { invalidateApiCache(key + ":"); throw error; }
+  });
+}
 
 /** Requested only for a settled fine-time preview. Playback never polls this
  * endpoint; the native sky continues from the already admitted time model. */

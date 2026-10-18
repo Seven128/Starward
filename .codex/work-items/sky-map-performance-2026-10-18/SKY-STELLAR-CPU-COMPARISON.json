@@ -1,0 +1,602 @@
+{
+  "scope": "LOCAL_CPU_FULL_STELLAR_OWNERS_NOT_NATIVE_REACT_OR_GPU",
+  "inputSha256": "9ce8706d36586ed4c0cb5e074c6b66efa396ec634320a2c4015bfb4d255011b0",
+  "baselineSources": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "sha256": "28ff1b90a969be1545d87e77d648d5b360015801444420678ce1862a84a74107",
+      "bytes": 7819
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "ed05a7d0d83bc439ca01173cd5ab58aca17d77e2bc722004a9582e87ae26b895",
+      "bytes": 3968
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "e8c51a6c9d67debafbe82539768ff622543a9b93742899fa0ce29b2709709e9e",
+      "bytes": 45344
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "f3da73282558e36002293870d1baa692bdc3b006fd8e6595979e9566fe8cf486",
+      "bytes": 12572
+    },
+    {
+      "path": "packages/astronomy-core/src/stellar-vectors.ts",
+      "sha256": "683c487671550c00b66a5b43c836c33b759e45260b1bae3eed6c5c94122f5f81",
+      "bytes": 2905
+    }
+  ],
+  "candidateSources": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "sha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "6e083c76bac46fa1122b6df3771502ec01cb12fc9d02c8cd53932736e9ff22c6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6"
+    },
+    {
+      "path": "packages/astronomy-core/src/stellar-vectors.ts",
+      "sha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+      "sha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-frame-facts.ts",
+      "sha256": "96d58951ba3756d6ca85e6bdfb9d2168c473b39d412190be5e7312c83f7024f0"
+    }
+  ],
+  "baseCatalogRows": 8404,
+  "saoPublicationRows": 246280,
+  "comparedFrames": 440,
+  "maximumNumericDifference": 0,
+  "results": [
+    {
+      "fov": 45,
+      "phase": "coldPreparation",
+      "frames": 20,
+      "maximumLoadedSaoRows": 831,
+      "maximumSelectedTiles": 18,
+      "submittedStars": 8140,
+      "pickedBase": 4491,
+      "pickedSao": 2358,
+      "namedBase": 80,
+      "consumerTraceSha256": "fe7b354e7d3980fae87983dba9b8d2d7028647c556235403acef4d346656c631",
+      "timings": {
+        "baseline": {
+          "presentation": {
+            "samples": 15,
+            "medianMs": 0.15530000000012478,
+            "p95Ms": 0.1897999999998774
+          },
+          "base": {
+            "samples": 15,
+            "medianMs": 17.58470000000011,
+            "p95Ms": 31.843799999999874
+          },
+          "selection": {
+            "samples": 15,
+            "medianMs": 0.0885000000000673,
+            "p95Ms": 0.2622000000001208
+          },
+          "supplement": {
+            "samples": 15,
+            "medianMs": 3.4699000000000524,
+            "p95Ms": 8.710599999999886
+          },
+          "constellations": {
+            "samples": 15,
+            "medianMs": 0.9045999999998457,
+            "p95Ms": 1.313799999999901
+          },
+          "draw": {
+            "samples": 15,
+            "medianMs": 4.302799999999934,
+            "p95Ms": 8.526200000000017
+          },
+          "total": {
+            "samples": 15,
+            "medianMs": 28.65319999999997,
+            "p95Ms": 41.15689999999995
+          }
+        },
+        "candidate": {
+          "presentation": {
+            "samples": 15,
+            "medianMs": 0.17619999999988067,
+            "p95Ms": 0.292699999999968
+          },
+          "base": {
+            "samples": 15,
+            "medianMs": 13.98050000000012,
+            "p95Ms": 27.379500000000007
+          },
+          "selection": {
+            "samples": 15,
+            "medianMs": 0.07210000000009131,
+            "p95Ms": 0.09300000000007458
+          },
+          "supplement": {
+            "samples": 15,
+            "medianMs": 3.210299999999961,
+            "p95Ms": 7.431599999999889
+          },
+          "constellations": {
+            "samples": 15,
+            "medianMs": 0.9453000000000884,
+            "p95Ms": 1.2093999999999596
+          },
+          "draw": {
+            "samples": 15,
+            "medianMs": 5.086000000000013,
+            "p95Ms": 10.201299999999947
+          },
+          "total": {
+            "samples": 15,
+            "medianMs": 23.411200000000008,
+            "p95Ms": 36.42190000000005
+          }
+        }
+      }
+    },
+    {
+      "fov": 45,
+      "phase": "timeChange",
+      "frames": 100,
+      "maximumLoadedSaoRows": 831,
+      "maximumSelectedTiles": 18,
+      "submittedStars": 40234,
+      "pickedBase": 21942,
+      "pickedSao": 11602,
+      "namedBase": 400,
+      "consumerTraceSha256": "d2219f89850519f552be9927a62c0c81e72b043914466007dc2028618883bc84",
+      "timings": {
+        "baseline": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.15719999999964784,
+            "p95Ms": 0.21640000000024884
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 3.014900000000125,
+            "p95Ms": 7.143999999999778
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.07920000000012806,
+            "p95Ms": 0.1309000000001106
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.21520000000009532,
+            "p95Ms": 0.31300000000010186
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.8063999999999396,
+            "p95Ms": 1.6572000000001026
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 3.8452000000002045,
+            "p95Ms": 5.091499999999996
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 8.265800000000127,
+            "p95Ms": 12.438599999999951
+          }
+        },
+        "candidate": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.16280000000006112,
+            "p95Ms": 0.29340000000001965
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 0.058299999999690044,
+            "p95Ms": 0.0990999999999076
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.059099999999943975,
+            "p95Ms": 0.10209999999960928
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.06610000000000582,
+            "p95Ms": 0.10490000000027067
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.7931999999996151,
+            "p95Ms": 1.475500000000011
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 4.869499999999789,
+            "p95Ms": 9.315999999999804
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 6.117099999999937,
+            "p95Ms": 11.256600000000162
+          }
+        }
+      }
+    },
+    {
+      "fov": 45,
+      "phase": "sameTimeCamera",
+      "frames": 100,
+      "maximumLoadedSaoRows": 831,
+      "maximumSelectedTiles": 18,
+      "submittedStars": 39776,
+      "pickedBase": 22459,
+      "pickedSao": 11882,
+      "namedBase": 451,
+      "consumerTraceSha256": "a9294ec5e93d3c6b6827e498ea9be6ae85e6f21f4345e2ea94852e66c62f8c29",
+      "timings": {
+        "baseline": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.12770000000000437,
+            "p95Ms": 0.1827000000002954
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 0.004899999999906868,
+            "p95Ms": 0.009399999999914144
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.051899999999477586,
+            "p95Ms": 0.08370000000013533
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.0031999999991967343,
+            "p95Ms": 0.004299999999602733
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.00020000000040454324,
+            "p95Ms": 0.0003999999998995918
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 1.3227000000006228,
+            "p95Ms": 1.76299999999992
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 1.5236000000004424,
+            "p95Ms": 2.0974000000005617
+          }
+        },
+        "candidate": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.12600000000020373,
+            "p95Ms": 0.15999999999985448
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 0.004899999999906868,
+            "p95Ms": 0.007700000000113505
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.05089999999927386,
+            "p95Ms": 0.06390000000010332
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.003299999999399006,
+            "p95Ms": 0.004500000000007276
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.00020000000040454324,
+            "p95Ms": 0.0004000000008090865
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 1.3152000000000044,
+            "p95Ms": 1.5423000000000684
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 1.5066999999999098,
+            "p95Ms": 1.7647999999999229
+          }
+        }
+      }
+    },
+    {
+      "fov": 10.8,
+      "phase": "coldPreparation",
+      "frames": 20,
+      "maximumLoadedSaoRows": 7460,
+      "maximumSelectedTiles": 21,
+      "submittedStars": 7913,
+      "pickedBase": 279,
+      "pickedSao": 7634,
+      "namedBase": 0,
+      "consumerTraceSha256": "4d1fb4208dcf78d5e78274677279641bc55431a5109f868e09594400f63f62c0",
+      "timings": {
+        "baseline": {
+          "presentation": {
+            "samples": 15,
+            "medianMs": 0.14140000000043074,
+            "p95Ms": 0.2254000000002634
+          },
+          "base": {
+            "samples": 15,
+            "medianMs": 19.53060000000005,
+            "p95Ms": 26.427200000000084
+          },
+          "selection": {
+            "samples": 15,
+            "medianMs": 0.09479999999985012,
+            "p95Ms": 0.11779999999998836
+          },
+          "supplement": {
+            "samples": 15,
+            "medianMs": 25.51130000000012,
+            "p95Ms": 31.865099999999984
+          },
+          "constellations": {
+            "samples": 15,
+            "medianMs": 0.79950000000008,
+            "p95Ms": 1.0990999999994528
+          },
+          "draw": {
+            "samples": 15,
+            "medianMs": 5.591300000000047,
+            "p95Ms": 6.507400000000416
+          },
+          "total": {
+            "samples": 15,
+            "medianMs": 52.465400000000045,
+            "p95Ms": 59.162999999999556
+          }
+        },
+        "candidate": {
+          "presentation": {
+            "samples": 15,
+            "medianMs": 0.14180000000033033,
+            "p95Ms": 0.16740000000027067
+          },
+          "base": {
+            "samples": 15,
+            "medianMs": 13.846999999999753,
+            "p95Ms": 18.967599999999948
+          },
+          "selection": {
+            "samples": 15,
+            "medianMs": 0.08550000000013824,
+            "p95Ms": 0.2577000000001135
+          },
+          "supplement": {
+            "samples": 15,
+            "medianMs": 23.88300000000072,
+            "p95Ms": 28.44260000000031
+          },
+          "constellations": {
+            "samples": 15,
+            "medianMs": 0.7950999999993655,
+            "p95Ms": 1.309900000000198
+          },
+          "draw": {
+            "samples": 15,
+            "medianMs": 6.603100000000268,
+            "p95Ms": 12.359099999999671
+          },
+          "total": {
+            "samples": 15,
+            "medianMs": 47.610099999999875,
+            "p95Ms": 54.61239999999998
+          }
+        }
+      }
+    },
+    {
+      "fov": 10.8,
+      "phase": "timeChange",
+      "frames": 100,
+      "maximumLoadedSaoRows": 8565,
+      "maximumSelectedTiles": 24,
+      "submittedStars": 39677,
+      "pickedBase": 1605,
+      "pickedSao": 38072,
+      "namedBase": 0,
+      "consumerTraceSha256": "01f74ed5ba97ae01750552ebeeb5caee704f38db76772cf3db43b189d215e3ff",
+      "timings": {
+        "baseline": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.14140000000043074,
+            "p95Ms": 0.21299999999973807
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 2.9681000000000495,
+            "p95Ms": 6.791400000000067
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.0944999999992433,
+            "p95Ms": 0.14650000000074215
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 1.6662999999998647,
+            "p95Ms": 5.652399999999034
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.7571000000007189,
+            "p95Ms": 1.2626000000000204
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 5.463200000000143,
+            "p95Ms": 9.90270000000055
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 11.497199999999793,
+            "p95Ms": 17.805099999999584
+          }
+        },
+        "candidate": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.14030000000002474,
+            "p95Ms": 0.2044000000005326
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 0.054799999999886495,
+            "p95Ms": 0.08410000000003492
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.07520000000022264,
+            "p95Ms": 0.11279999999987922
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.09289999999964493,
+            "p95Ms": 0.13189999999940483
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.744300000000294,
+            "p95Ms": 1.194100000000617
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 6.760699999998906,
+            "p95Ms": 10.869500000000698
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 7.914799999999559,
+            "p95Ms": 12.14850000000024
+          }
+        }
+      }
+    },
+    {
+      "fov": 10.8,
+      "phase": "sameTimeCamera",
+      "frames": 100,
+      "maximumLoadedSaoRows": 6572,
+      "maximumSelectedTiles": 24,
+      "submittedStars": 39612,
+      "pickedBase": 1415,
+      "pickedSao": 38197,
+      "namedBase": 0,
+      "consumerTraceSha256": "d6c44773adb04284f8838a7f358df737bee554860e2bba4d0aa5d245cb920f02",
+      "timings": {
+        "baseline": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.1389999999992142,
+            "p95Ms": 0.24510000000009313
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 0.005799999998998828,
+            "p95Ms": 0.012499999998908606
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.07879999999931897,
+            "p95Ms": 0.14259999999922002
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.005100000000311411,
+            "p95Ms": 0.01389999999992142
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.00029999999969732016,
+            "p95Ms": 0.0005999999993946403
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 1.915899999999965,
+            "p95Ms": 4.121000000001004
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 2.160699999998542,
+            "p95Ms": 4.548999999999069
+          }
+        },
+        "candidate": {
+          "presentation": {
+            "samples": 95,
+            "medianMs": 0.13919999999961874,
+            "p95Ms": 0.32669999999961874
+          },
+          "base": {
+            "samples": 95,
+            "medianMs": 0.007099999998899875,
+            "p95Ms": 0.014999999999417923
+          },
+          "selection": {
+            "samples": 95,
+            "medianMs": 0.07519999999931315,
+            "p95Ms": 0.1323000000011234
+          },
+          "supplement": {
+            "samples": 95,
+            "medianMs": 0.005699999999706051,
+            "p95Ms": 0.01209999999991851
+          },
+          "constellations": {
+            "samples": 95,
+            "medianMs": 0.00020000000040454324,
+            "p95Ms": 0.0005999999993946403
+          },
+          "draw": {
+            "samples": 95,
+            "medianMs": 1.8156999999991967,
+            "p95Ms": 3.611000000000786
+          },
+          "total": {
+            "samples": 95,
+            "medianMs": 2.0504000000000815,
+            "p95Ms": 3.9221999999990658
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "No native GPU, React/Taro, image/texture preparation, file/network latency or physical FPS claim",
+    "Cold preparation includes in-memory JSON decode/admission and static render-model construction; input file I/O excluded",
+    "Time/camera CPU samples use already admitted publications and loaded actual view tiles",
+    "Same-time camera test intentionally retains its loaded tile set; separate tile selection is still measured",
+    "Full legacy points/list access remains supported and is verified separately"
+  ]
+}

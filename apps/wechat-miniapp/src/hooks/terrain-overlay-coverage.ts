@@ -1,5 +1,6 @@
 import { displayRasterWindowForBounds } from "@starward/coordinate-system";
 import type { TerrainBounds, TerrainOverlayData, TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import { terrainOverlayRequestWindow } from "../services/terrain-overlay-request";
 
 type CoverageData = Pick<TerrainOverlayData, "purpose" | "state" | "failureCode" | "imageUrl" | "imageBoundsGcj02">;
 export interface TerrainCoverage {
@@ -16,9 +17,11 @@ export function terrainCoverageForRequest(request: TerrainOverlayRequest, data: 
   if (!request.viewportBounds || data?.purpose !== "MAP" || data.state === "UNAVAILABLE" || data.failureCode
     || !data.imageUrl || !data.imageBoundsGcj02 || !contains(data.imageBoundsGcj02, request.viewportBounds)) return null;
   try {
+    const window = terrainOverlayRequestWindow(request);
+    if (!window) return null;
     displayRasterWindowForBounds(data.imageBoundsGcj02);
     return { request: { ...request, center: { ...request.center }, viewportBounds: { ...request.viewportBounds } },
-      bounds: { ...data.imageBoundsGcj02 }, level: displayRasterWindowForBounds(request.viewportBounds).zoom };
+      bounds: { ...data.imageBoundsGcj02 }, level: window.zoom };
   } catch { return null; }
 }
 
@@ -27,7 +30,6 @@ export function terrainCoverageForRequest(request: TerrainOverlayRequest, data: 
  * Its original request/metadata stay intact; no image is moved or stretched. */
 export function terrainRequestForCoverage(request: TerrainOverlayRequest, previous: TerrainCoverage | null): TerrainOverlayRequest {
   if (!previous || !request.viewportBounds || !contains(previous.bounds, request.viewportBounds)) return request;
-  try {
-    return displayRasterWindowForBounds(request.viewportBounds).zoom <= previous.level ? previous.request : request;
-  } catch { return request; }
+  const window = terrainOverlayRequestWindow(request);
+  return window && window.zoom <= previous.level ? previous.request : request;
 }

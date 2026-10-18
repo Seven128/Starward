@@ -15,6 +15,9 @@ import type { SaoIndexPublication, SaoTilePublication } from "@starward/miniapp-
 import { resolveSkyStellarSupplement, currentStellarSupplement } from "./sky-stellar-supplement-scene";
 import { skyStarAppearance } from "./sky-star-appearance";
 import { createSkyStarTransitions } from "./sky-star-transition";
+import {skySceneFrameFacts} from './sky-scene-frame-facts';
+import {createSkyDirectionProjector} from './sky-view-projection';
+import {projectStellarMotion} from '@starward/astronomy-core/stellar-vectors';
 
 const at = "2026-10-02T13:00:00.000Z";
 const identity = { format: "bsc5p-stellar-geometry-v1", referenceAt: "2000-01-01T12:00:00.000Z",
@@ -31,6 +34,30 @@ const scene = { format: "stellar-scene-v2", state: "AVAILABLE", observer,
 } as unknown as ResolvedStellarScene;
 const report = { hourly: [{ at, sunAzimuthDeg: 270, sunAltitudeDeg: -24 }],
   skyScene: scene, targetFrames: [] } as unknown as ResolvedSkyReport;
+
+test('BSC exact-time availability is lazy while complete points and later camera views retain the original result',()=>{
+  let motions=0;
+  const row=scene.publication!.rows[0]!;
+  const localScene:ResolvedStellarScene={...scene,catalog:{...scene.catalog!,motionAt:()=>{
+    motions++;return [row[4],row[5],row[6],row[7],row[8],row[9]];
+  }}};
+  const frame=resolveSkySceneFrame(localScene,at)!;
+  assert.equal(frame.pointCount,1);
+  assert.equal(skySceneFrameFacts(localScene,at).starCount,1);
+  assert.equal(motions,0,'availability and full-count readback do not position offscreen stars');
+  const out=createSkyDirectionProjector(createSkyViewBasis(180,135,0)!,390,844,10.8)!;
+  const inside=createSkyDirectionProjector(createSkyViewBasis(0,45,0)!,390,844,10.8)!;
+  const found:unknown[]=[];
+  frame.forEachProjected!(out,7,(_index,point,projection)=>found.push({point,projection}));
+  assert.equal(found.length,0);assert.equal(motions,1);
+  frame.forEachProjected!(inside,7,(_index,point,projection)=>found.push({point,projection}));
+  assert.equal(found.length,1);assert.equal(motions,1,'camera changes reuse this exact proper-motion ray');
+  const expected=projectStellarMotion([row[4],row[5],row[6],row[7],row[8],row[9]],
+    scene.frames[0]!.geometry!.julianYears,scene.frames[0]!.geometry!.equatorialToEnu);
+  assert.deepEqual(frame.points,[[0,expected.azimuthDeg,expected.altitudeDeg]]);
+  assert(Object.isFrozen(frame.points)&&Object.isFrozen(frame.points[0]));
+  assert.equal(resolveSkySceneFrame(localScene,at),frame);
+});
 
 function render(altitude: number) {
   const basis = createSkyViewBasis(0, 90 + altitude, 0)!;
@@ -122,6 +149,29 @@ test("the shared SAO tile transform retains the lower hemisphere and exact time 
     };
     assert.deepEqual(paint(frame),paint(withoutMemo));
   }
+});
+
+test('SAO exact-time tiles keep lazy motion and identity across selected-tile aggregation',()=>{
+  const publication={publicationHash:'d'.repeat(64),index:{baseCatalogVersion:identity.catalogVersion,
+    baseAssetSha256:identity.catalogHash,catalogHash:'e'.repeat(64),catalogVersion:'sao-lazy-fixture'}} as unknown as SaoIndexPublication;
+  let motions=0;
+  const tile=(reference:string,east:number,north:number)=>{
+    const row=[reference,6.5,east,north,-Math.SQRT1_2,0,0,0];
+    Object.defineProperty(row,2,{get(){motions++;return east;}});
+    return {publicationHash:publication.publicationHash,tile:{catalogHash:publication.index.catalogHash,rows:[row]}} as unknown as SaoTilePublication;
+  };
+  const first=tile('SAO:1',0,Math.SQRT1_2),second=tile('SAO:2',Math.SQRT1_2,0);
+  const frame=resolveSkyStellarSupplement(publication,[first,second],scene,at)!;
+  assert.equal(frame.pointCount,2);assert.equal(motions,0,'loaded row counts do not eagerly transform tile rows');
+  const projector=createSkyDirectionProjector(createSkyViewBasis(0,90,0)!,390,844,270)!;
+  const references:string[]=[];
+  frame.forEachProjected!(projector,7,(_index,point)=>references.push(point[0]));
+  assert.deepEqual(references,['SAO:1','SAO:2']);assert.equal(motions,2);
+  const reordered=resolveSkyStellarSupplement(publication,[second,first],scene,at)!;
+  const nextReferences:string[]=[];
+  reordered.forEachProjected!(projector,7,(_index,point)=>nextReferences.push(point[0]));
+  assert.deepEqual(nextReferences,['SAO:2','SAO:1']);assert.equal(motions,2,'unchanged geometry reuses only the same tile-local transform');
+  assert.deepEqual(reordered.points,[frame.points[1],frame.points[0]],'legacy readers retain every point in selected-tile order');
 });
 
 test("below-horizon star is drawn and pickable after ground fades, then hidden on return", () => {

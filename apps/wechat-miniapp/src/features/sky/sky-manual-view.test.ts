@@ -110,6 +110,40 @@ test("a wide or rolled drag moves continuously and reversing returns to the gest
   }
 });
 
+test("a landscape drag continues through either pole and preserves its inverse branch after re-grabbing", () => {
+  const width = 390, height = 844, fov = 45, x = width / 2;
+  const difference = (left: SkyViewBasis, right: SkyViewBasis) => Math.max(
+    ...(["right", "up", "forward"] as const).flatMap(axis =>
+      left[axis].map((component, index) => Math.abs(component - right[axis][index]!))));
+  for (const direction of [-1, 1]) {
+    const basis = createSkyViewBasis(0, 90 + direction * 78, 0)!;
+    // The second grab starts beyond the grabbed pole, exercising the other
+    // inverse-sine branch rather than only the central horizon crossing.
+    for (const belowStart of [640, 800]) {
+      const start = { x, y: direction < 0 ? belowStart : height - belowStart };
+      const endY = direction < 0 ? 100 : height - 100;
+      const middleY = direction < 0 ? 300 : height - 300;
+      const ray = unprojectSkyPoint(start.x, start.y, basis, width, height, fov)!;
+      const azimuth = Math.atan2(ray[0], ray[1]) * 180 / Math.PI;
+      const altitude = Math.asin(ray[2]) * 180 / Math.PI;
+      let previous = basis;
+      for (let y = start.y + direction; direction < 0 ? y >= endY : y <= endY; y += direction) {
+        const moved = dragSkyView(basis, start, { x, y }, width, height, fov, undefined, "horizon");
+        assert(validBasis(moved), "pole crossing retains a usable rotation");
+        assert(difference(previous, moved) < .002, "one-pixel motion cannot jump to another inverse branch");
+        const grabbed = projectSkyDirection(azimuth, altitude, moved, width, height, fov)!;
+        assert(grabbed && Math.hypot(grabbed.x - x, grabbed.y - y) < 1e-6,
+          `the ray must follow continued finger travel through the ${direction < 0 ? "lower" : "upper"} pole at ${y}`);
+        previous = moved;
+      }
+      const middle = dragSkyView(basis, start, { x, y: middleY }, width, height, fov, undefined, "horizon");
+      const regrabbed = dragSkyView(middle, { x, y: middleY }, { x, y: endY }, width, height, fov, undefined, "horizon");
+      assert(difference(regrabbed, previous) < 1e-9, "lifting and re-grabbing does not change vertical control after the pole");
+      assert.equal(dragSkyView(basis, start, start, width, height, fov, undefined, "horizon"), basis);
+    }
+  }
+});
+
 test("a zenith overview keeps its existing free-rotation path without a pole singularity", () => {
   const dome = captureSkyDomeTarget(INITIAL_MANUAL_SKY_VIEW);
   const nearCenter = dragSkyView(dome, { x: 195, y: 422 }, { x: 380, y: 422 }, 390.4, 844, 267.8);

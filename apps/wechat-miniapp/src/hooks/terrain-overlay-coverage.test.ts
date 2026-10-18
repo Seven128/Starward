@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { DISPLAY_RASTER_GRID, displayRasterWindowBounds } from "@starward/coordinate-system";
-import type { TerrainBounds, TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import { MAP_TERRAIN_SUPPORTED_BOUNDS, type TerrainBounds, type TerrainOverlayRequest } from "@starward/miniapp-contracts";
 import { terrainCoverageForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
 
 const bounds = displayRasterWindowBounds({ grid: DISPLAY_RASTER_GRID, zoom: 10, x: 836, y: 425,
@@ -11,7 +11,7 @@ const inset = (fraction: number, xShift = 0): TerrainBounds => {
   return { west: bounds.west + width * (fraction + xShift), east: bounds.east - width * (fraction - xShift),
     south: bounds.south + height * fraction, north: bounds.north - height * fraction };
 };
-const request = (viewportBounds: TerrainBounds): TerrainOverlayRequest => ({ purpose: "MAP", viewportBounds,
+const request = (viewportBounds: TerrainBounds): Extract<TerrainOverlayRequest, { viewportBounds: TerrainBounds }> => ({ purpose: "MAP", viewportBounds,
   center: { system: "GCJ02", latitude: (viewportBounds.north + viewportBounds.south) / 2,
     longitude: (viewportBounds.east + viewportBounds.west) / 2 } });
 const first = request(inset(0.2));
@@ -50,4 +50,24 @@ test("selected Spot identities and radius never inherit the Map's retained reque
   const spot: TerrainOverlayRequest = { purpose: "SPOT", center: { ...first.center }, radiusKm: 5 };
   assert.equal(terrainRequestForCoverage(spot, coverage), spot);
   assert.equal(terrainCoverageForRequest(spot, { ...available, purpose: "SPOT" }), null);
+});
+
+test("leaving supported terrain does not inherit a supported request through transparent fixed-window edges", () => {
+  const edge = MAP_TERRAIN_SUPPORTED_BOUNDS.east;
+  const supported = request({ west: edge - .001, east: edge + .002, south: 22.61, north: 22.63 });
+  const actualBounds = { west: edge - .01, east: edge + .01, south: 22.60, north: 22.64 };
+  const coverage = terrainCoverageForRequest(supported, { ...available, state: "PARTIAL", imageBoundsGcj02: actualBounds });
+  assert.ok(coverage);
+  const outside = request({ west: edge + .001, east: edge + .003, south: 22.61, north: 22.63 });
+  assert.equal(terrainRequestForCoverage(outside, coverage), outside);
+});
+
+test("invalid centre/bounds cannot inherit an older successful request or enter the coverage cache", () => {
+  const coverage = terrainCoverageForRequest(first, available)!;
+  const outsideCenter = { ...first, center: { ...first.center, longitude: first.viewportBounds!.east + .1 } };
+  const invalidBounds = { ...first, viewportBounds: { ...first.viewportBounds!, west: Number.NaN } };
+  for (const invalid of [outsideCenter, invalidBounds]) {
+    assert.equal(terrainRequestForCoverage(invalid, coverage), invalid);
+    assert.equal(terrainCoverageForRequest(invalid, available), null);
+  }
 });

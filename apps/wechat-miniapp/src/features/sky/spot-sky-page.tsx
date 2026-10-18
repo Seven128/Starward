@@ -157,7 +157,9 @@ import { SkyBrowseControl, SkyLayerToggle, SkyMenuAction, SkyNavigationMenu, Sky
 import { skyTargetSourcesRoute } from "./sky-target-sources-route";
 import { skyTargetInstantQueryKey } from "@/services/sky-target-instant-response";
 import { sameContextVersion } from "../../services/observation-context-version";
-import { presentSkyTime, skyPresentationTimeModel, skyRulerTime } from "./sky-time-presentation";
+import { presentSkyTime, skyPresentationTimeModel, skyRulerTime, skyTimeRulerRows, type SkyTimeRulerRow } from "./sky-time-presentation";
+import { useSkyTimeGeometry } from "./use-sky-time-geometry";
+import { skyTimePreviewStatus } from "./sky-time-preview-status";
 import type { SkyPositionPresentation } from "./sky-presentation-position";
 import { createSkyCanvasLifecycle, createSkyCanvasFrameClock, skyCanvasFailureCode } from "./sky-canvas-lifecycle";
 import { createSkyCanvasSurface, type SkyCanvasSurface, type SkyCanvasReticle, type SkyCanvasCaption, type SkyDisplayCanvas, type SkyWebGLCanvas } from "./sky-canvas-surface";
@@ -708,7 +710,7 @@ function orientationRulerStepPx() {
 }
 
 function orientationRulerLabel(
-  row: HourlySkyRow | undefined,
+  row: SkyTimeRulerRow | undefined,
   timezone: string,
   index: number,
 ) {
@@ -727,6 +729,9 @@ function OrientationTimeRuler({
   activeIndex,
   committedIndex,
   presentedAt,
+  presentationPending = false,
+  presentationFailed = false,
+  requirePaintedTime = false,
   playing,
   timezone,
   isPreviewing,
@@ -738,10 +743,13 @@ function OrientationTimeRuler({
   onCancel,
   onScrubChange,
 }: {
-  rows: readonly HourlySkyRow[];
+  rows: readonly SkyTimeRulerRow[];
   activeIndex: number;
   committedIndex: number;
   presentedAt?: string;
+  presentationPending?: boolean;
+  presentationFailed?: boolean;
+  requirePaintedTime?: boolean;
   playing?: boolean;
   timezone: string;
   isPreviewing: boolean;
@@ -847,6 +855,7 @@ function OrientationTimeRuler({
   const previewValue = rows.length ? clampIndex(Math.round(visualIndex), rows.length) : 0;
   const currentLabel = presentedAt
     ? formatTimeWithSeconds(presentedAt, timezone)
+    : requirePaintedTime ? "暂无已绘时刻"
     : activeRow
     ? formatTime(activeRow.at, timezone)
     : "暂无可用时刻";
@@ -877,9 +886,9 @@ function OrientationTimeRuler({
         <Text className="sky-orientation-time-ruler__current-value">
           {currentLabel}
         </Text>
-        {saving || isPreviewing || playing ? (
+        {saving || presentationPending || presentationFailed || isPreviewing || playing ? (
           <Text className="sky-orientation-time-ruler__current-state">
-            {saving ? "保存中" : playing ? "播放中" : "预览"}
+            {saving ? "保存中" : presentationFailed ? "未更新" : presentationPending ? "更新中" : playing ? "播放中" : "预览"}
           </Text>
         ) : null}
       </View>
@@ -931,7 +940,7 @@ function OrientationTimeRuler({
             const distance = orientationRulerDistance(index, visualIndex);
             const isSelected = index === previewValue;
             const isEvent = Boolean(
-              row.opportunityBlockers.length === 0 && row.opportunityEligible,
+              row.opportunityBlockers?.length === 0 && row.opportunityEligible,
             );
             return (
               <Button
@@ -1906,16 +1915,25 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const skyResourcesPaused = !pageVisible;
   const committedAt = activeContext?.selectedAtUtc ?? routeContext.selectedAt;
   const timeBinding = activeContext ? `${activeContext.contextId}:${activeContext.revision}:${activeContext.contextFingerprint}` : "";
-  const timeModel = useMemo(() => skyPresentationTimeModel(rawReportData), [rawReportData]);
+  const requestedAt = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt
+    ? timeIntent.at : committedAt;
+  const previewGeometry = useSkyTimeGeometry(rawReportData, requestedAt,
+    pageVisible && skyResourcesActive && !carriedReport && !timeSaving);
+  const timeModel = carriedReport ? timeCommitContinuity.model() ?? previewGeometry.model : previewGeometry.model;
+  const timeGeometrySources = carriedReport ? timeCommitContinuity.sources() : previewGeometry.sources;
   useEffect(() => {
     if (!timeBinding) return;
     setTimeIntent(observationTime.bind(timeBinding, committedAt, timeModel));
   }, [observationTime, timeBinding, committedAt, timeModel]);
-  const requestedAt = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt
-    ? timeIntent.at : committedAt;
-  const timePresentation = useMemo(() => presentSkyTime(rawReportData, requestedAt), [rawReportData, requestedAt]);
+  const timePresentation = useMemo(() => presentSkyTime(rawReportData, requestedAt, timeModel, timeGeometrySources) ??
+    presentSkyTime(rawReportData, committedAt), [rawReportData, requestedAt, committedAt, timeModel, timeGeometrySources]);
+  const timeGeometryReady = timePresentation?.row.at === requestedAt;
+  const timeRows = useMemo(() => skyTimeRulerRows(rawReportData, timeModel), [rawReportData, timeModel]);
+  const registrationAt = skyPresentationTimeModel(rawReportData)?.startAt ?? rawReportData?.observationFrames?.[0]?.at ?? committedAt;
   const timePlaying = timeIntent.binding === timeBinding && timeIntent.mode === "PLAYING";
-  const fineTargetBinding = timePresentation?.mode === "MODEL" && !carriedReport && !timePlaying && !timeScrubbing && rawReportData ? {
+  const fineTargetBinding = timeGeometryReady && timePresentation?.mode === "MODEL" && !carriedReport && !timePlaying &&
+    !timeScrubbing && rawReportData && activeContext && Date.parse(requestedAt) >= Date.parse(activeContext.nightStartUtc) &&
+    Date.parse(requestedAt) < Date.parse(activeContext.nightEndUtc) ? {
     spotId: rawReportData.context.spotId,
     contextId: rawReportData.context.contextId,
     contextRevision: rawReportData.context.contextRevision,
@@ -1963,9 +1981,10 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     [geometryReport, stellarCatalog.data?.data]);
   const positionPresentation = useMemo<SkyPositionPresentation | undefined>(() =>
     reportData && report.data && !carriedReport
-      ? { source: report.data, rendered: reportData, anchorAt: timeModel?.startAt ?? requestedAt }
+      ? { source: report.data, rendered: reportData, anchorAt: registrationAt,
+        ...(timePresentation?.mode === "MODEL" && timeModel ? { timeModelAlgorithmVersion: timeModel.algorithmVersion } : {}) }
       : undefined,
-    [reportData, report.data, carriedReport, timeModel?.startAt, requestedAt]);
+    [reportData, report.data, carriedReport, registrationAt, timePresentation?.mode, timeModel?.algorithmVersion]);
   const constellationCatalog = useResourceQuery({
     queryKey: ["constellation-catalog", CONSTELLATION_CATALOG_VERSION], queryFn: signal => getConstellationCatalog(signal),
     enabled: pageVisible && Boolean(stellarReference) && constellationsEnabled, staleTime: Infinity,
@@ -2063,12 +2082,12 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const canvasDeepSkyImage = deepSkyImages.frame;
   const deepSkyImageState = deepSkyImages.state;
   deepSkyImageFailedRef.current = deepSkyImages.failedImage;
-  const committedRow = exactSkyTimeFrame(rawReportData?.hourly, committedAt);
+  const committedRow = exactSkyTimeFrame(timeRows, committedAt);
   const committedIndex = committedRow
-    ? rawReportData!.hourly.indexOf(committedRow)
+    ? timeRows.indexOf(committedRow)
     : -1;
-  const activeIndex = rawReportData?.hourly.reduce((index, frame, position) =>
-    Date.parse(frame.at) <= Date.parse(requestedAt) ? position : index, committedIndex) ?? committedIndex;
+  const activeIndex = timeRows.reduce((index, frame, position) =>
+    Date.parse(frame.at) <= Date.parse(requestedAt) ? position : index, committedIndex);
   // No report frame or pointing basis means no sky to paint. Do not leave an
   // empty native surface over the recovery and error controls.
   const nativeCanvasMounted = Boolean(resourcePageVisible && reportData && row && !report.isError &&
@@ -2305,7 +2324,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     cancelSkyGestureRef.current();
     skyTapRef.current = null;
     stopBrowsingAnimation();
-    setTimeIntent(observationTime.hide(Date.now()));
+    setTimeIntent(observationTime.snapshot().mode === "PREVIEW" ? observationTime.cancel() : observationTime.hide(Date.now()));
     setPageVisible(false);
     setTimeSaving(false);
     if (!retainSources) {
@@ -2496,7 +2515,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         eventInstanceId: null,
       });
       if (!contextSession.accept(request, response.data)) return;
-      if (presentSkyTime(rawReportData, nextAt)) timeCommitContinuity.stage(activeContext, response, report.data, routeContext.spotId, nextAt);
+      if (presentSkyTime(rawReportData, nextAt, timeModel))
+        timeCommitContinuity.stage(activeContext, response, report.data, routeContext.spotId, nextAt, timeModel, timeGeometrySources);
       setObservationContext(response.data);
       setPreviewIndex(null);
       return true;
@@ -2517,16 +2537,21 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     }
   };
 
-  const commitIndex = (nextIndex: number) => {
-    if (!rawReportData?.hourly.length) return;
-    const nextRow = rawReportData.hourly[clampIndex(nextIndex, rawReportData.hourly.length)];
-    if (nextRow) void commitInstant(nextRow.at);
+  const settleTimeIndex = (nextIndex: number) => {
+    if (!skyTimeIntentCurrent() || datePickerOpenRef.current || !timeRows.length) return;
+    const nextRow = timeRows[clampIndex(nextIndex, timeRows.length)];
+    // A released ruler chooses a precise preview tick. Only the disclosure's
+    // Apply action commits the public Context, just like the six civil fields.
+    if (nextRow && skyTimeInputAllowed(nextRow.at, Date.now())) {
+      cancelSkyCalibration();
+      setTimeIntent(observationTime.preview(nextRow.at));
+    }
   };
 
   const onPreview = (value: number) => {
     if (!skyTimeIntentCurrent() || datePickerOpenRef.current) return;
-    if (!rawReportData?.hourly.length) return;
-    const at = skyRulerTime(rawReportData.hourly, value, timeModel);
+    if (!timeRows.length) return;
+    const at = skyRulerTime(timeRows, value, timeModel);
     if (!at) return;
     cancelSkyCalibration();
     setTimeIntent(observationTime.preview(at));
@@ -2723,14 +2748,21 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     (timePlaying || presentedSkyFrame.data === orientationData));
   const paintedData = presentedSceneCurrent ? presentedSkyFrame?.data : undefined;
   const paintedAt = presentedSceneCurrent ? presentedSkyFrame?.frameAt : undefined;
+  const acceptedClockAt = pageVisible && !canvasError && presentedSkyFrame?.mode === mode &&
+    presentedSkyFrame.nativeCanvasGeneration === canvasGenerationRef.current &&
+    presentedSkyFrame.data?.context === rawReportData?.context ? presentedSkyFrame.frameAt : undefined;
+  const timePreviewStatus = skyTimePreviewStatus({ requestedAt, geometryAt: timePresentation?.row.at,
+    paintedAt: acceptedClockAt, playing: timePlaying, runStartAt: timeIntent.runStartAt,
+    geometryFailed: previewGeometry.failed, canvasFailed: Boolean(canvasError) });
   const paintedLandscapePhoto = presentedSceneCurrent ? skyLandscapePaintedPanorama(presentedSkyFrame?.landscape) : null;
   const paintedSceneFacts = skySceneFrameFacts(paintedData?.skyScene, paintedAt);
   const paintedRow = exactSkyTimeFrame(paintedData?.hourly, paintedAt);
   const paintedPositionPresentation = useMemo<SkyPositionPresentation | undefined>(() =>
     paintedData && report.data && !carriedReport
-      ? { source: report.data, rendered: paintedData, anchorAt: timeModel?.startAt ?? paintedAt! }
+      ? { source: report.data, rendered: paintedData, anchorAt: registrationAt,
+        ...(timePresentation?.mode === "MODEL" && timeModel ? { timeModelAlgorithmVersion: timeModel.algorithmVersion } : {}) }
       : undefined,
-    [paintedData, report.data, carriedReport, timeModel?.startAt, paintedAt]);
+    [paintedData, report.data, carriedReport, registrationAt, timePresentation?.mode, timeModel?.algorithmVersion]);
 
   // DOM projections and their mask share the committed camera/frame. The
   // mutable Canvas hit snapshot can already belong to a later native draw.
@@ -3099,7 +3131,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             : reportData.skyScene.state !== "AVAILABLE" ||
                 !reportData.skyScene.catalog ||
                 activeSkySceneFrame?.state !== "AVAILABLE" ||
-                !activeSkySceneFrame.points
+                (activeSkySceneFrame.pointCount === undefined && !activeSkySceneFrame.points)
               ? {
                   state: "ERROR" as const,
                   detail:
@@ -3888,20 +3920,29 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         >
           <SkyTimeControls at={requestedAt} timezone={routeContext.timezone} active={active && !timeSaving && !alignmentEditing}
             current={() => skyTimeIntentCurrent() && skyControlPanelRef.current === "time"}
-            playing={timePlaying} canPlay={Boolean(timeModel && geometryReport && skyTimeInputAllowed(requestedAt, Date.now()))}
+            playing={timePlaying} canPlay={Boolean(timeGeometryReady && timeModel && geometryReport && skyTimeInputAllowed(requestedAt, Date.now()))}
+            previewPending={timePreviewStatus.pending}
+            previewFailed={timePreviewStatus.failed}
+            onRetryPreview={() => {
+              if (!skyTimeIntentCurrent()) return;
+              if (canvasError) retrySkyCanvas(); else void previewGeometry.retry();
+            }}
             onPause={pauseSkyTime} onTogglePlay={toggleSkyTimePlayback}
             onPreview={at => {
-              if (!skyTimeIntentCurrent() || !presentSkyTime(rawReportData, at)) return false;
+              if (!skyTimeIntentCurrent() || !skyTimeInputAllowed(at, Date.now())) return false;
               cancelSkyCalibration(); setTimeIntent(observationTime.preview(at)); return true;
             }}
             onApply={at => { void commitInstant(at).then(applied => {
               if (applied && skyControlPanelRef.current === "time") setSkyControlPanel("menu");
             }); }} />
           <OrientationTimeRuler
-            rows={committedRow ? rawReportData?.hourly ?? [] : []}
+            rows={timeRows}
             activeIndex={activeIndex}
             committedIndex={committedIndex}
-            {...(row ? { presentedAt: row.at } : {})}
+            {...(timePreviewStatus.presentedAt ? { presentedAt: timePreviewStatus.presentedAt } : {})}
+            presentationPending={timePreviewStatus.pending}
+            presentationFailed={timePreviewStatus.failed}
+            requirePaintedTime
             playing={timePlaying}
             timezone={routeContext.timezone}
             isPreviewing={isPreviewing}
@@ -3909,7 +3950,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             interactionLocked={!active || alignmentEditing || datePickerOpen}
             reducedMotion={reducedMotion}
             onPreview={onPreview}
-            onCommit={(index) => void commitIndex(index)}
+            onCommit={settleTimeIndex}
             onCancel={cancelSkyTimePreview}
             onScrubChange={setTimeScrubbing}
           />

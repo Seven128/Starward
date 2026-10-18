@@ -9,7 +9,9 @@
 
 真实星的供给深度/身份归BSC/SAO publisher及现按需选档/loader；可见阈值、地平传输、颜色/半径/opacity目标归sky-star-appearance；短时显示与实际绘制/触控继续按现transition/accepted owner。正常局部视场的目录深度按真实stereographic放大连续增强，广角和原OBSERVATION曲线保持；具体尺度与上限只在appearance实现。显示mode贯穿Scene、选片、Hook memo与页面候选，加载资格和实际绘制共用同一规则，不借缺失太阳值猜模式。已知同天区差距主要来自已有SAO被旧阈值抑制，因此本调整不扩目录/并发/原工作集预算。比较图库条数、照片星点和单帧可见点须分别计量；更深数据只有实际必要并核具体权利/供给及原版本/精确位置/缺值/预算兼容后才采用，不新增第二星库或默认镜像母库。范围与证据限度见[局部星数](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/star-density-2026-10-14.md)。
 
-SAO的Resolved frame与BSC复用同一种可选displayDirection/displayTransmission访问约定及原纯转换函数：当前时刻/已选point数组内按需记忆相机无关方向与传输，Scene通过原prepared projector使用；更换geometry或选片组合生成新memo，旧frame随消费者释放，没有跨视野全局星库缓存。无accessor的旧受控frame沿原即时计算，实际星等、位置、光度、低于地平和accepted点选含义保持。
+SAO的Resolved frame与BSC复用同一精确方向/传输与投影访问责任。当前geometry/选片和精确时刻准备相机无关向量，同刻相机变化复用；`pointCount`供资格/统计，`forEachProjected`先保守排除不可能投影的方向，再沿原角度/appearance计算真实幸存点。完整`points`数组仅在显式需要全部位置的兼容消费者读取时惰性生成，不在普通Scene/页面资格检查中展开。更换geometry/选片/时刻生成新frame，旧frame随消费者释放，无跨视野全局星库或历史帧缓存。旧受控frame保原数组/即时计算路径；实际星等、位置、光度、低于地平、名称、来源和accepted点选共用同帧结果。
+
+Sky跨报告时段的预览使用现astronomy/time-model owner的只读geometry窗口：`GET /v2/spots/:spotId/sky/geometry`绑定原Context、observer、revision/fingerprint和算法/来源，计算前后均执行现Sky完整访问校验。窗口沿现观察夜分组与有界model/cache；不请求天气、写公共Context或生成目标建议。客户端在现Query/transport取消与预算内保一个已准入窗口，只有最新需求可安装；ruler可消费其几何knots，不借用原夜建议。原BSC/deep-sky注册锚点与新窗口起点分开，SAO/BSC仍用真实精确时刻和proper motion。选择器/时间尺/播放归现observation-time owner，公共提交仅由Apply事务；预览是否已显示由当前native generation的accepted writer决定，模型ready不能代已绘事实。
 
 sky-gpu-renderer唯一point profile已有soft core/halo/轴向wing与DPR/实际point-size上限；相关亮星调校在此共享责任进行，实例仅提供真实星等/颜色/位置。Scene.begin每帧传递是否原OBSERVATION，正常白亮核与晕翼调校由同pass的mode uniform隔离，不能凭RGB猜模式或把上帧状态遗留到下一帧；暗星、非恒星符号和原模式各保其规则。光学银河的内部imageProjection显式display角色选择正常显示强度，未声明的原transfer保持；不改固定源像素或坐标。不扩逐星bitmap加载、全屏bloom或额外Canvas；外观核存在不认证参考效果、填充成本或物理峰。各显示改动服从原生命周期/当前目标，不无故重启资源ready时钟或将零贡献授来源信用。
 
@@ -196,6 +198,10 @@ Rollback creates a bounded unique catalog version; HTTP routing must accept the 
 主地图继续使用微信原生map，静态地形/年度夜光和动态点位云量分责。`GET /v2/map/night-light`由同一NightLightService及数据库发布身份提供当前视窗的公开年度资料，独立于观测Context、筛选、天气和天文计算；原MapScene的LIGHT合同通过相同静态reader兼容旧客户端。新Map通过`use-map-night-light`读取图片、图例、来源和失败状态，地点/筛选仍读取普通Scene，避免重复组合夜光。图层重试只恢复静态metadata/图片/原生安装，不能遮掉独立Scene失败的恢复入口。固定图片仍走原共享下载、有效覆盖和native退役owner；部署须先提供新增BFF接口再交付依赖它的新客户端，旧手机候选与服务不会自动升级。
 
 采用的后续优化方向是让相机只决定需要的固定空间集合，把已有静态成品的源读取/加工移出交互关键路径。客户端与服务端共用网格/LOD规则，保原请求与实际coverage，Spot半径业务不合并成Map身份。恢复现有发布后，按实际目标范围预发布可信基础成品和热点细节、冷区有界补齐；原始DEM缓存与最终可显示资产分别计量。对象存储/CDN通过现有部署和发布责任适配地图产品，保不可变URL、权利、校验、旧版与回滚，不能直接套用Sky专用包身份或以采购代替上线读回。
+
+`tools/deployment/map-publication-inputs.mjs`复用原地形/夜光inventory、proof和公开PUBLISHED合同；`map-static-bundle.mjs`封存Map独立index、原URL并集和静态Caddy出口，发现/恢复均绑定精确hash。Map与Sky uploader复用`object-store-immutable.mjs`的不覆盖/冲突读回状态机，各自保独立发布身份及journal；控制资料和科学TIFF不作为公开PNG对象上传。operator准入仍需完整locked checkout，静态出口仅消费sealed bytes。
+
+`NightLightService`可选消费同一Map封存的预制窗口，显式成对配置`MINIAPP_MAP_STATIC_PUBLICATION_ROOT/HASH`，默认关闭。`map-static-manifest.ts`持有runtime/operator共享纯格式准入，runtime不依赖部署工具。`night-light-prepared-window.ts`先验证所选seal，再绑定当前DB的dataset/publication/inventory及原cell proofs；`night-light-window.ts`统一原窗口身份、网格与质量汇总。命中直接校验/读取最终PNG，未知窗口走原有界组合；已声明但缺失/损坏的窗口明确失败且可恢复，不偷偷重组换图。原binary并发、逐消费者取消、完成缓存与close继续由既有NightLightService持有，地点数值仍归原数值源，PNG不授予数值或出版资格。
 
 整窗仍是当前渲染方式；少量固定512像素图块是有条件的候选。先以相同范围/内容/总像素做Android与iOS对照，核内部配准、接缝、双栅格透明叠加、原生调用/内存和释放。无mask/成组原子切换保证时，不把半透明父子重叠当作正确过渡；无净收益则保整窗或少量合成范围。覆盖、细节、空缺持续时间、重复字节和资源回落分别判断，回调不等于可见帧；编码缓存容量与native纹理预算分开。预取、源HTTP和CPU背压按实测瓶颈及现预算调整，不将外部报告示例值或DAU直接变为并发/资源承诺。
 

@@ -43,8 +43,18 @@ export function rotateStellarDirection(direction: StellarDirection, matrix: Equa
 }
 
 /** Geometry only: the supplied matrix owns observation time/location and refraction policy. */
-export function projectStellarMotion(motion: StellarMotion, julianYears: number, matrix: EquatorialToEnu) {
-  const [east, north, up] = rotateStellarDirection(stellarDirectionAt(motion, julianYears), matrix);
+export function stellarHorizontalPosition(direction: StellarDirection) {
+  const [east, north, up] = direction;
   return { azimuthDeg: ((Math.atan2(east, north) / RAD) % 360 + 360) % 360,
     altitudeDeg: Math.atan2(up, Math.hypot(east, north)) / RAD };
+}
+
+/** The exact proper-motion ray before angular materialization. This shares
+ * the original normalizations; it introduces no time or position approximation. */
+export function projectStellarMotionDirection(motion: StellarMotion, julianYears: number, matrix: EquatorialToEnu): StellarDirection {
+  return rotateStellarDirection(stellarDirectionAt(motion, julianYears), matrix);
+}
+
+export function projectStellarMotion(motion: StellarMotion, julianYears: number, matrix: EquatorialToEnu) {
+  return stellarHorizontalPosition(projectStellarMotionDirection(motion, julianYears, matrix));
 }

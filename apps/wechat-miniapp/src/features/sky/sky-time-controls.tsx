@@ -9,9 +9,11 @@ type TimeStepRect = { left: number; right: number; top: number; bottom: number }
 
 /** Civil text is an editing draft. The page's observation-time owner remains
  * authoritative for previews/playback and its Context owns explicit apply. */
-export function SkyTimeControls({ at, timezone, active, current, playing, canPlay, onPreview, onApply, onTogglePlay, onPause }: {
+export function SkyTimeControls({ at, timezone, active, current, playing, canPlay, previewPending, previewFailed,
+  onRetryPreview, onPreview, onApply, onTogglePlay, onPause }: {
   at: string; timezone: string; active: boolean; playing: boolean; canPlay: boolean;
   current: () => boolean;
+  previewPending?: boolean; previewFailed?: boolean; onRetryPreview?: () => void;
   onPreview: (at: string) => boolean; onApply: (at: string) => void;
   onTogglePlay: () => void; onPause: () => void;
 }) {
@@ -55,7 +57,7 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
     if (!live.current.active || !live.current.current() || !skyTimeInputAllowed(next, Date.now())) return false;
     live.current.at = next; setDraft(next); updateInput({});
     previewAccepted.current = live.current.onPreview(next);
-    setError(previewAccepted.current ? "" : "应用后更新天空");
+    setError(previewAccepted.current ? "" : "此刻的天空暂不可用");
     return true;
   };
   const readInput = () => {
@@ -124,6 +126,10 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
       </View>
       {group(["hour", "minute", "second"], ":")}
     </View>
-    {error ? <Text className="sky-time-input-error">{error}</Text> : null}
+    {error || previewPending || previewFailed ? <Text className="sky-time-input-error">
+      {error || (previewFailed ? "此刻的天空未加载，当前星图时间见下方" : "正在更新天空，当前星图时间见下方")}
+    </Text> : null}
+    {previewFailed && onRetryPreview ? <Button className="sky-time-retry" disabled={!active}
+      onClick={onRetryPreview}>重试星图</Button> : null}
   </View>;
 }

@@ -43,6 +43,9 @@ export interface SkyDirectionProjector {
   project(azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null;
   unclipped(azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null;
   prepared(direction: PreparedSkyDirection): SkyDirectionProjection | null;
+  /** Conservative early test only. Accepted points still use the angular
+   * projector, retaining its exact clipping, coordinates and metadata. */
+  mayProjectVector(direction: SkyVector): boolean;
 }
 
 /** A validated direction may outlive a camera, but never its source time. */
@@ -266,6 +269,25 @@ export function createSkyDirectionProjector(
   const acceptedRight: SkyVector = [...right];
   const acceptedUp: SkyVector = [...up];
   const acceptedForward: SkyVector = [...forward];
+  // atan2 -> degrees/wrap -> radians -> sin/cos may move the normalized ray
+  // by a few ulps. Expand only this early rejection, never final visibility.
+  // Plane-space bounds avoid dividing near the stereographic antipode.
+  const rayError=3*64*Number.EPSILON;
+  const outsidePlane=(value:number,bound:number,denominator:number,upper:boolean)=>{
+    const error=rayError*(Math.abs(scale)+Math.abs(bound));
+    return upper?value>bound*denominator+error:value<bound*denominator-error;
+  };
+  const mayProjectVector=(direction:SkyVector)=>{
+    const denominator=1+dot(direction,acceptedForward);
+    if(denominator<1e-9-rayError)return false;
+    if(!(denominator>1e-9+rayError))return true;
+    const horizontal=scale*dot(direction,acceptedRight);
+    if(outsidePlane(horizontal,-originX-1e-9,denominator,false)||
+      outsidePlane(horizontal,width-originX+1e-9,denominator,true))return false;
+    const vertical=scale*dot(direction,acceptedUp);
+    return !outsidePlane(vertical,originY+1e-9,denominator,true)&&
+      !outsidePlane(vertical,originY-height-1e-9,denominator,false);
+  };
   const project = (direction: SkyVector, degrees: number, altitude: number, clipped: boolean): SkyDirectionProjection | null => {
     const cameraForward = dot(direction, acceptedForward);
     const denominator = 1 + cameraForward;
@@ -289,6 +311,7 @@ export function createSkyDirectionProjector(
     unclipped: (azimuthDeg, altitudeDeg) => fromAngles(azimuthDeg, altitudeDeg, false),
     project: (azimuthDeg, altitudeDeg) => fromAngles(azimuthDeg, altitudeDeg, true),
     prepared: direction => project(direction.vector, direction.degrees, direction.altitude, true),
+    mayProjectVector,
   };
 }
 

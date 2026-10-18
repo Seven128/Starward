@@ -106,6 +106,26 @@ test("retained geometry respects the existing provider-hour weather expiry", () 
   assert(presentSkyTime(expired.data, f.target.selectedAtUtc), "independent actual astronomy stays available");
 });
 
+test("a confirmed cross-date apply retains the admitted model and its actual sources through report refresh", () => {
+  const f = fixture(), supplied = skyTimeTestFixture().geometryWindow;
+  const selectedAtUtc = "2026-09-29T13:00:17.123Z", localDate = "2026-09-29";
+  const target = { ...f.target, localDate, selectedAtUtc, ...observationNightBounds({ localDate, timezone: f.from.timezone }) };
+  const reply = { ...f.response, validAt: selectedAtUtc, data: target };
+  const edit = { selectedAt: selectedAtUtc, localDate, eventInstanceId: null };
+  assert(confirmedObservationContextEdit(f.from, edit, reply));
+  const confirmed = reply as ConfirmedObservationContextReply;
+  assert.equal(f.owner.stage(f.from, confirmed, f.source, f.spotId, selectedAtUtc), false,
+    "a successful Context edit alone does not supply the cross-date sky");
+  assert(f.owner.stage(f.from, confirmed, f.source, f.spotId, selectedAtUtc, supplied.data.model, supplied.sources));
+  const carried = f.read({ data: undefined, pending: true, failed: false }, target)!;
+  const current = presentSkyTime(carried.data, selectedAtUtc, f.owner.model(), f.owner.sources())!;
+  assert.equal(current.row.at, selectedAtUtc); assert.equal(current.weather, null);
+  assert(current.report.sources.some(source => source.id === supplied.sources[0]!.id));
+  assert.equal(current.report.context, f.source.data.context, "the original report is not relabeled as a new reply");
+  assert.deepEqual(current.report.targetFrames, []);
+  f.owner.clear(); assert.equal(f.owner.model(), null); assert.equal(f.owner.sources(), undefined);
+});
+
 test("actual page keeps its native Canvas and resource eligibility during the admitted query gap", () => {
   const f = fixture(); assert(f.owner.stage(f.from, f.response, f.source, f.spotId, f.target.selectedAtUtc));
   const file = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -114,13 +134,14 @@ test("actual page keeps its native Canvas and resource eligibility during the ad
   for (const statement of page.body!.statements) if (ts.isVariableStatement(statement))
     for (const declaration of statement.declarationList.declarations) declarations.set(declaration.name.getText(file), declaration);
   const names = ["carriedReport", "report", "data", "contextMatches", "rawReportData", "skyResourcesActive", "timeModel", "timeBinding", "committedAt",
-    "requestedAt", "timePresentation", "timePlaying", "fineTargetBinding", "geometryReport", "reportData", "row", "nativeCanvasMounted"];
+    "requestedAt", "timeGeometrySources", "timePresentation", "timeGeometryReady", "timePlaying", "fineTargetBinding", "geometryReport", "reportData", "row", "nativeCanvasMounted"];
   const code = ts.transpileModule(names.map(name => { const declaration = declarations.get(name); assert(declaration); return `const ${declaration.getText(file)};`; }).join("\n") +
     "\n({report,rawReportData,skyResourcesActive,nativeCanvasMounted,fineTargetBinding,row});", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const reportQuery = { data: undefined, isPending: true, isFetching: true, isError: false };
   const result = vm.runInNewContext(code, { timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
     resourcePageVisible: true, contextComplete: true, contextSession: { ownsContext: () => true }, reportQuery, rejectedReportError: null,
     skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, useMemo: (fn: () => unknown) => fn(), timeIntent: {},
+    previewGeometry: { model: skyPresentationTimeModel(f.source.data) },
     fineTargetData: null, timeScrubbing: false, stellarCatalog: {}, attachSkyCatalog,
     manualBasis: { forward: [0, Math.SQRT1_2, Math.SQRT1_2] }, devicePose: null, orientation: { presented: { current: null } } });
   assert.equal(result.skyResourcesActive, true); assert.equal(result.nativeCanvasMounted, true);
@@ -130,6 +151,7 @@ test("actual page keeps its native Canvas and resource eligibility during the ad
   const revoked = vm.runInNewContext(code, { timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
     resourcePageVisible: true, contextComplete: true, contextSession: { ownsContext: () => true }, reportQuery, rejectedReportError: null,
     skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, useMemo: (fn: () => unknown) => fn(), timeIntent: {},
+    previewGeometry: { model: null },
     fineTargetData: null, timeScrubbing: false, stellarCatalog: {}, attachSkyCatalog,
     manualBasis: {}, devicePose: null, orientation: { presented: { current: null } } });
   assert.equal(revoked.skyResourcesActive, false); assert.equal(revoked.nativeCanvasMounted, false, "the case must detect the original empty-query regression");

@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import type { ApiEnvelope, ObservationContext, SkyReport } from "@starward/miniapp-contracts";
+import type { ApiEnvelope, ObservationContext, SkyReport, SkyGeometryWindowData } from "@starward/miniapp-contracts";
 
-type TimeFixture = { prior: ApiEnvelope<ObservationContext>; source: ApiEnvelope<SkyReport> };
+type TimeFixture = { prior: ApiEnvelope<ObservationContext>; source: ApiEnvelope<SkyReport>;
+  geometryWindow: ApiEnvelope<SkyGeometryWindowData> };
 let snapshot: TimeFixture | undefined;
 
 /** Share one portable report per test process, with an independent copy per

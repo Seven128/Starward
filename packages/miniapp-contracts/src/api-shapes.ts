@@ -1019,6 +1019,15 @@ export interface SkyTargetInstantData {
   at: string;
   targets: readonly SkyTarget[];
 }
+/** Read-only geometry for an authorized observer. It grants neither weather,
+ * target advice nor a change to the committed observation Context. */
+export interface SkyGeometryWindowData {
+  spotId: string;
+  contextId: string;
+  contextRevision: number;
+  contextFingerprint: string;
+  model: import("./sky-time-model.ts").SkyTimeModel;
+}
 export type ObservationContextData = ObservationContext;
 export type ObservationContextResolveData = ObservationContext;
 export type ObservationContextUpdateData = ObservationContext;

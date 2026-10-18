@@ -813,7 +813,7 @@ test("profile save replays before duplicate checks and still rejects a new dupli
   } finally { await service.onModuleDestroy(); }
 });
 
-test("pending proposal sky is owner-scoped and bound to the submitted coordinate", async () => {
+test("pending proposal sky is owner-scoped and bound to the submitted coordinate", async (t) => {
   const service = testService();
   try {
     const owner = await user(service, "proposal-sky-owner");
@@ -846,11 +846,30 @@ test("pending proposal sky is owner-scoped and bound to the submitted coordinate
     await assert.rejects(() => service.getSkyTargetInstant(pending.submissionId, context.contextId, fineAt, stranger.userId),
       /contribution_not_found/u);
     await assert.rejects(() => service.getSky(pending.submissionId, context.contextId, stranger.userId), /contribution_not_found/u);
+    const geometry = await service.getSkyGeometryWindow(pending.submissionId, context.contextId,
+      "2026-08-05T13:00:24.087Z", owner.userId);
+    assert.equal(geometry.data.spotId, pending.submissionId);
+    assert.equal(geometry.data.model.observer.latitude, location.wgs84.latitude);
+    assert.match(geometry.warnings.at(-1) ?? "", /审核中提案坐标/u);
+    await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt), /authentication_required/u);
+    await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, stranger.userId), /contribution_not_found/u);
     const otherContext = (await service.resolveObservationContext({
       location: { kind: "MAP_POINT", displayName: "其他位置", wgs84: { system: "WGS84", latitude: 22.57, longitude: 114.59 }, source: "MAP_VIEWPORT", timezoneHint: "Asia/Shanghai" },
       localDate: "2026-08-06",
     })).data;
     await assert.rejects(() => service.getSky(pending.submissionId, otherContext.contextId, owner.userId), /proposal_sky_context_mismatch/u);
+    let withdrawn = false;
+    const readOwner = service.contributions.getForOwner.bind(service.contributions);
+    t.mock.method(service.contributions, "getForOwner", async (...args: Parameters<typeof readOwner>) => {
+      const current = await readOwner(...args);
+      return withdrawn ? { ...current, preciseLocationConsent: false } : current;
+    });
+    const compute = service.astronomy.computeGeometryWindow.bind(service.astronomy);
+    t.mock.method(service.astronomy, "computeGeometryWindow", async (...args: Parameters<typeof compute>) => {
+      const result = await compute(...args); withdrawn = true; return result;
+    });
+    await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, owner.userId),
+      /proposal_sky_context_invalid/u, "legacy proposal consent withdrawn during the await must prevent publication");
   } finally { await service.onModuleDestroy(); }
 });
 

@@ -122,6 +122,103 @@ publication adoption, Mini App delivery or capacity. Independently use
 `sky-object-store-verification.mjs` at the real resource origin for the public
 GET/header/HEAD/Range contract, then complete the native and capacity acceptance.
 
+## Map final-product static adapter
+
+`tools/deployment/map-static-bundle.mjs` selects existing terrain and annual
+night-light publication owners. It reuses their real inventory/proof/PNG
+validators; it does not reinterpret radiance, redraw terrain or activate a
+night-light database publication. The derived export index is generated from
+these owners, not a second manually maintained asset list. Public files keep
+their original `/v2/terrain/assets/<file>` and
+`/v2/night-light/assets/<datasetVersion>/<file>` URLs, seven-day immutable cache
+policy, PNG bytes, nosniff and exact family publication header. Source
+inventories, proofs, attribution and the public dataset record are sealed
+control material outside `files/`; numerical TIFFs, accounts, proposals, source
+archives and credentials are not static objects.
+
+Annual night-light input also needs an operator-exported object
+`{ "state": "PUBLISHED", "record": <DarkSkyPublicationRecord> }` from the existing
+repository's published-dataset read. Its `record` contains only `datasetVersion`,
+`radianceSha256`, `coverageSha256`, `source` and `payload`. The source is the
+public `SourceSummary`, including mandatory credit. This selection must match
+the intended runtime's published DB row and locked inventory; copying a file
+does not establish or change DB activation. Never export a whole private DB row
+or environment. The existing source-input `manifest.json` is not this record.
+Run these optional Map commands from a complete, locked-install operator
+checkout: their admission reuses the original TypeScript publication owners via
+the existing `tsx` dependency. The present remote staging/production control
+archive includes only deployment controls, not those domain sources/dependencies;
+it is not a ready Map operator checkout. This adapter does not expand that
+archive or automatically join remote release workflows. Static Caddy/OSS serving
+uses only the sealed artifact and needs no TypeScript tooling.
+
+```sh
+node tools/run-node.cjs tools/deployment/map-static-bundle.mjs \
+  --terrain /absolute/terrain-publication \
+  --night-light /absolute/nightlight/<datasetVersion> \
+  --published-record /absolute/public-published-record.json \
+  --display-windows-for-terrain \
+  --output /absolute/new-map-export
+```
+
+`--display-windows-for-terrain` reuses the exact finite targets from the selected
+terrain inventory. The existing light-window owner selects its own admitted
+LOD/coverage and prepares the same composed PNG URLs that Map metadata returns.
+No new numerical publication or missing-area fill is invented. Omit it for
+original inventory assets only. No national/global window enumeration occurs.
+The sealed artifact may include only a measured finite area; unknown window
+URLs still require the compatibility API. Serving prepared bytes alone does
+not remove API metadata's image-composition work. The API's own prepared-window
+reader and selected environment binding own that integration; the deployment
+adapter does not change those runtime settings.
+
+The completed child is `publication/`. Its `index.json`, original control
+material and generated `delivery.caddy` are revalidated with exact bytes before
+rename. Failed staging is retained; no existing directory is overwritten.
+`--previous /absolute/previous/publication` unions the old immutable URL set and
+rejects byte/header conflicts. Import `delivery.caddy` before the site's API
+fallback and bind the complete artifact read-only at `/srv/map-public`; the
+fragment matches only admitted GET/HEAD routes. Do not expose its control
+directory as a web root. Discovery via `discoverMapStaticBundle` requires the
+expected publication hash. `restoreMapStaticBundle` writes a fresh isolated
+static artifact and preserves that hash; it neither restores scientific TIFFs
+or a DB nor changes live current/version selection. Existing runtime locks,
+terrain roots, published DB rows, environment release and backup owners retain
+those responsibilities.
+
+`map-object-store-package.mjs` derives the OSS object plan and origin-to-ESA
+header-restoration inputs from that exact sealed artifact. Like the Sky owner,
+it uses the original public route without its leading slash as the object key,
+exact Content-MD5/sha256 and forbid-overwrite. It uses Map release identities;
+no Sky OCI lease or image publication is claimed. Prepare with `--bundle`,
+`--output`, `--expect-publication-hash` and an explicitly selected HTTPS
+`--resource-origin`. A reserved example origin is local preparation only.
+
+Only after establishing an authorized existing bucket, its never-enabled
+versioning state, domain/ESA configuration, redistribution rights and available
+quota may the separate `map-object-store-upload.mjs` writing command be invoked.
+It takes `--bundle`, `--package`, `--expect-publication-hash`,
+`--resource-origin`, `--receipt-directory`, `--bucket` and `--region`.
+Credentials use the same private `OSS_ACCESS_KEY_ID`, `OSS_ACCESS_KEY_SECRET`
+and optional `OSS_SECURITY_TOKEN` environment inputs and pinned SDK as Sky.
+Scope permissions to selected public Map prefixes plus version-state/GetObject
+reads; no delete or version-policy mutation permission is needed. Exclude
+concurrent version-policy changes during writes. This optional operator does
+not run in an ordinary service deployment.
+
+Both uploaders share `object-store-immutable.mjs`: exact existing byte/header
+readback, at most one forbid-overwrite PUT per missing key, and one exact
+readback after success, conflict or a lost response. Unknown results stop.
+Synced append-only journals retain independent successes; recovery reruns read
+remote objects again instead of trusting receipts. Cancellation closes only
+owned SDK resources. The Map result `VERIFIED_MAP_OSS_OBJECTS` certifies scoped
+origin bytes, without activating a runtime or certifying ESA/cache/capacity.
+`map-object-store-verification.mjs` separately checks all public GET bytes and
+headers plus representative HEAD/Range/304 semantics for terrain and light,
+using the existing bounded static transport and no credentials or API fallback.
+ESA rule generation is configuration input; actual compilation, cache behavior,
+domain-valid TLS, native display and target capacity need their own evidence.
+
 ## Safety boundary
 
 - Run from a clean checkout of the exact source revision being promoted.

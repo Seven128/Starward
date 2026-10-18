@@ -15,7 +15,9 @@ try {
   });
   const source = await service.getSky(TEST_PUBLISHED_SPOT.spotId, prior.data.contextId,
     null, "bsc5p-bright-stars.v3");
-  process.stdout.write(JSON.stringify({ prior, source }));
+  const geometryWindow = await service.getSkyGeometryWindow(TEST_PUBLISHED_SPOT.spotId, prior.data.contextId,
+    "2026-09-29T13:00:00.000Z");
+  process.stdout.write(JSON.stringify({ prior, source, geometryWindow }));
 } finally {
   try { await service.onModuleDestroy(); }
   finally { mock.timers.reset(); }

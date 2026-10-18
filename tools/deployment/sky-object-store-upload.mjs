@@ -5,12 +5,12 @@ import { pathToFileURL } from "node:url";
 import { readEnvironmentFile } from "./env-file.mjs";
 import { validateReleaseEnvironment } from "./validate-release-environment.mjs";
 import { assertSkyStaticReleaseLease, prepareSkyStaticRelease, reuseSkyStaticRelease } from "./sky-static-release.mjs";
-import { readPlainSkyFile, skyStaticHash } from "./sky-static-bundle.mjs";
+import { readPlainSkyFile } from "./sky-static-bundle.mjs";
 import { readSkyObjectStorePackage } from "./sky-object-store-package.mjs";
 import { assertSkyOssTarget, createSkyOssClient } from "./sky-oss-client.mjs";
+import { assertNeverVersionedOss, ensureImmutableOssObject } from "./object-store-immutable.mjs";
 
 const fail = code => { throw new Error(`sky_object_store_${code}`); };
-const missing = error => error?.status === 404 && error?.code === "NoSuchKey";
 const safeCodes = new Set(["sky_oss_aborted", "sky_oss_body_too_large", "sky_oss_request_timeout",
   "sky_oss_versioning_response_invalid", "sky_oss_credential_diagnostics_enabled", "sky_oss_credentials_missing",
   "sky_oss_client_initialization_failed", "sky_oss_response_invalid", "sky_oss_stream_invalid",
@@ -22,34 +22,7 @@ const safeCodes = new Set(["sky_oss_aborted", "sky_oss_body_too_large", "sky_oss
 const safeError = error => safeCodes.has(error?.message) ? error.message : "sky_object_store_provider_or_readback_failed";
 const active = signal => { if (signal?.aborted) fail("aborted"); };
 
-async function neverVersioned(client) {
-  const result = await client.versioning();
-  // A successful, structurally checked SDK result owns the absent Status
-  // meaning. Enabled, Suspended, null, empty and unknown statuses all reject.
-  if (result?.status !== 200 || !Object.hasOwn(result, "versionStatus") || result.versionStatus !== undefined) fail("versioning_invalid");
-}
-
-function checkRemoteHeaders(result, object) {
-  const headers = result?.headers;
-  if (result?.status !== 200 || !headers || typeof headers.get !== "function" ||
-      headers.get("content-length") !== String(object.bytes) || ![null, "identity"].includes(headers.get("content-encoding")) ||
-      ![null, "null"].includes(headers.get("x-oss-version-id"))) fail("remote_metadata_mismatch");
-  const expected = new Map(Object.entries(object.uploadHeaders).filter(([name]) => name !== "x-oss-forbid-overwrite"));
-  for (const [name, value] of expected) if (headers.get(name) !== value) fail("remote_metadata_mismatch");
-  if (!expected.has("content-disposition") && headers.get("content-disposition") !== null) fail("remote_metadata_mismatch");
-  for (const [name] of headers) if (name.startsWith("x-oss-meta-") && !expected.has(name)) fail("remote_metadata_mismatch");
-}
-
-async function remoteObject(client, object) {
-  let head;
-  try { head = await client.head(object.objectKey); }
-  catch (error) { if (missing(error)) return false; throw error; }
-  checkRemoteHeaders(head, object);
-  const result = await client.get(object.objectKey, object.bytes);
-  checkRemoteHeaders(result, object);
-  if (!Buffer.isBuffer(result.bytes) || result.bytes.length !== object.bytes || skyStaticHash(result.bytes) !== object.sha256) fail("remote_identity_mismatch");
-  return true;
-}
+const neverVersioned = client => assertNeverVersionedOss(client, fail);
 
 async function journal(directory) {
   if (!path.isAbsolute(directory ?? "")) fail("receipt_path_invalid");
@@ -94,26 +67,9 @@ export async function uploadSkyObjectStore({ validation, deploy, deployEnvPath, 
     for (const object of plan.objects) {
       active(signal); current = object;
       await log.append({ event: "OBJECT_STARTED", objectKey: object.objectKey, sha256: object.sha256, bytes: object.bytes });
-      let outcome = "RETAINED_EXACT_EXISTING";
-      if (!await remoteObject(client, object)) {
-        active(signal);
-        await assertSkyStaticReleaseLease(releaseArgs);
-        await neverVersioned(client);
-        const bytes = await readPlainSkyFile(canonical.directory, object.sourcePath);
-        if (bytes.length !== object.bytes || skyStaticHash(bytes) !== object.sha256) fail("source_changed");
-        active(signal); putAttempts++;
-        let putError = false;
-        try {
-          const result = await client.put(object.objectKey, bytes, { ...object.uploadHeaders, "Content-MD5": object.contentMd5 });
-          if (result?.status !== 200) putError = true;
-        } catch { putError = true; }
-        active(signal);
-        // Success, conflict, timeout and a lost response all require the same
-        // exact readback. A missing/error result stops; it never blind-retries.
-        await neverVersioned(client);
-        if (!await remoteObject(client, object)) fail("put_result_missing");
-        outcome = putError ? "RECONCILED_AFTER_PUT_ERROR" : "UPLOADED_AND_READ_BACK";
-      }
+      const outcome = await ensureImmutableOssObject({ client, object, fail, active: () => active(signal),
+        beforePut: () => assertSkyStaticReleaseLease(releaseArgs), readSource: () => readPlainSkyFile(canonical.directory, object.sourcePath),
+        onPut: () => { putAttempts++; } });
       active(signal);
       const verified = Object.freeze({ event: "OBJECT_VERIFIED", objectKey: object.objectKey, sha256: object.sha256, bytes: object.bytes, outcome });
       await log.append(verified); results.push(verified); current = null;

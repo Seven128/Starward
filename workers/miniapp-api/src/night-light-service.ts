@@ -8,6 +8,7 @@ import { fixedNightLightDataset, readFixedNightLightInventory, readFixedNightLig
   readFixedNightLightImage, readFixedNightLightPixel, type FixedNightLightDataset, type FixedNightLightInventory,
   type FixedNightLightRaster } from "./night-light-publication.ts";
 import { nightLightWindowForBounds, composeNightLightWindow, validateNightLightWindow, type NightLightWindow } from "./night-light-window.ts";
+import { PreparedNightLightWindows, type PreparedNightLightPublication } from "./night-light-prepared-window.ts";
 
 type Release = { directory: string; dataset: FixedNightLightDataset; inventory: FixedNightLightInventory; proofs: FixedNightLightRaster[] };
 const contains = (outer: RasterBounds, inner: RasterBounds) => outer.west <= inner.west && outer.east >= inner.east && outer.south <= inner.south && outer.north >= inner.north;
@@ -27,12 +28,14 @@ export class NightLightService {
   private readonly shutdown = new AbortController();
   private readonly windows = new Map<string, NightLightWindow>();
   private readonly windowReads = new SharedReadPool<NightLightWindow | null>(() => new Error("nightlight_request_cancelled"));
+  private readonly prepared: PreparedNightLightWindows | null;
   private cachedImageBytes = 0;
   private activeReads = 0;
 
   constructor(private readonly repository: Pick<MiniappRepositoryPort, "getPublishedDarkSkyDataset">,
-    private readonly root?: string | null) {
+    private readonly root?: string | null, prepared?: PreparedNightLightPublication | null) {
     if (root && !path.isAbsolute(root)) throw new Error("nightlight_publication_root_invalid");
+    this.prepared = prepared ? new PreparedNightLightWindows(prepared) : null;
   }
 
   private async release(version: string, signal?: AbortSignal): Promise<Release | null> {
@@ -72,8 +75,9 @@ export class NightLightService {
     const cached = this.windows.get(key);
     if (cached) { this.windows.delete(key); this.windows.set(key, cached); return cached; }
     return this.windowReads.run(key, controller => this.binaryRead(controller.signal, async combined => {
-      const result = await composeNightLightWindow(release.directory,
-        release.dataset.payload.rasterInventory.sha256, release.proofs, window, combined);
+      const result = await this.prepared?.read(release.dataset, release.proofs, window, combined)
+        ?? await composeNightLightWindow(release.directory,
+          release.dataset.payload.rasterInventory.sha256, release.proofs, window, combined);
       combined.throwIfAborted();
       if (result) {
         const previous = this.windows.get(key);
@@ -134,6 +138,10 @@ export class NightLightService {
     }
     const proof = release?.proofs.find(value => value.image.file === file);
     if (!proof) return null;
+    if (this.prepared) {
+      const result = await this.window(release, proof.grid.window, signal);
+      return result?.proof.image.file === file ? { bytes: result.bytes, publicationId: result.proof.publicationId } : null;
+    }
     return this.binaryRead(signal, async combined => ({ bytes: await readFixedNightLightImage(release.directory, proof, combined), publicationId: proof.publicationId }));
   }
 
@@ -149,6 +157,6 @@ export class NightLightService {
   close() {
     const reason = new Error("nightlight_service_closed");
     this.shutdown.abort(reason); this.windowReads.close(reason);
-    this.cache.clear(); this.windows.clear(); this.cachedImageBytes = 0;
+    this.cache.clear(); this.windows.clear(); this.cachedImageBytes = 0; this.prepared?.close();
   }
 }

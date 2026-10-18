@@ -1,7 +1,7 @@
 export { mercatorY, latitudeForMercatorY, WEB_MERCATOR_MAX_LATITUDE, WEB_MERCATOR_CIRCUMFERENCE_M } from "./mercator.ts";
 export { DISPLAY_RASTER_GRID, displayRasterBounds, displayRasterRegionForBounds, displayRasterRegionKey, validateDisplayRasterRegion } from "./raster-grid.ts";
 export type { DisplayRasterRegion, RasterBounds } from "./raster-grid.ts";
-export { displayRasterWindowForBounds, displayRasterWindowBounds, displayRasterWindowKey } from "./raster-grid.ts";
+export { displayRasterWindowForBounds, displayRasterWindowBounds, displayRasterWindowKey, normalizeDisplayRasterBounds } from "./raster-grid.ts";
 export type { DisplayRasterWindow } from "./raster-grid.ts";
 export type Wgs84Coordinate = { lat: number; lon: number; system: "WGS84" };
 export type Gcj02Coordinate = { lat: number; lon: number; system: "GCJ-02" };

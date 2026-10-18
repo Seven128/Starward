@@ -6,6 +6,7 @@ import test from 'node:test';
 import ts from 'typescript';
 import { createSkyObservationTime } from './sky-observation-time';
 import { skyRulerTime } from './sky-time-presentation';
+import { skyTimeInputAllowed } from './sky-time-input';
 
 test('actual page previews the fractional public time and withholds fine target requests only during drag',()=>{
  const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -18,15 +19,26 @@ test('actual page previews the fractional public time and withholds fine target 
  const time=createSkyObservationTime();time.bind('current',start,{startAt:start,endAt:end});
  let current=true;
  const rawReportData={hourly:[{at:start},{at:end}],context:{spotId:'test',contextId:'test',contextRevision:1,contextFingerprint:'test'}};
- const sandbox={skyTimeIntentCurrent:()=>current,datePickerOpenRef:{current:false},rawReportData,
+ const sandbox={skyTimeIntentCurrent:()=>current,datePickerOpenRef:{current:false},rawReportData,timeRows:rawReportData.hourly,
   timeModel:{startAt:start,endAt:end},skyRulerTime,cancelSkyCalibration:()=>{},setTimeIntent:()=>{},observationTime:time};
  const preview=vm.runInNewContext(expression('onPreview'),sandbox);
  preview(.25);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z');
+ const settle=vm.runInNewContext(expression('settleTimeIndex'),{...sandbox,skyTimeInputAllowed,
+   clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),
+   commitInstant:()=>{assert.fail('ruler settlement cannot write the public Context before Apply');}});
+ settle(1);assert.equal(time.snapshot().at,end);
+ assert.equal(time.snapshot().committedAt,start,'released ruler remains a cancellable preview');
+ time.cancel();assert.equal(time.snapshot().at,start);
+ preview(.25);
  current=false;preview(.75);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z','retired UI cannot replace current time');
+ settle(1);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z','retired settlement cannot change preview or Context');
  const binding=expression('fineTargetBinding'),at=time.snapshot().at;
- const input={carriedReport:null,timePresentation:{mode:'MODEL'},timePlaying:false,timeScrubbing:true,rawReportData,requestedAt:at};
+ const input={carriedReport:null,timePresentation:{mode:'MODEL'},timeGeometryReady:true,timePlaying:false,timeScrubbing:true,rawReportData,requestedAt:at,
+  activeContext:{nightStartUtc:start,nightEndUtc:end}};
  assert.equal(vm.runInNewContext(binding,input),null);
  assert.equal(vm.runInNewContext(binding,{...input,timeScrubbing:false}).at,at);
+ assert.equal(vm.runInNewContext(binding,{...input,timeScrubbing:false,requestedAt:'2026-10-13T13:00:00.000Z'}),null,
+  'a geometry-only day cannot borrow advice from the committed night');
 });
 
 function render(saving=false, interactionLocked=false, isPreviewing=false) {

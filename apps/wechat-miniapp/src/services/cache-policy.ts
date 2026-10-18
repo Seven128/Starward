@@ -22,7 +22,7 @@ export function responseCacheKey(group: string, apiBase: string, path: string): 
 
 const TEMPORARY_QUERY_ROOTS = new Set([
   "map-scene", "spot-overview", "spot-guides", "spot-site", "spot-sky",
-  "observation-context", "place-search", "spot-search",
+  "observation-context", "place-search", "spot-search", "spot-sky-geometry",
   "map-observation-context", "search-observation-context", "search-scene",
   // These immutable publications also carry the Sky file owner's generation.
   // File clear must remove their old capabilities from hidden query observers.

@@ -9,6 +9,7 @@ import type {
   SpotSummary,
   SkyTarget,
   SkyTargetInstantData,
+  SkyGeometryWindowData,
   SourceSummary,
 } from "@starward/miniapp-contracts";
 import { assertSkyObservationFrames, assertSkyTargetFrames, OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
@@ -38,7 +39,7 @@ import { TripDecisionEngine } from "./trip-decision-engine.ts";
 import { deepSkySceneCacheKey } from "./deep-sky-scene-provider.ts";
 import { buildSkyTimeModel } from "./sky-time-model-provider.ts";
 import { evaluateSkyTimeModel } from "@starward/astronomy-core/sky-time-model";
-import { SKY_TIME_MODEL_FORMAT } from "@starward/miniapp-contracts";
+import { SKY_TIME_MODEL_FORMAT, skyGeometryWindow } from "@starward/miniapp-contracts";
 import type {
   AstronomyApplicationPort,
   CanonicalWeatherHour,
@@ -423,6 +424,40 @@ export class AstronomyService implements AstronomyApplicationPort {
     return { ...result, validAt: at, contextRevision: context.revision };
   }
 
+  /** Reuse the bounded geometry cache without weather, decisions, or a Context
+   * write. The caller revalidates private access after this asynchronous read. */
+  async computeGeometryWindow(context: ObservationContext, at: string, suppliedDetail?: SpotDetail,
+    proposalId?: string): Promise<ApiEnvelope<SkyGeometryWindowData>> {
+    if (Boolean(suppliedDetail) !== Boolean(proposalId)) throw new Error("proposal_sky_context_invalid");
+    const window = skyGeometryWindow(at, context.timezone);
+    if (Date.parse(at) > this.now()) throw new Error("sky_geometry_time_in_future");
+    const spotId = proposalId ?? (context.location.kind === "FORMAL_SPOT" ? context.location.spotId : null);
+    if (!spotId) throw new Error("formal_spot_context_required");
+    const generation = this.generation;
+    const detail = suppliedDetail ?? await this.repository.getDetail(spotId as SpotSummary["spotId"]);
+    if (!detail || detail.spot.spotId !== spotId || !["PUBLISHED", "TEMPORARILY_CLOSED"].includes(detail.spot.status))
+      throw new Error("formal_spot_not_found");
+    const observer = { ...detail.spot.wgs84, elevationM: detail.spot.altitudeM ?? 0 };
+    const model = await this.readTimeModel(observer, window.hourlyAt);
+    if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
+    if (!model) throw new Error("sky_geometry_unavailable");
+    const source = calculationSource({ ...context, localDate: window.localDate,
+      nightStartUtc: window.startAt, nightEndUtc: window.endAt }, this.config);
+    const result = envelope({ spotId, contextId: context.contextId, contextRevision: context.revision,
+      contextFingerprint: context.contextFingerprint, model: structuredClone(model) }, "FRESH",
+      [{ ...source, id: `sky-geometry:${digest({ observer, startAt: window.startAt, endAt: window.endAt,
+        algorithm: model.algorithmVersion })}`, title: "所选时段的天空几何计算" }], proposalId ? [PROPOSAL_SKY_WARNING] : []);
+    return { ...result, validAt: window.startAt, contextRevision: context.revision };
+  }
+
+  private readTimeModel(observer: import("@starward/miniapp-contracts").StellarGeometryObserver, hourlyAt: readonly string[]) {
+    const key = digest({ observer, hourlyAt, algorithm: this.config.astronomyAlgorithmVersion, model: SKY_TIME_MODEL_FORMAT });
+    return this.timeModelCache.get(key, async () => {
+      try { return buildSkyTimeModel({ observer, hourlyAt }); }
+      catch { return null; }
+    }, value => value ? this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs : this.now());
+  }
+
   async compute(context: ObservationContext, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs,
     catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2", deepSkyCatalogVersion?: string): Promise<ApiEnvelope<SkyReport>> {
     const skyCatalog=this.skyCatalogFor(catalogVersion);
@@ -509,11 +544,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       equatorialToEnu: observationHorizontalFrame({ ...observer, at }).equatorialToEnu,
     }));
     assertSkyObservationFrames(observationFrames, hourlyAt);
-    const timeModelKey = digest({ observer, hourlyAt, algorithm: this.config.astronomyAlgorithmVersion, model: SKY_TIME_MODEL_FORMAT });
-    const timeModel = await this.timeModelCache.get(timeModelKey, async () => {
-      try { return buildSkyTimeModel({ observer, hourlyAt }); }
-      catch { return null; } // Fine time may fail without erasing genuine discrete frames.
-    }, value => value ? this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs : this.now());
+    const timeModel = await this.readTimeModel(observer, hourlyAt);
     if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
     // Sky alone uses the unrounded model's knots, so starting/stopping between
     // an exact row and continuous presentation cannot jump at coarse rounding.

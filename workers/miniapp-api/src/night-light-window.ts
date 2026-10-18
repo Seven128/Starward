@@ -36,40 +36,61 @@ export function validateNightLightWindow(window: DisplayRasterWindow) {
   if (window.columns > 3 || window.rows > 3) throw new Error("nightlight_window_budget_exceeded");
 }
 
+/** Shared admission and quality aggregation for both offline-prepared images
+ * and the bounded compatibility composer. Never derives numerical values from
+ * PNG colours or turns an image-only window into a numerical publication. */
+function windowCells(proofs: FixedNightLightRaster[], window: DisplayRasterWindow) {
+  validateNightLightWindow(window);
+  const cells = new Map(proofs.filter(cell).map(p => [displayRasterWindowKey(p.grid.window), p]));
+  const selected: (FixedNightLightRaster | null)[] = [];
+  for (let row = 0; row < window.rows; row++) for (let column = 0; column < window.columns; column++) selected.push(cells.get(
+    displayRasterWindowKey({ ...window, x: window.x + column, y: window.y + row, columns: 1, rows: 1 })) ?? null);
+  // Keep the existing 16-MiB image read bound across the entire local request.
+  if (selected.reduce((n, p) => n + (p?.image.bytes ?? 0), 0) > 16 * 1024 * 1024) throw new Error("nightlight_window_input_budget_exceeded");
+  return selected;
+}
+
+export function nightLightWindowView(inventorySha256: string, proofs: FixedNightLightRaster[], window: DisplayRasterWindow,
+  image: Pick<NightLightView["image"], "sha256" | "bytes">): NightLightView | null {
+  const selected = windowCells(proofs, window), reference = selected.find(p => p !== null);
+  if (!reference) return null;
+  const exact = proofs.find(p => displayRasterWindowKey(p.grid.window) === displayRasterWindowKey(window));
+  if (exact) return exact;
+  const counts = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0 };
+  let validZeroPixelCount = 0, maximumAreaExcessFraction = 0;
+  for (const proof of selected) {
+    if (!proof) { counts["5"] += 65536; continue; }
+    for (const quality of Object.keys(counts) as (keyof typeof counts)[]) counts[quality] += proof.quality.qualityMaskCounts[quality];
+    validZeroPixelCount += proof.quality.validZeroPixelCount;
+    maximumAreaExcessFraction = Math.max(maximumAreaExcessFraction, proof.quality.maximumAreaExcessFraction);
+  }
+  const key = displayRasterWindowKey(window), width = window.columns * 256, height = window.rows * 256;
+  const identity = createHash("sha256").update(`${reference.datasetVersion}:${inventorySha256}:${key}:${image.sha256}`).digest("hex");
+  return { publicationId: `nightlight-window:${identity}`, methodVersion: reference.methodVersion, styleVersion: reference.styleVersion,
+    statistic: reference.statistic, grid: { window, width, height, boundsGcj02: displayRasterWindowBounds(window) },
+    image: { file: `nightlight-v2-window-${key}-${inventorySha256}-${image.sha256}.png`, sha256: image.sha256, bytes: image.bytes, width, height },
+    quality: { ...reference.quality, pixelCount: width * height, validPixelCount: counts["1"] + counts["2"],
+      validZeroPixelCount, maximumAreaExcessFraction, qualityMaskCounts: counts } };
+}
+
 /** Image-only composition: all statistics and quality remain those of the
  * pinned numerical cells. This is not another published numerical proof. */
 export async function composeNightLightWindow(directory: string, inventorySha256: string,
   proofs: FixedNightLightRaster[], window: DisplayRasterWindow, signal: AbortSignal): Promise<NightLightWindow | null> {
   validateNightLightWindow(window); signal.throwIfAborted();
-  const key = displayRasterWindowKey(window), cells = new Map(proofs.filter(cell).map(p => [displayRasterWindowKey(p.grid.window), p]));
-  const selected: (FixedNightLightRaster | null)[] = [];
-  for (let row = 0; row < window.rows; row++) for (let column = 0; column < window.columns; column++) selected.push(cells.get(
-    displayRasterWindowKey({ ...window, x: window.x + column, y: window.y + row, columns: 1, rows: 1 })) ?? null);
-  const reference = selected.find(p => p !== null);
-  if (!reference) return null;
-  // Keep the existing 16-MiB image read bound across the entire local request.
-  if (selected.reduce((n, p) => n + (p?.image.bytes ?? 0), 0) > 16 * 1024 * 1024) throw new Error("nightlight_window_input_budget_exceeded");
-  const exact = proofs.find(p => displayRasterWindowKey(p.grid.window) === key);
+  const selected = windowCells(proofs, window);
+  if (!selected.some(p => p !== null)) return null;
+  const exact = proofs.find(p => displayRasterWindowKey(p.grid.window) === displayRasterWindowKey(window));
   if (exact) return { proof: exact, bytes: await readFixedNightLightImage(directory, exact, signal) };
   const png = new PNG({ width: window.columns * 256, height: window.rows * 256 });
-  const counts = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0 };
-  let validZeroPixelCount = 0, maximumAreaExcessFraction = 0;
   for (let index = 0; index < selected.length; index++) {
     signal.throwIfAborted();
     const proof = selected[index];
-    if (!proof) { counts["5"] += 65536; continue; }
+    if (!proof) continue;
     const bytes = await readFixedNightLightImage(directory, proof, signal); signal.throwIfAborted();
     copyFixedRasterCell(png, bytes, index % window.columns, Math.floor(index / window.columns));
-    for (const quality of Object.keys(counts) as (keyof typeof counts)[]) counts[quality] += proof.quality.qualityMaskCounts[quality];
-    validZeroPixelCount += proof.quality.validZeroPixelCount;
-    maximumAreaExcessFraction = Math.max(maximumAreaExcessFraction, proof.quality.maximumAreaExcessFraction);
   }
   signal.throwIfAborted();
   const bytes = PNG.sync.write(png), hash = createHash("sha256").update(bytes).digest("hex");
-  const identity = createHash("sha256").update(`${reference.datasetVersion}:${inventorySha256}:${key}:${hash}`).digest("hex");
-  return { bytes, proof: { publicationId: `nightlight-window:${identity}`, methodVersion: reference.methodVersion, styleVersion: reference.styleVersion,
-    statistic: reference.statistic, grid: { window, width: png.width, height: png.height, boundsGcj02: displayRasterWindowBounds(window) },
-    image: { file: `nightlight-v2-window-${key}-${inventorySha256}-${hash}.png`, sha256: hash, bytes: bytes.length, width: png.width, height: png.height },
-    quality: { ...reference.quality, pixelCount: png.width * png.height, validPixelCount: counts["1"] + counts["2"],
-      validZeroPixelCount, maximumAreaExcessFraction, qualityMaskCounts: counts } } };
+  return { bytes, proof: nightLightWindowView(inventorySha256, proofs, window, { sha256: hash, bytes: bytes.length })! };
 }

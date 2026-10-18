@@ -1,7 +1,7 @@
 import { WEB_MERCATOR_MAX_LATITUDE, displayRasterBounds, displayRasterRegionForBounds, displayRasterRegionKey,
-  displayRasterWindowForBounds, displayRasterWindowBounds, displayRasterWindowKey,
+  displayRasterWindowForBounds, displayRasterWindowBounds, displayRasterWindowKey, normalizeDisplayRasterBounds,
   type DisplayRasterRegion, type DisplayRasterWindow } from "@starward/coordinate-system";
-import type { TerrainBounds, TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import { MAP_TERRAIN_SUPPORTED_BOUNDS, terrainMapBoundsAreSupported, type TerrainBounds, type TerrainOverlayRequest } from "@starward/miniapp-contracts";
 import type { TerrainPublication } from "./terrain-publication.ts";
 
 export const TERRAIN_RENDER_VERSION = "glo30-cn-v1";
@@ -10,7 +10,7 @@ export const TERRAIN_MAP_RENDER_VERSION = "glo30-cn-v3-map";
 export const TERRAIN_VIEWPORT_RENDER_VERSION = "terrarium-cn-v1-map";
 export const TERRAIN_FIXED_RENDER_VERSION = "terrarium-cn-v2-fixed";
 export const TERRAIN_WINDOW_RENDER_VERSION = "terrarium-cn-v2-window";
-export const TERRAIN_SUPPORTED_BOUNDS: TerrainBounds = { west: 72.004, south: 0.8293, east: 137.8347, north: 55.8271 };
+export const TERRAIN_SUPPORTED_BOUNDS = MAP_TERRAIN_SUPPORTED_BOUNDS;
 export interface RenderedTerrain { publication: TerrainPublication; bytes: Buffer }
 /** Only the asset owner may recover the previous immutable Map representation. */
 export type TerrainRenderRequest = TerrainOverlayRequest & { renderVersion?: typeof TERRAIN_LEGACY_MAP_RENDER_VERSION;
@@ -38,13 +38,7 @@ export function normalizeTerrainRequest(input: TerrainRenderRequest): TerrainRen
   const center = { system: "GCJ02" as const, latitude: Math.round(input.center.latitude * 1e7) / 1e7,
     longitude: Math.round(input.center.longitude * 1e7) / 1e7 };
   if (input.viewportBounds) {
-    const b = input.viewportBounds;
-    return { purpose: "MAP", center, viewportBounds: {
-      // Tolerance is below a micrometre and only absorbs floating-point noise
-      // when an exact seven-decimal immutable identity is reconstructed.
-      west: Math.floor(b.west * 1e7 + 1e-6) / 1e7, south: Math.floor(b.south * 1e7 + 1e-6) / 1e7,
-      east: Math.ceil(b.east * 1e7 - 1e-6) / 1e7, north: Math.ceil(b.north * 1e7 - 1e-6) / 1e7,
-    } };
+    return { purpose: "MAP", center, viewportBounds: normalizeDisplayRasterBounds(input.viewportBounds) };
   }
   return { ...input, center, radiusKm: Math.ceil(input.radiusKm! * 1000 - 1e-8) / 1000 };
 }
@@ -100,7 +94,7 @@ export function terrainWindowViewport(input: TerrainOverlayRequest) {
 
 export function terrainLocationIsSupported(input: TerrainOverlayRequest) {
   const b = input.viewportBounds, s = TERRAIN_SUPPORTED_BOUNDS;
-  return b ? b.west < s.east && b.east > s.west && b.south < s.north && b.north > s.south
+  return b ? terrainMapBoundsAreSupported(b)
     : input.center.latitude >= s.south && input.center.latitude <= s.north
       && input.center.longitude >= s.west && input.center.longitude <= s.east;
 }

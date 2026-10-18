@@ -1,5 +1,6 @@
 import { assertStellarRotation, type StellarGeometryObserver } from "./stellar-geometry.ts";
 import { SKY_PLANET_ORDER, validSkyBodyFrame, type SkyPlanetBody } from "./types.ts";
+import { localParts, observationNightBounds, observationNightForCivilDate } from "./local-time.ts";
 
 /** Provider geometry, independent of a client's wall clock, photometry or weather. */
 export const SKY_TIME_MODEL_FORMAT = "sky-time-model-v1";
@@ -46,6 +47,25 @@ export interface SkyTimeModel {
   startAt: string;
   endAt: string;
   knots: readonly SkyTimeKnot[];
+}
+
+/** The existing local noon-to-noon observation group, independent of a Context
+ * mutation. Include both endpoints so every instant of this group is covered. */
+export function skyGeometryWindow(at: string, timezone: string) {
+  const instant = Date.parse(at);
+  if (!Number.isFinite(instant) || new Date(instant).toISOString() !== at)
+    throw new TypeError("sky_geometry_time_invalid");
+  const civil = localParts(new Date(instant), timezone);
+  const date = `${String(civil.year).padStart(4, "0")}-${String(civil.month).padStart(2, "0")}-${String(civil.day).padStart(2, "0")}`;
+  const localDate = observationNightForCivilDate(date, `${String(civil.hour).padStart(2, "0")}:00`);
+  const bounds = observationNightBounds({ localDate, timezone });
+  const start = Date.parse(bounds.nightStartUtc), end = Date.parse(bounds.nightEndUtc);
+  const intervals = Math.ceil((end - start) / (SKY_TIME_MODEL_MAX_INTERVAL_SECONDS * 1000));
+  if (instant < start || instant >= end || end - start > 86_400_000 || intervals < 1 ||
+    intervals + 1 > SKY_TIME_MODEL_MAX_KNOTS) throw new TypeError("sky_geometry_window_unsupported");
+  const hourlyAt = Array.from({ length: intervals + 1 }, (_, index) =>
+    new Date(Math.min(end, start + index * SKY_TIME_MODEL_MAX_INTERVAL_SECONDS * 1000)).toISOString());
+  return { localDate, startAt: bounds.nightStartUtc, endAt: bounds.nightEndUtc, hourlyAt };
 }
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);

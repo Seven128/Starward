@@ -1,11 +1,17 @@
 import { assertSkyObservationFrames, assertSkyTimeModel, assertStellarGeometryFrame,
   STELLAR_GEOMETRY_FORMAT, STELLAR_GEOMETRY_REFERENCE_AT,
   type SkyReport, type SkyGeometryReport, type SkyGeometryRow, type SkyTimeModel,
-  type DeepSkyScenePoint, type HourlySkyRow } from "@starward/miniapp-contracts";
+  type DeepSkyScenePoint, type HourlySkyRow, type SourceSummary } from "@starward/miniapp-contracts";
 import { evaluateSkyTimeModel, reprojectSkyTimeDirection } from "@starward/astronomy-core/sky-time-model";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 
 const prepared = new WeakMap<SkyReport, SkyTimeModel | null>();
+export type SkyTimeRulerRow = Pick<HourlySkyRow, "at"> & Partial<Pick<HourlySkyRow, "opportunityBlockers" | "opportunityEligible">>;
+
+/** Geometry windows supply ticks only, with no fabricated weather/advice. */
+export function skyTimeRulerRows(report: SkyReport | undefined, model: SkyTimeModel | null): readonly SkyTimeRulerRow[] {
+  return model && model !== skyPresentationTimeModel(report) ? model.knots.map(knot => ({ at: knot.at })) : report?.hourly ?? [];
+}
 
 /** The ruler spaces supplied rows uniformly, not their elapsed durations.
  * Interpolate the actual adjacent instants only within admitted model coverage;
@@ -74,21 +80,27 @@ export interface SkyTimePresentation {
 /** A transient, single-instant render input. Never write it into Query,
  * response storage or the committed Context. Advice/event activity is not
  * evaluated by the geometry model and is never relabeled to this instant. */
-export function presentSkyTime(report: SkyReport | undefined, at: string): SkyTimePresentation | null {
+export function presentSkyTime(report: SkyReport | undefined, at: string,
+  suppliedModel?: SkyTimeModel | null, geometrySources?: readonly SourceSummary[]): SkyTimePresentation | null {
   if (!report) return null;
   const exact = exactSkyTimeFrame(report.hourly, at);
   if (exact) return { report, row: exact, weather: exact.weatherAt ? exact : null, mode: "EXACT" };
-  const model = skyPresentationTimeModel(report);
+  const originalModel = skyPresentationTimeModel(report);
+  const model = suppliedModel ?? originalModel;
+  const anchorAt = originalModel?.startAt ?? report.observationFrames?.[0]?.at;
+  const observer = report.observationFrames?.[0]?.observer;
+  if (model && (!observer || model.observer.latitude !== observer.latitude ||
+    model.observer.longitude !== observer.longitude || model.observer.elevationM !== observer.elevationM)) return null;
   const geometry = model ? evaluateSkyTimeModel(model, at) : null;
   if (!geometry) return null;
   const weather = weatherAt(report.hourly, at);
   const row = geometry.hourly;
   const scene = report.skyScene;
-  const stellarAnchor = exactSkyTimeFrame(scene.frames, model!.startAt);
+  const stellarAnchor = exactSkyTimeFrame(scene.frames, anchorAt);
   let frames: SkyReport["skyScene"]["frames"] = [{ at, state: "UNAVAILABLE", geometry: null }];
   if (scene.state === "AVAILABLE" && scene.catalog && scene.observer && stellarAnchor?.geometry && stellarAnchor.state === "AVAILABLE") {
     try {
-      assertStellarGeometryFrame(stellarAnchor.geometry, { catalog: scene.catalog, observer: scene.observer, at: model!.startAt });
+      assertStellarGeometryFrame(stellarAnchor.geometry, { catalog: scene.catalog, observer: scene.observer, at: anchorAt! });
       const current = { ...stellarAnchor.geometry, at, julianYears: geometry.julianYears,
         equatorialToEnu: geometry.observationFrame.equatorialToEnu, observer: geometry.observationFrame.observer,
         format: STELLAR_GEOMETRY_FORMAT, referenceAt: STELLAR_GEOMETRY_REFERENCE_AT };
@@ -97,8 +109,8 @@ export function presentSkyTime(report: SkyReport | undefined, at: string): SkyTi
     } catch { /* Keep valid independent solar/observation/deep layers. */ }
   }
   let deepSky = scene.deepSky;
-  const deepAnchor = exactSkyTimeFrame(deepSky?.frames, model!.startAt);
-  const observationAnchor = exactSkyTimeFrame(report.observationFrames, model!.startAt);
+  const deepAnchor = exactSkyTimeFrame(deepSky?.frames, anchorAt);
+  const observationAnchor = exactSkyTimeFrame(report.observationFrames, anchorAt);
   if (deepSky && deepAnchor && observationAnchor) {
     let points: DeepSkyScenePoint[] | null = null;
     if (deepSky.state === "AVAILABLE" && deepAnchor.state === "AVAILABLE" && deepAnchor.points) {
@@ -115,5 +127,7 @@ export function presentSkyTime(report: SkyReport | undefined, at: string): SkyTi
   } else if (deepSky) deepSky = { ...deepSky, frames: [{ at, state: "UNAVAILABLE", points: null }] };
   return { mode: "MODEL", row, weather, report: { ...report, hourly: [row], observationFrames: [geometry.observationFrame],
     timeModel: null, targets: [], targetFrames: [],
+    ...(geometrySources?.length ? { sources: [...report.sources.filter(source =>
+      !geometrySources.some(geometrySource => geometrySource.id === source.id)), ...geometrySources] } : {}),
     skyScene: { ...scene, frames, ...(deepSky ? { deepSky } : {}) } } };
 }

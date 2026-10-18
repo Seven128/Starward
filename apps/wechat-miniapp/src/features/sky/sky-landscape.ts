@@ -2,6 +2,7 @@ import { SKY_LANDSCAPE_EYE_HEIGHT, SKY_LANDSCAPE_MAXIMUM_Z, SKY_LANDSCAPE_SOLIDS
   SKY_LANDSCAPE_CANOPIES, SKY_LANDSCAPE_CANOPY_LOBES, SKY_LANDSCAPE_CANOPY_INNER_RADIUS,
   SKY_LANDSCAPE_CANOPY_OUTER_RADIUS } from "./sky-landscape-geometry";
 import type { SkyVector } from "./sky-view-projection";
+import { SKY_LANDSCAPE_BROWSE_OPACITY } from "./sky-landscape-visibility";
 
 const glslFloat = (value: number) => Number.isInteger(value) ? `${value}.0` : String(value);
 const glslVector = (value: SkyVector) => `vec3(${value.map(glslFloat).join(",")})`;
@@ -12,7 +13,12 @@ const glslVector = (value: SkyVector) => `vec3(${value.map(glslFloat).join(",")}
 const landscapeLighting = `
   uniform float u_viewReveal;
   vec3 landscapeBrowseColor(vec3 material, float observationMode) {
-    vec3 cue = observationMode > 0.5 ? vec3(0.19,0.0,0.0) : vec3(0.16);
+    float viewOpacity = 1.0-(1.0-${glslFloat(SKY_LANDSCAPE_BROWSE_OPACITY)})*u_viewReveal;
+    // Keep the ordinary cue's composed contribution muted and continuous as
+    // the foreground becomes transparent. A fixed source grey was almost
+    // lost at 18% alpha and could peak during the fade rather than below it.
+    vec3 cue = observationMode > 0.5 ? vec3(0.19,0.0,0.0)
+      : vec3(0.42*${glslFloat(SKY_LANDSCAPE_BROWSE_OPACITY)}/viewOpacity);
     // The normal horizon view retains its dark material. The muted grey cue
     // enters only as the camera looks into the below-ground finding chart;
     // the existing geometry/alpha and object visibility remain independent.

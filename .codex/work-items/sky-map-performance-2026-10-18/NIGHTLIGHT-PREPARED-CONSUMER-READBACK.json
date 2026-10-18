@@ -1,0 +1,62 @@
+{
+  "at": "2026-10-18T11:51:31.146Z",
+  "scope": "LOCAL_SEALED_READER_ONLY",
+  "prepared": {
+    "directory": "E:/Dev/Starward-data/publications/map-static-hotspots-20261018/publication",
+    "publicationHash": "89f3491ed136bb24c18a49ce8b92cd484dd2378bf889610153ab8f52cff514d0"
+  },
+  "databaseAuthority": "Existing task-local public PUBLISHED record export; no live database was read or changed by this probe",
+  "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+  "inventorySha256": "d91fd8f7fcdd68d63f9a219df11fdad13673fefa2e1a99e313a148e29676c5bd",
+  "originalAdmittedProofCount": 509,
+  "results": [
+    {
+      "window": {
+        "grid": "gcj02-mercator-pixel-centres-v1",
+        "tilePixels": 256,
+        "zoom": 11,
+        "x": 1672,
+        "y": 890,
+        "columns": 2,
+        "rows": 3
+      },
+      "publicationId": "nightlight-window:61a6c0d9e34fbbf0ee090d71bc4d60f49ea749ecc4e2254250214dc7601031de",
+      "route": "/v2/night-light/assets/eog-vnl-v22-2025-gba-fixed-20261017-r6/nightlight-v2-window-11-1672-890-2-3-d91fd8f7fcdd68d63f9a219df11fdad13673fefa2e1a99e313a148e29676c5bd-2f68e40a1924c6d09a3ab7fad0759a9e90c119d974298492d5b9bf29128017de.png",
+      "bytes": 12558,
+      "sha256": "2f68e40a1924c6d09a3ab7fad0759a9e90c119d974298492d5b9bf29128017de",
+      "metadataExactlyMatchesExistingSealedExport": true
+    },
+    {
+      "window": {
+        "grid": "gcj02-mercator-pixel-centres-v1",
+        "tilePixels": 256,
+        "zoom": 11,
+        "x": 1672,
+        "y": 891,
+        "columns": 2,
+        "rows": 1
+      },
+      "publicationId": "nightlight-window:895d306362425eb6e060e19d3567ba39e9e4b3f24ed43fd5ff92ba0d5512ba6f",
+      "route": "/v2/night-light/assets/eog-vnl-v22-2025-gba-fixed-20261017-r6/nightlight-v2-window-11-1672-891-2-1-d91fd8f7fcdd68d63f9a219df11fdad13673fefa2e1a99e313a148e29676c5bd-b6f09db480cb146e50acdb7a16e4d9567fb2751727136cbb6d6aa0288047be7a.png",
+      "bytes": 4276,
+      "sha256": "b6f09db480cb146e50acdb7a16e4d9567fb2751727136cbb6d6aa0288047be7a",
+      "metadataExactlyMatchesExistingSealedExport": true
+    }
+  ],
+  "originalCellImagesRead": false,
+  "numericTiffsRead": false,
+  "liveProducerCalled": false,
+  "servicesChanged": false,
+  "remotePublication": false,
+  "sourceHashes": {
+    "workers/miniapp-api/src/map-static-manifest.ts": "529ac7a6ec41f4d9cee26ec15a2608e302bc8b8548c7c4c275b40f22c8646bfe",
+    "workers/miniapp-api/src/night-light-prepared-window.ts": "f5d055e10a8538f791af2145df0122e4f1d13c6b8f3518ea1537d8e2e95c3eed",
+    "workers/miniapp-api/src/night-light-prepared-window.test.ts": "159613dbafb0cc26c51f1ade668f7eb581055421baba97e68a3e8a48b6fe18c2",
+    "workers/miniapp-api/src/night-light-window.ts": "38145a8fbbe782c77a17cef8713a1285efa3a83b189594e002951fe9b26d4d0d",
+    "workers/miniapp-api/src/night-light-service.ts": "6c1beb6394da567047a21697b08450851f3044d8ce4535e15a7b8b51f757c5ae",
+    "workers/miniapp-api/src/runtime-config.ts": "968a3dafd348cb46f4d7955cd1146c6f6a605fc11e8a60d2a41f486ee72289f0",
+    "workers/miniapp-api/src/runtime-config.test.ts": "e631a360658155e64d868ba7f9c396b46a9d289fd09b0f4163f1eae14ac3f68e",
+    "workers/miniapp-api/src/miniapp-service.ts": "c1907caf5ad0e0e6a781b2fd2309f99c0742d3fac584833b50a77a75c8e023e7",
+    "tools/deployment/map-static-bundle.mjs": "d98f2073734a0dfd522057b609ed27adc7dfa63aae789e65cef00be483aa63cd"
+  }
+}

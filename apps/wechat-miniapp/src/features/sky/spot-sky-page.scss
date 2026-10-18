@@ -2280,6 +2280,9 @@
 .sky-time-icon-action .semantic-icon { width: 22Px; height: 22Px; }
 .sky-time-icon-action--primary { background: var(--primary); border-color: var(--primary); }
 .sky-time-input-error { display: block; font-size: 12Px; line-height: 18Px; padding-top: 8Px; color: var(--text-secondary); }
+.sky-time-retry { margin: 0; padding: 0 8Px; min-height: 44Px; width: auto; display: inline-flex; align-items: center;
+  font-size: 14Px; color: var(--text-primary); background: transparent; border: 0; }
+.sky-time-retry::after { border: 0; }
 /* Seven 44px targets, four 4px separators and shell padding need 390px. */
 @media (max-width: 389px) {
   .sky-time-controls__grid { grid-template-columns: 1fr; gap: 4Px; }

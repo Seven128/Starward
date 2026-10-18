@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadRuntimeConfig } from "./runtime-config.ts";
+import path from "node:path";
 
 const managedEnvironment = /^(?:NODE_ENV|DATABASE_URL|REDIS_URL|AMAP_|OPEN_METEO_|QWEATHER_|WECHAT_|MINIAPP_)/u;
 
@@ -53,6 +54,20 @@ function withEnvironment<T>(values: NodeJS.ProcessEnv, assertion: () => T): T {
     Object.assign(process.env, previous);
   }
 }
+
+test("prepared Map publication is disabled by default and requires an explicit absolute root/hash pair", () => {
+  const environment = releaseEnvironment("TRIAL", "OPEN_METEO_COMMERCIAL"), directory = path.resolve("runtime-map-static-fixture");
+  assert.equal(withEnvironment(environment, loadRuntimeConfig).mapStaticPublication, null);
+  assert.deepEqual(withEnvironment({ ...environment, MINIAPP_MAP_STATIC_PUBLICATION_ROOT: directory,
+    MINIAPP_MAP_STATIC_PUBLICATION_HASH: "a".repeat(64) }, loadRuntimeConfig).mapStaticPublication,
+  { directory, publicationHash: "a".repeat(64) });
+  for (const input of [
+    { MINIAPP_MAP_STATIC_PUBLICATION_ROOT: directory },
+    { MINIAPP_MAP_STATIC_PUBLICATION_HASH: "a".repeat(64) },
+    { MINIAPP_MAP_STATIC_PUBLICATION_ROOT: "relative/map-static", MINIAPP_MAP_STATIC_PUBLICATION_HASH: "a".repeat(64) },
+    { MINIAPP_MAP_STATIC_PUBLICATION_ROOT: directory, MINIAPP_MAP_STATIC_PUBLICATION_HASH: "invalid" },
+  ]) assert.throws(() => withEnvironment({ ...environment, ...input }, loadRuntimeConfig), /runtime_config_invalid:MINIAPP_MAP_STATIC_PUBLICATION/u);
+});
 
 test("delivery identity encryption requires a distinct valid key and defaults to disabled", () => {
   const environment = releaseEnvironment("TRIAL", "OPEN_METEO_COMMERCIAL");

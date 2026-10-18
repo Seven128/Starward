@@ -1,14 +1,14 @@
 # Starward 收口任务索引
 
-当前阶段：R17研究已完成；用户新增R18，说明EOG可下载，要求纳入计划、保留Web GPT Pro叠层方案并交接到新对话。本聊天**完成研究/方案/交接后停下**；用户在新对话发送[继续执行提示词](NEXT-CHAT-PROMPT.md)即明确开始实施。EOG官方下载→精确校验→私有Drive备份已列入同一[PLAN](PLAN.md#eog-source-recovery-and-commit-bound-synchronization-r16r18)，尚未实际下载/备份。地形/云量/光害、R17和H1–H8均保留，执行默认值和少数委托决策也在PLAN。
+当前阶段：用户已在新对话发送[继续执行提示词](NEXT-CHAT-PROMPT.md)，明确开始实施，并已创建执行 Goal。继续同一 [PLAN](PLAN.md)，当前进度只见 [HANDOFF](HANDOFF.md)。R17 研究、既有恢复和验证复用；EOG 官方下载/私有备份、地形/云量/光害、R17 和 H1–H8 的未完义务全部保留。
 
-[Sky研究与实际基线](SKY-INTERACTION-RESEARCH.md)、[包含SAO的CPU样本](SKY-TIME-CPU-BASELINE.json)、[向量局部试验](SKY-VECTOR-RESEARCH.json)、[拖动边界](SKY-DRAG-BASELINE.json)、[几何窗口](SKY-TIME-WINDOW-PROBE.json)保留结论和限制；生产修复未实施。
+[Sky研究与实际基线](SKY-INTERACTION-RESEARCH.md)、[包含SAO的CPU样本](SKY-TIME-CPU-BASELINE.json)、[向量局部试验](SKY-VECTOR-RESEARCH.json)、[拖动边界](SKY-DRAG-BASELINE.json)、[几何窗口](SKY-TIME-WINDOW-PROBE.json)保留结论和限制。生产合批与独审见[R17审查](R17-INDEPENDENT-REVIEW.md)、[恒星集成](SKY-STELLAR-INTEGRATION.md)、[地景修复](R17-LANDSCAPE-REPAIR.md)、[稳定地形请求](OVERLAY-STABLE-WINDOW.md)；当前手机generation和剩余证据见HANDOFF。
 
-唯一恢复入口。先前成果继续保留，当前阶段以上述用户最新要求为准。夜间拟物、读屏、大文字和100m/cm仍排除。旧Goal工具blocked、正文未替换；最新正文已准备在GOAL-OBJECTIVE。Goal仍有必需工作，不能标完成；新对话的创建/续用与明确实施指令见HANDOFF，不以工具状态单独代替用户授权。
+唯一恢复入口。先前成果继续保留，当前阶段以上述用户最新要求为准。夜间拟物、读屏、大文字和100m/cm仍排除。本对话已续建active Goal，正文包含全部未撤销要求；GOAL-OBJECTIVE保留正文来源。Goal仍有必需工作，不能标完成；新对话的创建/续用与明确实施指令见HANDOFF，不以工具状态单独代替用户授权。
 
 1. [完整要求、授权和范围](REQUIREMENTS.md)：原始义务、有效修订、完成条件与暂缓项。
    [另一电脑补入的完整结果要求](INHERITED-REQUIREMENTS.md)：H1–H8、A01–A15/N01–N09映射和已完成成果复用；原固定方案/证据已恢复至私有目录，后来用户修订优先。
-2. [当前唯一方案](PLAN.md)：保留[架构建议对照](ARCHITECTURE-ADVICE-RECONCILIATION.md)中的静态解耦、稳定请求身份、发布分发和有条件固定块试验，以及Map/Sky/继承义务；补齐R17、EOG源与同步、执行默认值和有界决策。[最新Goal正文](GOAL-OBJECTIVE.md)已按新增范围准备，旧工具未替换正文；新对话可按明确开始指令使用，不另起计划。
+2. [当前唯一方案](PLAN.md)：保留[架构建议对照](ARCHITECTURE-ADVICE-RECONCILIATION.md)中的静态解耦、稳定请求身份、发布分发和有条件固定块试验，以及Map/Sky/继承义务；补齐R17、EOG源与同步、执行默认值和有界决策。[最新Goal正文](GOAL-OBJECTIVE.md)已用于本对话执行Goal，不另起计划。
 3. [当前状态与恢复](HANDOFF.md)：当前源码、候选、服务、在途操作、下一动作及停止条件。
 4. [性能/包体/分支总证据](VERIFICATION.md)、[真机证据](PHONE-VERIFICATION.md)、[转场修复候选字节](PHONE-FIX-CANDIDATE.json)及[对应源码指纹](PHONE-FIX-SOURCE-SNAPSHOT.json)。当前整合候选由[OVERLAY-CANDIDATE](OVERLAY-CANDIDATE.json)、[当前源码指纹](OVERLAY-SOURCE-SNAPSHOT.json)和HANDOFF拥有；不把历史转场候选当成当前手机包。软件、桌面、手机观察的效力不可互换。
 5. [包体/CDN审计](PACKAGE-AUDIT.md)、[地图生命周期](MAP-LIFECYCLE.md)、[先前独立审查](INDEPENDENT-REVIEW.md)、[分支清理回执](BRANCH-CLEANUP.json)。后续手机修复的审查见真机证据和当前状态。
@@ -28,13 +28,15 @@
 19. [给原电脑的可复制交接提示词](OTHER-COMPUTER-DATA-HANDOFF-PROMPT.md)：r6/配套DB/固定地形/原记录的盘点、存储选择、上传读回与恢复边界；原电脑已按交接分支提交资料并上传；当前接收端恢复结果由ASSET-MIGRATION-STATUS持有。
 20. [静态夜光独立读取](STATIC-LIGHT-ISOLATION.md)：新接口、真实Map消费者和构建范围；3b0d8916已纳入后续[数据流程独审](BACKEND-DATA-REVIEW.md)和581a5a9b完整CI。新静态候选[字节](STATIC-LIGHT-CANDIDATE.json)未绑定手机，不与generation9混称。
 
-21. [原r6数据恢复和新同步机制](ASSET-MIGRATION-STATUS.md)、[完整数据库核验](RESTORED-DATABASE-CHECK.json)、[当前API核验](RESTORED-API-CHECK.json)、[仓库统一数据入口](../../../data-pipelines/runtime-data/README.md)。公共成品LFS与Drive、重建大数据Drive、私有恢复分责；EOG官方两文件已定位于[同一数据锁](../../../data-pipelines/runtime-data/current.lock.json)，原始TIFF/压缩包仍未接收校验、未建立Drive备份。
+21. [原r6数据恢复和新同步机制](ASSET-MIGRATION-STATUS.md)、[完整数据库核验](RESTORED-DATABASE-CHECK.json)、[当前API核验](RESTORED-API-CHECK.json)、[仓库统一数据入口](../../../data-pipelines/runtime-data/README.md)。公共成品LFS与Drive、重建大数据Drive、私有恢复分责；EOG官方两文件位于[同一数据锁](../../../data-pipelines/runtime-data/current.lock.json)，压缩传输与TIFF已校验，原owner-only Drive实际远端读回及fresh receiver解包准入均完成；[EOG证据](EOG-SOURCE-RECOVERY.json)拥有结果与剩余交付审查边界。
 
 22. [数据流程独立审查及修复](BACKEND-DATA-REVIEW.md)、[非默认端口真实隔离恢复](RESTORE-PORT-CHECK.json)、[交付与 CI](BACKEND-DATA-DELIVERY.json)、[原机补传 EOG 原始数据提示词](RAW-SOURCE-UPLOAD-PROMPT.md)。
 
 23. [恢复数据后的约4km地形实际服务样本](RESTORED-TERRAIN-SAMPLE.json)：粗档固定包不含所请求z12细档，首次3.926s、重复6ms；属于后续叠层性能责任，不能把恢复/API通过当真机优化已验收。
 
 24. [新对话继续执行提示词](NEXT-CHAT-PROMPT.md)：用户可整份复制至同一工作区新聊天；明确切换到实施、续用同一资料和保护现有状态。当前摘要见HANDOFF，不维护第二份进度表。
+
+25. [R17当前测试与夹具修复](R17-CURRENT-TESTS.md)、[同条件手机诊断构建](R17-PHONE-PROBE.md)、[有限地形细档发布](TERRAIN-HOTSPOT-PRODUCTS.md)、[Map静态分发适配](MAP-STATIC-ADAPTER.md)。本地检查、真实HTTP读回和目标手机结果保持各自证据范围。
 
 执行规则与架构入口：仓库 [AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机 owner](../../../project_context/areas/main/verification/wechat-device.md)。适用技能为 `.codex/skills/starward-miniapp-development`、`.codex/skills/starward-wechat-device-verification`、`.codex/skills/uiux_design` 与已安装官方 wechatide scenes；本次 durable-goal 原文位于 `C:/Users/777/.codex/skills/durable-goal/SKILL.md`。
 

@@ -1,8 +1,8 @@
-import type { ApiEnvelope, ObservationContext, SkyReport } from "@starward/miniapp-contracts";
+import type { ApiEnvelope, ObservationContext, SkyReport, SkyTimeModel, SourceSummary } from "@starward/miniapp-contracts";
 import type { ConfirmedObservationContextReply } from "../../services/observation-context-recovery";
 import type { ForecastPresentation } from "../../services/forecast-presentation";
 import { sameContextVersion } from "../../services/observation-context-version";
-import { presentSkyTime } from "./sky-time-presentation";
+import { presentSkyTime, skyPresentationTimeModel } from "./sky-time-presentation";
 
 export function skyReportMatchesContext(data: SkyReport | undefined, context: ObservationContext | null,
   spotId: string): boolean {
@@ -16,20 +16,23 @@ export function skyReportMatchesContext(data: SkyReport | undefined, context: Ob
  * is presentation continuity, never a new API report or a Query-cache write. */
 export function createSkyTimeCommitContinuity(presentation: ForecastPresentation<SkyReport>, now: () => number = Date.now) {
   let entry: { target: ObservationContext; source: ApiEnvelope<SkyReport>; spotId: string;
-    boundaries: readonly number[]; elapsed: number; projected: ApiEnvelope<SkyReport> } | null = null;
+    boundaries: readonly number[]; elapsed: number; projected: ApiEnvelope<SkyReport>; model: SkyTimeModel | null;
+    sources: readonly SourceSummary[] | undefined } | null = null;
   return {
     clear() { entry = null; },
+    model() { return entry?.model ?? null; },
+    sources() { return entry?.sources; },
     stage(from: ObservationContext, response: ConfirmedObservationContextReply, source: ApiEnvelope<SkyReport> | undefined,
-      spotId: string, requestedAt: string) {
+      spotId: string, requestedAt: string, suppliedModel?: SkyTimeModel | null, geometrySources?: readonly SourceSummary[]) {
       entry = null;
       if (!source || from.schemaVersion !== "observation-context-v2" ||
         ["EXPIRED", "UNAVAILABLE"].includes(source.dataState) || !skyReportMatchesContext(source.data, from, spotId) ||
         Date.parse(source.data.context.at) !== Date.parse(from.selectedAtUtc) ||
         response.dataState !== "FRESH" || response.data.contextId !== from.contextId || response.data.revision <= from.revision ||
         Date.parse(response.data.selectedAtUtc) !== Date.parse(requestedAt) || response.data.timezone !== from.timezone ||
-        response.data.localDate !== from.localDate || !presentSkyTime(source.data, response.data.selectedAtUtc)) return false;
+        !presentSkyTime(source.data, response.data.selectedAtUtc, suppliedModel)) return false;
       entry = { target: response.data, source, spotId, boundaries: presentation.boundaries(source.data),
-        elapsed: -1, projected: source };
+        elapsed: -1, projected: source, model: suppliedModel ?? skyPresentationTimeModel(source.data), sources: geometrySources };
       return true;
     },
     read(context: ObservationContext | null, spotId: string, allowed: boolean,

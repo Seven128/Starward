@@ -688,7 +688,7 @@ export class MiniappService {
         throw new Error("optical_trial_scope_invalid");
     }
     this.repository = input.repository;
-    this.nightLight = new NightLightService(input.repository, input.config.nightLightPublicationRoot);
+    this.nightLight = new NightLightService(input.repository, input.config.nightLightPublicationRoot, input.config.mapStaticPublication);
     this.weather = input.weather;
     this.terrain = input.terrain ?? new TerrainService({
       ...(input.config.terrainPublicationRoot ? { publishedDirectory: input.config.terrainPublicationRoot } : {}),
@@ -1817,6 +1817,18 @@ export class MiniappService {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
     const result = await this.astronomy.computeTargetInstant(context, at, proposal?.detail, proposal?.id);
     await this.#assertPrivateContextCurrent(context, userId);
+    return result;
+  }
+
+  async getSkyGeometryWindow(spotId: string, contextId: string, at: string, userId?: UserId | null) {
+    const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
+    const result = await this.astronomy.computeGeometryWindow(context, at, proposal?.detail, proposal?.id);
+    // Legacy MAP_POINT proposal Contexts have no privateProposal marker. Reuse
+    // the complete current access boundary after the asynchronous geometry
+    // read so consent/attempt withdrawal cannot publish an old private result.
+    const current = await this.#skyAccess(spotId, contextId, userId);
+    if (current.context.revision !== context.revision || current.context.contextFingerprint !== context.contextFingerprint)
+      throw new Error("observation_context_conflict");
     return result;
   }
 

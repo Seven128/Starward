@@ -16,10 +16,10 @@ const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-p
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 const statements = page.body!.statements;
 const commands = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d =>
-  ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "commitInstant", "commitIndex"].includes(d.name.getText(source))));
+  ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "commitInstant"].includes(d.name.getText(source))));
 const lookupEffect = statements.find(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) && node.expression.expression.getText(source) === "useEffect" && node.expression.arguments[0]?.getText(source).includes("contextLookup.data?.data"))!;
 const compile = (text: string) => ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
-const commandCode = compile(commands.map(node => node.getText(source)).join("\n") + "\n({commitIndex, commitInstant});");
+const commandCode = compile(commands.map(node => node.getText(source)).join("\n") + "\n({commitInstant});");
 
 const context = (id = "ctx:a", revision = 1) => ({ contextId: id as ObservationContext["contextId"], revision, contextFingerprint: `${id}:${revision}`, timezone: "Asia/Shanghai", selectedAtUtc: "2026-09-15T12:00:00.000Z" });
 function harness(initial = context()) {
@@ -34,6 +34,7 @@ function harness(initial = context()) {
     alignmentMode: "auto",
     orientationController: { snapshot: () => ({ alignment: { mode: sandbox.alignmentMode } }) },
     activeContext: initial, timeSaving: false, rawReportData: { hourly: [{ at: "2026-09-15T13:00:00.000Z" }] },
+    timeModel: undefined, timeGeometrySources: undefined,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
     timeBinding, datePickerOpenRef: { current: false }, cancelSkyCalibration: () => {},
     presentSkyTime, skyTimeInputAllowed, observationNightForInstant, observationTime, setTimeIntent: () => {},
@@ -46,19 +47,14 @@ function harness(initial = context()) {
     instantForCivilDate: (localDate: string) => ({ localDate, selectedAt: "2026-09-16T12:00:00Z" }),
     notify: (value: unknown) => notifications.push(value), errorMessage: () => "request failed", isMiniappRequestCancelled: () => false,
   };
-  const commands = vm.runInNewContext(commandCode, sandbox) as { commitIndex: (index: number) => void; commitInstant: (at: string) => Promise<void> };
-  // The index event intentionally dispatches without returning the async commit.
-  // Drain that real completion before asserting late-response publication.
-  // Six-field civil controls and the ruler now share commitInstant. Feed the
-  // real civil conversion instead of exporting the removed page date command.
+  const commands = vm.runInNewContext(commandCode, sandbox) as { commitInstant: (at: string) => Promise<void> };
+  // Only explicit Apply reaches this transaction. Ruler settlement remains
+  // preview-only and is checked at its page binding in orientation-time-ruler.
   const actions = { ...commands, commitCivilDate: (date: string) => {
     const [year, month, day] = date.split("-").map(Number);
     const at = skyCivilInstant({year: year!, month: month!, day: day!, hour: 20, minute: 0, second: 0}, initial.timezone);
     assert(at); return commands.commitInstant(at);
-  }, commitIndex: async (index: number) => {
-    commands.commitIndex(index);
-    await new Promise<void>(resolve => setImmediate(resolve));
-  } };
+  }, applyTime: () => commands.commitInstant(sandbox.rawReportData.hourly[0]!.at) };
   return { session, sandbox, requests, writes, notifications, saving, actions,
     replace: () => { state = { ...state, observationContext: context("ctx:b"), selectedSpotId: "spot:b" }; },
     state: () => state,
@@ -66,7 +62,7 @@ function harness(initial = context()) {
 }
 
 for (const command of ["time", "date"] as const) {
-  const start = (h: ReturnType<typeof harness>) => command === "time" ? h.actions.commitIndex(0) : h.actions.commitCivilDate("2026-09-16");
+  const start = (h: ReturnType<typeof harness>) => command === "time" ? h.actions.applyTime() : h.actions.commitCivilDate("2026-09-16");
   test(`${command}: late success cannot replace the newly selected place`, async () => {
     const h = harness(); const pending = start(h); h.replace();
     h.requests[0]!.resolve({ data: context("ctx:a", 2) }); await pending;
@@ -92,7 +88,7 @@ for (const command of ["time", "date"] as const) {
 }
 
 test("time and date share a synchronous lock before React rerenders", async () => {
-  const h = harness(); const first = h.actions.commitIndex(0); const second = h.actions.commitCivilDate("2026-09-16");
+  const h = harness(); const first = h.actions.applyTime(); const second = h.actions.commitCivilDate("2026-09-16");
   assert.equal(h.requests.length, 1);
   h.requests[0]!.resolve({ data: context("ctx:a", 2) }); await Promise.all([first, second]);
 });
@@ -226,7 +222,7 @@ test("returning after a different place was selected cannot become a disabled-qu
 
 test("freeze rejects date and time commits synchronously before React catches up", async () => {
   const h = harness(); h.sandbox.alignmentMode = "editing";
-  await h.actions.commitIndex(0); await h.actions.commitCivilDate("2026-09-16");
+  await h.actions.applyTime(); await h.actions.commitCivilDate("2026-09-16");
   assert.equal(h.requests.length, 0); assert.equal(h.writes.length, 0);
   assert.equal(h.session.busy, false);
 });

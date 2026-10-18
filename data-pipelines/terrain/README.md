@@ -116,6 +116,27 @@ not depend on a client fetching the provider or on a workstation VPN. The
 current local data evidence does not certify that deployment prerequisite or
 native Map rendering.
 
+## Finite fixed Map publications
+
+`publish_fixed_terrain.mts` prepares operator-declared GCJ-02 target rectangles
+through the same fixed-cell/window owner, then commits `inventory.json` last.
+Pass absolute paths for `--spec` (the existing JSON target array), `--cache` and
+`--output`; use a new output directory for a changed publication. `--previous`
+accepts the preceding immutable publication directory and keeps its old image
+URLs readable in the new inventory. Previous, cache and output directories must
+be distinct.
+
+A missing cache pointer for a requested spatial identity is seeded from the
+previous release's verified final PNG/proof. An already populated current cache
+pointer retains priority, so a deliberately prepared source revision can become
+current while the earlier image remains available. Carrying unchanged products
+forward requires no source HTTP or terrain derivation. Targets still use the
+existing bounded source, grid, LOD and missing-data rules; closer views at the
+z12 ceiling do not create finer original terrain. Preparing a directory does not
+activate it in an API, database or static-host release. The API's existing
+`MINIAPP_TERRAIN_PUBLICATION_ROOT` selects local final products; deployment and
+static object delivery remain separate publication responsibilities.
+
 Dynamic Copernicus v2 manifests explicitly bind the retrieved range offsets, lengths and
 SHA-256 values plus the source object's ETag. Their source checksum is a digest
 of the range proof, **not** a full-object hash. v1 full-file provenance remains

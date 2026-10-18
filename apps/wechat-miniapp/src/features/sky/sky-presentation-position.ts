@@ -12,6 +12,7 @@ export interface SkyPositionPresentation {
   source: ApiEnvelope<SkyReport>;
   rendered: ResolvedSkyReport;
   anchorAt: string;
+  timeModelAlgorithmVersion?: string;
 }
 
 /** Same authorized publication, observer and rendered instant as Canvas. The
@@ -72,7 +73,8 @@ export function skyPresentationPosition(binding: CelestialPositionBinding,
       !Number.isFinite(position.azimuthDeg) || position.azimuthDeg < 0 || position.azimuthDeg >= 360 ||
       !Number.isFinite(position.altitudeDeg) || Math.abs(position.altitudeDeg) > 90) return null;
     return { ...binding, position, unavailableReason: null,
-      ...(presentation.source.data.timeModel && !exactSkyTimeFrame(presentation.source.data.hourly, binding.at)
-        ? { timeModelAlgorithmVersion: presentation.source.data.timeModel.algorithmVersion } : {}) };
+      ...(!exactSkyTimeFrame(presentation.source.data.hourly, binding.at) &&
+        (presentation.timeModelAlgorithmVersion || presentation.source.data.timeModel)
+        ? { timeModelAlgorithmVersion: presentation.timeModelAlgorithmVersion ?? presentation.source.data.timeModel!.algorithmVersion } : {}) };
   } catch { return null; }
 }

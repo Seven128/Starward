@@ -13,6 +13,19 @@ export interface DisplayRasterRegion {
 export interface RasterBounds { west: number; south: number; east: number; north: number }
 export interface DisplayRasterWindow extends Omit<DisplayRasterRegion, "span"> { columns: number; rows: number }
 
+/** Canonical request precision shared by display-window producers and clients.
+ * Expand the requested rectangle, never round an unqueried edge inward. The
+ * tolerance only absorbs noise when reconstructing an exact seven-place bound;
+ * this does not replace geographic validation or the returned image coverage. */
+export function normalizeDisplayRasterBounds(bounds: RasterBounds): RasterBounds {
+  return {
+    west: Math.floor(bounds.west * 1e7 + 1e-6) / 1e7,
+    south: Math.floor(bounds.south * 1e7 + 1e-6) / 1e7,
+    east: Math.ceil(bounds.east * 1e7 - 1e-6) / 1e7,
+    north: Math.ceil(bounds.north * 1e7 - 1e-6) / 1e7,
+  };
+}
+
 export function validateDisplayRasterRegion(region: DisplayRasterRegion) {
   const count = 2 ** region.zoom;
   if (region.grid !== DISPLAY_RASTER_GRID || region.tilePixels !== 256

@@ -1,35 +1,90 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, realpath, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { TerrainService } from "../../workers/miniapp-api/src/terrain-service.ts";
-import { validateTerrainPublication, validateTerrainAsset } from "../../workers/miniapp-api/src/terrain-publication.ts";
+import { validateTerrainPublication, validateTerrainAsset, type TerrainPublication } from "../../workers/miniapp-api/src/terrain-publication.ts";
 import { terrainFixedRequest, terrainWindowRequest, terrainRequestKey } from "../../workers/miniapp-api/src/terrain-request.ts";
 import { terrainInventoryVersion, readTerrainFixedInventory, readTerrainFixedAsset, type TerrainFixedInventory } from "../../workers/miniapp-api/src/terrain-fixed-publication.ts";
 import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
 import { displayRasterWindowForBounds, type RasterBounds } from "@starward/coordinate-system";
 
 const hash = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
+async function publicationRoot(value: string): Promise<string> {
+  let parent = path.resolve(value);
+  const missing: string[] = [];
+  for (;;) {
+    try { return path.resolve(await realpath(parent), ...missing); }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT" || path.dirname(parent) === parent) throw error;
+      missing.unshift(path.basename(parent));
+      parent = path.dirname(parent);
+    }
+  }
+}
+function rootsOverlap(left: string, right: string): boolean {
+  const inside = (parent: string, child: string) => {
+    const relative = path.relative(parent, child);
+    return !relative || !path.isAbsolute(relative) && relative !== ".." && !relative.startsWith(".." + path.sep);
+  };
+  return inside(left, right) || inside(right, left);
+}
 async function immutableWrite(file: string, bytes: Buffer) {
   try { await writeFile(file, bytes, { flag: "wx" }); }
   catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "EEXIST" || !(await readFile(file)).equals(bytes)) throw error;
   }
 }
+async function preserveProof(file: string, proof: Buffer, publication: TerrainPublication, bytes: Buffer) {
+  try {
+    const existing = await readFile(file);
+    const previous = validateTerrainPublication(JSON.parse(existing.toString("utf8")));
+    validateTerrainAsset(bytes, previous);
+    if (previous.publicationId !== publication.publicationId) throw new Error("terrain_publication_identity_conflict");
+    proof = existing;
+  } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+  await immutableWrite(file, proof);
+  return proof;
+}
 
 /** Operator-selected finite targets. Source manifests and PNGs are copied into
  * an immutable static-HTTP directory; inventory.json is the final commit. */
 export async function publishFixedTerrain(input: { output: string; cache: string; previous?: string; targets: { name: string; boundsGcj02: RasterBounds }[] }) {
   if (!path.isAbsolute(input.output) || !path.isAbsolute(input.cache) || path.resolve(input.output) === path.resolve(input.cache)
-    || (input.previous !== undefined && (!path.isAbsolute(input.previous) || path.resolve(input.previous) === path.resolve(input.output)))
+    || (input.previous !== undefined && (!path.isAbsolute(input.previous) || path.resolve(input.previous) === path.resolve(input.output)
+      || path.resolve(input.previous) === path.resolve(input.cache)))
     || !input.targets.length || input.targets.length > 16) throw new Error("terrain_publication_targets_invalid");
+  // Resolve existing ancestors too: a future child or a junction must not let
+  // cache/output writes enter an immutable previous publication (or each other).
+  const roots = await Promise.all([input.output, input.cache, ...(input.previous ? [input.previous] : [])].map(publicationRoot));
+  if (roots.some((left, index) => roots.slice(index + 1).some(right => rootsOverlap(left, right))))
+    throw new Error("terrain_publication_targets_invalid");
   const previous = input.previous ? await readTerrainFixedInventory(input.previous) : undefined;
   const previousAssets = [...(previous?.assets ?? []), ...(previous?.retainedAssets ?? [])];
   await mkdir(input.output, { recursive: true });
   const terrain = new TerrainService({ directory: input.cache });
+  const reusePrevious = async (key: string) => {
+    const entry = previous?.assets.find(asset => asset.key === key);
+    if (!entry) return;
+    const pointer = path.join(input.cache, key + ".json");
+    try { await stat(pointer); return; }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+    const { publication, bytes } = await readTerrainFixedAsset(input.previous!, entry);
+    await mkdir(input.cache, { recursive: true });
+    await immutableWrite(path.join(input.cache, entry.file), bytes);
+    const proof = await preserveProof(path.join(input.cache, entry.file + ".json"),
+      await readFile(path.join(input.previous!, entry.file + ".json")), publication, bytes);
+    // An explicitly populated newer cache pointer wins. Never replace it with
+    // the previous release merely because that release remains readable.
+    try { await writeFile(pointer, proof, { flag: "wx" }); }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error; }
+  };
   try {
-    const keys = new Set<string>();
+    // Previous final products are immutable inputs too. They need not have a
+    // regenerable-cache pointer and must not trigger source work just to carry
+    // a still-current spatial identity into the next release.
+    const prepared = new Map<string, TerrainPublication>();
     for (const target of input.targets) {
       const b = target.boundsGcj02;
       if (typeof target.name !== "string" || !target.name.trim() || target.name.length > 120) throw new Error("terrain_publication_targets_invalid");
@@ -39,13 +94,15 @@ export async function publishFixedTerrain(input: { output: string; cache: string
       for (let row = 0; row < window.rows; row++) for (let column = 0; column < window.columns; column++) {
         const region = { grid: window.grid, zoom: window.zoom,
           x: window.x + column, y: window.y + row, tilePixels: 256 as const, span: 1 as const };
+        await reusePrevious(terrainRequestKey(terrainFixedRequest(region)));
         const cell = await terrain.prepareFixedCell(region);
         if (!cell || cell.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_publication_sources_incomplete");
-        keys.add(terrainRequestKey(terrainFixedRequest(region)));
+        prepared.set(terrainRequestKey(terrainFixedRequest(region)), cell);
       }
+      await reusePrevious(terrainRequestKey(terrainWindowRequest(window)));
       const publication = await terrain.getPublication(request);
       if (!publication?.fixedWindow || publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_publication_sources_incomplete");
-      keys.add(terrainRequestKey(terrainWindowRequest(publication.fixedWindow)));
+      prepared.set(terrainRequestKey(terrainWindowRequest(publication.fixedWindow)), publication);
     }
     const assets: TerrainFixedInventory["assets"] = [];
     const copy = async (directory: string, file: string, key: string, expectedHash?: string) => {
@@ -58,22 +115,13 @@ export async function publishFixedTerrain(input: { output: string; cache: string
       if (key !== terrainRequestKey(request)) throw new Error("terrain_publication_identity_conflict");
       const bytes = validateTerrainAsset(await readFile(path.join(directory, file)), publication);
       await immutableWrite(path.join(input.output, publication.image.file), bytes);
-      const proofPath = path.join(input.output, file + ".json");
-      let stableProof = proof;
-      try {
-        const previous = await readFile(proofPath);
-        const previousPublication = validateTerrainPublication(JSON.parse(previous.toString("utf8")));
-        validateTerrainAsset(bytes, previousPublication);
-        if (previousPublication.publicationId !== publication.publicationId) throw new Error("terrain_publication_identity_conflict");
-        stableProof = previous;
-      } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
-      await immutableWrite(proofPath, stableProof);
+      const stableProof = await preserveProof(path.join(input.output, file + ".json"), proof, publication, bytes);
       return { key, file: publication.image.file, publicationSha256: hash(stableProof) };
     };
     // Current pointers select one version per requested spatial identity. Old
     // per-image cache proofs must never become competing current publications.
-    for (const key of [...keys].sort()) {
-      const publication = validateTerrainPublication(JSON.parse(await readFile(path.join(input.cache, key + ".json"), "utf8")));
+    for (const key of [...prepared.keys()].sort()) {
+      const publication = prepared.get(key)!;
       const predecessor = previousAssets.find(asset => asset.file === publication.image.file);
       assets.push(await copy(predecessor ? input.previous! : input.cache, publication.image.file, key, predecessor?.publicationSha256));
     }

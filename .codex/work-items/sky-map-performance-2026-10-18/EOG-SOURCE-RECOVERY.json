@@ -76,9 +76,9 @@
       "driveFileId": "1qn08kRhOznn3NBUkFfydwiOwEzZU7gVE",
       "url": "https://drive.google.com/file/d/1qn08kRhOznn3NBUkFfydwiOwEzZU7gVE/view",
       "bytes": 2014480666,
-      "state": "UPLOAD_AND_OWNER_ONLY_METADATA_VERIFIED_ONLY",
+      "state": "RECYCLED_NOT_SELECTED",
       "selectedForReceiver": false,
-      "cleanup": "Retained while validating the supported fallback. Optional exact-object recovery-bin cleanup may follow parent review; not a required recovery dependency."
+      "cleanup": "Exact Drive object ID and parent verified through connector and DOM; moved to normal Drive recovery bin and observed there with the same ID. Selected eight CF parts and median GZIP remain in the folder. Recovery-bin proof: E:/Dev/Starward-data/evidence/eog-20261018/drive-duplicate-recycled.png. No permanent deletion or sharing change."
     },
     "largeIO": "COMPLETE; no active transfers or hashing; do not rehash existing TIFF caches during shared phone/Map measurements",
     "browserProof": {
@@ -112,7 +112,7 @@
     "freshRemoteRebuildAdmission": "PASS; 2 files, 17,420,036,496 decompressed bytes, installed=2, compressed=2, networkRequested=false"
   },
   "remaining": [
-    "Parent commit/delivery of reviewed lock, receiver and documentation; no user action required for source recovery",
-    "After acceptance and outside shared performance measurements, parent may remove only the exact newly owned transfer/readback directories and optional unselected full-CF duplicate; preserve user Downloads and verified source cache"
+    "Implementation/lock/README committed e6a68d22; current Git delivery continues with the broader Goal",
+    "Outside phone measurements, retire only newly owned transfer/readback/generated receiver directories while preserving user Downloads and verified original source cache"
   ]
 }

@@ -12,7 +12,7 @@ export function skySceneFrameFacts(scene: ResolvedStellarScene | undefined, at: 
     frameAt: frame?.at ?? at ?? "",
     catalogVersion: scene?.catalog?.catalogVersion ?? "",
     starState: frame ? "AVAILABLE" as const : "UNAVAILABLE" as const,
-    starCount: frame ? frame.points.length : null,
+    starCount: frame ? frame.pointCount ?? frame.points.length : null,
   };
 }
 

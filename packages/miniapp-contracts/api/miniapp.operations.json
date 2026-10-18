@@ -27,6 +27,7 @@
     { "id": "spotContributionBaselineGet", "method": "GET", "path": "/spots/{spotId}/contribution-baseline", "requestType": "void", "responseType": "ContributionFormalBaseline" },
     { "id": "spotSkyGet", "method": "GET", "path": "/spots/{spotId}/sky", "requestType": "void", "responseType": "SkyReportData" },
     { "id": "spotSkyTargetsGet", "method": "GET", "path": "/spots/{spotId}/sky/targets", "requestType": "void", "responseType": "SkyTargetInstantData" },
+    { "id": "spotSkyGeometryGet", "method": "GET", "path": "/spots/{spotId}/sky/geometry", "requestType": "void", "responseType": "SkyGeometryWindowData" },
     { "id": "stellarCatalogGet", "method": "GET", "path": "/sky/catalogs/{catalogVersion}/{catalogHash}", "requestType": "void", "responseType": "StellarCatalogPublication" },
     { "id": "saoLegacyIndexGet", "method": "GET", "path": "/sky/supplements/sao", "requestType": "void", "responseType": "SaoIndexPublication" },
     { "id": "saoLegacyTileGet", "method": "GET", "path": "/sky/supplements/sao/{publicationHash}/tiles/{tileId}", "requestType": "void", "responseType": "SaoTilePublication" },
