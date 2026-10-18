@@ -73,6 +73,14 @@
         "sha256": "f75cbe240966e631e0b08d16c6f8e211a0a13be0ec88af6fd8fd349144846e59",
         "state": "NOT_UPLOADED",
         "locations": [],
+        "officialSource": {
+          "url": "https://eogdata.mines.edu/nighttime_light/annual/v22/2025/VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif.gz",
+          "transportFormat": "GZIP",
+          "access": "EXISTING_AUTHORIZED_BROWSER_ACCOUNT",
+          "observedOn": "2026-10-18",
+          "state": "LISTED_NOT_DOWNLOADED_OR_HASH_VERIFIED",
+          "listingSizeDisplay": "238M"
+        },
         "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
       },
       {
@@ -81,10 +89,18 @@
         "sha256": "76d0b8f1038f79a3cb2f3cf1e90de181df446a67c652f36e264e31616355c2a7",
         "state": "NOT_UPLOADED",
         "locations": [],
+        "officialSource": {
+          "url": "https://eogdata.mines.edu/nighttime_light/annual/v22/2025/VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz",
+          "transportFormat": "GZIP",
+          "access": "EXISTING_AUTHORIZED_BROWSER_ACCOUNT",
+          "observedOn": "2026-10-18",
+          "state": "LISTED_NOT_DOWNLOADED_OR_HASH_VERIFIED",
+          "listingSizeDisplay": "1.9G"
+        },
         "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
       }
     ],
-    "receipt": "Original publisher identity; not downloaded or rehashed on the receiving computer. Exact originals may be acquired through authorized official EOG access or a verified existing copy. A verified Drive mirror remains pending.",
+    "receipt": "On 2026-10-18 the user reported EOG downloads available and the authenticated official 2025 directory was read back with both exact GZIP filenames. Listing sizes are rounded transport sizes, not verified bytes. Decompressed TIFF hashes and a verified Drive mirror remain pending; no original was downloaded or rehashed in this planning phase.",
     "targetStorage": {
       "provider": "GOOGLE_DRIVE",
       "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",

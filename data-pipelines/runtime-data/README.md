@@ -47,6 +47,8 @@ Source validation streams SHA-256 rather than loading multi-GB files into memory
 
 `NOT_UPLOADED` with empty locations means no verified off-host copy is recorded; it does not mean the original computer is the only possible acquisition source. Keep supplier acquisition and our durable Drive mirror separate: after acquiring and checking the exact source, record its provenance and upload/read back an immutable copy in the selected data folder when needed. Add verified Drive locations to this same lock, preserving the original hashes. A transfer size restriction may require ordered byte parts; record those and the original-file hash, not just ZIP names. Do not guess protected URLs, retain session URLs/credentials in Git, or fetch this group in ordinary app startup or CI.
 
+Optional `officialSource` records an actually observed supplier URL/transport and its evidence state. `LISTED_NOT_DOWNLOADED_OR_HASH_VERIFIED` is a navigation aid, not file admission or a Drive backup. For compressed sources, keep transport bytes/SHA-256 separately from the locked decompressed-file identity; a rounded listing size is not an exact byte count. Reuse existing authenticated browser access without exporting credentials or assuming paid programmatic entitlement. The current `prepare --profile rebuild` still verifies a populated cache; it does not silently download or decompress these locators.
+
 ## Publishing a new data version
 
 1. Use the existing [nightlight publisher](../dark-sky/README.md) and terrain publication owner. Preserve retained URLs, declared coverage, numerical companions, provenance and license notices. Preparation/sealing, database publication and runtime activation are separate operations.
