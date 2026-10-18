@@ -7,6 +7,7 @@ import { userMapRegionEnd, userMapRegionStarted } from './map-region-event';
 import { sameContextVersion } from '../../services/observation-context-version';
 import { retryObservationScene } from './context-restore';
 import { spotNeighborhoodCamera } from './map-camera';
+import { createMapSceneTestBoundaries } from './map-page-test-support';
 function runtime() {
     const source = ts.createSourceFile('map.tsx', readFileSync(new URL('./index.tsx', import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const names = new Set(['invalidateMapPointIntent', 'dismissMapRegionFailure', 'resolveMapPoint', 'onRegionChange', 'resolveSpotContext', 'openDetail', 'refreshMap']);
@@ -31,7 +32,7 @@ function runtime() {
     const state = () => ({ viewport, selectedSpotId: selected, mapResetVersion: resetVersion, spotOpenRequestVersion: 0, observationContext: context, retiredObservationContextId: null,
         retireObservationContextEdit() {}, notifications: [...notices.values()], dismissNotification: (id: string) => notices.delete(id) });
     const no = () => { };
-    const scope: any = { useAppStore: { getState: state }, mapResetVersion: 0, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => owner,
+    const scope: any = { ...createMapSceneTestBoundaries().scope, useAppStore: { getState: state }, mapResetVersion: 0, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => owner,
         mapPointIntent: { current: 0 }, failedMapRegion: { current: null }, detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 }, navigationEpoch: { current: 0 }, regionTimer: { current: null }, candidateCameraGuard: { current: null }, panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
         gcj02ToWgs84: ({ lat, lon }: any) => ({ lat, lon }), currentTimezoneHint: () => 'UTC', localDateForNow: () => '2026-09-26', activeContext: null, timeReference: null,
         bootstrapReplacementBlocked: false, selected: null, bootstrapContext: { refetch: async () => undefined }, retryObservationScene, sameContextVersion,

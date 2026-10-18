@@ -236,6 +236,33 @@
         "isolatedInfrastructure": "passed",
         "ociImageBuild": "passed"
       }
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39107969379,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39107969379",
+      "headSha": "95aeb06606cdc9967e42b8015020ce45e9c47da9",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedStep": "Check release code",
+      "classification": {
+        "contracts": {
+          "passed": 84,
+          "failed": 0
+        },
+        "api": {
+          "passed": 962,
+          "failed": 0,
+          "skipped": 38
+        },
+        "miniapp": {
+          "passed": 2609,
+          "failed": 7,
+          "skipped": 1
+        },
+        "cause": "Three source-extraction test fixtures did not supply static-light dependencies added by 3b0d8916",
+        "repair": "Existing map-page-test-support supplies real scene-layer policy and explicit static read boundaries; existing behavioral assertions retained; 28 focused tests and typecheck pass"
+      }
     }
   ],
   "remaining": "Current combined Product CI39095632949 passed at9e5c75ef; later commits change task evidence only. Context remains unchanged since its passed d8339c48 check. No CI/tool action is pending and no staging deployment occurred. Required original-data, native/recipient outcomes and independent review remain incomplete; main synchronization/final cleanup depend on them.",

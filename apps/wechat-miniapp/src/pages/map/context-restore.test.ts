@@ -3,7 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { mapLayerKindForOverlay } from "./map-layer-selection";
+import { createMapSceneTestBoundaries } from "./map-page-test-support";
 import * as contextRestore from "./context-restore.ts";
 import { restoreMapBootstrapContext, retryObservationScene, observationSceneNeedsContextRestore } from "./context-restore.ts";
 import { canApplyContextRestore, sameContextVersion } from "../../services/observation-context-version.ts";
@@ -246,7 +246,7 @@ test("a cold non-retired selection uses a rebuilt bootstrap reference to obtain 
     lastHandledSelectedId: { current: null },
     spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
     accountOwnerId: "user:test", pageVisible: true, preferences: {}, committedFilters: {}, debouncedFinderQuery: "",
-    mapLayerKindForOverlay, nativeViewport: { bounds: { west: 113.9, east: 114.1, south: 22.4, north: 22.6 }, error: null },
+    ...createMapSceneTestBoundaries().scope, nativeViewport: { bounds: { west: 113.9, east: 114.1, south: 22.4, north: 22.6 }, error: null },
     analysisOverlay: "TOTAL_CLOUD", viewport: { center: { latitude: 22.5, longitude: 114 }, zoom: 12 },
     useMapForecastQuery: (options: any) => {
       sceneOptions = options;
@@ -322,7 +322,7 @@ test("retired selection retains cached formal markers without requesting its uns
   const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };
   const cached = { data: { spots: [{ spotId: "spot:a" }, { spotId: "spot:b" }] } };let options: any, requests = 0;
   const result = vm.runInNewContext(ts.transpileModule(statements.join("\n") + "\nspots;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    mapLayerKindForOverlay, nativeViewport: { bounds: { west: 113.9, east: 114.1, south: 21.9, north: 22.1 }, error: null },
+    ...createMapSceneTestBoundaries().scope, nativeViewport: { bounds: { west: 113.9, east: 114.1, south: 21.9, north: 22.1 }, error: null },
     activeContext: null, observationContext: confirmed, accountOwnerId: "user:test", committedFilters: {}, debouncedFinderQuery: "隔离测试",
     viewport: { center: { latitude: 22, longitude: 114 }, zoom: 12 }, preferences: {}, analysisOverlay: "TOTAL_CLOUD", pageVisible: true,
     useMapForecastQuery: (value: any) => { options = value;assert.equal(value.queryKey[2], confirmed.contextId);return { data: cached }; },

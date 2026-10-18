@@ -46,6 +46,27 @@
     "id": 39107969379,
     "url": "https://github.com/Seven128/Starward/actions/runs/39107969379",
     "headSha": "95aeb06606cdc9967e42b8015020ce45e9c47da9",
-    "status": "IN_PROGRESS"
-  }
+    "status": "COMPLETED",
+    "conclusion": "failure",
+    "failedStep": "Check release code",
+    "failureClassification": {
+      "contracts": {
+        "passed": 84,
+        "failed": 0
+      },
+      "api": {
+        "passed": 962,
+        "failed": 0,
+        "skipped": 38
+      },
+      "miniapp": {
+        "passed": 2609,
+        "failed": 7,
+        "skipped": 1
+      },
+      "cause": "Three source-extraction test fixtures did not supply static-light dependencies added by 3b0d8916",
+      "repair": "Existing map-page-test-support supplies real scene-layer policy and explicit static read boundaries; existing behavioral assertions retained; 28 focused tests and typecheck pass"
+    }
+  },
+  "recoveryFix": "8e86f8627582caa2138b14b2767d659d1e3978ac"
 }

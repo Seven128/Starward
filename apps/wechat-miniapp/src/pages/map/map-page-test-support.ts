@@ -1,3 +1,21 @@
+import type { AnalysisOverlay } from "../../state/app-store";
+import { mapLayerKindForOverlay, mapSceneLayerForOverlay } from "./map-layer-selection";
+
+/** Query-owner dependencies used by the existing focused Map callback tests.
+ * Use the real layer policy; static reads require an explicit response adapter. */
+export function createMapSceneTestBoundaries(options: {
+  overlay?: AnalysisOverlay;
+  refetchLight?: () => Promise<unknown>;
+} = {}) {
+  return { scope: {
+    mapLayerKindForOverlay,
+    mapSceneLayerForOverlay,
+    analysisOverlay: options.overlay ?? "NONE",
+    nativeViewport: { bounds: null, error: null },
+    nightLight: { refetch: options.refetchLight ?? (async () => { throw new Error("unexpected_test_nightlight_read"); }) },
+  } };
+}
+
 /** Explicit idle page boundaries for tests that execute selected Map callbacks.
  * Unknown globals are deliberately not supplied: a new dependency must be
  * understood by the consumer, rather than becoming a permissive no-op mock.
