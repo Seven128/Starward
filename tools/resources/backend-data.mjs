@@ -3,6 +3,9 @@ import {spawn} from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {Readable, Transform} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
+import {createGunzip} from 'node:zlib';
 import {prepareResources} from './assets.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -215,13 +218,128 @@ export async function indexPublicFiles(source, output) {
 }
 
 export async function verifyRebuildData(cacheRoot, cwd = root) {
-  assert(cacheRoot && path.isAbsolute(cacheRoot), 'backend_data_absolute_cache_root_required');
-  assert(!inside(cwd, cacheRoot), 'backend_data_rebuild_cache_must_be_outside_checkout');
+  rebuildCacheRoot(cacheRoot, cwd);
   const lock = readBackendLock(cwd);
   assert(Array.isArray(lock.rebuild?.files) && lock.rebuild.files.length > 0, 'backend_data_rebuild_manifest_missing');
   for (const file of lock.rebuild.files) await streamPinned(child(cacheRoot, file.path), file);
   return {status: 'REBUILD_INPUTS_VERIFIED', datasetVersion: lock.rebuild.datasetVersion,
     files: lock.rebuild.files.length, bytes: lock.rebuild.files.reduce((sum, file) => sum + file.bytes, 0)};
+}
+
+function rebuildCacheRoot(cacheRoot, cwd) {
+  assert(cacheRoot && path.isAbsolute(cacheRoot), 'backend_data_absolute_cache_root_required');
+  assert(!inside(cwd, cacheRoot), 'backend_data_rebuild_cache_must_be_outside_checkout');
+  // Resolve an existing ancestor too: a junction must not hide an in-checkout cache.
+  let ancestor = path.resolve(cacheRoot);
+  while (!fs.existsSync(ancestor)) {
+    const parent = path.dirname(ancestor);
+    assert(parent !== ancestor, 'backend_data_rebuild_root_unavailable');
+    ancestor = parent;
+  }
+  assert(!inside(fs.realpathSync(cwd), fs.realpathSync(ancestor)), 'backend_data_rebuild_cache_must_be_outside_checkout');
+}
+
+function archiveMembers(source, archive) {
+  descriptor(archive);
+  const whole = child(source, archive.path);
+  if (fs.existsSync(whole)) return [{...archive, parts: undefined}];
+  assert(Array.isArray(archive.parts) && archive.parts.length > 0
+    && new Set(archive.parts.map(part => part.path)).size === archive.parts.length
+    && archive.parts.reduce((sum, part) => sum + part.bytes, 0) === archive.bytes, 'backend_data_archive_parts_invalid');
+  for (const part of archive.parts) { descriptor(part); child(source, part.path); }
+  return archive.parts;
+}
+
+async function* transportChunks(source, archive, members) {
+  const wholeHash = createHash('sha256');
+  let total = 0;
+  for (const part of members) {
+    const file = child(source, part.path);
+    const info = fs.statSync(file, {throwIfNoEntry: false});
+    assert(info?.isFile() && info.size === part.bytes, 'backend_data_transport_size_mismatch:' + part.path);
+    const hash = createHash('sha256');
+    for await (const chunk of fs.createReadStream(file)) {
+      hash.update(chunk); wholeHash.update(chunk); total += chunk.length;
+      yield chunk;
+    }
+    assert(hash.digest('hex') === part.sha256, 'backend_data_transport_hash_mismatch:' + part.path);
+  }
+  assert(total === archive.bytes && wholeHash.digest('hex') === archive.sha256, 'backend_data_transport_hash_mismatch:' + archive.path);
+}
+
+export async function importRebuildData(source, cacheRoot, cwd = root) {
+  rebuildCacheRoot(cacheRoot, cwd);
+  assert(source && path.isAbsolute(source), 'backend_data_absolute_import_source_required');
+  rebuildCacheRoot(source, cwd);
+  const lock = readBackendLock(cwd);
+  const files = lock.rebuild?.files;
+  assert(Array.isArray(files) && files.length > 0 && new Set(files.map(file => file.path)).size === files.length,
+    'backend_data_rebuild_manifest_missing');
+  const pending = [];
+  for (const file of files) {
+    descriptor(file);
+    const target = child(cacheRoot, file.path);
+    if (fs.existsSync(target)) { await streamPinned(target, file); continue; }
+    const original = child(source, file.path);
+    if (fs.existsSync(original)) pending.push({file, target, original});
+    else {
+      assert(file.transport?.format === 'GZIP', 'backend_data_rebuild_transport_unavailable:' + file.path);
+      const archive = file.transport;
+      const members = archiveMembers(source, archive);
+      // Check the complete batch's presence/size before beginning any decompression.
+      for (const part of members) assert(fs.statSync(child(source, part.path), {throwIfNoEntry: false})?.size === part.bytes,
+        'backend_data_transport_size_mismatch:' + part.path);
+      pending.push({file, target, archive, members});
+    }
+  }
+  if (!pending.length) return {status: 'REBUILD_INPUTS_VERIFIED', datasetVersion: lock.rebuild.datasetVersion,
+    files: files.length, bytes: files.reduce((sum, file) => sum + file.bytes, 0), installed: 0, networkRequested: false};
+  fs.mkdirSync(cacheRoot, {recursive: true});
+  rebuildCacheRoot(cacheRoot, cwd);
+  const disk = fs.statfsSync(cacheRoot, {bigint: true});
+  assert(disk.bavail * disk.bsize >= BigInt(pending.reduce((sum, item) => sum + item.file.bytes, 0)), 'backend_data_rebuild_disk_space_insufficient');
+  const staging = fs.mkdtempSync(path.join(cacheRoot, '.starward-rebuild-'));
+  const staged = [];
+  let installed = 0;
+  try {
+    for (const item of pending) {
+      const {file} = item;
+      const temporary = child(staging, file.path);
+      fs.mkdirSync(path.dirname(temporary), {recursive: true});
+      let bytes = 0;
+      const hash = createHash('sha256');
+      const identity = new Transform({transform(chunk, encoding, next) {
+        bytes += chunk.length;
+        if (bytes > file.bytes) return next(Error('backend_data_rebuild_size_exceeded:' + file.path));
+        hash.update(chunk); next(null, chunk);
+      }});
+      const input = item.original ? fs.createReadStream(item.original)
+        : Readable.from(transportChunks(source, item.archive, item.members));
+      try {
+        await pipeline(...(item.original ? [input] : [input, createGunzip()]), identity,
+          fs.createWriteStream(temporary, {flags: 'wx'}));
+      } catch (error) {
+        throw Error(error.message?.startsWith('backend_data_') ? error.message : 'backend_data_rebuild_decode_failed:' + file.path);
+      }
+      assert(bytes === file.bytes && hash.digest('hex') === file.sha256, 'backend_data_hash_mismatch:' + file.path);
+      staged.push({...item, temporary});
+    }
+    // Only admitted complete files become cache entries. Exclusive links avoid
+    // overwriting a concurrently created cache file; staging shares its volume.
+    for (const item of staged) {
+      fs.mkdirSync(path.dirname(item.target), {recursive: true});
+      if (fs.existsSync(item.target)) await streamPinned(item.target, item.file);
+      else { fs.linkSync(item.temporary, item.target); installed++; }
+    }
+  } finally {
+    // This uniquely owned directory contains only reproducible import staging.
+    const relative = path.relative(cacheRoot, staging);
+    assert(!path.isAbsolute(relative) && !relative.includes(path.sep) && /^\.starward-rebuild-/u.test(relative), 'backend_data_staging_cleanup_outside_cache');
+    fs.rmSync(staging, {recursive: true, force: true});
+  }
+  return {status: 'REBUILD_INPUTS_VERIFIED', datasetVersion: lock.rebuild.datasetVersion,
+    files: files.length, bytes: files.reduce((sum, file) => sum + file.bytes, 0), installed,
+    transport: 'VERIFIED_LOCAL_IMPORT', compressed: staged.filter(item => item.archive).length, networkRequested: false};
 }
 
 export async function assembleDriveArchive(source, output, cwd = root) {
@@ -289,7 +407,7 @@ if (path.resolve(process.argv[1] ?? '') === fileURLToPath(import.meta.url)) {
       options[args[i]] = args[i + 1];
     }
     const allowed = {status: [], env: [], prepare: ['--profile', '--cache-root'], verify: ['--profile', '--cache-root'],
-      import: ['--from-directory'], assemble: ['--from-directory', '--output'], index: ['--from-directory', '--output'], 'check-db': ['--config'], start: ['--config']};
+      import: ['--from-directory', '--profile', '--cache-root'], assemble: ['--from-directory', '--output'], index: ['--from-directory', '--output'], 'check-db': ['--config'], start: ['--config']};
     assert(allowed[action] && Object.keys(options).every(key => allowed[action].includes(key)), 'backend_data_arguments_invalid');
     let result;
     const profile = options['--profile'] ?? 'runtime';
@@ -304,7 +422,9 @@ if (path.resolve(process.argv[1] ?? '') === fileURLToPath(import.meta.url)) {
     }
     else if (action === 'import') {
       assert(options['--from-directory'], 'backend_data_import_source_required');
-      result = importBackendData(path.resolve(options['--from-directory']));
+      result = profile === 'rebuild'
+        ? await importRebuildData(path.resolve(options['--from-directory']), options['--cache-root'])
+        : importBackendData(path.resolve(options['--from-directory']));
     } else if (action === 'env') result = backendDataEnvironment(root, process.env);
     else if (action === 'check-db' || action === 'start') {
       const env = runtimeEnvironment(options['--config']);

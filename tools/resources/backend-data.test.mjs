@@ -4,8 +4,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import {gzipSync} from 'node:zlib';
 import {assembleDriveArchive, backendDataEnvironment, child, importBackendData, lockPath,
-  prepareBackendData, verifyBackendData, verifyRebuildData} from './backend-data.mjs';
+  importRebuildData, prepareBackendData, verifyBackendData, verifyRebuildData} from './backend-data.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
 const json = value => Buffer.from(JSON.stringify(value));
@@ -121,4 +122,83 @@ test('a Drive-only runtime materializes outside Git and feeds the same versioned
   assert.equal(importBackendData(source, cwd, env).installed, 7);
   assert.equal(prepareBackendData(cwd, env).networkRequested, false);
   assert.equal(backendDataEnvironment(cwd, env).MINIAPP_TERRAIN_PUBLICATION_ROOT, path.join(cache, 'runtime/test-v1/terrain'));
+});
+
+function compressedFixture(multipart = false) {
+  const data = fixture();
+  const source = fs.mkdtempSync(path.join(os.tmpdir(), 'starward-rebuild-test-')); temps.push(source);
+  const cache = fs.mkdtempSync(path.join(os.tmpdir(), 'starward-rebuild-test-')); temps.push(cache);
+  const originals = ['raw-source', 'matching-cloud-coverage'];
+  data.lock.rebuild.files = originals.map((value, i) => {
+    const file = pin(`source-${i}.tif`, Buffer.from(value));
+    const gzip = gzipSync(value);
+    const transport = {...pin(file.path + '.gz', gzip), format: 'GZIP'};
+    if (multipart) {
+      const split = Math.floor(gzip.length / 2);
+      transport.parts = [gzip.subarray(0, split), gzip.subarray(split)].map((bytes, n) => {
+        const part = pin(transport.path + `.part${n + 1}`, bytes);
+        fs.writeFileSync(path.join(source, part.path), bytes);
+        return part;
+      });
+    } else fs.writeFileSync(path.join(source, transport.path), gzip);
+    return {...file, transport};
+  });
+  fs.writeFileSync(path.join(data.cwd, lockPath), json(data.lock));
+  return {...data, source, cache, originals};
+}
+
+test('rebuild import admits exact GZIP and raw-byte parts through one bounded path, then reuses the cache offline', async () => {
+  for (const multipart of [false, true]) {
+    const {cwd, source, cache, originals} = compressedFixture(multipart);
+    const result = await importRebuildData(source, cache, cwd);
+    assert.equal(result.installed, 2);
+    assert.equal(result.compressed, 2);
+    assert.deepEqual(originals.map((_, i) => fs.readFileSync(path.join(cache, `source-${i}.tif`), 'utf8')), originals);
+    assert.equal((await verifyRebuildData(cache, cwd)).files, 2);
+    assert.equal((await importRebuildData(source, cache, cwd)).installed, 0);
+    assert.deepEqual(fs.readdirSync(cache).sort(), ['source-0.tif', 'source-1.tif']);
+  }
+});
+
+test('rebuild import rejects incomplete/corrupt/wrong-version transport before admitting any batch member', async () => {
+  for (const failure of ['missing', 'transport-hash', 'wrong-original', 'truncated-gzip', 'oversized-original', 'part-order']) {
+    const {cwd, source, cache, lock} = compressedFixture(failure === 'part-order');
+    const last = lock.rebuild.files[1];
+    const gzipPath = path.join(source, last.transport.path);
+    if (failure === 'missing') fs.unlinkSync(gzipPath);
+    if (failure === 'transport-hash') last.transport.sha256 = 'f'.repeat(64);
+    if (failure === 'wrong-original') last.sha256 = 'f'.repeat(64);
+    if (failure === 'truncated-gzip') {
+      const broken = fs.readFileSync(gzipPath).subarray(0, 14);
+      fs.writeFileSync(gzipPath, broken);
+      last.transport = {...pin(last.transport.path, broken), format: 'GZIP'};
+    }
+    if (failure === 'oversized-original') last.bytes = 2;
+    if (failure === 'part-order') last.transport.parts.reverse();
+    fs.writeFileSync(path.join(cwd, lockPath), json(lock));
+    await assert.rejects(importRebuildData(source, cache, cwd), /backend_data_/u);
+    assert.deepEqual(fs.readdirSync(cache), [], failure + ' must leave no admitted or staging file');
+  }
+});
+
+test('rebuild raw import preserves existing verified entries, rejects changed cache files and linked cache roots', async () => {
+  const {cwd, source, cache, originals} = compressedFixture();
+  fs.writeFileSync(path.join(source, 'source-0.tif'), originals[0]);
+  assert.equal((await importRebuildData(source, cache, cwd)).compressed, 1);
+  fs.writeFileSync(path.join(cache, 'source-0.tif'), 'user-modified');
+  await assert.rejects(importRebuildData(source, cache, cwd), /hash_mismatch/u);
+  assert.equal(fs.readFileSync(path.join(cache, 'source-0.tif'), 'utf8'), 'user-modified');
+  const alias = path.join(source, 'checkout-alias');
+  fs.symlinkSync(cwd, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  await assert.rejects(importRebuildData(source, alias, cwd), /outside_checkout/u);
+});
+
+test('rebuild import rejects an unavailable drive root instead of waiting for a nonexistent ancestor', {
+  skip: process.platform !== 'win32',
+}, async () => {
+  const {cwd, source} = compressedFixture();
+  const missingDrive = [...'ZYXWVUTSRQPONMLKJIHGFEDCBA'].map(letter => `${letter}:/`)
+    .find(drive => !fs.existsSync(drive));
+  assert.ok(missingDrive, 'fixture needs an unavailable local drive letter');
+  await assert.rejects(importRebuildData(source, missingDrive + 'starward-rebuild', cwd), /root_unavailable/u);
 });

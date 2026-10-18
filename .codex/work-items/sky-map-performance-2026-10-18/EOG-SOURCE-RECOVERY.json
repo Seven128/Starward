@@ -1,0 +1,118 @@
+{
+  "recordedOn": "2026-10-18",
+  "scope": "R16/R18 exact EOG originals, private mirror and shared receiver",
+  "lock": "data-pipelines/runtime-data/current.lock.json",
+  "externalWorkingDirectories": {
+    "verifiedOriginalTiffs": "E:/Dev/Starward-data/sources/eog-vnl-v22-2025-c202604011200",
+    "mirrorReceiveStaging": "E:/Dev/Starward-data/restores/eog-20261018/drive-gzip",
+    "ownedLocalByteParts": "E:/Dev/Starward-data/transfers/eog-20261018/cf-gzip-parts",
+    "scope": "Only this task's newly created transfer/cache directories; original user Downloads and prior r6/private restoration remain outside cleanup.",
+    "freshMirrorReceiverTiffs": "E:/Dev/Starward-data/restores/eog-20261018/receiver-tiffs"
+  },
+  "sourceAcquisition": {
+    "method": "Reused both existing complete-name Downloads GZIPs; no duplicate EOG download",
+    "officialDirectoryReadback": "https://eogdata.mines.edu/nighttime_light/annual/v22/2025/",
+    "browserRuntime": "Existing authorized Chrome session through bundled browser-client and node_repl",
+    "accountCookiesOrPasswordsRead": false,
+    "temporaryReferenceHandling": "A browser DOM snapshot and a file-reference shape inspection included temporary single-file authenticated URLs in tool output. No such URL was copied into source, the lock or task files; subsequent output redacts URLs and in-memory raw references are cleared after receive. Do not copy raw connector/UI payloads into evidence.",
+    "newEntitlementInferred": false,
+    "localOriginals": "VERIFIED_EXACT_LOCKED_BYTES",
+    "transportBytes": 2264285772,
+    "decompressedBytes": 17420036496,
+    "importCommand": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs import --profile rebuild --from-directory <existing-downloads> --cache-root <external-source-cache>",
+    "receipt": {
+      "status": "REBUILD_INPUTS_VERIFIED",
+      "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+      "files": 2,
+      "bytes": 17420036496,
+      "installed": 2,
+      "transport": "VERIFIED_LOCAL_IMPORT",
+      "compressed": 2,
+      "networkRequested": false
+    }
+  },
+  "mirror": {
+    "status": "VERIFIED_PRIVATE_MIRROR",
+    "provider": "GOOGLE_DRIVE",
+    "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+    "folderPermissionsReadback": "Only a user owner permission; existing sharing was preserved",
+    "medianTransport": "Complete GZIP uploaded; exact owner-only metadata and independently received bytes verified by the shared importer",
+    "cloudCoverageTransport": "Eight ordered original-GZIP-byte parts uploaded in one batch; exact owner-only metadata, each part identity and the complete GZIP identity independently read back and verified by the shared importer",
+    "transportLimitEvidence": [
+      "google_drive_fetch download_raw_file=true/include_base64=false: 413; 2014480666 exceeds 268435456 bytes",
+      "Chrome PlaywrightDownload event/path: timed out after 120000 ms despite longer requested option",
+      "Chrome locator.downloadMedia on the actual supplied file link: timed out after 120000 ms despite longer requested option"
+    ],
+    "remoteReadback": {
+      "status": "VERIFIED_EXACT_COMPRESSED_AND_DECOMPRESSED_IDENTITIES",
+      "method": "Connected Drive raw fetch with inline base64 disabled; temporary file references used only in memory to receive exact named bytes outside the checkout",
+      "sourceDirectory": "E:/Dev/Starward-data/restores/eog-20261018/drive-gzip",
+      "representation": "One complete median GZIP plus eight CF original-byte parts; no raw TIFFs or complete CF GZIP in the receive directory",
+      "allPartMetadata": "E:/Dev/Starward-data/evidence/eog-20261018/drive-parts-metadata.json",
+      "selectedObjectIdentitiesOwner": "data-pipelines/runtime-data/current.lock.json: rebuild.files[].transport",
+      "selectedPermissions": "Each selected object is in the selected folder and has exactly one user owner permission; shared=false; no sharing change"
+    },
+    "actualMirrorReceiver": {
+      "status": "PASS",
+      "command": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs import --profile rebuild --from-directory E:/Dev/Starward-data/restores/eog-20261018/drive-gzip --cache-root E:/Dev/Starward-data/restores/eog-20261018/receiver-tiffs",
+      "freshDestinationGuard": "Test-Path checked false before the invocation; existing cache reuse could not satisfy this readback",
+      "receipt": {
+        "status": "REBUILD_INPUTS_VERIFIED",
+        "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+        "files": 2,
+        "bytes": 17420036496,
+        "installed": 2,
+        "transport": "VERIFIED_LOCAL_IMPORT",
+        "compressed": 2,
+        "networkRequested": false
+      },
+      "scope": "All selected remote transport identities, all decompressed TIFF identities and actual fresh-cache admission; does not republish r6 or certify product/phone behavior"
+    },
+    "selectedRemoteObjects": 9,
+    "selectedTransportBytes": 2264285772,
+    "uploadedRemoteObjects": 10,
+    "unselectedDuplicate": {
+      "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz",
+      "driveFileId": "1qn08kRhOznn3NBUkFfydwiOwEzZU7gVE",
+      "url": "https://drive.google.com/file/d/1qn08kRhOznn3NBUkFfydwiOwEzZU7gVE/view",
+      "bytes": 2014480666,
+      "state": "UPLOAD_AND_OWNER_ONLY_METADATA_VERIFIED_ONLY",
+      "selectedForReceiver": false,
+      "cleanup": "Retained while validating the supported fallback. Optional exact-object recovery-bin cleanup may follow parent review; not a required recovery dependency."
+    },
+    "largeIO": "COMPLETE; no active transfers or hashing; do not rehash existing TIFF caches during shared phone/Map measurements",
+    "browserProof": {
+      "completedFullObjectUploads": "E:/Dev/Starward-data/evidence/eog-20261018/drive-upload-complete.jpg",
+      "finalPartsScreenshot": "Unavailable: the Chrome page detached after byte reception. The lightweight rebind/screenshot and close also returned Debugger unattached; no repeated retry. Exact part metadata plus actual received-byte admission is the completed result evidence.",
+      "cleanup": "Original EOG tab 1362052061 retained. Agent-created Drive folder tab 1362052064 was still listed, but explicit close could not complete after debugger detachment; normal ephemeral-tab cleanup applies."
+    }
+  },
+  "implementation": {
+    "owner": "tools/resources/backend-data.mjs",
+    "supports": [
+      "Explicit rebuild import outside the checkout",
+      "Exact original TIFF or pinned GZIP",
+      "Optional ordered raw-byte transport parts without a full assembled copy",
+      "Streaming part/full transport and decompressed SHA-256",
+      "Available-space preflight and locked decompression-size limit",
+      "All source members staged and admitted after identity validation",
+      "Existing verified cache reuse and changed-cache preservation",
+      "Unavailable Windows drive roots fail promptly instead of looping during ancestor discovery"
+    ],
+    "runtimeProductsChanged": false,
+    "databaseMutated": false,
+    "credentialsProvisioned": false
+  },
+  "checks": {
+    "backendDataTests": "10 passed, 0 failed, 0 skipped after final unavailable-drive recovery guard",
+    "resourceSuite": "14 passed, 0 failed, 0 skipped before final unavailable-drive guard; all 10 affected backend-data tests passed after that guard",
+    "diffWhitespace": "PASS after final code/lock edits; line-ending normalization notices only",
+    "contextValidation": "PASS; paths/controlling-source declarations only",
+    "independentReview": "PASS: fresh eog_delivery_review independently inspected receiver, old/new contracts, unchanged runtime/private/TIFF identities, selected remote metadata and receiver directory sizes; 10/10 focused tests, no established blocking defect; no repeated large I/O",
+    "freshRemoteRebuildAdmission": "PASS; 2 files, 17,420,036,496 decompressed bytes, installed=2, compressed=2, networkRequested=false"
+  },
+  "remaining": [
+    "Parent commit/delivery of reviewed lock, receiver and documentation; no user action required for source recovery",
+    "After acceptance and outside shared performance measurements, parent may remove only the exact newly owned transfer/readback directories and optional unselected full-CF duplicate; preserve user Downloads and verified source cache"
+  ]
+}

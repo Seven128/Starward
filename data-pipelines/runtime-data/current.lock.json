@@ -66,20 +66,54 @@
     "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
     "scope": "GLOBAL_EOG_VNL_V22_2025_INPUTS",
     "defaultDownload": false,
+    "provenance": {
+      "provider": "Earth Observation Group, Colorado School of Mines",
+      "product": "EOG Annual VNL V2.2, 2025, c202604011200",
+      "acquisition": "REUSED_EXISTING_AUTHORIZED_GZIP_DOWNLOADS_MATCHING_LOCKED_TIFFS",
+      "sourceRightsOwner": "data-pipelines/dark-sky/README.md",
+      "license": {
+        "name": "CC BY 4.0 with the EOG product notice",
+        "url": "https://eogdata.mines.edu/files/EOG_products_CC_License.pdf"
+      },
+      "accessBoundary": "Existing-copy integrity does not grant paid OpenID download entitlement or broaden publication/sharing."
+    },
     "files": [
       {
         "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif",
         "bytes": 11613178366,
         "sha256": "f75cbe240966e631e0b08d16c6f8e211a0a13be0ec88af6fd8fd349144846e59",
-        "state": "NOT_UPLOADED",
-        "locations": [],
+        "transport": {
+          "format": "GZIP",
+          "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif.gz",
+          "bytes": 249805106,
+          "sha256": "1618b54191f961f60353a76fc72bb5fd671892bbc4e49fd7860bbaff57941de7",
+          "driveFileId": "1fBW26QYoCPda0GDZ57vLaJgrbo_DR-9Q",
+          "url": "https://drive.google.com/file/d/1fBW26QYoCPda0GDZ57vLaJgrbo_DR-9Q/view"
+        },
+        "state": "VERIFIED_PRIVATE_DRIVE_MIRROR",
+        "locations": [
+          {
+            "provider": "GOOGLE_DRIVE",
+            "visibility": "OWNER_ONLY",
+            "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "transportPath": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif.gz",
+            "representation": "COMPLETE_GZIP",
+            "state": "READBACK_VERIFIED",
+            "readback": {
+              "verifiedOn": "2026-10-18",
+              "method": "REMOTE_RAW_BYTES_THROUGH_SHARED_REBUILD_IMPORTER_INTO_FRESH_EXTERNAL_CACHE",
+              "evidence": ".codex/work-items/sky-map-performance-2026-10-18/EOG-SOURCE-RECOVERY.json"
+            }
+          }
+        ],
         "officialSource": {
           "url": "https://eogdata.mines.edu/nighttime_light/annual/v22/2025/VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif.gz",
           "transportFormat": "GZIP",
           "access": "EXISTING_AUTHORIZED_BROWSER_ACCOUNT",
           "observedOn": "2026-10-18",
-          "state": "LISTED_NOT_DOWNLOADED_OR_HASH_VERIFIED",
-          "listingSizeDisplay": "238M"
+          "state": "MATCHING_EXISTING_COPY_HASH_VERIFIED",
+          "listingSizeDisplay": "238M",
+          "verificationMethod": "Existing authorized local GZIP; exact compressed identity and locked decompressed TIFF size/SHA-256 verified on 2026-10-18"
         },
         "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
       },
@@ -87,25 +121,104 @@
         "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif",
         "bytes": 5806858130,
         "sha256": "76d0b8f1038f79a3cb2f3cf1e90de181df446a67c652f36e264e31616355c2a7",
-        "state": "NOT_UPLOADED",
-        "locations": [],
+        "transport": {
+          "format": "GZIP",
+          "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz",
+          "bytes": 2014480666,
+          "sha256": "bd8e8221a48eb402d26020de94efe36e9df1fb300ace5900b6d2f43c341a1eb8",
+          "parts": [
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part001",
+              "bytes": 268435456,
+              "sha256": "9d517d753a917c010d36fce679ce7986b46043064166edb0bfebb274027f680a",
+              "driveFileId": "1ir2ZVsaFFNgihS1PHXhVnbpzceRQDwmu",
+              "url": "https://drive.google.com/file/d/1ir2ZVsaFFNgihS1PHXhVnbpzceRQDwmu/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part002",
+              "bytes": 268435456,
+              "sha256": "aff6a7dda8a035b015eeb428a291c2ae388a0bb7eecc33d4a55679308aba2bb2",
+              "driveFileId": "1_8naFahUY-sIU5PHLAv2IyV26xGkfY-e",
+              "url": "https://drive.google.com/file/d/1_8naFahUY-sIU5PHLAv2IyV26xGkfY-e/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part003",
+              "bytes": 268435456,
+              "sha256": "0071954ca72223e5d1c689ce6d8d569bc86250d4a401665221749889307c44c4",
+              "driveFileId": "1nBJRj4cXO8fVB_fbwGPr7vAfCmIZRewq",
+              "url": "https://drive.google.com/file/d/1nBJRj4cXO8fVB_fbwGPr7vAfCmIZRewq/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part004",
+              "bytes": 268435456,
+              "sha256": "d2a0f5af90897facee03631256310326438dbfda6f80eeddb0c9f5f638a03ef3",
+              "driveFileId": "1tYN6pb7UPlWVnyN2zZUKo1F9DtXN7fjP",
+              "url": "https://drive.google.com/file/d/1tYN6pb7UPlWVnyN2zZUKo1F9DtXN7fjP/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part005",
+              "bytes": 268435456,
+              "sha256": "44339736d18ea896a29fbcb9f84be8cc36c579ce3d04959b05240d08a05b41af",
+              "driveFileId": "1-mQU5KFu_6RjuU_x5ibbL5pWtDJpL5qw",
+              "url": "https://drive.google.com/file/d/1-mQU5KFu_6RjuU_x5ibbL5pWtDJpL5qw/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part006",
+              "bytes": 268435456,
+              "sha256": "87c6d9c7a584ddff63224d58727221738272b5796850645c143948e1e85f2266",
+              "driveFileId": "1tFkbh2V5s1JDmCHn382gS1Mr-2awzE2U",
+              "url": "https://drive.google.com/file/d/1tFkbh2V5s1JDmCHn382gS1Mr-2awzE2U/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part007",
+              "bytes": 268435456,
+              "sha256": "3374d459558936e830f105f9e1211f12ac274616ed0e54705f0b29d61ac65eb5",
+              "driveFileId": "1MTTjWWeY71WEu5ZLqmTzrULLeA6WXN-A",
+              "url": "https://drive.google.com/file/d/1MTTjWWeY71WEu5ZLqmTzrULLeA6WXN-A/view"
+            },
+            {
+              "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz.part008",
+              "bytes": 135432474,
+              "sha256": "3fad8abd0cfbb42b5b6e533afb07a9fe31f2a7940f7245e82c5dbb5f6067ed41",
+              "driveFileId": "1RxvELpIvl9NfYqmlvqqTB7ubsqJmLtSV",
+              "url": "https://drive.google.com/file/d/1RxvELpIvl9NfYqmlvqqTB7ubsqJmLtSV/view"
+            }
+          ]
+        },
+        "state": "VERIFIED_PRIVATE_DRIVE_MIRROR",
+        "locations": [
+          {
+            "provider": "GOOGLE_DRIVE",
+            "visibility": "OWNER_ONLY",
+            "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "transportPath": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz",
+            "representation": "ORDERED_GZIP_BYTES",
+            "state": "READBACK_VERIFIED",
+            "readback": {
+              "verifiedOn": "2026-10-18",
+              "method": "REMOTE_RAW_BYTES_THROUGH_SHARED_REBUILD_IMPORTER_INTO_FRESH_EXTERNAL_CACHE",
+              "evidence": ".codex/work-items/sky-map-performance-2026-10-18/EOG-SOURCE-RECOVERY.json"
+            }
+          }
+        ],
         "officialSource": {
           "url": "https://eogdata.mines.edu/nighttime_light/annual/v22/2025/VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif.gz",
           "transportFormat": "GZIP",
           "access": "EXISTING_AUTHORIZED_BROWSER_ACCOUNT",
           "observedOn": "2026-10-18",
-          "state": "LISTED_NOT_DOWNLOADED_OR_HASH_VERIFIED",
-          "listingSizeDisplay": "1.9G"
+          "state": "MATCHING_EXISTING_COPY_HASH_VERIFIED",
+          "listingSizeDisplay": "1.9G",
+          "verificationMethod": "Existing authorized local GZIP; exact compressed identity and locked decompressed TIFF size/SHA-256 verified on 2026-10-18"
         },
         "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
       }
     ],
-    "receipt": "On 2026-10-18 the user reported EOG downloads available and the authenticated official 2025 directory was read back with both exact GZIP filenames. Listing sizes are rounded transport sizes, not verified bytes. Decompressed TIFF hashes and a verified Drive mirror remain pending; no original was downloaded or rehashed in this planning phase.",
+    "receipt": "On 2026-10-18 both existing matching GZIP downloads were reused and matched the exact locked TIFF identities. The selected owner-only Drive objects (median complete GZIP and eight ordered CF original-byte parts) were then downloaded independently. The shared rebuild importer verified every selected part, both complete GZIP identities and both locked TIFF byte counts/SHA-256 values while admitting 17,420,036,496 decompressed bytes into a fresh external cache. No runtime release or database was changed; exact locations and transport identities are recorded above.",
     "targetStorage": {
       "provider": "GOOGLE_DRIVE",
       "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
       "visibility": "OWNER_ONLY",
-      "state": "UPLOAD_PENDING"
+      "state": "READBACK_VERIFIED"
     }
   },
   "privateRecovery": {
