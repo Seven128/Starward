@@ -1,0 +1,10 @@
+{
+  "status": "NONDEFAULT_PORT_RESTORE_VERIFIED",
+  "postgresPort": 55433,
+  "redisPort": 56380,
+  "distinctPostgresClusters": true,
+  "targetAbsentOnOriginalInstance": true,
+  "targetPresentOnSelectedInstance": true,
+  "allOriginalTablesVerified": 73,
+  "cleanup": "ONLY_NEW_PORTCHECK_PROJECT_CONTAINERS_NETWORK_AND_TWO_VOLUMES_REMOVED"
+}

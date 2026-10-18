@@ -51,7 +51,8 @@ if(command==='assemble'){
   const repo=path.resolve(option('--repo')??'');const privateRoot=option('--private-root');const configPath=option('--infra-config');const target=option('--target');
   assert(privateRoot&&configPath&&/^starward_restore_[a-z0-9_]{1,40}$/u.test(target??''),'restore_arguments_required');
   await verify(privateRoot);
-  const config=readJson(configPath);
+  let config;
+  try{config=readJson(configPath);}catch{throw new Error('private_infra_configuration_unreadable');}
   assert(['external','compose'].includes(config.MINIAPP_INFRA_MODE),'isolated_infrastructure_mode_required');
   process.env.MINIAPP_INFRA_MODE=config.MINIAPP_INFRA_MODE;
   const externalNames=['MINIAPP_ADMIN_DATABASE_URL','MINIAPP_INFRA_REDIS_URL','MINIAPP_POSTGRES_BIN_DIR'];
@@ -61,9 +62,13 @@ if(command==='assemble'){
     assert(/^starward-[a-z0-9_-]{1,50}$/u.test(config.COMPOSE_PROJECT_NAME??''),'explicit_owned_compose_project_required');
     for(const name of externalNames)delete process.env[name];
     process.env.COMPOSE_PROJECT_NAME=config.COMPOSE_PROJECT_NAME;
+    for(const name of ['MINIAPP_POSTGRES_PORT','MINIAPP_REDIS_PORT']){
+      if(config[name]!==undefined){assert(typeof config[name]==='string','private_infra_configuration_invalid');process.env[name]=config[name];}
+    }
   }
   const runtimeModule=await import(pathToFileURL(path.join(repo,'tools/miniapp/infrastructure-runtime.mjs')));
   const runtime=runtimeModule.readInfrastructureRuntime();
+  runtimeModule.assertPostgresTarget(runtime);
   const {restoreBackup}=await import(pathToFileURL(path.join(repo,'tools/miniapp/backup-restore.mjs')));
   const result=command==='restore-db'?await restoreBackup({inputPath:path.join(privateRoot,'database/working-r6.dump'),targetDatabase:target}):{status:'existing_database_verified'};
   const require=createRequire(path.join(repo,'package.json'));const {Client}=require('pg');const client=new Client({connectionString:runtimeModule.databaseUrlFor(runtime,target)});

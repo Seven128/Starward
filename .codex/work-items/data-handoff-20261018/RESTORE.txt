@@ -77,7 +77,11 @@ RESTORE ORDER (PowerShell 7; substitute local absolute paths)
    and an explicit owned COMPOSE_PROJECT_NAME in the restricted config, through
    the same existing backup/restore owner. Start a fresh isolated Compose project
    first; do not reuse another project's volumes. The receiver's Compose ports
-   bind to loopback. `verify-db` accepts the same arguments and performs only
+   bind to loopback. Optional MINIAPP_POSTGRES_PORT/MINIAPP_REDIS_PORT values in
+   that config must match the ones used to start the project. The infrastructure
+   owner binds SQL, Redis, startup and pg_restore to one selected project/port
+   identity and verifies the live PostgreSQL port mapping before any SQL effects.
+   `verify-db` accepts the same arguments and performs only
    existing-target row/publication verification, without restoring another DB.
 5. Point a separately owned local API at the restored database through its
    existing secret configuration owner. Relevant non-secret configuration:

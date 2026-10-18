@@ -1,0 +1,51 @@
+{
+  "implementation": "95aeb06606cdc9967e42b8015020ce45e9c47da9",
+  "publicRuntimeFiles": 1544,
+  "publicRuntimeBytes": 234624578,
+  "stagedLfsPointersVerified": 1025,
+  "ordinaryJsonBytesVerified": 519,
+  "lfsUploadedUniqueObjects": 937,
+  "lfsUploadedDisplayBytes": "231 MB",
+  "pushState": "NORMAL_BRANCH_PUSH_CONFIRMED",
+  "independentReview": {
+    "scope": "95aeb066 plus affected 3b0d8916 consumer",
+    "agent": "backend_data_readonly_review",
+    "state": "COMPLETED_AND_CLOSED",
+    "findings": {
+      "P1": 0,
+      "P2": 1
+    },
+    "repair": "Shared Compose project/port binding plus live mapping preflight; regression failed before/passed after; real nondefault-port isolated restore verified"
+  },
+  "tests": {
+    "resourceChecks": 11,
+    "projectSkillChecks": 4,
+    "infrastructureRuntimeChecks": 5,
+    "contextValidation": "PASS",
+    "realDriveMirrorImport": "1544 pinned public files verified",
+    "realNondefaultPortRecovery": "PASS_73_TABLES_ORIGINAL_INSTANCE_UNTOUCHED_TEMP_PROJECT_REMOVED"
+  },
+  "sourceRebuild": {
+    "bytes": 17420036496,
+    "state": "NOT_UPLOADED"
+  },
+  "driveQuotaObservation": {
+    "date": "2026-10-18",
+    "totalDisplay": "5 TB",
+    "usedDisplay": "390.2 MB",
+    "ownerVerified": true
+  },
+  "budget": {
+    "requestedDollars": 0,
+    "creation": "BLOCKED_BY_MISSING_PAYMENT_METHOD",
+    "paymentAdded": false,
+    "currentBoundary": "NO_PAYMENT_METHOD_FREE_QUOTA_ONLY"
+  },
+  "productAcceptance": "NOT_COMPLETE",
+  "productCi": {
+    "id": 39107969379,
+    "url": "https://github.com/Seven128/Starward/actions/runs/39107969379",
+    "headSha": "95aeb06606cdc9967e42b8015020ce45e9c47da9",
+    "status": "IN_PROGRESS"
+  }
+}

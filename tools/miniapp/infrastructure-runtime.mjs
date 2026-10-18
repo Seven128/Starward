@@ -9,6 +9,16 @@ const composePath = path.join(root, "infra", "miniapp", "docker-compose.yml");
 const defaultAdminUrl = "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp";
 const defaultRedisUrl = "redis://127.0.0.1:56379";
 
+function composePort(value, fallback) {
+  const selected = value ?? fallback;
+  if (!/^[1-9]\d{0,4}$/u.test(selected) || Number(selected) > 65535) throw new Error("compose_port_invalid");
+  return String(selected);
+}
+
+function composeEnvironment(runtime, env = process.env) {
+  return { ...env, ...runtime.composeEnv };
+}
+
 function localUrl(value, protocols, code) {
   let url;
   try { url = new URL(value); } catch { throw new Error(code); }
@@ -20,11 +30,18 @@ function localUrl(value, protocols, code) {
 export function readInfrastructureRuntime(env = process.env) {
   const mode = env.MINIAPP_INFRA_MODE ?? "compose";
   if (mode === "compose") {
-    if (env.MINIAPP_ADMIN_DATABASE_URL && env.MINIAPP_ADMIN_DATABASE_URL !== defaultAdminUrl)
+    const postgresPort = composePort(env.MINIAPP_POSTGRES_PORT, "55432");
+    const redisPort = composePort(env.MINIAPP_REDIS_PORT, "56379");
+    const project = env.COMPOSE_PROJECT_NAME ?? "starward-miniapp-demo";
+    if (!/^[a-z0-9][a-z0-9_-]*$/u.test(project)) throw new Error("compose_project_invalid");
+    const admin = new URL(defaultAdminUrl), redis = new URL(defaultRedisUrl);
+    admin.port = postgresPort; redis.port = redisPort;
+    if (env.MINIAPP_ADMIN_DATABASE_URL && env.MINIAPP_ADMIN_DATABASE_URL !== admin.toString())
       throw new Error("compose_admin_database_url_mismatch");
     if (env.MINIAPP_INFRA_REDIS_URL || env.MINIAPP_POSTGRES_BIN_DIR)
       throw new Error("external_infrastructure_requires_explicit_mode");
-    return { mode, adminUrl: defaultAdminUrl, redisUrl: defaultRedisUrl, postgresBinDir: null };
+    return { mode, adminUrl: admin.toString(), redisUrl: redis.toString(), postgresBinDir: null,
+      composeEnv: { COMPOSE_PROJECT_NAME: project, MINIAPP_POSTGRES_PORT: postgresPort, MINIAPP_REDIS_PORT: redisPort } };
   }
   if (mode !== "external") throw new Error("infrastructure_mode_invalid");
   if (Object.entries(env).some(([key, value]) => /^PG/iu.test(key) && value))
@@ -51,7 +68,19 @@ export function databaseUrlFor(runtime, databaseName) {
 export function startInfrastructure(runtime, run) {
   if (runtime.mode === "external") return; // The caller owns these services.
   const invocation = dockerComposeInvocation(["-f", composePath, "up", "-d", "--wait"]);
-  run(invocation.command, invocation.args);
+  run(invocation.command, invocation.args, { env: composeEnvironment(runtime) });
+}
+
+/** Verify the running container's actual mapping before any SQL creates a DB.
+ * Declared env alone cannot prove that an already-running project was recreated. */
+export function assertPostgresTarget(runtime, run = spawnSync) {
+  if (runtime.mode !== "compose") return;
+  const invocation = dockerComposeInvocation(["-f", composePath, "port", "postgres", "5432"]);
+  const result = run(invocation.command, invocation.args, { cwd: root, windowsHide: true,
+    encoding: "utf8", maxBuffer: 4096, env: composeEnvironment(runtime) });
+  const url = new URL(runtime.adminUrl);
+  if (result.status !== 0 || result.stdout.trim() !== `127.0.0.1:${url.port}`)
+    throw new Error("compose_postgres_endpoint_mismatch");
 }
 
 export function assertPostgresTools(runtime) {
@@ -67,7 +96,7 @@ export function postgresToolInvocation(runtime, tool, databaseName, args, env = 
   const url = new URL(databaseUrlFor(runtime, databaseName));
   const connectionArgs = [`--username=${decodeURIComponent(url.username)}`, `--dbname=${databaseName}`];
   if (runtime.mode === "compose") {
-    return { ...dockerComposeInvocation(["-f", composePath, "exec", "-T", "postgres", tool, ...connectionArgs, ...args], platform), env };
+    return { ...dockerComposeInvocation(["-f", composePath, "exec", "-T", "postgres", tool, ...connectionArgs, ...args], platform), env: composeEnvironment(runtime, env) };
   }
   const childEnv = Object.fromEntries(Object.entries(env).filter(([key]) => !/^PG/iu.test(key)));
   // libpq environment overrides (PGHOSTADDR/PGSERVICE/PGOPTIONS...) must not

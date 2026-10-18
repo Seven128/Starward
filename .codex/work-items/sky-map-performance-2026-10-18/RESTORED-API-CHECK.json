@@ -86,6 +86,15 @@
         "source",
         "lightPollution"
       ]
+    },
+    {
+      "path": "fixed-terrain-image",
+      "http": 200,
+      "ms": 36,
+      "bytes": 447385,
+      "matchesPublished": true,
+      "sha256": "dc613b0006b82c1122ecb314d3f5a66d2f68c718305aeb722b7e0f296ce5cfd2",
+      "cache": "public, max-age=604800, immutable"
     }
   ],
   "meaning": "Local current-code HTTP verification; not phone rendering or production latency."

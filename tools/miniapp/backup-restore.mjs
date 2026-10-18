@@ -4,7 +4,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { assertPostgresTools, databaseUrlFor, postgresToolInvocation, readInfrastructureRuntime } from "./infrastructure-runtime.mjs";
+import { assertPostgresTarget, assertPostgresTools, databaseUrlFor, postgresToolInvocation, readInfrastructureRuntime } from "./infrastructure-runtime.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -59,6 +59,7 @@ export async function createBackup({ databaseName, outputPath }) {
   assertDatabaseName(databaseName);
   const runtime = readInfrastructureRuntime();
   assertPostgresTools(runtime);
+  assertPostgresTarget(runtime);
   const resolved = path.resolve(outputPath);
   await mkdir(path.dirname(resolved), { recursive: true });
   const result = runPostgres(runtime, "pg_dump", databaseName, [
@@ -89,6 +90,7 @@ export async function restoreBackup({ inputPath, targetDatabase }) {
   assertDatabaseName(targetDatabase);
   const runtime = readInfrastructureRuntime();
   assertPostgresTools(runtime);
+  assertPostgresTarget(runtime);
   if (!targetDatabase.startsWith("starward_restore_"))
     throw new Error("restore_target_must_be_new_restore_database");
   const resolved = path.resolve(inputPath);

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
-import { databaseUrlFor, postgresToolInvocation, readInfrastructureRuntime, startInfrastructure } from "./infrastructure-runtime.mjs";
+import { assertPostgresTarget, databaseUrlFor, postgresToolInvocation, readInfrastructureRuntime, startInfrastructure } from "./infrastructure-runtime.mjs";
 
 const local = {
   MINIAPP_INFRA_MODE: "external",
@@ -9,6 +9,33 @@ const local = {
   MINIAPP_INFRA_REDIS_URL: "redis://127.0.0.1:56380/0",
   MINIAPP_POSTGRES_BIN_DIR: path.resolve("tmp", "postgres", "bin"),
 };
+
+test("owned Compose port/project selection stays identical for SQL, startup and dump/restore", () => {
+  const selected = {COMPOSE_PROJECT_NAME: 'starward-isolated-recovery', MINIAPP_POSTGRES_PORT: '55433', MINIAPP_REDIS_PORT: '56380'};
+  const runtime = readInfrastructureRuntime(selected);
+  assert.equal(new URL(databaseUrlFor(runtime, 'starward_restore_port_check')).port, '55433');
+  assert.equal(new URL(runtime.redisUrl).port, '56380');
+  const calls = [];
+  startInfrastructure(runtime, (...args) => calls.push(args));
+  for (const [key, value] of Object.entries(selected)) assert.equal(calls[0][2].env[key], value);
+  const invocation = postgresToolInvocation(runtime, 'pg_restore', 'starward_restore_port_check', [],
+    {COMPOSE_PROJECT_NAME: 'different-later-project', MINIAPP_POSTGRES_PORT: '55432', PATH: 'preserved'}, 'linux');
+  for (const [key, value] of Object.entries(selected)) assert.equal(invocation.env[key], value);
+  assert.equal(invocation.env.PATH, 'preserved');
+});
+
+test("Compose recovery rejects a live port mismatch before database effects", () => {
+  const runtime = readInfrastructureRuntime({COMPOSE_PROJECT_NAME: 'starward-isolated-recovery', MINIAPP_POSTGRES_PORT: '55433'});
+  assert.doesNotThrow(() => assertPostgresTarget(runtime, (_command, args, options) => {
+    assert.deepEqual(args.slice(-3), ['port', 'postgres', '5432']);
+    assert.equal(options.env.COMPOSE_PROJECT_NAME, 'starward-isolated-recovery');
+    return {status: 0, stdout: '127.0.0.1:55433\n'};
+  }));
+  for (const stdout of ['127.0.0.1:55432\n', '0.0.0.0:55433\n', ''])
+    assert.throws(() => assertPostgresTarget(runtime, () => ({status: 0, stdout})), /endpoint_mismatch/u);
+  for (const value of ['0', '65536', 'remote:5432', ''])
+    assert.throws(() => readInfrastructureRuntime({MINIAPP_POSTGRES_PORT: value}), /compose_port_invalid/u);
+});
 
 test("default compose keeps the container target and external never starts managed services", () => {
   const compose = readInfrastructureRuntime({});
