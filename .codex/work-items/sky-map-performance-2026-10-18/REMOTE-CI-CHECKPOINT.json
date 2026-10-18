@@ -130,9 +130,81 @@
       "completedAt": "2026-10-17T23:35:30Z",
       "status": "completed",
       "conclusion": "success"
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39090552186,
+      "headSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39090552186",
+      "createdAt": "2026-10-18T02:34:05Z",
+      "completedAt": "2026-10-18T02:47:23Z",
+      "status": "completed",
+      "conclusion": "success",
+      "checks": {
+        "contracts": {
+          "total": 84,
+          "passed": 84,
+          "failed": 0
+        },
+        "api": {
+          "total": 999,
+          "passed": 961,
+          "failed": 0,
+          "skipped": 38
+        },
+        "miniapp": {
+          "total": 2614,
+          "passed": 2613,
+          "failed": 0,
+          "skipped": 1
+        },
+        "deployment": {
+          "total": 248,
+          "passed": 248
+        },
+        "releaseAndPlatform": {
+          "total": 51,
+          "passed": 51
+        },
+        "builtCandidate": {
+          "total": 6,
+          "passed": 6
+        },
+        "backendBuild": "passed",
+        "weappCiBuild": "passed",
+        "isolatedInfrastructure": "passed",
+        "ociImageBuild": "passed"
+      }
+    },
+    {
+      "workflow": "Context structure",
+      "id": 39090556680,
+      "headSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39090556680",
+      "createdAt": "2026-10-18T02:34:10Z",
+      "completedAt": "2026-10-18T02:34:31Z",
+      "status": "completed",
+      "conclusion": "success"
     }
   ],
-  "remaining": "Product and Context passed at the bound revisions; subsequent changes are task receipts only. No pending CI dispatch/tool action or staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open. User deferred original-computer synchronization until waking.",
-  "productCheckedHeadSha": "328cf67ebfaf8a9b979c8e30163dcb4c0b436fcf",
-  "contextCheckedHeadSha": "fcbd0014eb7f325d6e29644dc85dd72ee1938887"
+  "remaining": "Product and Context passed at d8339c48. The later Map attribution-wrapper repair has the targeted checks and phone result below; old full CI is not rebound to that source. No pending CI dispatch/tool action or staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open. User deferred original-computer synchronization until waking.",
+  "productCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
+  "contextCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
+  "postCheckDelta": {
+    "scope": "Map attribution wrappers follow the existing shared visible-credit rule; no source content or style changes",
+    "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+    "sourceSha256": "126e18a6125a538f0c57e8babc3bda4bbbd57a9fbe439718e7e8bdb3f7d4f37b",
+    "checks": {
+      "sourceAndDataPresentationTests": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0
+      },
+      "miniappTypecheck": "passed",
+      "ordinaryBuildStaticChecks": 11,
+      "phone": "generation8 ordinary development feedback; empty strip removed, actual terrain credit retained"
+    },
+    "evidence": "PHONE-VERIFICATION.md#generation8-empty-map-attribution-shell-repair",
+    "fullSuiteRerun": false
+  }
 }

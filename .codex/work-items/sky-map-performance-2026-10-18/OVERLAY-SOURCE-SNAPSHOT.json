@@ -66,7 +66,7 @@
   "apps/wechat-miniapp/src/pages/map/context-restore.test.ts": "b87579a23e04aa0f84a69568bc1c3b7107c784c2d84d1ba29506a2a08a55e1aa",
   "apps/wechat-miniapp/src/pages/map/index.config.ts": "24274602273055745ad44f5dd2db6bcceab713d2ee4630ef0dd921f5ed7b956c",
   "apps/wechat-miniapp/src/pages/map/index.scss": "e74eb827eb4c80694676d41a16cd32decb050e90191fd681182fe0d2d8e1b9ef",
-  "apps/wechat-miniapp/src/pages/map/index.tsx": "0f7b779f224fa7165010eb4c9f576c42f941312440b5478420b91870f040a649",
+  "apps/wechat-miniapp/src/pages/map/index.tsx": "126e18a6125a538f0c57e8babc3bda4bbbd57a9fbe439718e7e8bdb3f7d4f37b",
   "apps/wechat-miniapp/src/pages/map/map-calendar-back.test.ts": "fd9ec000f56556e45033c9e84889fae5c2d073c06cd3725313aa240a2d7f9fb8",
   "apps/wechat-miniapp/src/pages/map/map-data-recovery.test.ts": "3e89ed1726a883ddbfbb0750beb8f311e78b70ee5870c8ca8653e3d71ada76b2",
   "apps/wechat-miniapp/src/pages/map/map-native-compatibility.test.ts": "86426570da905340bf70802f0b67422eea786b0389a4cf46f5f9243df3941fb2",

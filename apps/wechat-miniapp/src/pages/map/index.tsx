@@ -53,6 +53,7 @@ import { reconcileFavoriteSnapshot, useFavoriteMutation } from "@/hooks/use-favo
 import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { SourceAttribution } from "@/components/source-attribution";
+import { sourceAttributions } from "@/utils/source-presentation";
 import { Provenance } from "@/components/provenance";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
@@ -2569,11 +2570,11 @@ export default function MapPage() {
           </MapPanelChrome>
 
           <View className="map-source-attributions">
-            {activeContext?.timezoneSource && bottomPresentation === "none" ?
+            {activeContext?.timezoneSource && sourceAttributions([activeContext.timezoneSource]).length > 0 && bottomPresentation === "none" ?
               <View className="map-source-attribution"><SourceAttribution compact sources={[activeContext.timezoneSource]} /></View> : null}
-            {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" ?
+            {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && sourceAttributions(cloudPresentation?.sources ?? []).length > 0 && bottomPresentation !== "layer-sheet" ?
               <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution sources={cloudPresentation?.sources ?? []} /></View> : null}
-            {(lightInstallation.presentedData?.raster || (analysisOverlay === "LIGHT" && layerPolygons.length > 0)) && bottomPresentation !== "layer-sheet" && displayedLightLayer?.source ?
+            {(lightInstallation.presentedData?.raster || (analysisOverlay === "LIGHT" && layerPolygons.length > 0)) && bottomPresentation !== "layer-sheet" && displayedLightLayer?.source && sourceAttributions([displayedLightLayer.source]).length > 0 ?
               <View className="map-source-attribution"><SourceAttribution sources={[displayedLightLayer.source]} /></View> : null}
             {presentedTerrainData?.source && bottomPresentation === "none" ?
               <View className="map-source-attribution"><SoftButton variant="ghost" label="查看地形来源与许可" onClick={() => {
