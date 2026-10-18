@@ -2,7 +2,7 @@
 
 ## Current follow-up review packet — pending
 
-No independent reviewer has reviewed the later shared overlay/clock and phone-driven repairs as a complete delivery. The historical review below remains limited to its own hashes. Current implementation checkpoint is7472659d;9e5c75ef adds evidence only, and Product CI39095632949 is checking that combined source. The root's investigation is self-review, not an independent verdict.
+No independent reviewer has reviewed the later shared overlay/clock and phone-driven repairs as a complete delivery. The historical review below remains limited to its own hashes. Current implementation checkpoint is7472659d;9e5c75ef adds evidence only, and Product CI39095632949 passed for that combined source, including the clean Linux tests, builds and isolated infrastructure checks. The root's investigation is self-review, not an independent verdict.
 
 Review the new responsibilities against REQUIREMENTS, INHERITED-REQUIREMENTS and the unchanged PLAN:
 

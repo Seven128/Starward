@@ -16,7 +16,7 @@
 11. [手机实际选点范围与居中](PHONE-FOCUS-VERIFICATION.md)：generation5临时只读诊断包的3.394km、0.7px与拖动接管结果；不替代未完成的连续双指、其它入口和最终普通候选。
 12. [当前山体遮挡接口摘要](HORIZON-CURRENT-API-SUMMARY.json)：现有手机API的真实COG模型及许可/假设读回，未包含站位坐标；接口读回不替代手机Canvas、缺测恢复或资料阅读验收。
 13. [叠层服务实测摘要](OVERLAY-SERVICE-MEASUREMENTS.json)保留三阶段的成功与较慢样本、输出哈希及最终源码指纹；[临时聚焦观察器源码](FOCUS-OBSERVATION-PROBE.txt)与探针回执逐字节匹配，只作为证据保存，不在生产源码或普通候选里。
-14. [远端检查点与CI回执](REMOTE-CI-CHECKPOINT.json)：代码检查点d8339c48的Product CI39090552186和Context39090556680均通过，含隔离基础设施和镜像构建。之后的Map空来源条与海报分包路径修复通过针对性检查及generation8/9手机比较，未把旧CI绑定到新源码。main仍在原整合提交，当前独立审阅和剩余用户结果未完成。
+14. [远端检查点与CI回执](REMOTE-CI-CHECKPOINT.json)：当前组合提交9e5c75ef的Product CI39095632949完整通过，含Map空来源条、海报分包修复及隔离基础设施和镜像构建。Context自d8339c48的通过检查39090556680后未变；generation8/9手机结果保其各自范围。main仍在原整合提交，当前独立审阅和剩余用户结果未完成。
 15. [当前候选的开发工具恢复证据](DEVTOOLS-RECOVERY.md)：受控退出重开后官方CLI已恢复，自动真机调试的实际手机连接与绑定见后续证据；旧MCP/SDK失败不能继续当成当前CLI不可用的依据。
 16. [generation6真机反馈](PHONE-GEN6-VERIFICATION.md)：普通候选已绑定Android，真实选点打开中面板；无UI探针的原生范围/中心读回成立。后续连续操作、资料/来源与实际性能仍沿原义务继续；[只读测量源码](NATIVE-FOCUS-READBACK.txt)保留方法，不进入产品。
 17. [云量时钟差修复](CLOUD-CLOCK-REPAIR.md)：手机与BFF约1秒时钟差导致新鲜格子被判为未来数据；保留来源时刻并统一查询与暂存层的有效期时钟，记录修复前失败、修复后检查及generation7真实云格/切时刻/拖动结果。当前手机定位拒绝与恢复、generation8空来源条修复及旧构建回收见[真机证据](PHONE-VERIFICATION.md#generation7-location-permission-recovery)。

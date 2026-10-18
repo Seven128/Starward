@@ -192,14 +192,54 @@
       "url": "https://github.com/Seven128/Starward/actions/runs/39095632949",
       "headSha": "9e5c75ef204c2206e658c5154dafaec9e7424374",
       "createdAt": "2026-10-18T04:01:08Z",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "jobId": 117581363376,
-      "lastObservedStep": "Check release code"
+      "completedAt": "2026-10-18T04:14:44Z",
+      "checks": {
+        "resourcePreparation": {
+          "total": 5,
+          "passed": 5,
+          "failed": 0
+        },
+        "contracts": {
+          "total": 84,
+          "passed": 84,
+          "failed": 0
+        },
+        "api": {
+          "total": 999,
+          "passed": 961,
+          "failed": 0,
+          "skipped": 38
+        },
+        "miniapp": {
+          "total": 2615,
+          "passed": 2614,
+          "failed": 0,
+          "skipped": 1
+        },
+        "deployment": {
+          "total": 248,
+          "passed": 248
+        },
+        "releaseAndPlatform": {
+          "total": 51,
+          "passed": 51
+        },
+        "builtCandidate": {
+          "total": 6,
+          "passed": 6
+        },
+        "backendBuild": "passed",
+        "weappCiBuild": "passed",
+        "isolatedInfrastructure": "passed",
+        "ociImageBuild": "passed"
+      }
     }
   ],
-  "remaining": "Current combined Product CI39095632949 is in progress at9e5c75ef. Read that exact run before any dispatch retry; prior passed Product/Context checks stay bound to their recorded heads. No staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open.",
-  "productCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
+  "remaining": "Current combined Product CI39095632949 passed at9e5c75ef; later commits change task evidence only. Context remains unchanged since its passed d8339c48 check. No CI/tool action is pending and no staging deployment occurred. Required original-data, native/recipient outcomes and independent review remain incomplete; main synchronization/final cleanup depend on them.",
+  "productCheckedHeadSha": "9e5c75ef204c2206e658c5154dafaec9e7424374",
   "contextCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
   "postCheckDelta": {
     "scope": "Map attribution wrappers follow the existing shared visible-credit rule; no source content or style changes",
@@ -216,7 +256,8 @@
       "phone": "generation8 ordinary development feedback; empty strip removed, actual terrain credit retained"
     },
     "evidence": "PHONE-VERIFICATION.md#generation8-empty-map-attribution-shell-repair",
-    "fullSuiteRerun": false
+    "fullSuiteRerun": true,
+    "coveredByProductRunId": 39095632949
   },
   "postCheckPosterRepair": {
     "scope": "SharePoster resolves native image paths using its mounting page, retaining existing shared-main and content-local ownership",
@@ -234,7 +275,8 @@
       "phone": "generation9 ordinary development feedback; poster rendered, one save received app success plus WeChat native saved-image toast"
     },
     "evidence": "PHONE-VERIFICATION.md#generation9-poster-package-repair-and-native-album-save",
-    "fullSuiteRerun": false
+    "fullSuiteRerun": true,
+    "coveredByProductRunId": 39095632949
   },
-  "pendingProductRunId": 39095632949
+  "contextUnchangedSinceCheckedHead": true
 }
