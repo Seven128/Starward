@@ -69,12 +69,12 @@ test("map removes only expired sample cells and weather choices while preserving
   assert.deepEqual(original, snapshot);
 });
 
-function mountedQuery(sourceData: SkyReport | MapSceneData, map = false) {
+function mountedQuery(sourceData: SkyReport | MapSceneData, map = false, generatedAt?: string) {
   const ast = ts.createSourceFile("hook.ts", readFileSync(new URL("./use-forecast-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const code = ast.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(ast).replace(/^export /, "")).join("\n");
   const slots: any[] = [], effects: Array<() => void> = [];
   let cursor = 0, dirty = false, refreshes = 0;
-  const query = { data: { data: sourceData, dataState: "FRESH" }, isError: false, isPending: false,
+  const query = { data: { data: sourceData, dataState: "FRESH", generatedAt }, updatedAt: Date.now(), isError: false, isPending: false,
     refetch: async () => { refreshes++; return undefined; }, refreshError: new Error("offline") };
   const same = (left: unknown[] | undefined, right: unknown[]) => left && right.every((item, index) => Object.is(item, left[index]));
   const hook = vm.runInNewContext(ts.transpileModule(code + (map ? ";useMapForecastQuery;" : ";useSkyForecastQuery;"), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
@@ -92,6 +92,33 @@ function mountedQuery(sourceData: SkyReport | MapSceneData, map = false) {
     return result;
   }, dispose() { slots.forEach(slot => slot?.cleanup?.()); } };
 }
+
+test("a phone clock one second behind the reply retains fresh cloud cells and expires them on the server timeline", t => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: boundary - 1000 });
+  const sourceAt = new Date(boundary).toISOString(), selectedAt = "2026-09-20T12:30:00Z";
+  const point = { latitude: 23, longitude: 114 };
+  const polygon = { id: "cloud:query:23.00:114.00", value: 0, weatherAt: sourceAt, state: "FRESH" };
+  const original = { context: { selectedAtUtc: selectedAt }, spots: [], evaluations: {}, filterEvidence: {},
+    filterCapabilities: { byGroup: { LESS_CLOUD: { state: "AVAILABLE", reason: "current" } } },
+    cloudSnapshot: { maximumSourceAgeSeconds: 1800, cells: [{ requestedGcj02: point, quality: "AVAILABLE", sourceState: "FRESH",
+      retrievedAt: sourceAt, hours: [{ at: sourceAt, cloudPercent: 0 }] }] },
+    timeFrames: [{ atUtc: selectedAt, moonPhase: "FULL", spotSignals: {}, dynamicLayer: { kind: "CLOUD", polygons: [polygon], state: "FRESH" } }],
+    layer: { kind: "CLOUD", polygons: [polygon], state: "FRESH" },
+  } as unknown as MapSceneData;
+  const host = mountedQuery(original, true, sourceAt);
+  try {
+    const current = host.render();
+    assert.equal(current.data.data.layer.polygons.length, 1, "a just-acquired forecast is not missing because of device clock skew");
+    assert.equal(current.data.data.layer.polygons[0].value, 0);
+    assert.equal(current.forecastClockOffsetMs, 1000);
+    assert.equal(host.refreshes(), 0, "clock alignment must not create a refresh loop");
+    t.mock.timers.tick(1_800_000);
+    const expired = host.render();
+    assert.equal(expired.data.data.layer.polygons.length, 0, "source age still expires while offline");
+    assert.equal(host.refreshes(), 1);
+    assert.equal((host.query.data.data as MapSceneData).layer.polygons.length, 1, "the acquisition in cache is not rewritten");
+  } finally { host.dispose(); }
+});
 
 test("mounted forecast query expires while idle/offline, survives identical refetch, and resumes from hidden state", t => {
   t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: boundary - 1000 });

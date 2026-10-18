@@ -1,10 +1,10 @@
 {
-  "bundleSha256": "f145747502408897948f570e54f4cc57a03d68dce9871fca9559ce6fba21f1d4",
+  "bundleSha256": "e8ac4c0f96e9aabee85d05371ca717dc6ddcad80ad3d0d8a908580f7455f726f",
   "fileCount": 338,
-  "totalBytes": 4948410,
+  "totalBytes": 4948902,
   "packages": {
     "main": {
-      "bytes": 2011813,
+      "bytes": 2012305,
       "source_map_bytes": 0
     },
     "content": {
@@ -20,7 +20,7 @@
       "source_map_bytes": 0
     }
   },
-  "mainHeadroomBytes": 85339,
+  "mainHeadroomBytes": 84847,
   "staticChecks": {
     "native_project": true,
     "filter_population": true,
@@ -34,8 +34,8 @@
     "package_budget": true,
     "route_files": true
   },
-  "sourceFiles": 104,
-  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-map-overlay-continuity-1018-d",
+  "sourceFiles": 110,
+  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-map-overlay-clock-1018",
   "originClass": "physical-LAN-HTTP-MEMORY_TEST",
   "frontendFixture": false
 }

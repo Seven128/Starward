@@ -810,6 +810,7 @@ export default function MapPage() {
     selectedFromScene ??
     (selectedFallback?.spotId === selectedSpotId ? selectedFallback : null);
   const cloudPresentation = useMapCloudPresentation({ scene: scene.data,
+    clockOffsetMs: scene.forecastClockOffsetMs,
     enabled: pageVisible && analysisOverlay === "TOTAL_CLOUD",
     scope: timeReference ? JSON.stringify([accountOwnerId, mapResetVersion, timeReference.localDate,
       timeReference.timezone, timeReference.nightStartUtc, timeReference.nightEndUtc]) : null,

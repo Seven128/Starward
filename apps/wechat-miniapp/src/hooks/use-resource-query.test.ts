@@ -50,15 +50,18 @@ test("external commands read current query publications and failures before Reac
   const key = ["spot", "spot:current"];
   const old = { identity: "old" }, latest = { identity: "current" };
   client.setQueryData(key, old);
+  const receivedAt = client.getQueryState(key)!.dataUpdatedAt;
   const source = ts.createSourceFile("query.ts", readFileSync(new URL("./use-resource-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "useResourceQuery")!;
   const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+/, "") + "\nuseResourceQuery;", {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
-  }).outputText, { useQuery: () => ({ data: old, error: null }), useQueryClient: () => client, useEffect() {} });
+  }).outputText, { useQuery: () => ({ data: old, error: null, dataUpdatedAt: receivedAt }), useQueryClient: () => client, useEffect() {} });
   const resource = hook({ queryKey: key, queryFn: async () => old });
-  client.setQueryData(key, latest);
+  client.setQueryData(key, latest, { updatedAt: receivedAt + 5000 });
   assert.equal(resource.data, old, "the retained React result has not changed");
+  assert.equal(resource.updatedAt, receivedAt, "forecast clock anchoring uses the receipt of the data actually being rendered");
   assert.deepEqual(resource.readCurrent().data, latest, "the native command observes the current publication");
+  assert.equal(resource.readCurrent().updatedAt, receivedAt + 5000);
   await client.invalidateQueries({ queryKey: key, refetchType: "none" });
   assert.equal(resource.readCurrent().isInvalidated, true);
   const error = new Error("current transport failure");

@@ -1,0 +1,68 @@
+import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import path from "node:path";
+import { readFile, writeFile, rm } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
+import { spotNeighborhoodGroundRange } from "../apps/wechat-miniapp/src/pages/map/map-camera.ts";
+import { mapBoundsForNativeRegion } from "../apps/wechat-miniapp/src/pages/map/terrain-geometry.ts";
+import { decodeOfficial } from "../tools/miniapp/development-official.mjs";
+
+const feedback = JSON.parse(await readFile("C:/Users/777/AppData/Local/Temp/starward-device-feedback-t6aywi/feedback.json", "utf8"));
+assert.equal(feedback.generation.number, 6); assert(feedback.deviceSession);
+const root = "E:\\微信web开发者工具";
+const executable = path.join(root, "微信开发者工具.exe");
+const entry = path.join(root, "resources/app.asar.unpacked/js/common/cli/skill-index.js");
+const bootstrap = "const e=process.argv[1],a=process.argv.slice(2);process.argv=[process.execPath,e,'--electron'].concat(a);require(e)";
+const source = String.raw`async function(point) {
+  if (getCurrentPages().slice(-1)[0].route !== 'pages/map/index') return {probeError:'wrong_page'};
+  function read(call) { return new Promise(function(resolve,reject) {
+    var timer=setTimeout(function(){reject(new Error('native_read_timeout'));},2500);
+    call({success:function(value){clearTimeout(timer);resolve(value);},fail:function(){clearTimeout(timer);reject(new Error('native_read_failed'));}});
+  }); }
+  try {
+    var rows=await read(function(c){var q=wx.createSelectorQuery();q.select('.native-map').boundingClientRect();q.select('.spot-panel').boundingClientRect();q.exec(c.success);});
+    var map=rows[0],panel=rows[1];
+    if(!map||!map.id||!panel||panel.top<=map.top) return {probeError:'native_layout_unready'};
+    var context=wx.createMapContext(map.id);
+    var scale=await read(function(c){context.getScale(c);});
+    var region=await read(function(c){context.getRegion(c);});
+    var selected=await read(function(c){context.toScreenLocation(Object.assign({},point,c));});
+    var northwest=await read(function(c){context.toScreenLocation(Object.assign({latitude:region.northeast.latitude,longitude:region.southwest.longitude},c));});
+    var southeast=await read(function(c){context.toScreenLocation(Object.assign({latitude:region.southwest.latitude,longitude:region.northeast.longitude},c));});
+    var after=await read(function(c){context.getRegion(c);});
+    return {nativeFocusSample:{map:{top:map.top,height:map.height,width:map.width},panelTop:panel.top,scale:scale.scale,
+      region:region,after:after,selected:selected,northwest:northwest,southeast:southeast}};
+  } catch(e) { return {probeError:/^[a-z_]+$/.test(e.message)?e.message:'native_read_failed'}; }
+}`;
+const point = { latitude: TEST_PUBLISHED_SPOT.gcj02.latitude, longitude: TEST_PUBLISHED_SPOT.gcj02.longitude };
+const argsFile = fileURLToPath(new URL("./current-focus-args-" + process.pid + ".json", import.meta.url));
+await writeFile(argsFile, JSON.stringify([point]), { flag: "wx", mode: 0o600 });
+let stdout;
+try {
+  ({ stdout } = await promisify(execFile)(executable, ["-e", bootstrap, entry, "-c", "Codex", "automation_evaluate",
+    "--project", feedback.generation.project, "--fn-source", source, "--args-file", argsFile], {
+    cwd: root, windowsHide: true, timeout: 25000, maxBuffer: 128 * 1024,
+    env: { ...process.env, cwd: process.cwd(), ELECTRON: executable, ELECTRON_RUN_AS_NODE: "1" },
+  }));
+} catch (error) {
+  let failure;
+  try { failure=JSON.parse(error.stdout); } catch {}
+  console.log(JSON.stringify({probeError:"official_evaluation_failed",errorType:failure?.errorType,reason:failure?.reason}));
+  process.exitCode=1;
+} finally { await rm(argsFile); }
+if (!stdout) process.exit(1);
+let result = decodeOfficial(stdout);
+for (let i=0;i<5 && !result?.nativeFocusSample && !result?.probeError;i++) {
+  result=typeof result === "string" ? JSON.parse(result) : result?.result ?? result?.data;
+}
+if (result?.probeError) { console.log(JSON.stringify({probeError:result.probeError})); process.exit(0); }
+const sample=result?.nativeFocusSample; assert(sample);
+const bounds=mapBoundsForNativeRegion(sample.region),after=mapBoundsForNativeRegion(sample.after); assert(bounds&&after);
+const range=spotNeighborhoodGroundRange(bounds,{top:sample.map.top,height:sample.map.height,visibleBottom:sample.panelTop},sample.scale);
+const x=(sample.selected.x-sample.northwest.x)/(sample.southeast.x-sample.northwest.x);
+const y=(sample.selected.y-sample.northwest.y)/(sample.southeast.y-sample.northwest.y);
+console.log(JSON.stringify({generation:6,mode:"read_only_native_api",scale:sample.scale,stable:JSON.stringify(bounds)===JSON.stringify(after),
+  widthM:Math.round(range.widthM),heightM:Math.round(range.heightM),map:sample.map,panelTop:sample.panelTop,
+  centreResidualPx:{x:(x-.5)*sample.map.width,y:(y-(sample.panelTop-sample.map.top)/sample.map.height/2)*sample.map.height}}));

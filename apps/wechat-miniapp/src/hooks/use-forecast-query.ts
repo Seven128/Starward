@@ -12,24 +12,31 @@ function useForecastQuery<T>(options: QueryOptions<ApiEnvelope<T>>, presentation
   const lastRevalidation = useRef("");
   const queryIdentity = hashKey(options.queryKey);
   refresh.current = query.refetch;
+  // The source and reply use the BFF clock. A slightly slower device clock
+  // must not reject a just-acquired source as future data. Anchor that clock
+  // to Query's receipt time, then keep it advancing during idle/cache reuse.
+  // Do not move an already later device clock backwards or extend source TTLs.
+  const generatedAt = Date.parse(query.data?.generatedAt ?? "");
+  const forecastClockOffsetMs = Number.isFinite(generatedAt) && Number.isFinite(query.updatedAt) && query.updatedAt > 0
+    ? Math.max(0, generatedAt - query.updatedAt) : 0;
   const boundaries = useMemo(() => query.data ? presentation.boundaries(query.data.data) : [], [query.data, presentation]);
-  const now = Date.now();
+  const now = Date.now() + forecastClockOffsetMs;
   const elapsed = boundaries.filter(boundary => boundary <= now).length;
   // Memoize by an actual validity transition, not every render/pose update.
   // Foreground renders sample time immediately, before any timer effect runs.
   const data = useMemo(() => {
     if (!query.data) return undefined;
-    const projected = presentation.project(query.data.data, Date.now());
+    const projected = presentation.project(query.data.data, Date.now() + forecastClockOffsetMs);
     // Normal clock expiry is partial forecast coverage, not a failed request.
     // Keep existing transport/sample states and independent warning freshness.
     return projected === query.data.data ? query.data : { ...query.data, data: projected,
       dataState: query.data.dataState === "FRESH" ? "PARTIAL" as const : query.data.dataState };
-  }, [query.data, elapsed, presentation]);
+  }, [query.data, elapsed, presentation, forecastClockOffsetMs]);
   useEffect(() => {
     const resumed = options.enabled !== false && !wasActive.current;
     wasActive.current = options.enabled !== false;
     if (options.enabled === false) return;
-    const current = Date.now();
+    const current = Date.now() + forecastClockOffsetMs;
     const revalidateElapsed = (at: number, force = false) => {
       const latest = Math.max(...boundaries.filter(boundary => boundary <= at));
       if (!Number.isFinite(latest) && !(force && refreshOnResume)) return;
@@ -53,11 +60,11 @@ function useForecastQuery<T>(options: QueryOptions<ApiEnvelope<T>>, presentation
       wake(value => value + 1);
       // The query retains cancellation, errors and retry ownership. Local
       // expiry works even if offline or if the refresh keeps the old envelope.
-      revalidateElapsed(Date.now());
+      revalidateElapsed(Date.now() + forecastClockOffsetMs);
     }, Math.min(2_147_483_647, Math.max(1, next - current)));
     return () => clearTimeout(timer);
-  }, [boundaries, elapsed, options.enabled, queryIdentity, refreshOnResume]);
-  return query.data === undefined ? query : { ...query, data: data! };
+  }, [boundaries, elapsed, options.enabled, queryIdentity, refreshOnResume, forecastClockOffsetMs]);
+  return { ...query, forecastClockOffsetMs, ...(query.data === undefined ? {} : { data: data! }) };
 }
 
 export function useSkyForecastQuery(options: QueryOptions<ApiEnvelope<SkyReport>>) {

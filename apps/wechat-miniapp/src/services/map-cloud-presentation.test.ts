@@ -93,16 +93,30 @@ function mountedCloud() {
     throw Error(`Unexpected module: ${name}`);
   } });
   return {
-    render(data?: MapSceneData, scope = "account:night", enabled = true, selectedAtUtc = at) {
+    render(data?: MapSceneData, scope = "account:night", enabled = true, selectedAtUtc = at, clockOffsetMs = 0) {
       cursor = 0;
       const envelope = data ? { data, sources: [{ id: "source:retained", kind: "THIRD_PARTY_FORECAST" }] } as unknown as ApiEnvelope<MapSceneData> : undefined;
-      const result = exports.useMapCloudPresentation({ scene: envelope, scope, enabled, selectedAtUtc });
+      const result = exports.useMapCloudPresentation({ scene: envelope, scope, enabled, selectedAtUtc, clockOffsetMs });
       effects.splice(0).forEach(effect => effect()); return result;
     },
     wakes: () => wakes,
     dispose: () => slots.forEach(slot => slot?.cleanup?.()),
   };
 }
+
+test("retained public clouds keep the query's server-clock alignment through an offline viewport change", t => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: noon - 1000 });
+  const host = mountedCloud(), input = scene([frame()], snapshot(hour));
+  try {
+    const current = host.render(input, "account:night", true, at, 1000);
+    assert.equal(current.layer.polygons.length, 1);
+    assert.equal(host.render().layer.polygons.length, 1, "a pending query must not reset the retained view's clock");
+    t.mock.timers.tick(1_800_000);
+    assert.equal(host.wakes(), 1);
+    assert.equal(host.render().layer.polygons.length, 0);
+    assert.equal(input.layer.polygons.length, 1);
+  } finally { host.dispose(); }
+});
 
 test("viewport refresh retains only the same public sampled cells and provenance, with exact-hour selection", t => {
   t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: noon });

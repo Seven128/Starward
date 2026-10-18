@@ -45,7 +45,7 @@ type QueryResult<T> = (
       isError: false;
       isPending: true;
       refetch: (options?: RefetchOptions) => Promise<T | undefined>;
-    }) & { refreshError?: unknown; isFetching: boolean; readCurrent(): ResourceSnapshot<T> };
+    }) & { refreshError?: unknown; isFetching: boolean; updatedAt: number; readCurrent(): ResourceSnapshot<T> };
 
 export function useResourceQuery<T>({
   queryKey,
@@ -98,6 +98,7 @@ export function useResourceQuery<T>({
       isPending: false,
       refetch,
       readCurrent,
+      updatedAt: result.dataUpdatedAt,
       refreshError: result.error ?? undefined,
       isFetching: result.isFetching,
     };
@@ -109,6 +110,7 @@ export function useResourceQuery<T>({
       isPending: false,
       refetch,
       readCurrent,
+      updatedAt: result.dataUpdatedAt,
       isFetching: result.isFetching,
     };
   return {
@@ -118,6 +120,7 @@ export function useResourceQuery<T>({
     isPending: true,
     refetch,
     readCurrent,
+    updatedAt: result.dataUpdatedAt,
     isFetching: result.isFetching,
   };
 }

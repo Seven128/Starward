@@ -1,0 +1,49 @@
+{
+  "mode": "generation6-development-feedback-with-earlier-api",
+  "candidateSha256": "f145747502408897948f570e54f4cc57a03d68dce9871fca9559ce6fba21f1d4",
+  "input": "public fixture area, real terrain, no device location",
+  "events": [
+    {
+      "name": "terrain_raster_derived",
+      "at": "2026-10-18T01:36:56.835Z",
+      "fixed": true,
+      "pixels": 256,
+      "sourceTiles": 4,
+      "sourceReads": 2,
+      "sourceCacheHits": 2,
+      "sourceBytes": 91646,
+      "projectionMs": 81.75850000232458,
+      "sourceReadWallMs": 3419.60510000214,
+      "sourceIoSumMs": 5051.908799998462,
+      "sourceDecodeSumMs": 14.479899998754263,
+      "sampleMs": 45.54600000008941,
+      "shadeMs": 73.72709999978542,
+      "encodeMs": 8.53099999949336,
+      "totalMs": 3629.1920999996364,
+      "imageBytes": 48244,
+      "assetSha256": "8bda39af9fa992c83d76ba6e6f5e4e7f745903f25093ab8a3a4d90627fe506eb"
+    },
+    {
+      "name": "terrain_metadata_read",
+      "at": "2026-10-18T01:36:56.875Z",
+      "milliseconds": 3579.779099997133,
+      "state": "AVAILABLE",
+      "assetSha256": "d32566b56bc1060d9f3ae55787955d6ccd3583b60e70a53223e6fb8d5db041d3",
+      "fixedWindow": true,
+      "sourceObjects": 6
+    },
+    {
+      "name": "terrain_asset_read",
+      "at": "2026-10-18T01:36:56.971Z",
+      "milliseconds": 0.9657999984920025,
+      "bytes": 92834,
+      "assetSha256": "d32566b56bc1060d9f3ae55787955d6ccd3583b60e70a53223e6fb8d5db041d3"
+    }
+  ],
+  "limitations": [
+    "Phone API retains earlier server implementation",
+    "Not the recovered original fixed terrain release",
+    "Metadata/asset timings are server observations, not display-ready time",
+    "Video review does not establish physical render FPS"
+  ]
+}
