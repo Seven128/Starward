@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { diagnoseHost, diagnosticSucceeded } from "./run-host-diagnostics.mjs";
-import { runtimeScript } from "./runtime-diagnostics.mjs";
+import { identityScript, runtimeScript } from "./runtime-diagnostics.mjs";
 
 const env = {
   SSH_HOST: "host.example.invalid", SSH_PORT: "22", SSH_USER: "operator",
@@ -90,6 +90,36 @@ test("runtime mode sends only the fixed staging probe and arbitrary modes cannot
   });
   assert.deepEqual(result, report);
   assert.deepEqual(diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "anything else" }, () => assert.fail("must not execute")), { status: "failed", code: "diagnostic_configuration_invalid" });
+});
+
+test("identity mode reuses protected SSH and returns only the fixed aggregate projection", () => {
+  const report = { status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: 1, runningContainerCount: 0,
+    stateCounts: { created: 0, restarting: 0, running: 0, removing: 0, paused: 0, exited: 1, dead: 0 }, selectedContainer: null };
+  let directory;
+  const result = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "identity" }, (_command, args, options) => {
+    directory = dirname(args[1]);
+    assert.equal(options.input, identityScript);
+    assert.ok(args.includes("StrictHostKeyChecking=yes"));
+    assert.equal(options.env.SSH_CONNECTION, undefined);
+    assert.equal(options.env.SSH_PRIVATE_KEY, undefined);
+    return { status: 0, stdout: JSON.stringify({ ...report, privateExtra: env.SSH_PRIVATE_KEY }) };
+  });
+  assert.deepEqual(result, report);
+  assert.equal(diagnosticSucceeded(result), false);
+  assert.equal(existsSync(directory), false);
+});
+
+test("identity failures discard remote stdout, errors and invalid projected values", () => {
+  for (const [result, code] of [
+    [{ status: 65, stderr: `runtime_diagnostic_identity_changed:${env.REMOTE_INBOX}`, stdout: env.SSH_PRIVATE_KEY }, "runtime_diagnostic_identity_changed"],
+    [{ status: 65, stderr: `runtime_diagnostic_identity_failed:${env.SSH_PRIVATE_KEY}` }, "runtime_diagnostic_identity_failed"],
+    [{ status: 65, stderr: "runtime_diagnostic_identity_invented:private" }, "diagnostic_ssh_failed"],
+    [{ status: 0, stdout: JSON.stringify({ status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: env.SSH_PRIVATE_KEY }) }, "diagnostic_execution_failed"],
+  ]) {
+    const report = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "identity" }, () => result);
+    assert.deepEqual(report, { status: "failed", code });
+    assert.doesNotMatch(JSON.stringify(report), /test-private-key|\/srv\//u);
+  }
 });
 
 test("a completed observation cannot make an unavailable readiness endpoint green", () => {

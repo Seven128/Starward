@@ -27,6 +27,14 @@ IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名�
   手动路径同样执行产品检查，不绕过 CI。
 - **看结果**：`gh run list --workflow backend-staging.yml`，再用
   `gh run view <run-id> --log-failed` 查看失败节点。不要把 skipped/queued 当作部署成功。
+- **只读定位 API 容器身份**：独立的 `Backend bounded diagnostics` 工作流只接受
+  `main`，选择 `identity`，或运行 `gh workflow run backend-diagnostics.yml --ref main -f mode=identity`。
+  它通过现有受保护连接只读查询固定 `starward-staging` / `api` 标签的容器总数、运行数和状态计数；
+  唯一运行对象另投影 `node` 用户/标签匹配布尔值、合法 revision 和不可变镜像引用 digest。
+  原始容器 ID、镜像仓库名、配置和环境值不输出；检测到集合或运行状态变化则失败，不重试或重启。
+  状态/Running 标志和计数须一致；paused/restarting 保留观察但不成功。只有唯一状态为 `running`
+  且用户匹配的对象令命令成功；这只证明该次身份观察，不证明应用环境、健康、receipt、
+  当前部署、数据库或供应商能力。使用既有 `runtime` 模式继续后续检查，它仍保留原唯一运行容器保护。
 - **看 Sky 资源出口**：正式与 IP 内测 Caddy 共用 `sky-resource-logging.caddy`，访问日志仅附固定的 `sky_resource_class`（包含 landscape）及 `sky_delivery`（static/api）；结合状态和 `size` 可按资源类汇总边缘响应体字节。日志继续删除完整 request 与 response headers，不含 URL/查询参数。此值不是微信实际下载量、CDN 命中或账单，不能以本机流量样本估算正式月费。
 
 - **开启 Sky 静态出口**：BASE env可选填 `STARWARD_SKY_STATIC_DIRECTORY` 为独立绝对持久目录。保持空值或未配置则走原API。开启后使用现有 release/operator-preview 管理入口；它们在exact image pull/来源验证后准备完成成品和 readonly overlay，preview overlay 必须先于静态 overlay。所有包含Caddy的手工操作也须带该次生成的最后一个 overlay，不能只用base/preview文件覆盖当前静态配置。prepared-inventory保留获准新旧URL，非成功发布证明；成功v2 receipt须全字节/头及static marker核验，生产还需同image成品的staging资格。无sealed成品或已绑定库存的早期image拒绝准备；这不认证任意旧control/image回滚。不要手工填出版hash、mount任意文件根、改库存或删除历史资源来绕过验证。

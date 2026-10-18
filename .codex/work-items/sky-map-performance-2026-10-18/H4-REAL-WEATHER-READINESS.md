@@ -1,8 +1,8 @@
 # H4 真实天气入口核对 — 2026-10-18
 
-当前结论：存在已授权的 GitHub staging 固定诊断入口，但本次实际只读运行未越过 API 容器身份保护。真实 QWeather v1 响应、当前资料时效、真实 Map 采样及手机 selected-hour 联动仍未验证。8791/8796 的 fixture 天气证据不改写为真供应证据。
+当前结论：存在已授权的 GitHub staging 固定诊断入口，但本次实际只读运行未越过 API 容器身份保护。operator-preview 与固定诊断使用同一个 `starward-staging` Compose project，不能将 lane 名称差异当作原因。已核对历史部署摘要和后续运行诊断，尚无当前 receipt、实际镜像与包含停止状态的容器集合读回；真实 QWeather v1 响应、当前资料时效、真实 Map 采样及手机 selected-hour 联动仍未验证。8791/8796 的 fixture 天气证据不改写为真供应证据。
 
-本轮只新增此任务证据；没有修改生产代码、PLAN、INDEX、HANDOFF、配置、密钥、数据库、权限、手机或 DevTools。没有运行 worker、提醒、部署或 providers 模式，也没有更改诊断连接 mirror。
+本轮只更新此任务证据；没有修改生产代码、PLAN、INDEX、HANDOFF、配置、密钥、数据库、权限、手机或 DevTools。没有运行 worker、提醒、部署、operator-preview check 或 providers 模式，也没有更改诊断连接 mirror。后续身份审计仅读取 GitHub 元数据和在内存中提取白名单日志字段，没有再次调度 workflow。
 
 ## 已复用的边界
 
@@ -27,11 +27,24 @@
 
 历史 [providers run 35504921510](https://github.com/Seven128/Starward/actions/runs/35504921510) 的限定报告仍可读：`ISOLATED_TEST_SIMULATION`、`FORMAL_POPULATION_MISSING`，和风天气 FRESH、24 个组合总云量小时、20 个报告小时。这是 2026-09-20 的历史模拟，不证明当前部署 revision、v1 端点、当前资料年龄、Map 或手机结果。
 
+## 已有运行身份审计
+
+- 当前 validator 要求 staging 的 `COMPOSE_PROJECT_NAME=starward-staging`；`operator-preview-checks.mjs` 也明确要求渲染配置的 project 为 `starward-staging`。固定 runtime/providers 的 project/service 选择与这条 lane 一致，不存在已证实的“正式 project 与 preview project 不同”。这仍不能证明当前容器存在、唯一或运行中。
+- 读取最近 200 条 staging run 元数据，并检查可查询的全部 32 条 workflow-level success 对应的实际部署 job。最近一条总体 success [37520173117](https://github.com/Seven128/Starward/actions/runs/37520173117) 实际只有 `qualify` 成功，`publish-and-deploy` skipped；它和其后同类 skipped 记录均不是部署证据。
+- 最近实际 `Promote exact image to staging` 成功的是 [34771917251](https://github.com/Seven128/Starward/actions/runs/34771917251)，job 于 `2026-09-13T17:37:29Z` 完成。候选 revision 为 `262d7531916c0b1b995fe8937321c044c9fb9ca5`；日志中只有一条符合固定白名单的成功摘要：`environment=operator-preview`，`imageDigest=sha256:824bc03eaac9c2b2afe63e61767b3cc50c571e5ffdead65bc29de0b9605e5ba5`，远端 receipt 路径存在。未复制该路径、连接字段或完整日志；该 run 的可下载 artifacts 数量为 0。这个历史摘要没有读取服务器当前 pointer，也不能排除后续手工操作。
+- 历史 [runtime run 35502020935](https://github.com/Seven128/Starward/actions/runs/35502020935) 的日志通过当前 `sanitizeRuntimeReport` 再校验。它在 `2026-09-20` 读到同一 revision、staging / TRIAL / POSTGRES / LOCAL_TEST、readiness 200、配置和只读数据库 ready、18 个 migration、合格正式点 0、`qweatherConfigured=true`、`forecastHours=24`。这把历史部署与一周后的实际运行关联起来，不能延长成 10 月 18 日的当前证据，也不证明当前源码已部署。
+- 最近五条失败发布记录（[39033565745](https://github.com/Seven128/Starward/actions/runs/39033565745)、[36487051953](https://github.com/Seven128/Starward/actions/runs/36487051953)、[36459581061](https://github.com/Seven128/Starward/actions/runs/36459581061)、[36447288916](https://github.com/Seven128/Starward/actions/runs/36447288916)、[36441311098](https://github.com/Seven128/Starward/actions/runs/36441311098)）均失败于 `Build and publish the immutable release image`，SSH trust、host preflight 和 promote 未执行。不能把这五次构建发布失败解释为它们停止了当前 API；也没有把它们解释为当前服务健康。
+- 已完整核对现成 `host` 模式：它只有 OS/架构、CPU/内存/磁盘、Node/Docker/Compose 和受限路径权限预检，不读取 `docker ps -a`、服务状态、镜像 revision 或 `operator-preview-current.json`。它不能细分本次身份失败，因此没有为此调度一次无判别力的检查。其他现成模式都先经过同一个唯一运行 API 保护，不能提供缺失的停止状态或 current pointer 观察。
+
 ## 下一条最小路径及停止条件
 
-当前固定 runtime/providers 诊断选择正式 `starward-staging` API；选中的部署 lane 是 operator-preview。两者的差异是下一步首先要由现有远端运行/receipt owner 解决的身份问题，不能猜容器名后绕过检查。`operator-preview.mjs --operation check` 本身会创建 operation lock/receipt，并可能读取全部静态产品；它不是当前固定只读诊断的直接替代，本轮未运行。
+当前缺口是同一 project 的实际运行身份，而非已证实的 lane 选择错误。仍需区分：运行 API 为零、运行 API 多个，或后续的 user / label / environment / image 不匹配。`operator-preview.mjs --operation check` 本身会创建 operation lock/receipt，并可能读取全部静态产品；它不是当前固定只读诊断的直接替代，本轮未运行。
 
-可由 root 后续复用现有 owner，先取得 operator-preview 实际 current receipt、对应镜像 revision、Compose project/service、运行用户和环境的一致身份，再选择或实现受限的只读观察入口。观察仍只输出健康状态、配置是否齐备与枚举、资料年龄范围、有效小时数、采样/请求/重用数和一致性布尔值。不要导出 SSH/runtime secret，不删除原来的身份保护，也不要部署、造正式点、改数据库或读取任意 SQL 来使检查通过。仅有 secret 名和 staging lane 不足以替代这一步。
+现有 [固定诊断程序](../../../tools/deployment/runtime-diagnostics.mjs)、[runner 输出白名单](../../../tools/deployment/run-host-diagnostics.mjs) 和 [main-only 调度入口](../../../.github/workflows/backend-diagnostics.yml) 已加入显式`identity`模式。它只观察固定project/service的全部/Running标志数、状态数，以及唯一对象的user/label布尔值和合法revision/digest元数据；不读取配置、DB、provider或current receipt，不接受任意命令、路径或selector。24项受影响检查及独立生成程序复核通过，独审P2的状态/标志矛盾已修，paused/restarting不会报可用，见[RUNTIME-IDENTITY-DIAGNOSTIC](RUNTIME-IDENTITY-DIAGNOSTIC.md)与[独审](RUNTIME-IDENTITY-INDEPENDENT-REVIEW.md)。
+
+这项补齐目前仍是当前分支的本地实现，尚未在远端运行。main-only、SSH、原runtime/API/DB保护和CD条件保持；要先让受审代码进入允许的revision，再运行一次identity分清此前歧义，不能绕guard或用部署/重启造成功。main合并须核对现有自动staging CD的实际触发与既有授权；诊断实现本身不是远端部署或当前身份的证明。receipt仍待既有release/preview owner，在确需其路径时处理，不为第一边界增加私有配置路径解析。
+
+身份成立后仍先复用当前 runtime 的 readiness、配置与只读 DB 观察；之后的供应观察只输出健康状态、配置是否齐备与枚举、资料年龄范围、有效小时数、采样/请求/重用数和一致性布尔值。仅有 secret 名、staging lane 或历史镜像摘要不足以替代当前身份。没有证据表明现在必须由用户提供 secret 或立即操作手机；可继续诊断 owner 的独立实现工作，将确需外部 operator 登录或平台授权的动作后置。
 
 身份成立后，真实供应检验仍须区分两层：
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
-import { apiRuntimeProbe, runtimeScript, providerScript, sanitizeRuntimeReport, sanitizeProviderSimulationReport } from "./runtime-diagnostics.mjs";
+import { apiIdentityProbe, identityScript, sanitizeIdentityReport, apiRuntimeProbe, runtimeScript, providerScript, sanitizeRuntimeReport, sanitizeProviderSimulationReport } from "./runtime-diagnostics.mjs";
 import { diagnosticSucceeded } from "./run-host-diagnostics.mjs";
 
 const config = {
@@ -31,6 +31,108 @@ function fixture({ readOnly = "on", failQuery = false } = {}) {
   const request = async (url) => { assert.equal(url, "http://127.0.0.1:8787/health/ready"); return { status: 200 }; };
   return { calls, load, request };
 }
+
+const identityRow = (index, patch = {}) => ({ id: index.toString(16).padStart(64, "0"), state: "running", running: true,
+  userMatches: true, projectMatches: true, serviceMatches: true, revision: "a".repeat(40),
+  imageReference: `private-registry.invalid/private-repository@sha256:${"b".repeat(64)}`, ...patch });
+function identityFixture(rows, running = rows.filter(row => row.running).map(row => row.id)) {
+  const calls = [];
+  return { calls, execute(args) {
+    calls.push(args);
+    if (args[0] === "ps") {
+      assert.deepEqual(args.slice(-4), ["--filter", "label=com.docker.compose.project=starward-staging", "--filter", "label=com.docker.compose.service=api"]);
+      assert.ok(args.includes("--no-trunc"));
+      return (args.includes("--all") ? rows.map(row => row.id) : running).join("\n");
+    }
+    assert.equal(args[0], "inspect");
+    assert.equal(args[1], "--format");
+    assert.deepEqual(args.slice(3), rows.map(row => row.id));
+    assert.doesNotMatch(args[2], /Config\.Env|\.Mounts|\.NetworkSettings/u);
+    return rows.map(row => JSON.stringify({ ...row, privateExtra: "never output" })).join("\n");
+  } };
+}
+
+test("identity observation separates absent, stopped and multiple running fixed-label containers without entering them", () => {
+  for (const [rows, runningCount] of [
+    [[], 0], [[identityRow(1, { state: "exited", running: false })], 0],
+    [[identityRow(1), identityRow(2)], 2],
+  ]) {
+    const f = identityFixture(rows);
+    const report = sanitizeIdentityReport(apiIdentityProbe(f.execute));
+    assert.equal(report.matchingContainerCount, rows.length);
+    assert.equal(report.runningContainerCount, runningCount);
+    assert.equal(report.selectedContainer, null);
+    assert.equal(Object.values(report.stateCounts).reduce((sum, value) => sum + value, 0), rows.length);
+    assert.equal(diagnosticSucceeded(report), false);
+    assert.ok(f.calls.every(args => ["ps", "inspect"].includes(args[0])));
+    assert.equal(f.calls.length, rows.length ? 3 : 2);
+  }
+});
+
+test("unique running identity projects only expected-user matches and validated release metadata", () => {
+  const f = identityFixture([identityRow(1, { state: "exited", running: false }), identityRow(2)]);
+  const report = sanitizeIdentityReport(apiIdentityProbe(f.execute));
+  assert.equal(report.matchingContainerCount, 2);
+  assert.equal(report.runningContainerCount, 1);
+  assert.equal(report.stateCounts.exited, 1);
+  assert.equal(report.stateCounts.running, 1);
+  assert.deepEqual(report.selectedContainer, { state: "running", running: true, userMatches: true, projectMatches: true, serviceMatches: true,
+    revision: "a".repeat(40), imageReferenceDigest: `sha256:${"b".repeat(64)}` });
+  assert.equal(diagnosticSucceeded(report), true);
+  assert.doesNotMatch(JSON.stringify(report), /private-|never output|"id":/u);
+  const wrongUser = sanitizeIdentityReport(apiIdentityProbe(identityFixture([identityRow(1, { userMatches: false })]).execute));
+  assert.equal(diagnosticSucceeded(wrongUser), false);
+  const absentMetadata = sanitizeIdentityReport(apiIdentityProbe(identityFixture([identityRow(1, { revision: "private value", imageReference: "private-registry.invalid/mutable:latest" })]).execute));
+  assert.equal(absentMetadata.selectedContainer.revision, null);
+  assert.equal(absentMetadata.selectedContainer.imageReferenceDigest, null);
+});
+
+test("identity changes and invalid Docker projections fail without exposing raw identifiers or strings", () => {
+  for (const [rows, running, code] of [
+    [[identityRow(1)], [identityRow(2).id], "changed"],
+    [[identityRow(1, { running: false })], [identityRow(1).id], "changed"],
+    [[identityRow(1, { serviceMatches: false })], undefined, "mismatch"],
+    [[identityRow(1, { state: "private-state" })], undefined, "response_invalid"],
+    [[identityRow(1, { id: "private-container-id" })], undefined, "response_invalid"],
+  ]) assert.throws(() => apiIdentityProbe(identityFixture(rows, running).execute), new RegExp(`^Error: runtime_diagnostic_identity_${code}$`, "u"));
+});
+
+test("identity runner allowlist rejects contradictory or private observations and drops all extra fields", () => {
+  const report = apiIdentityProbe(identityFixture([identityRow(1)]).execute);
+  const clean = sanitizeIdentityReport({ ...report, privateExtra: "secret", stateCounts: { ...report.stateCounts, privateExtra: "secret" },
+    selectedContainer: { ...report.selectedContainer, id: "secret", imageReference: "secret" } });
+  assert.deepEqual(clean, report);
+  for (const patch of [{ matchingContainerCount: 2 }, { runningContainerCount: -1 }, { runningContainerCount: 2 }, { stateCounts: { ...report.stateCounts, running: "secret" } },
+    ...[{ revision: "secret" }, { revision: ["a".repeat(40)] }, { imageReferenceDigest: "secret" }, { imageReferenceDigest: [`sha256:${"b".repeat(64)}`] }, { userMatches: "secret" }, { serviceMatches: false }].map(selected => ({ selectedContainer: { ...report.selectedContainer, ...selected } }))])
+    assert.throws(() => sanitizeIdentityReport({ ...report, ...patch }), /runtime_identity_report_invalid/u);
+  const source = identityScript.split("<<'STARWARD_FIXED_IDENTITY_PROBE'\n")[1].split("\nSTARWARD_FIXED_IDENTITY_PROBE")[0];
+  assert.equal(spawnSync(process.execPath, ["--check", "--input-type=module"], { input: source, encoding: "utf8" }).status, 0);
+  assert.doesNotMatch(source, /docker exec|Config\.Env|readFile|writeFile|mkdir|STARWARD_FIXED_RUNTIME_PROBE|fetch\(|pg\.Client/u);
+});
+
+test("identity rejects contradictory state flags and forged aggregate running counts", () => {
+  for (const state of ["created", "removing", "exited", "dead"])
+    assert.throws(() => apiIdentityProbe(identityFixture([identityRow(1, { state, running: true })]).execute), /runtime_diagnostic_identity_response_invalid/u);
+  for (const state of ["running", "paused", "restarting"])
+    assert.throws(() => apiIdentityProbe(identityFixture([identityRow(1, { state, running: false })]).execute), /runtime_diagnostic_identity_response_invalid/u);
+  const report = apiIdentityProbe(identityFixture([identityRow(1)]).execute);
+  for (const state of ["created", "removing", "exited", "dead"]) {
+    const stateCounts = Object.fromEntries(Object.keys(report.stateCounts).map(key => [key, key === state ? 1 : 0]));
+    assert.throws(() => sanitizeIdentityReport({ ...report, stateCounts, selectedContainer: { ...report.selectedContainer, state } }), /runtime_identity_report_invalid/u);
+  }
+  assert.throws(() => sanitizeIdentityReport({ ...report, matchingContainerCount: 2,
+    stateCounts: { ...report.stateCounts, running: 0, exited: 2 } }), /runtime_identity_report_invalid/u);
+});
+
+test("identity preserves paused and restarting observations without marking them usable", () => {
+  for (const state of ["paused", "restarting"]) {
+    const report = sanitizeIdentityReport(apiIdentityProbe(identityFixture([identityRow(1, { state, running: true })]).execute));
+    assert.equal(report.runningContainerCount, 1);
+    assert.equal(report.stateCounts[state], 1);
+    assert.equal(report.selectedContainer.state, state);
+    assert.equal(diagnosticSucceeded(report), false);
+  }
+});
 
 test("runtime inspection uses a verified read-only transaction, aggregates and parameterized dataset selection", async () => {
   const f = fixture();

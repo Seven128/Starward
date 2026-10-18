@@ -1,6 +1,84 @@
 import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
 import { imageryRuntimeProbe } from "./imagery-runtime-probe.mjs";
 
+// Runs on the host, without entering a container or loading application config.
+// Docker identifiers and image repository names stay inside this process.
+export function apiIdentityProbe(execute) {
+  const filters = ["--filter", "label=com.docker.compose.project=starward-staging", "--filter", "label=com.docker.compose.service=api"];
+  const states = ["created", "restarting", "running", "removing", "paused", "exited", "dead"];
+  const ids = (text) => {
+    const values = text.trim() ? text.trim().split(/\r?\n/u) : [];
+    if (values.some(value => !/^[a-f0-9]{64}$/u.test(value)) || new Set(values).size !== values.length) throw new Error("runtime_diagnostic_identity_response_invalid");
+    return values;
+  };
+  const all = ids(execute(["ps", "--all", "--quiet", "--no-trunc", ...filters]));
+  const running = ids(execute(["ps", "--quiet", "--no-trunc", ...filters]));
+  if (running.some(id => !all.includes(id))) throw new Error("runtime_diagnostic_identity_changed");
+  const stateCounts = Object.fromEntries(states.map(state => [state, 0]));
+  let selectedContainer = null;
+  if (all.length) {
+    const format = '{"id":{{json .Id}},"state":{{json .State.Status}},"running":{{json .State.Running}},"userMatches":{{eq .Config.User "node"}},"projectMatches":{{eq (index .Config.Labels "com.docker.compose.project") "starward-staging"}},"serviceMatches":{{eq (index .Config.Labels "com.docker.compose.service") "api"}},"revision":{{json (index .Config.Labels "org.opencontainers.image.revision")}},"imageReference":{{json .Config.Image}}}';
+    const rows = execute(["inspect", "--format", format, ...all]).trim().split(/\r?\n/u).map(line => JSON.parse(line));
+    if (rows.length !== all.length || new Set(rows.map(row => row.id)).size !== all.length) throw new Error("runtime_diagnostic_identity_changed");
+    for (const row of rows) {
+      if (!all.includes(row.id) || !states.includes(row.state) || typeof row.running !== "boolean" ||
+          ![row.userMatches, row.projectMatches, row.serviceMatches].every(value => typeof value === "boolean")) throw new Error("runtime_diagnostic_identity_response_invalid");
+      if (running.includes(row.id) !== row.running) throw new Error("runtime_diagnostic_identity_changed");
+      // Docker keeps Running=true for paused/restarting; other states cannot
+      // claim that flag. Preserve those observations without claiming usability.
+      if (row.running !== ["running", "paused", "restarting"].includes(row.state)) throw new Error("runtime_diagnostic_identity_response_invalid");
+      if (!row.projectMatches || !row.serviceMatches) throw new Error("runtime_diagnostic_identity_mismatch");
+      stateCounts[row.state] += 1;
+      if (running.length === 1 && running[0] === row.id) selectedContainer = {
+        state: row.state, running: true, userMatches: row.userMatches,
+        projectMatches: row.projectMatches, serviceMatches: row.serviceMatches,
+        revision: typeof row.revision === "string" && /^[a-f0-9]{40}$/u.test(row.revision) ? row.revision : null,
+        imageReferenceDigest: typeof row.imageReference === "string" ? row.imageReference.match(/^[a-z0-9][a-z0-9./:_-]*@(sha256:[a-f0-9]{64})$/u)?.[1] ?? null : null,
+      };
+    }
+  }
+  return { status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: all.length,
+    runningContainerCount: running.length, stateCounts, selectedContainer };
+}
+
+export const identityScript = `#!/bin/sh
+set -eu
+node --input-type=module <<'STARWARD_FIXED_IDENTITY_PROBE'
+import { execFileSync } from 'node:child_process';
+try {
+  const report = (${apiIdentityProbe.toString()})(args => execFileSync('docker', args, { encoding: 'utf8', timeout: 10000, maxBuffer: 32768, stdio: ['ignore', 'pipe', 'pipe'] }));
+  console.log(JSON.stringify(report));
+} catch (error) {
+  const codes = ['runtime_diagnostic_identity_response_invalid', 'runtime_diagnostic_identity_changed', 'runtime_diagnostic_identity_mismatch'];
+  process.stderr.write((codes.includes(error?.message) ? error.message : 'runtime_diagnostic_identity_failed') + '\\n');
+  process.exitCode = 65;
+}
+STARWARD_FIXED_IDENTITY_PROBE
+`;
+
+export function sanitizeIdentityReport(report) {
+  const states = ["created", "restarting", "running", "removing", "paused", "exited", "dead"];
+  const fail = () => { throw new Error("runtime_identity_report_invalid"); };
+  if (report?.status !== "observed" || report.evidenceScope !== "STAGING_CONTAINER_IDENTITY_ONLY" ||
+      ![report.matchingContainerCount, report.runningContainerCount].every(value => Number.isSafeInteger(value) && value >= 0) ||
+      report.runningContainerCount > report.matchingContainerCount) fail();
+  const stateCounts = Object.fromEntries(states.map(state => [state, report.stateCounts?.[state]]));
+  if (Object.values(stateCounts).some(value => !Number.isSafeInteger(value) || value < 0) ||
+      Object.values(stateCounts).reduce((sum, value) => sum + value, 0) !== report.matchingContainerCount ||
+      stateCounts.running + stateCounts.paused + stateCounts.restarting !== report.runningContainerCount) fail();
+  let selectedContainer = null;
+  if (report.runningContainerCount === 1) {
+    const row = report.selectedContainer;
+    if (!row || !["running", "paused", "restarting"].includes(row.state) || stateCounts[row.state] < 1 || row.running !== true ||
+        typeof row.userMatches !== "boolean" || row.projectMatches !== true || row.serviceMatches !== true ||
+        (row.revision !== null && (typeof row.revision !== "string" || !/^[a-f0-9]{40}$/u.test(row.revision))) ||
+        (row.imageReferenceDigest !== null && (typeof row.imageReferenceDigest !== "string" || !/^sha256:[a-f0-9]{64}$/u.test(row.imageReferenceDigest)))) fail();
+    selectedContainer = Object.fromEntries(["state", "running", "userMatches", "projectMatches", "serviceMatches", "revision", "imageReferenceDigest"].map(name => [name, row[name]]));
+  } else if (report.selectedContainer !== null) fail();
+  return { status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: report.matchingContainerCount,
+    runningContainerCount: report.runningContainerCount, stateCounts, selectedContainer };
+}
+
 // Fixed staging API inspection. This function is sent over SSH stdin, then Docker
 // stdin, and runs as the existing API container's node user. It writes no files.
 export async function apiRuntimeProbe(env = process.env, load = (name) => import(name), request = fetch) {
