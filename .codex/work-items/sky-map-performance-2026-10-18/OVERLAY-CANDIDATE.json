@@ -1,14 +1,14 @@
 {
-  "bundleSha256": "1a5b5cff8f4f07b32b6ef825b6468fd0bbd1ef84fa5fc9199ddfa91390960b9a",
+  "bundleSha256": "29351b4197e64b6e3fe2365b19e01b85e2700795fbc592f44d61c3b6cc4fb732",
   "fileCount": 338,
-  "totalBytes": 4949072,
+  "totalBytes": 4949193,
   "packages": {
     "main": {
       "bytes": 2012475,
       "source_map_bytes": 0
     },
     "content": {
-      "bytes": 1041258,
+      "bytes": 1041379,
       "source_map_bytes": 0
     },
     "spot": {
@@ -34,8 +34,8 @@
     "package_budget": true,
     "route_files": true
   },
-  "sourceFiles": 110,
-  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-map-source-credit-1018",
+  "sourceFiles": 112,
+  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-share-poster-package-1018",
   "originClass": "physical-LAN-HTTP-MEMORY_TEST",
   "frontendFixture": false
 }

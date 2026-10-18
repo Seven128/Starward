@@ -187,7 +187,7 @@
       "conclusion": "success"
     }
   ],
-  "remaining": "Product and Context passed at d8339c48. The later Map attribution-wrapper repair has the targeted checks and phone result below; old full CI is not rebound to that source. No pending CI dispatch/tool action or staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open. User deferred original-computer synchronization until waking.",
+  "remaining": "Product and Context passed at d8339c48. The later Map attribution-wrapper and poster package-owner repairs have targeted checks and phone results; old full CI is not rebound to them. No pending CI dispatch/tool action or staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open. User deferred original-computer synchronization until waking.",
   "productCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
   "contextCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
   "postCheckDelta": {
@@ -205,6 +205,24 @@
       "phone": "generation8 ordinary development feedback; empty strip removed, actual terrain credit retained"
     },
     "evidence": "PHONE-VERIFICATION.md#generation8-empty-map-attribution-shell-repair",
+    "fullSuiteRerun": false
+  },
+  "postCheckPosterRepair": {
+    "scope": "SharePoster resolves native image paths using its mounting page, retaining existing shared-main and content-local ownership",
+    "path": "apps/wechat-miniapp/src/components/share-poster.tsx",
+    "sourceSha256": "055d71e1521f79f3fbcc90689f9876acc6eb6bb3bf4508009f8a5dcb95c56384",
+    "regression": "real component/native-image port failed before repair with poster_icon_unavailable; passes after",
+    "checks": {
+      "posterAssetsPresentation": {
+        "total": 26,
+        "passed": 26,
+        "failed": 0
+      },
+      "miniappTypecheck": "passed",
+      "ordinaryBuildStaticChecks": 11,
+      "phone": "generation9 ordinary development feedback; poster rendered, one save received app success plus WeChat native saved-image toast"
+    },
+    "evidence": "PHONE-VERIFICATION.md#generation9-poster-package-repair-and-native-album-save",
     "fullSuiteRerun": false
   }
 }

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import type { DisplayMode } from "@starward/miniapp-contracts";
-import type { SemanticIcon } from "./semantic-asset";
+import type { SemanticIcon, adoptedBIconPath } from "./semantic-asset";
 
 type IconProps = Parameters<typeof SemanticIcon>[0];
 type RenderedIcon = { type: string; props: Record<string, any> };
@@ -35,6 +35,7 @@ export function semanticIconRenderer(route: string, mode: DisplayMode = "DAY", u
   });
   return {
     render: exports.SemanticIcon as (props: IconProps) => RenderedIcon,
+    resolvePath: exports.adoptedBIconPath as typeof adoptedBIconPath,
     navigate: (nextRoute: string) => { topRoute = nextRoute.replace(/^\//u, ""); },
   };
 }

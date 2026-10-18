@@ -6,7 +6,7 @@
    [另一电脑补入的完整结果要求](INHERITED-REQUIREMENTS.md)：H1–H8、A01–A15/N01–N09保留编号、已完成成果复用、缺失原索引与新实施授权。
 2. [当前唯一方案](PLAN.md)：2026-10-18按用户明确“更新下计划方案，加进去”授权，加入地形/云量/光害叠层性能的完整链路测量、成熟方案调研、共享职责、优化与真机完成条件，保留原性能/Map-Sky和继承义务。另一电脑固定方案尚缺，不臆造其A/N编号内容。[完整新版Goal正文](GOAL-OBJECTIVE.md)已由用户覆盖到当前Goal，经get_goal核实；并非agent通过不支持的正文编辑工具修改。
 3. [当前状态与恢复](HANDOFF.md)：当前源码、候选、服务、在途操作、下一动作及停止条件。
-4. [性能/包体/分支总证据](VERIFICATION.md)、[真机证据](PHONE-VERIFICATION.md)、[最新候选字节](PHONE-FIX-CANDIDATE.json)、[最新源码指纹](PHONE-FIX-SOURCE-SNAPSHOT.json)。软件、桌面、手机观察的效力不可互换。
+4. [性能/包体/分支总证据](VERIFICATION.md)、[真机证据](PHONE-VERIFICATION.md)、[转场修复候选字节](PHONE-FIX-CANDIDATE.json)及[对应源码指纹](PHONE-FIX-SOURCE-SNAPSHOT.json)。当前整合候选由[OVERLAY-CANDIDATE](OVERLAY-CANDIDATE.json)、[当前源码指纹](OVERLAY-SOURCE-SNAPSHOT.json)和HANDOFF拥有；不把历史转场候选当成当前手机包。软件、桌面、手机观察的效力不可互换。
 5. [包体/CDN审计](PACKAGE-AUDIT.md)、[地图生命周期](MAP-LIFECYCLE.md)、[先前独立审查](INDEPENDENT-REVIEW.md)、[分支清理回执](BRANCH-CLEANUP.json)。后续手机修复的审查见真机证据和当前状态。
 6. [合并与旧代码疑问复核](SOURCE-AND-MERGE-AUDIT.md)。原合并任务的 [证据](../main-integration-2026-10-17/VERIFICATION.md)、[设计迁移](../main-integration-2026-10-17/DESIGN-MIGRATION.json)、[父版本测试比较](../main-integration-2026-10-17/PARENT-TEST-COMPARISON.json) 保留，不重复迁移/合并。
 7. [当前CI归因](CI-TRIAGE.md)、[部署夹具修复](CI-DEPLOYMENT-REPAIR.md)、[共享入口修复](CI-SHARED-ENTRY-REPAIR.md)、[本批独立复核](CI-INDEPENDENT-REVIEW.md)。当前全量结果与未决归类继续由 HANDOFF 和相应证据记录拥有。
@@ -16,10 +16,11 @@
 11. [手机实际选点范围与居中](PHONE-FOCUS-VERIFICATION.md)：generation5临时只读诊断包的3.394km、0.7px与拖动接管结果；不替代未完成的连续双指、其它入口和最终普通候选。
 12. [当前山体遮挡接口摘要](HORIZON-CURRENT-API-SUMMARY.json)：现有手机API的真实COG模型及许可/假设读回，未包含站位坐标；接口读回不替代手机Canvas、缺测恢复或资料阅读验收。
 13. [叠层服务实测摘要](OVERLAY-SERVICE-MEASUREMENTS.json)保留三阶段的成功与较慢样本、输出哈希及最终源码指纹；[临时聚焦观察器源码](FOCUS-OBSERVATION-PROBE.txt)与探针回执逐字节匹配，只作为证据保存，不在生产源码或普通候选里。
-14. [远端检查点与CI回执](REMOTE-CI-CHECKPOINT.json)：代码检查点d8339c48的Product CI39090552186和Context39090556680均通过，含隔离基础设施和镜像构建。之后的Map空来源条修复通过既有针对性检查及generation8手机比较，未把旧CI绑定到新源码。main仍在原整合提交，当前独立审阅和剩余用户结果未完成。
+14. [远端检查点与CI回执](REMOTE-CI-CHECKPOINT.json)：代码检查点d8339c48的Product CI39090552186和Context39090556680均通过，含隔离基础设施和镜像构建。之后的Map空来源条与海报分包路径修复通过针对性检查及generation8/9手机比较，未把旧CI绑定到新源码。main仍在原整合提交，当前独立审阅和剩余用户结果未完成。
 15. [当前候选的开发工具恢复证据](DEVTOOLS-RECOVERY.md)：受控退出重开后官方CLI已恢复，自动真机调试的实际手机连接与绑定见后续证据；旧MCP/SDK失败不能继续当成当前CLI不可用的依据。
 16. [generation6真机反馈](PHONE-GEN6-VERIFICATION.md)：普通候选已绑定Android，真实选点打开中面板；无UI探针的原生范围/中心读回成立。后续连续操作、资料/来源与实际性能仍沿原义务继续；[只读测量源码](NATIVE-FOCUS-READBACK.txt)保留方法，不进入产品。
 17. [云量时钟差修复](CLOUD-CLOCK-REPAIR.md)：手机与BFF约1秒时钟差导致新鲜格子被判为未来数据；保留来源时刻并统一查询与暂存层的有效期时钟，记录修复前失败、修复后检查及generation7真实云格/切时刻/拖动结果。当前手机定位拒绝与恢复、generation8空来源条修复及旧构建回收见[真机证据](PHONE-VERIFICATION.md#generation7-location-permission-recovery)。
+18. [海报分包路径修复与真实相册保存](PHONE-VERIFICATION.md#generation9-poster-package-repair-and-native-album-save)：generation8失败、真实组件回归及generation9修后原生保存结果；已保存1张测试SPOT海报，真实接收/PLAN/导出文件交接仍未验，N05继续保留。
 
 执行规则与架构入口：仓库 [AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机 owner](../../../project_context/areas/main/verification/wechat-device.md)。适用技能为 `.codex/skills/starward-miniapp-development`、`.codex/skills/starward-wechat-device-verification`、`.codex/skills/uiux_design` 与已安装官方 wechatide scenes；本次 durable-goal 原文位于 `C:/Users/777/.codex/skills/durable-goal/SKILL.md`。
 

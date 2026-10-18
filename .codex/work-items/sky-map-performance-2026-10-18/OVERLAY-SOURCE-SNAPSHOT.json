@@ -5,9 +5,10 @@
   "apps/wechat-miniapp/src/app.config.ts": "737b102917fc8dfa0ac85429e8ac45a9b4e8f29fa17e78a0a48172df781ad13d",
   "apps/wechat-miniapp/src/components/main-b-icon-files.json": "6a0983f1d84509c48ad32db00ede7c34a828e88b498f8c05adbe8631ff86e2cb",
   "apps/wechat-miniapp/src/components/native-back-boundary.test.ts": "6f0adbb57d0fa9f3eff699be50d4c229b91ef19c76fcafb4626bcefb8c2741ed",
-  "apps/wechat-miniapp/src/components/semantic-asset-test-support.ts": "b01a5e62869545cc0450a8b8ddbdad54615e45b8df9be189591f04c4f3923d38",
+  "apps/wechat-miniapp/src/components/semantic-asset-test-support.ts": "2913946c3705387b7af58b4b8aa513ea59ecab81c91919def3f9a48d3e8cb79c",
   "apps/wechat-miniapp/src/components/semantic-asset.test.ts": "48868acf2058db0158a3932a0e50285f1b7c101fabbb5d31d02f17c5b3a256db",
   "apps/wechat-miniapp/src/components/semantic-asset.tsx": "c3b6a6a6f547369ae547d2849dec9286bb46aa832003aeaa9f996f98ba7b3afc",
+  "apps/wechat-miniapp/src/components/share-poster.tsx": "055d71e1521f79f3fbcc90689f9876acc6eb6bb3bf4508009f8a5dcb95c56384",
   "apps/wechat-miniapp/src/components/shared-rendering-regression.test.ts": "45bdc4dee3f8d58126fb56d6324c91113a729ad5035f874e146d12eca2386be3",
   "apps/wechat-miniapp/src/content/contribution/editor-readonly.test.ts": "60f1d9f5902b13fe1f4602c071148dfdad8fdfc566f70d58dc22c8de3570eb52",
   "apps/wechat-miniapp/src/content/contribution/local-draft-storage.test.ts": "41d38d6b170ae9f322ea3508730906a8d21e12f4a9c9e06db57d896d957c23bb",
@@ -108,5 +109,6 @@
   "packages/miniapp-contracts/src/index.ts": "6231a36630615152fa6282da5aeea972e85a5e4e3c449dcad4751cb806b89855",
   "packages/miniapp-contracts/src/map-cloud-snapshot.ts": "88c5d9c7e26f05b2778b63fe4425be8308d7a51e54f4fb2a656e900724a6b94e",
   "tools/miniapp/built-candidate.test.mjs": "eb1fbf747f91f1ae791909e1e14126dcbd2710d7976b107b0a25c73bf2c0b365",
-  "tools/miniapp/workflow-conformance.test.mjs": "9139eda86f3ffb6f7b1d3b69ed7075639da35e4314a4534907564a1a72638dd3"
+  "tools/miniapp/workflow-conformance.test.mjs": "9139eda86f3ffb6f7b1d3b69ed7075639da35e4314a4534907564a1a72638dd3",
+  "apps/wechat-miniapp/src/components/share-poster-package.test.ts": "f70232cc5a1e107abebb50c8fd2e7620dcb78b5a3ec30d35b39a6ceec1f63a71"
 }

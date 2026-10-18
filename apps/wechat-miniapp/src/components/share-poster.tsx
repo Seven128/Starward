@@ -1,4 +1,4 @@
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Button, Canvas, Image, Text, View } from "@tarojs/components";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DisplayMode } from "@starward/miniapp-contracts";
@@ -43,6 +43,7 @@ function posterHeight(data: PublicShare, mode: DisplayMode) {
 }
 
 export function SharePoster({ data, onClose }: { data: PublicShare; onClose?: () => void }) {
+  const router = useRouter();
   const mode = useAppStore(state => state.mode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<"red-light-warning" | "permission" | "export" | null>(null);
@@ -108,7 +109,7 @@ export function SharePoster({ data, onClose }: { data: PublicShare; onClose?: ()
             } catch (cause) { fail(cause); }
           };
           if (value.mode !== "DAY" || value.icons) { finish(); return; }
-          const decoding = loadPosterIcons(canvas, adoptedBIconPath);
+          const decoding = loadPosterIcons(canvas, name => adoptedBIconPath(name, "default", router?.path ?? ""));
           value.releaseIcons = decoding.cancel;
           void decoding.promise.then(icons => { if (current()) { value.icons = icons; finish(); } }, fail);
         } catch (cause) { fail(cause); }

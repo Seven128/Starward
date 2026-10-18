@@ -98,3 +98,37 @@ Refresh invalidated generation7's device session and input grant. Its earlier pe
 ### Cleanup
 
 The feedback owner removed the old generation and session. Nine precisely scoped obsolete wrapper builds,44,509,406B in total, were moved to Windows Recycle Bin after resolved-path, reparse-point and process-use checks; they remain recoverable there. Current wrapper/generation8 and private evidence were retained. Other tasks' output directories, canonical watch/API8787, phone API8791, account/N05, pairing and VPN were preserved. Final feedback/service cleanup waits for the remaining journeys.
+
+## Generation9 poster package repair and native album save
+
+### Candidate identity
+
+2026-10-18, `development_feedback`, same authorized Android phone, DAY ordinary preview. Generation9 SHA-256 `29351b4197e64b6e3fe2365b19e01b85e2700795fbc592f44d61c3b6cc4fb732`;338files,total4,949,193B. Main remains2,012,475B with84,677B headroom; content adds121B. OVERLAY-SOURCE-SNAPSHOT binds112 source inputs. The public SPOT is the existing MEMORY_TEST fixture; its content is not evidence of a production place or real weather.
+
+### Invocation result
+
+Generation8's actual finder-result tap returned to Map with the existing medium panel; the camera subsequently settled with the selected marker above the panel. This is a search-entry observation, not a new numeric4km/finer-view measurement. Its existing share action opened the public SPOT card, but 制作分享海报 left a persistent blank preview and export error before any album write.
+
+The exact emitted bundle contains favorite-star/meteor in main and place-pin only in content. SharePoster called adoptedBIconPath without its mounting route, so its native image loader requested a missing main-package place-pin. The component now uses Taro's page-owned useRouter binding, matching the existing SemanticIcon owner. Image bytes, drawing/layout, source content and lifecycle owners are unchanged. The new real-component/native-image-port regression fails before the fix with poster_icon_unavailable, then passes. All26 focused poster/asset/presentation checks, Mini Program typecheck and11 ordinary-build checks pass. No whole-suite repetition was needed for this bounded consumer repair.
+
+Official same-account auto-preview refresh21149 completed. Fresh physical Map pixels established delivery before generation9 binding; guarded captures and real share/poster actions then verified the changed result. A separate canonical runtime-info read had no matching open runtime; no restart or retired SDK fallback was used.
+
+### Observed product behavior
+
+The generation9 poster actually displays the place marker artwork, name, location text, opening/parking/horizon facts and separate entrance/safety information. An actual 保存海报到相册 tap produced both the app success notification and WeChat's native saved-image toast. Exactly one test SPOT poster was saved at about11:29 local time. No recipient was selected and no message was sent. Android Back first closed the poster to the share card, then returned to the same selected Map panel with terrain/cloud retained.
+
+### Verified
+
+The actual Android image-decoding/export-preview path works after the package-owner repair, and the native album save reported success on the real phone. This goes beyond server-side generation. Private evidence lives in the existing generation8/9 review folders: spot-share-card.png, spot-poster-blank.png, spot-poster-export-error.png, spot-poster-preview.png, spot-poster-before-save.png and spot-poster-saved-native-toast.png. The two search-selection frames remain in generation8.
+
+### Unverified
+
+No album browsing/file hash readback was performed, and no PLAN poster was saved in this run. N05 remains preserved. Natural PLAN/SPOT delivery to a user-authorized real recipient, receiver access/expiry, actual account-export file handoff/opening, real source attribution on production content and iOS remain open. This is not full design or settled-candidate acceptance. It does not close the geographic4km/pinch or production overlay obligations.
+
+### Invalidated
+
+Generation8's device session/input grant was retired by refresh. Historical observations remain bound to their own unchanged responsibilities; only generation9's current session may control the phone.
+
+### Cleanup
+
+Returned to Map; existing permissions, N05/account/storage, services, pairing and VPN were preserved. One newly saved test poster remains in the phone album for the remaining handoff; its exact filename was not enumerated, so no broad gallery cleanup was attempted. The feedback owner removed generation8, and its generated wrapper backup was moved to Recycle Bin after the same exact scope checks (4,949,072B). Cumulative obsolete wrapper recycling is10directories/49,458,478B; current generation9 and private evidence remain. Final task-resource cleanup is still pending.
