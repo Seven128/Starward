@@ -1,0 +1,49 @@
+{
+  "scope": "SYNTHETIC_HTTP_ADMISSION_NOT_PHONE_OR_PERFORMANCE",
+  "observedAt": "2026-10-19T00:12:06.993Z",
+  "buildGeneration": 27,
+  "buildSourceSha256": "ca9170ccf2fbfe0e520335cc81bdb5ee3e2520b9144fefb1858def5e4d83d758",
+  "protocol": "v3-with-a-correlation",
+  "statuses": [
+    {
+      "label": "terminal-without-metrics",
+      "status": 424
+    },
+    {
+      "label": "metrics",
+      "status": 200
+    },
+    {
+      "label": "metrics-exact-retry",
+      "status": 200
+    },
+    {
+      "label": "conflicting-metrics",
+      "status": 409
+    },
+    {
+      "label": "terminal",
+      "status": 200
+    },
+    {
+      "label": "terminal-exact-retry",
+      "status": 200
+    }
+  ],
+  "archived": [
+    {
+      "file": "baseline-r17-1-kokdhdyblx.json",
+      "bytes": 14565,
+      "sha256": "0311fd47bf2d69bdc34f44ce88d483203f539ddf41591f03d6a5d6c1b06dc5e2",
+      "liveSyntheticRemoved": true
+    },
+    {
+      "file": "baseline-r17-1-kokdhdyblx-terminal.json",
+      "bytes": 1584,
+      "sha256": "2366ebbdbe4a5df1ead3f8007ae99bd3115f67d73001784ca4a795f859a0489d",
+      "liveSyntheticRemoved": true
+    }
+  ],
+  "phoneTouched": false,
+  "accountTouched": false
+}

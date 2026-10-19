@@ -1,0 +1,889 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-18T14:54:12.189Z",
+  "status": "INITIAL_SNAPSHOT_ONLY",
+  "privacy": "Only fixed known type/code labels and numeric aggregations are emitted. No raw names, IDs, property values or retaining paths.",
+  "limitations": [
+    "One V8 isolate snapshot does not measure native, GPU, other VMs, all external allocations or total process memory.",
+    "Recorded non-weak graph reachability is not a complete host/ephemeron liveness model.",
+    "Taking a snapshot can alter collection timing; a post-snapshot plateau does not prove absence of transient allocation pressure.",
+    "Node-ID comparison assumes the same isolate and is accompanied by overlap/type-consistency observations."
+  ],
+  "snapshots": [
+    {
+      "byteLength": 87166304,
+      "sha256": "f67a008b33f2f5eab4cdc52db94c072370e3a87085b44b4fce8ff8cc84b9f599",
+      "validation": {
+        "nodeStride": 6,
+        "nodeCount": 1126865,
+        "edgeStride": 3,
+        "edgeCount": 4245198,
+        "edgeCountSum": 4245198,
+        "declaredCountsMatch": true,
+        "allReferencesAlignedAndInRange": true,
+        "weakEdgeCount": 121016
+      },
+      "totalSelfSizeBytes": 71087332,
+      "byType": {
+        "synthetic": {
+          "count": 33,
+          "selfSizeBytes": 0
+        },
+        "hidden": {
+          "count": 30682,
+          "selfSizeBytes": 948488
+        },
+        "string": {
+          "count": 246134,
+          "selfSizeBytes": 33391877
+        },
+        "object shape": {
+          "count": 47423,
+          "selfSizeBytes": 2327840
+        },
+        "code": {
+          "count": 244499,
+          "selfSizeBytes": 16287936
+        },
+        "array": {
+          "count": 77298,
+          "selfSizeBytes": 5976164
+        },
+        "number": {
+          "count": 172192,
+          "selfSizeBytes": 2066184
+        },
+        "symbol": {
+          "count": 106,
+          "selfSizeBytes": 1440
+        },
+        "closure": {
+          "count": 67271,
+          "selfSizeBytes": 1987896
+        },
+        "object": {
+          "count": 192409,
+          "selfSizeBytes": 4769152
+        },
+        "concatenated string": {
+          "count": 48365,
+          "selfSizeBytes": 967300
+        },
+        "sliced string": {
+          "count": 228,
+          "selfSizeBytes": 4560
+        },
+        "bigint": {
+          "count": 12,
+          "selfSizeBytes": 192
+        },
+        "regexp": {
+          "count": 190,
+          "selfSizeBytes": 5320
+        },
+        "native": {
+          "count": 23,
+          "selfSizeBytes": 2352983
+        }
+      },
+      "knownNames": {
+        "string: Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: ArrayBuffer": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: BigInt64Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: BigUint64Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Date": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Error": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Float32Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Float64Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Function": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Int16Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Int32Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Int8Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Map": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Object": {
+          "count": 3,
+          "selfSizeBytes": 40
+        },
+        "string: Promise": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: RegExp": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Set": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: SharedArrayBuffer": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: TypeError": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Uint16Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Uint32Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Uint8Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: Uint8ClampedArray": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: WeakMap": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: WeakSet": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "object: Object": {
+          "count": 81742,
+          "selfSizeBytes": 2421908
+        },
+        "closure: Object": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "object: system / Context": {
+          "count": 22376,
+          "selfSizeBytes": 756140
+        },
+        "string: WebGLTexture": {
+          "count": 1,
+          "selfSizeBytes": 24
+        },
+        "string: WebGLBuffer": {
+          "count": 1,
+          "selfSizeBytes": 24
+        },
+        "string: DataView": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "string: OffscreenCanvas": {
+          "count": 5,
+          "selfSizeBytes": 140
+        },
+        "object: OffscreenCanvas": {
+          "count": 5,
+          "selfSizeBytes": 136
+        },
+        "object: CanvasRenderingContext2D": {
+          "count": 3,
+          "selfSizeBytes": 92
+        },
+        "object: WebGLRenderingContext": {
+          "count": 3,
+          "selfSizeBytes": 92
+        },
+        "code: Object": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Function": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Date": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: Promise": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: RegExp": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: Error": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: TypeError": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: ArrayBuffer": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: SharedArrayBuffer": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Uint8Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Int8Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Uint16Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Int16Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Uint32Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Int32Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: BigUint64Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: BigInt64Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Uint8ClampedArray": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Float32Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: Float64Array": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: DataView": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: Map": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: Set": {
+          "count": 2,
+          "selfSizeBytes": 48
+        },
+        "code: WeakMap": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "code: WeakSet": {
+          "count": 1,
+          "selfSizeBytes": 0
+        },
+        "object: Array": {
+          "count": 79446,
+          "selfSizeBytes": 1271136
+        },
+        "object: Set": {
+          "count": 1077,
+          "selfSizeBytes": 17244
+        },
+        "object: Promise": {
+          "count": 172,
+          "selfSizeBytes": 3448
+        },
+        "object: WeakMap": {
+          "count": 440,
+          "selfSizeBytes": 7052
+        },
+        "closure: Function": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "object: Map": {
+          "count": 363,
+          "selfSizeBytes": 5832
+        },
+        "object: Uint8Array": {
+          "count": 21,
+          "selfSizeBytes": 1260
+        },
+        "object: Uint16Array": {
+          "count": 5,
+          "selfSizeBytes": 300
+        },
+        "closure: Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Map": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "closure: Error": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "closure: Promise": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Set": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "closure: Date": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "object: Error": {
+          "count": 56,
+          "selfSizeBytes": 1340
+        },
+        "object: WeakSet": {
+          "count": 35,
+          "selfSizeBytes": 572
+        },
+        "closure: WeakMap": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: WeakSet": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "object: Date": {
+          "count": 4,
+          "selfSizeBytes": 208
+        },
+        "closure: TypeError": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: DataView": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "closure: Uint8Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Int8Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Uint16Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Int16Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Uint32Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Int32Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: BigUint64Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: BigInt64Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Uint8ClampedArray": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Float32Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: Float64Array": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "closure: ArrayBuffer": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "closure: RegExp": {
+          "count": 4,
+          "selfSizeBytes": 124
+        },
+        "closure: SharedArrayBuffer": {
+          "count": 3,
+          "selfSizeBytes": 96
+        },
+        "object: Float32Array": {
+          "count": 3,
+          "selfSizeBytes": 180
+        },
+        "string: CanvasRenderingContext2D": {
+          "count": 2,
+          "selfSizeBytes": 72
+        },
+        "closure: OffscreenCanvas": {
+          "count": 2,
+          "selfSizeBytes": 64
+        },
+        "object: ArrayBuffer": {
+          "count": 37,
+          "selfSizeBytes": 1900
+        },
+        "object: Uint32Array": {
+          "count": 12,
+          "selfSizeBytes": 720
+        },
+        "code: WebGLRenderingContext": {
+          "count": 1,
+          "selfSizeBytes": 48
+        },
+        "string: WebGLRenderingContext": {
+          "count": 2,
+          "selfSizeBytes": 72
+        },
+        "closure: WebGLRenderingContext": {
+          "count": 1,
+          "selfSizeBytes": 32
+        },
+        "code: OffscreenCanvas": {
+          "count": 2,
+          "selfSizeBytes": 96
+        },
+        "code: CanvasRenderingContext2D": {
+          "count": 1,
+          "selfSizeBytes": 48
+        },
+        "closure: CanvasRenderingContext2D": {
+          "count": 1,
+          "selfSizeBytes": 32
+        },
+        "native: system / JSArrayBufferData": {
+          "count": 23,
+          "selfSizeBytes": 2352983
+        },
+        "object: Float64Array": {
+          "count": 5,
+          "selfSizeBytes": 300
+        },
+        "object: DataView": {
+          "count": 1,
+          "selfSizeBytes": 28
+        },
+        "object: SharedArrayBuffer": {
+          "count": 1,
+          "selfSizeBytes": 28
+        },
+        "object: Int16Array": {
+          "count": 1,
+          "selfSizeBytes": 60
+        },
+        "object: Int8Array": {
+          "count": 1,
+          "selfSizeBytes": 60
+        },
+        "object: Int32Array": {
+          "count": 1,
+          "selfSizeBytes": 60
+        }
+      },
+      "stringSizeBuckets": {
+        "zero": {
+          "count": 1454,
+          "selfSizeBytes": 0
+        },
+        "128-1023": {
+          "count": 2757,
+          "selfSizeBytes": 551324
+        },
+        "1-127": {
+          "count": 290368,
+          "selfSizeBytes": 6386177
+        },
+        "1024-16383": {
+          "count": 118,
+          "selfSizeBytes": 340868
+        },
+        "16384-262143": {
+          "count": 15,
+          "selfSizeBytes": 1599716
+        },
+        "262144-plus": {
+          "count": 15,
+          "selfSizeBytes": 25485652
+        }
+      },
+      "strongGraph": {
+        "method": "recorded directed edges excluding weak; root index zero; Lengauer-Tarjan dominators",
+        "reachableNodeCount": 1126865,
+        "reachableSelfSizeBytes": 71087332,
+        "unreachableNodeCount": 0,
+        "unreachableSelfSizeBytes": 0,
+        "reachableStrongEdgeCount": 4124182,
+        "topRetainers": [
+          {
+            "label": "object: system / Context",
+            "retainedSizeBytes": 2501643,
+            "selfSizeBytes": 728,
+            "reachableDescendantCount": 66679
+          },
+          {
+            "label": "object: system / Context",
+            "retainedSizeBytes": 1485724,
+            "selfSizeBytes": 19500,
+            "reachableDescendantCount": 31115
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 1420304,
+            "selfSizeBytes": 20,
+            "reachableDescendantCount": 67624
+          },
+          {
+            "label": "object: system / Context",
+            "retainedSizeBytes": 1418412,
+            "selfSizeBytes": 2916,
+            "reachableDescendantCount": 67580
+          },
+          {
+            "label": "object: Array",
+            "retainedSizeBytes": 1306628,
+            "selfSizeBytes": 16,
+            "reachableDescendantCount": 65281
+          },
+          {
+            "label": "object: Array",
+            "retainedSizeBytes": 1306612,
+            "selfSizeBytes": 16,
+            "reachableDescendantCount": 65280
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 1279276,
+            "selfSizeBytes": 48,
+            "reachableDescendantCount": 75720
+          },
+          {
+            "label": "object: Array",
+            "retainedSizeBytes": 1278152,
+            "selfSizeBytes": 16,
+            "reachableDescendantCount": 75698
+          },
+          {
+            "label": "array: other",
+            "retainedSizeBytes": 1278136,
+            "selfSizeBytes": 33624,
+            "reachableDescendantCount": 75697
+          },
+          {
+            "label": "object: ArrayBuffer",
+            "retainedSizeBytes": 1048628,
+            "selfSizeBytes": 52,
+            "reachableDescendantCount": 2
+          },
+          {
+            "label": "native: system / JSArrayBufferData",
+            "retainedSizeBytes": 1048576,
+            "selfSizeBytes": 1048576,
+            "reachableDescendantCount": 1
+          },
+          {
+            "label": "object: system / Context",
+            "retainedSizeBytes": 1025876,
+            "selfSizeBytes": 11072,
+            "reachableDescendantCount": 30060
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 851392,
+            "selfSizeBytes": 12,
+            "reachableDescendantCount": 44795
+          },
+          {
+            "label": "object: system / Context",
+            "retainedSizeBytes": 803200,
+            "selfSizeBytes": 56,
+            "reachableDescendantCount": 44032
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 794596,
+            "selfSizeBytes": 20,
+            "reachableDescendantCount": 24335
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 794576,
+            "selfSizeBytes": 44,
+            "reachableDescendantCount": 24334
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 792700,
+            "selfSizeBytes": 52,
+            "reachableDescendantCount": 24290
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 792700,
+            "selfSizeBytes": 52,
+            "reachableDescendantCount": 24290
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 781564,
+            "selfSizeBytes": 80,
+            "reachableDescendantCount": 24076
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 781564,
+            "selfSizeBytes": 80,
+            "reachableDescendantCount": 24076
+          },
+          {
+            "label": "object: Object",
+            "retainedSizeBytes": 669900,
+            "selfSizeBytes": 40,
+            "reachableDescendantCount": 25191
+          },
+          {
+            "label": "object: Array",
+            "retainedSizeBytes": 638728,
+            "selfSizeBytes": 16,
+            "reachableDescendantCount": 42022
+          },
+          {
+            "label": "object: other",
+            "retainedSizeBytes": 549832,
+            "selfSizeBytes": 52,
+            "reachableDescendantCount": 12988
+          },
+          {
+            "label": "object: system / Context",
+            "retainedSizeBytes": 542656,
+            "selfSizeBytes": 52,
+            "reachableDescendantCount": 346
+          }
+        ]
+      }
+    }
+  ],
+  "scope": "Private offline analysis of one admitted physical-phone V8 snapshot. No phone, service, source, build or workflow changes.",
+  "inputRoles": [
+    "initial loaded paused normal wide Sky; root-controlled native Take Heap Snapshot"
+  ],
+  "pairComparisonStatus": "AFTER_NATIVE_EXPORT_UNAVAILABLE",
+  "boundedTaskStatus": "COMPLETE_INITIAL_ONLY_ANALYSIS_WITH_UNVERIFIED_TARGET_RETENTION",
+  "rootReportedRuntimeScope": {
+    "independentlyReReadByThisTask": false,
+    "sameWideViewNormalPlaySecondsApprox": 29,
+    "successfulPausedClock": "04:30:29",
+    "applySent": false,
+    "nativeExitObservedInThisWindow": false,
+    "nativeDebugEnabledBeforePlay": false,
+    "performancePanelEnabledThroughout": true,
+    "pausedScreenshot": "E:/Dev/Starward-data/verification/sky-map-20261018/heap-snapshots/sky-play-paused.png",
+    "memoryEvidenceBasenames": [
+      "heap-before-play-1792335098892.ndjson",
+      "heap-play-1792335142373.ndjson",
+      "heap-after-snapshot-attempt-1792335702895.ndjson"
+    ],
+    "playUnknownKiB": {
+      "before": 260248,
+      "duringFinal": 657048,
+      "afterPause": 656896
+    },
+    "afterExportAttemptKiB": {
+      "pss": 3848619,
+      "rss": 1874772,
+      "swap": 2168576,
+      "nativeHeapPss": 1259803,
+      "nativeSummary": 896436,
+      "unknown": 177820
+    },
+    "finalReadOnlyExportStatus": {
+      "distinctAfterFileAdmitted": false,
+      "originalHashUnchanged": true,
+      "originalByteLengthUnchanged": true,
+      "originalMtimeUnchanged": true,
+      "originalMtimeEpochSeconds": 1792334941
+    },
+    "observerEffect": "Native/Swap changed materially during export attempts. Profiler allocation or pending work is a material confounder; precise cause remains unresolved.",
+    "furtherSnapshotGcOrPlayPlanned": false,
+    "performancePanelCleanupOwner": "root native UI owner; actual panel-close, same-generation official auto-preview and normal Map pixels observed",
+    "generation": 20,
+    "bundleSha256": "6cd3bdd1e5bc791ac11941a0ba40eae87f80301d694484b8297a7e06080f815a",
+    "performancePanelCleanup": {
+      "completed": true,
+      "debugPanelVisibleAfterRecovery": false,
+      "vConsoleVisibleAfterRecovery": false,
+      "accountOrStorageReset": false,
+      "forceStop": false,
+      "phoneSnapshotOriginalRetained": true,
+      "scope": "this profiler experiment only; not a playback repair"
+    },
+    "earlyActualPlayReceipt": {
+      "source": "candidate-r17-1-1bwk5qbaof.json",
+      "schemaValidated": true,
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 14057,
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 153,
+        "preparedRequests": 180,
+        "paintAttempts": 139,
+        "nativeCallbacks": 139,
+        "acceptedCopies": 139,
+        "sceneFinishes": 139,
+        "glDrawSubmissions": 1668,
+        "bscSubmittedStars": 25298,
+        "saoSubmittedStars": 18904,
+        "acceptedBscObjects": 25298,
+        "acceptedSaoObjects": 14456,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 666,
+        "saoRowsMax": 666,
+        "selectedTilesMin": 16,
+        "selectedTilesMax": 16,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 45,
+        "fovMax": 45
+      },
+      "note": "Actual wide Play before successful Pause at29s; early14s snapshot, performance panel and prior heap export affect performance comparison."
+    },
+    "files": [
+      {
+        "folder": "heap-snapshots",
+        "name": "sky-play-paused.png",
+        "bytes": 641812,
+        "sha256": "fd8248645e8187d38c7b3808f9d528e53e347a920907f6e25f62482ede7e194e"
+      },
+      {
+        "folder": "heap-snapshots",
+        "name": "after-panel-off-map.png",
+        "bytes": 627459,
+        "sha256": "4fc3f8411b27c3ecb111e371093beb59942c2ed7c482025e72842479a0a4b3d1"
+      },
+      {
+        "folder": "native-play-copy-trial",
+        "name": "heap-before-play-1792335098892.ndjson",
+        "bytes": 1006,
+        "sha256": "db2faa39e6f8e6eed611f9474e65e5b2f4dab62fcc872c32fdb8ce14e1df1a5d"
+      },
+      {
+        "folder": "native-play-copy-trial",
+        "name": "heap-play-1792335142373.ndjson",
+        "bytes": 7040,
+        "sha256": "076dc7e0807b9e88d056530db69bbb16a5cf4924c160d34d9d6107e044b28cb1"
+      },
+      {
+        "folder": "native-play-copy-trial",
+        "name": "heap-after-snapshot-attempt-1792335702895.ndjson",
+        "bytes": 1003,
+        "sha256": "1eefe3304698c98c46a8a6a6c69623a8a5948951407f9b52eb33373861ba301f"
+      },
+      {
+        "folder": "probe-metrics",
+        "name": "candidate-r17-1-1bwk5qbaof.json",
+        "bytes": 4578,
+        "sha256": "180621c4a81de89828dd13bcd63ce9bc4e6fb2c1b8d28ea7a7d861c307286001"
+      }
+    ]
+  },
+  "parserChecks": {
+    "fixedGraphFixturesPassed": 3,
+    "mechanisms": [
+      "multiple strong parents",
+      "strong cycle",
+      "weak-only unreachable island"
+    ],
+    "stableIdDeltaFixturePassed": true
+  },
+  "conclusion": {
+    "initialSnapshotSelfSizeBytes": 71087332,
+    "targetPlayStrongRetention": "UNVERIFIED_SECOND_NATIVE_EXPORT_UNAVAILABLE",
+    "allocationPressureVsNative": "UNRESOLVED",
+    "productionRepair": "NONE"
+  }
+}

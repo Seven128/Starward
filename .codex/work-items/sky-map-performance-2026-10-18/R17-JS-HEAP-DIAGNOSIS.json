@@ -1,0 +1,514 @@
+{
+  "scope": "LOCAL_NODE_GC_RETAINED_JS_REAL_SCENE_NO_NATIVE_GPU_OR_REACT_TARO",
+  "node": "v24.16.0",
+  "inputSha256": "9ce8706d36586ed4c0cb5e074c6b66efa396ec634320a2c4015bfb4d255011b0",
+  "sourceOwners": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "9bd4599df04e5ec371dc261de413644f9474856b7b8a45423f2158dbad78f197"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "sha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "6e083c76bac46fa1122b6df3771502ec01cb12fc9d02c8cd53932736e9ff22c6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+      "sha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-star-transition.ts",
+      "sha256": "87dcfec42916bc6899cfa124d092bfd9d1ab5f79ca543148c4e35407b0d9f60a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-ready-presentation.ts",
+      "sha256": "d9a864dad824212c465aae3e58ff67f7cb9e1bf957cc1f09ac28838c1ee0fce9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-name-layout.ts",
+      "sha256": "82db25bf6154718501c42979c4035abd58f64ed0cbbb1c0ba8171ffe616e11ba"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-label-presentation.ts",
+      "sha256": "2113967aec438fc90118f0658929bcd17baffe62753a186f24f5ef93ff1c5b5b"
+    }
+  ],
+  "saoPublicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+  "baseCatalogRows": 8404,
+  "saoPublicationRows": 246280,
+  "fov": 10.8,
+  "width": 390,
+  "height": 844,
+  "warmupFrames": 120,
+  "measuredFrames": 1800,
+  "exactInstantStepMs": "round(index*1000/60)",
+  "totalUniqueFrames": 1920,
+  "maxSelectedTiles": 20,
+  "maxLoadedSaoRows": 7173,
+  "maxObjects": 394,
+  "maxNames": 0,
+  "submittedStars": 753302,
+  "pickedBsc": 28770,
+  "pickedSao": 724135,
+  "sceneFinishes": 1920,
+  "committedTransitions": 1920,
+  "committedNames": 1920,
+  "samples": [
+    {
+      "frame": 0,
+      "elapsedMs": 1848.8918,
+      "allocated": {
+        "rss": 407642112,
+        "heapTotal": 287256576,
+        "heapUsed": 218027888,
+        "external": 6036992,
+        "arrayBuffers": 3442801
+      },
+      "retained": {
+        "rss": 406888448,
+        "heapTotal": 162738176,
+        "heapUsed": 26085608,
+        "external": 6037032,
+        "arrayBuffers": 3442801
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 393,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236789.09547504058
+    },
+    {
+      "frame": 100,
+      "elapsedMs": 3029.4282000000003,
+      "allocated": {
+        "rss": 409137152,
+        "heapTotal": 318713856,
+        "heapUsed": 239294168,
+        "external": 6037032,
+        "arrayBuffers": 3442801
+      },
+      "retained": {
+        "rss": 407048192,
+        "heapTotal": 162738176,
+        "heapUsed": 26143488,
+        "external": 6037032,
+        "arrayBuffers": 3442801
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 393,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236678.11681668955
+    },
+    {
+      "frame": 200,
+      "elapsedMs": 4037.8538,
+      "allocated": {
+        "rss": 408207360,
+        "heapTotal": 172961792,
+        "heapUsed": 63875384,
+        "external": 6033470,
+        "arrayBuffers": 3442801
+      },
+      "retained": {
+        "rss": 408399872,
+        "heapTotal": 161951744,
+        "heapUsed": 25063576,
+        "external": 6033470,
+        "arrayBuffers": 3442801
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 393,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236567.12289642694
+    },
+    {
+      "frame": 300,
+      "elapsedMs": 5031.8303,
+      "allocated": {
+        "rss": 407629824,
+        "heapTotal": 170602496,
+        "heapUsed": 61665600,
+        "external": 6032181,
+        "arrayBuffers": 3442801
+      },
+      "retained": {
+        "rss": 407838720,
+        "heapTotal": 162738176,
+        "heapUsed": 25060928,
+        "external": 6032181,
+        "arrayBuffers": 3442801
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 394,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237500.18502883735
+    },
+    {
+      "frame": 400,
+      "elapsedMs": 6047.562,
+      "allocated": {
+        "rss": 408113152,
+        "heapTotal": 175583232,
+        "heapUsed": 59195928,
+        "external": 6032181,
+        "arrayBuffers": 3442801
+      },
+      "retained": {
+        "rss": 408305664,
+        "heapTotal": 162476032,
+        "heapUsed": 25313896,
+        "external": 6032181,
+        "arrayBuffers": 3442801
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 394,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237388.9158553485
+    },
+    {
+      "frame": 500,
+      "elapsedMs": 7018.569100000001,
+      "allocated": {
+        "rss": 406241280,
+        "heapTotal": 171913216,
+        "heapUsed": 46341520,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 406372352,
+        "heapTotal": 162738176,
+        "heapUsed": 25349736,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 394,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237277.6313804681
+    },
+    {
+      "frame": 600,
+      "elapsedMs": 8019.495999999999,
+      "allocated": {
+        "rss": 406708224,
+        "heapTotal": 169816064,
+        "heapUsed": 61124896,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 406708224,
+        "heapTotal": 162738176,
+        "heapUsed": 25368440,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 394,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237166.39837584304
+    },
+    {
+      "frame": 700,
+      "elapsedMs": 9365.1562,
+      "allocated": {
+        "rss": 407277568,
+        "heapTotal": 169816064,
+        "heapUsed": 60891104,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 407277568,
+        "heapTotal": 162476032,
+        "heapUsed": 25369072,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 394,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237055.0833089995
+    },
+    {
+      "frame": 800,
+      "elapsedMs": 10471.1418,
+      "allocated": {
+        "rss": 407396352,
+        "heapTotal": 169553920,
+        "heapUsed": 40809704,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 407425024,
+        "heapTotal": 163262464,
+        "heapUsed": 25561280,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 393,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236912.0117445496
+    },
+    {
+      "frame": 900,
+      "elapsedMs": 11498.0461,
+      "allocated": {
+        "rss": 407564288,
+        "heapTotal": 172175360,
+        "heapUsed": 53528920,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 407564288,
+        "heapTotal": 162738176,
+        "heapUsed": 25402016,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 392,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236681.8947025824
+    },
+    {
+      "frame": 1000,
+      "elapsedMs": 12680.5582,
+      "allocated": {
+        "rss": 408371200,
+        "heapTotal": 170340352,
+        "heapUsed": 58492664,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 404721664,
+        "heapTotal": 162738176,
+        "heapUsed": 25415960,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 391,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236413.98599100782
+    },
+    {
+      "frame": 1100,
+      "elapsedMs": 14000.7707,
+      "allocated": {
+        "rss": 408141824,
+        "heapTotal": 169291776,
+        "heapUsed": 59282128,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 408141824,
+        "heapTotal": 163000320,
+        "heapUsed": 25467760,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 392,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237227.16147192128
+    },
+    {
+      "frame": 1200,
+      "elapsedMs": 15247.244299999998,
+      "allocated": {
+        "rss": 406724608,
+        "heapTotal": 315830272,
+        "heapUsed": 232922664,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 406851584,
+        "heapTotal": 163524608,
+        "heapUsed": 25468144,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 392,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237116.5406701449
+    },
+    {
+      "frame": 1300,
+      "elapsedMs": 16778.2119,
+      "allocated": {
+        "rss": 406712320,
+        "heapTotal": 318189568,
+        "heapUsed": 242985584,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 406876160,
+        "heapTotal": 163262464,
+        "heapUsed": 25472048,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 392,
+      "latestNames": 0,
+      "lastNumericFingerprint": 237005.83824536795
+    },
+    {
+      "frame": 1400,
+      "elapsedMs": 17783.5,
+      "allocated": {
+        "rss": 408006656,
+        "heapTotal": 318713856,
+        "heapUsed": 239647424,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 405090304,
+        "heapTotal": 163262464,
+        "heapUsed": 25482432,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 392,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236895.12059260835
+    },
+    {
+      "frame": 1500,
+      "elapsedMs": 18900.6473,
+      "allocated": {
+        "rss": 408256512,
+        "heapTotal": 168767488,
+        "heapUsed": 63516760,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 408256512,
+        "heapTotal": 162738176,
+        "heapUsed": 25483344,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 392,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236784.45414341675
+    },
+    {
+      "frame": 1600,
+      "elapsedMs": 20164.829999999998,
+      "allocated": {
+        "rss": 407486464,
+        "heapTotal": 318451712,
+        "heapUsed": 241577664,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 407601152,
+        "heapTotal": 163000320,
+        "heapUsed": 25508392,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 391,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236502.42808379856
+    },
+    {
+      "frame": 1700,
+      "elapsedMs": 21240.4163,
+      "allocated": {
+        "rss": 408371200,
+        "heapTotal": 168767488,
+        "heapUsed": 62454080,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 408371200,
+        "heapTotal": 162476032,
+        "heapUsed": 25495920,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 390,
+      "latestNames": 0,
+      "lastNumericFingerprint": 236085.44719482542
+    },
+    {
+      "frame": 1800,
+      "elapsedMs": 22258.3506,
+      "allocated": {
+        "rss": 408809472,
+        "heapTotal": 318976000,
+        "heapUsed": 238851168,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 404668416,
+        "heapTotal": 163000320,
+        "heapUsed": 25500208,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 390,
+      "latestNames": 0,
+      "lastNumericFingerprint": 235975.38368832148
+    },
+    {
+      "frame": 1801,
+      "elapsedMs": 22272.8762,
+      "allocated": {
+        "rss": 404668416,
+        "heapTotal": 163000320,
+        "heapUsed": 25508696,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "retained": {
+        "rss": 404668416,
+        "heapTotal": 161951744,
+        "heapUsed": 23182376,
+        "external": 6032181,
+        "arrayBuffers": 3442793
+      },
+      "loadedTileObjects": 20,
+      "latestObjects": 0,
+      "latestNames": 0,
+      "lastNumericFingerprint": 235975.38368832148
+    }
+  ],
+  "postResetSampleFrame": 1801,
+  "limitations": [
+    "Node/V8 local retention diagnosis only; does not measure the phone JS heap or classify Android Unknown PSS",
+    "Real full drawSkyScene traversal and current-frame publication shape, with actual transition/readiness/name owners; Canvas/GPU methods use a successful CPU port",
+    "No native GL, native images/text glyph measurement, actual page React hooks, Taro setData, native callbacks, network or physical FPS",
+    "All real BSC rows retained; actual selected SAO tile objects stay in one bounded diagnostic working set; no full-SA0 expansion",
+    "Controlled text metrics exercise name ownership but are not target appearance evidence; optional no-image resource owners have no real image workload",
+    "Forced GC is local evidence only, never a product repair or runtime acceptance condition"
+  ]
+}

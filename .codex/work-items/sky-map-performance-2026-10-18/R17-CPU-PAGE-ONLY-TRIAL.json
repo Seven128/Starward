@@ -1,0 +1,196 @@
+{
+  "scope": "TASK_ONLY_CPU_PAGE_ONLY_FROZEN_SYNTHETIC_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_CPU_PAGE_ONLY_FROZEN_SYNTHETIC_TARGET_EFFECT_UNVERIFIED",
+  "head": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+  "builderSha256": "8284fc1236b77694a4daedddd1f7b20fd655b1ae8aaab7a3644c24b9185d9761",
+  "diagnosticControlsSha256": "ed646844b6d5046f5e7411e2d9647f965f33776b7b3427a1040dffdcd55ae6fd",
+  "observerTemplateSha256": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d",
+  "facadeTemplateSha256": "00f7e3b964a0acd22c1869b7b6d59a5bf03d1e1b591c34c2fb2b10890fe35fb4",
+  "fixtureSha256": "e327504ee15cfba0023773571b03daa481e1b6826f718f75b037e3d69d646a6e",
+  "originalCandidateSha256": "a95a2a7389e9023d49e3ca4932adb0322126892bf8d958dc988b5c909c36c8bf",
+  "originalBaselineSha256": "61b5ce1bc7f5ab1954a992c69fb2224468488ee750a3488a54832bb0dd54bef5",
+  "originalSourceManifestSha256": "77326a8d52f0a4973c9452e6c71081f77347932a7231cb74d25c979d70f2d277",
+  "originalBuildEvidenceSha256": "01d7218e08cc7b9b438551faa132fa23a1b3f9def031827a369c051cd4bf51bb",
+  "sourceFiles": 1565,
+  "candidateSourceSnapshotSha256": "87be4e623a9af512043aa73cac44f885ecc92fd888f3139672822872c2e54a02",
+  "trialSourceSnapshotSha256": "23c8941110744103172447ead689d548efecd17ee8e50f696d96caf924630f7e",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-cpu-page-only-trial/manifest.json",
+  "sourceManifestSha256": "ce9d733f4d4553f8e8893f93ba1c59439781b1ab6c32f52182087ef02692f64c",
+  "exactSourceDifferences": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "candidateSha256": "59d1e2028d68036ce80473fb3d322981bdb97738ecba0b47b8ebf714d36a9c90",
+      "trialSha256": "72eea99a919884f592cf9226f5c00738474469c1bbe676f7e5aef40154800ecf"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "candidateSha256": "5ce566daafcaa7f2be25ef824aeac7ece96490aae6331e3b146e5a462ae381d2",
+      "trialSha256": "ed646844b6d5046f5e7411e2d9647f965f33776b7b3427a1040dffdcd55ae6fd"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "candidateSha256": "a9e94983ff7b30a74a82e77c66dd7b46ae32af8b26ce98e732e7fa4ae51b8857",
+      "trialSha256": "1ac0ae58d8c3856fd7aaf0a38573ab87de5b0524fbbfc9eabf3445f5395e8a09"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-page-bridge-observer.ts",
+      "candidateSha256": null,
+      "trialSha256": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-cpu-page-only.ts",
+      "candidateSha256": null,
+      "trialSha256": "00f7e3b964a0acd22c1869b7b6d59a5bf03d1e1b591c34c2fb2b10890fe35fb4"
+    }
+  ],
+  "normalSourceUnchanged": true,
+  "originalPairSourceAndBundlesUnchanged": true,
+  "fullSourceBuildNotGeneratedPatch": true,
+  "postBuildSourceAndBundleReadback": true,
+  "precedingTrialSourceAndBundlesUnchanged": {
+    "r17-canvas-copy-trial": {
+      "manifestSha256": "c599bdf95a00740505935ae222809ba25e7bd6ce76d062479032ea1207b16367",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "ae829a006ad8c5bd849921ab15dffa1231e328043c3e381ada13327cadc258ef",
+      "bundleSha256": "1d63353782af185908cf6e5ddaf86f98ca7747528e29ad78f2ba8e0d3e82d056"
+    },
+    "r17-native-copy-suppression-trial": {
+      "manifestSha256": "807c8beb9cbc6e77492cf097560d0a424084413075e55f9dc1d23d051aee9454",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "03a4e133e3d9898f589bcac80e8ebec4125544b2004d2f5d2fe2e2d2b22b745b",
+      "bundleSha256": "837404e3e5af4f7d86ff8652354d9746ea95d9c60b65039048aad75550532ad9"
+    },
+    "r17-gpu-finish-trial": {
+      "manifestSha256": "02d170aea08c5b26d3341fcbed182ed1a96265cfc7dffc101bf4b9600182f304",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "c33d54b94d0f9be1dd5caa4646aff5e15aa4065c054483c3dcef7c402bcd6bd4",
+      "bundleSha256": "65d933516c269927bb2095fb3bebb3e0f6126fe737219ccdedddafcd8d6fe767"
+    },
+    "r17-page-bridge-observation": {
+      "manifestSha256": "ac36df304c2631f440f65682c527cb1a11e5e5ec9174c7f15dcad33826012152",
+      "sourceFiles": 1564,
+      "sourceBindingsSha256": "ecb7ff9a2af937a0ae2f17f512110281c171eb71e3089aeb1dd47dc8dad1d8ac",
+      "bundleSha256": "6cd3bdd1e5bc791ac11941a0ba40eae87f80301d694484b8297a7e06080f815a"
+    }
+  },
+  "diagnosticLabel": "CPU/page-only · frozen · synthetic",
+  "protocolVariant": "candidate",
+  "measurementWindow": {
+    "startDelayMs": 1000,
+    "durationLimitMs": 45000,
+    "sampleLimit": 2048
+  },
+  "productCadenceUnchanged": true,
+  "diagnosticAutoExport": {
+    "playCaseSelection": "arm-next-accepted-actual-product-Play-without-timer-or-autoplay",
+    "wallDelayFromActualProductPlayMs": 15000,
+    "snapshotReason": "manual",
+    "expectedActiveMsWithoutSchedulingDelay": 14000,
+    "stopsProductPlayback": false,
+    "retriesReuseExactPayload": true
+  },
+  "diagnosticTermination": {
+    "wallDelayFromActualProductPlayMs": 20000,
+    "callback": "latest-ref-original-pauseSkyTime",
+    "guard": "current-owner-no-date-picker-still-playing-same-runStartAt",
+    "canceledOnHideUnmountNewCase": true,
+    "classification": "bounded-test-termination-not-product-cadence-policy"
+  },
+  "gpuCommandPolicy": "original-until-first-ready-full-copy-then-scene-facade-without-GL-commands-or-validation-read",
+  "nativeCopyPolicy": "first-successfully-published-ready-full-copy-freezes-recurring-copy-captions-and-reticle",
+  "publicationPolicy": "real-attempt.publish-every-completed-frame-no-r17Probe.accepted-for-synthetic-frames",
+  "remainingNativeBoundaries": [
+    "original-2D-canvas-native-RAF-clock",
+    "real-caption-measureText-and-associated-2D-save-font-restore",
+    "original-image-loader-asynchronous-lifetimes",
+    "initial-native-Scene-and-renderer-disposal"
+  ],
+  "confounds": [
+    "facade-removes-GPU-renderer-CPU-staging-arrays-and-texture-bookkeeping-with-GL",
+    "synthetic-image-readiness-and-positive-contribution-values-run-success-paths-but-do-not-establish-pixels-or-source-credit",
+    "frozen-context-health-does-not-detect-native-context-loss-through-gl.isContextLost"
+  ],
+  "observationPolicy": {
+    "pageOwner": "captured-Taro-Current.page-raw-instance-only-no-custom-wrapper-or-other-page",
+    "reset": "accepted-normal-Play-start-preserves-inherited-pending-and-late-callbacks",
+    "payload": "own-key-count-every-call-UTF8-JSON-size-only-first16-no-payload-retention",
+    "upload": "actual-submit-after-original-bufferData-return-data.length-times4-no-additional-arrays",
+    "debug": "getAppBaseInfo-enableDebug-boolean-or-UNKNOWN-only-no-setting-change",
+    "display": "header-snapshot-on-open-export-status-pins-15second-scalars-no-per-frame-React"
+  },
+  "originClass": "authorized-physical-LAN-development-bridge-8795",
+  "scopeBehaviorChecks": {
+    "exactSceneSourceAndFullInputsRetained": true,
+    "allImagePortsUseSameFacade": true,
+    "initialReadyNativeCopyAndPublishRequiredBeforeFreeze": true,
+    "copyAndPublishFailureDoNotFreeze": true,
+    "syntheticFacadeNoNativeRendererCalls": true,
+    "optionalLevelsReadinessAndImageCallbacks": true,
+    "actualPublicationRetainedButSyntheticAcceptanceOmitted": true,
+    "recurringGlHealthReadSkippedWhileFrozen": true,
+    "captionMeasurementsAndNativeRafClockRetained": true,
+    "resizeHideRetirementFenced": true,
+    "actualGuardedNormalPlayArms15secondExport": true,
+    "zeroSyntheticAcceptedTimesAndCopies": true,
+    "bounded20secondOriginalPauseUsesLatestCallbackAndSameRun": true,
+    "hiddenUnmountNewCaseCancelTimers": true,
+    "fixtureOnlyNotPhoneOrProductEvidence": true
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-cpu-page-only-trial/source/apps/wechat-miniapp/dist/weapp-check-r17-cpu-page-only",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-cpu-page-only-trial/project",
+    "bundleSha256": "cc40d6e5a80563bcb52d20c3cacef4b8781e5e09410b48c04e375d26467a78b5",
+    "fileCount": 338,
+    "totalBytes": 4986366,
+    "packages": {
+      "main": {
+        "bytes": 2016773,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041372,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598321,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1329900,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80379,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    }
+  },
+  "limitations": [
+    "Frozen synthetic CPU/page isolation diagnostic only, not an adopted repair or target acceptance.",
+    "Only the captured raw native Page setData is observed; custom-wrapper updates and native presentation are outside this scope.",
+    "Original Scene source, full star inputs, astronomy, constellations, name projection/measurements, real React/Taro publication and native RAF remain.",
+    "After first ready full copy no recurring GPU rendering, display copy, captions or reticle painting; renderer staging arrays are also removed.",
+    "Synthetic frames intentionally omit r17Probe.accepted; zero accepted copies/times does not mean no CPU Scene or publication.",
+    "Do not Apply, pick, inspect Sources, or use the frozen build for product behavior or performance acceptance.",
+    "Actual accepted Play starts measurement; 15 wall seconds gives nominally14 active seconds/manual with original45000ms limit.",
+    "Export stops measurement only; a separate20-second bounded termination invokes latest guarded original normal Pause for the same run.",
+    "Callback latency is submission-to-callback wall time, not calibrated native render or physical presentation duration.",
+    "failed counts original invocation throws; failedBeforeCallback releases pending when it throws before callback. Synchronous callback throw counts completed and failed.",
+    "pending tracks callback-bearing calls; callbackMissing preserves original missing-callback arguments and acknowledgement remains unobserved.",
+    "First16 JSON samples add bounded diagnostic work. Raw strings never leave memory. UTF8 sampled traffic is not retained heap.",
+    "Returned bufferData counters do not prove GL success, GPU completion, all texture/TWGL traffic or physical memory.",
+    "Fixture and static checks are not target bridge, memory, workload, pixel or R17 acceptance evidence.",
+    "No phone, feedback entry, DevTools, service, DB, remote object, production source or previous trial was changed.",
+    "Receipts retain candidate variant; bind exact bundle and device generation externally."
+  ]
+}

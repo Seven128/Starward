@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-19",
+  "scope": "R17 ordinary Sky supplied-window ruler synchronization",
+  "status": "software_fixed_target_unverified",
+  "productionOwner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx#OrientationTimeRuler",
+  "test": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+  "baselineHead": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+  "sourceIdentity": {
+    "normalization": "CRLF to LF, no other transformation",
+    "beforeNormalizedSha256": "d43d61e2ed5816719dbd2859472ab5b538a5b8807fd20038cfcf824025cd6740",
+    "afterNormalizedSha256": "c9f877c68fa0cd3e0320ae0f0153799e169ab23f3f5132f6c737c630d3fb1f53",
+    "afterRawSha256": "5afea619eaef4cc303c0b9486d0187be07d141d22456a051580f679f2265e585",
+    "testSha256": "c045dde854186dd6dbc8645ebb3c2ff3a10089c5c57545bc50e444ce713ff415"
+  },
+  "adoptedResource": {
+    "screenId": "5385664345158066168",
+    "htmlSha256": "4c6cfc021e5f3c02db4036eab437fe64d25f57c8adbd49864a755ce598345c79",
+    "scope": "existing six civil fields and curved ruler share the selected instant; no design change"
+  },
+  "phoneEvidence": {
+    "session": "G2RzCu",
+    "candidate": "existing gen25 normal baseline v3",
+    "reviewedScreens": [
+      "screen-94ea3d2f-1607-4bbb-be9e-83143c65c41a.png",
+      "screen-cc993afc-9d8a-4319-aa74-9116fa45800d.png"
+    ],
+    "beforeFixFailed": true,
+    "originalReportRows": 48,
+    "originalReportKnots": 48,
+    "originalExactCommittedRowExists": true,
+    "originalActiveIndex": 33,
+    "crossDayGeometryBodiesCaptured": false,
+    "completePhoneEffectChainExplained": false,
+    "fixedCandidatePhoneVerified": false
+  },
+  "confirmedSoftwareMechanisms": [
+    "window boundary cancelled positional state despite no active ruler drag, clamping absent committedIndex to zero",
+    "equal numeric index and row count skipped the follow effect despite different real instants",
+    "declarative final equality did not supersede the last independent native move command",
+    "ruler show used committed index instead of the page-supplied active index"
+  ],
+  "change": {
+    "activeDragCancelPolicy": "unchanged observation-time callback and original settlement retirement",
+    "inactiveBoundaryTarget": "supplied active index",
+    "followDependencies": ["activeIndex", "rows.length", "rowIdentity"],
+    "nativeOwner": "unchanged createRulerScrollPosition",
+    "newClockOrThrottleOrDataRequests": false,
+    "sameRowPlaybackRenders": 120,
+    "sameRowPlaybackAdditionalNativeCommands": 0,
+    "pageLifecyclePolicyChanged": false
+  },
+  "verification": {
+    "before": {"tests": 4, "passed": 1, "failed": 3, "log": "tmp/sky-ruler-window-before.log", "sha256": "cb9161f5d83a47a14a45ebd7982c7d30e21a41a28b0c1541708fc6b3438e54a9"},
+    "after": {"tests": 19, "passed": 19, "failed": 0, "log": "tmp/sky-ruler-window-after.log", "sha256": "ffe60c959f125d0fdde9b014d5fb874ec03c528ac3d1945c9448d94efae4c3ab"},
+    "nativeOwner": {"tests": 5, "passed": 5, "failed": 0, "log": "tmp/sky-ruler-native-owner.log"},
+    "typecheckExitCode": 0,
+    "diffCheckExitCode": 0,
+    "componentEvidence": "actual extracted production component with persistent hook slots and ordered effects, not a target renderer"
+  },
+  "remaining": [
+    "coherent source-to-WEAPP build containing the repair through the existing candidate owner",
+    "actual native 19 to 18 to 17 to cancel alignment of field, displayed instant and ruler",
+    "target drag, explicit Apply and page-owned lifecycle recovery",
+    "independent review and full Goal obligations remain with root"
+  ],
+  "operations": {"phone": false, "adb": false, "devtools": false, "api": false, "feedback": false, "candidateBuild": false, "gitCommit": false}
+}

@@ -1,0 +1,354 @@
+// TASK ONLY. Copy into an isolated build as r17-phone-probe-runtime.ts.
+// No product scheduler, reports, frames, payloads or user text are retained.
+const variant = "__VARIANT__" as "baseline" | "candidate";
+const SAMPLE_LIMIT = 2048, IDENTITY_LIMIT = 256, LINK_LIMIT = 32, COUNT_LIMIT = 1e12;
+const STAGES = ["presentation", "base", "selection", "supplement", "constellations", "draw", "nativePaintOwner", "displayCopy", "publishAccepted"] as const;
+const COUNTERS = ["timeIntentPublications", "preparedRequests", "paintAttempts", "nativeCallbacks", "acceptedCopies", "sceneFinishes", "glDrawSubmissions", "bscSubmittedStars", "saoSubmittedStars", "acceptedBscObjects", "acceptedSaoObjects", "failedFrames", "invalidations"] as const;
+const MODES = ["unknown", "normal", "cpu-page-only", "cpu-text-metrics", "accepted-action-direct", "accepted-action-closure", "scene-owned-memo"] as const;
+const CONTROL_NAMES = ["actualPlay", "export", "pauseAttempt", "pauseSuccess", "terminalExport"] as const;
+const TM_COUNTS = ["hits", "misses", "evictions", "nativeGlyphCalls", "lifetimeHits", "lifetimeMisses", "lifetimeEvictions", "lifetimeNativeGlyphCalls", "entries", "capacity", "observationResets"] as const;
+const PAGE_COUNTS = ["available", "submitted", "completed", "failed", "failedBeforeCallback", "callbackMissing", "pending", "inheritedPending", "maxPending", "duplicateCallback", "keyCountTotal", "maxKeyCount", "keyCountFailures", "sampledCalls", "sampledBytes", "maxSampledBytes", "serializationFailures", "bufferDataCalls", "totalTypedUploadBytes", "maxTypedUploadBytes"] as const;
+const PAGE_NUMBERS = ["latencyTotalMs", "latencyMaxMs"] as const;
+const SCENE_COUNTS = ["nativeCopies", "readyNativeCopies", "syntheticBegins", "syntheticFinishes", "syntheticPublications", "discs", "segments", "images", "readiness"] as const;
+const MEMO_COUNTS = ["ownedScenesCreated", "ownRejected", "ownedReads", "ownedValueReads", "ownedWrites", "fallbackReads", "fallbackValueReads", "fallbackWrites", "sameAtReuses", "lifetimeOwnedScenesCreated", "observationResets"] as const;
+type CaseKey = "wide-camera" | "wide-time" | "wide-play" | "narrow-camera" | "narrow-time" | "narrow-play";
+type Stage = typeof STAGES[number];
+type Counter = typeof COUNTERS[number];
+type Mode = typeof MODES[number];
+type Control = typeof CONTROL_NAMES[number];
+type Binding = { mode: Mode; buildGeneration: number | null; buildSourceSha256: string | null };
+type Samples = { calls: number; totalMs: number; minMs: number; maxMs: number; values: number[] };
+type TimeFacts = { events: number; values: Set<number>; first: number | null; last: number | null; minimum: number | null; maximum: number | null; overflow: boolean };
+type ControlFacts = { calls: number; firstRelativeMs: number | null; lastRelativeMs: number | null; lastResult: boolean | null };
+type Intent = { id: number; scope: number; wall: number | null; firstAccepted: number | null; acceptedOnce: boolean; superseded: boolean };
+type Preparation = { id: number; scope: number; intent: number | null; kind: "presentation"; resourceRevision: number | null;
+  started: number | null; finished: number | null; cpuMs: number | null; completed: boolean | null;
+  requests: number; paints: number; consumed: number | null; used: boolean; accepted: number | null; acceptedOnce: boolean; synthetic: number; duplicates: number };
+type FrameFacts = { token: number | null; intent: number | null; scope: number; attempt: number | null; accepted: boolean };
+type ScalarCapture = { relativeMs: number | null; values: Record<string, number | boolean | null> };
+type ScalarFacts = { captures: number; first: ScalarCapture | null; last: ScalarCapture | null };
+const add = (left: number, right = 1) => Math.min(COUNT_LIMIT, left + Math.max(0, right));
+const sample = (): Samples => ({ calls: 0, totalMs: 0, minMs: Infinity, maxMs: 0, values: [] });
+const timeFacts = (): TimeFacts => ({ events: 0, values: new Set(), first: null, last: null, minimum: null, maximum: null, overflow: false });
+const scalarFacts = (): ScalarFacts => ({ captures: 0, first: null, last: null });
+const controlFacts = () => Object.fromEntries(CONTROL_NAMES.map(key => [key, { calls: 0, firstRelativeMs: null, lastRelativeMs: null, lastResult: null }])) as Record<Control, ControlFacts>;
+const hasPerformanceClock = typeof performance !== "undefined" && typeof performance.now === "function";
+// Legacy CPU/time fields retain their original clock fallback. New association
+// and control durations explicitly remain unknown without a monotonic clock.
+const now = () => hasPerformanceClock ? performance.now() : Date.now();
+let active = false, armed = false, sealed = false, terminalSealed = false;
+let startAt = 0, armedAt = 0, elapsedMs = 0, sequence = 0, runId = "", caseKey: CaseKey = "wide-camera";
+let reason: "limit" | "manual" = "manual", arm: ReturnType<typeof setTimeout> | undefined, deadline: ReturnType<typeof setTimeout> | undefined;
+let configuration: Binding = { mode: "unknown", buildGeneration: null, buildSourceSha256: null };
+let binding: Binding & { windowId: number } = { ...configuration, windowId: 0 };
+let controls = controlFacts(), controlsAtSeal = controlFacts();
+let metricsSealRelativeMs: number | null = null, terminalSealRelativeMs: number | null = null, recordingStartRelativeMs: number | null = null;
+let observations = { tm: scalarFacts(), page: scalarFacts(), scene: scalarFacts(), memo: scalarFacts() };
+let counters = Object.fromEntries(COUNTERS.map(key => [key, 0])) as Record<Counter, number>;
+let cpu = Object.fromEntries(STAGES.map(key => [key, sample()])) as Record<Stage, Samples>;
+let timing = { nativeCallbackMs: sample(), acceptedGapMs: sample(), intentToAcceptedWallMs: sample() };
+let times = { intent: timeFacts(), prepared: timeFacts(), painted: timeFacts(), accepted: timeFacts() };
+let originInstant: number | null = null, latestIntent: { at: number; wall: number } | null = null, previousAcceptedWall: number | null = null;
+let lastRequestedMinusAcceptedMs: number | null = null, maximumRequestedMinusAcceptedMs: number | null = null;
+let scene = freshScene(), viewport = freshViewport();
+let scopeGeneration = 1, intentSequence = 0, prepareSequence = 0, latestIntentSequence: number | null = null;
+let intentRing: (Intent | undefined)[] = new Array(SAMPLE_LIMIT), prepareRing: (Preparation | undefined)[] = new Array(SAMPLE_LIMIT);
+let stateIds = new WeakMap<object, number>(), stateEntries = 0, frames = new WeakMap<object, FrameFacts>(), frameEntries = 0;
+let links = freshLinks();
+let latency = { intentToFirstAcceptedMs: sample(), unsupersededIntentToFirstAcceptedMs: sample(), supersededIntentToFirstAcceptedMs: sample() };
+function freshScene() { return { baseRowsMin: Infinity, baseRowsMax: 0, saoRowsMin: Infinity, saoRowsMax: 0, selectedTilesMin: Infinity, selectedTilesMax: 0,
+  catalogVersions: new Set<string>(), saoPublicationHashes: new Set<string>(), modelAlgorithms: new Set<string>(), modes: new Set<string>() }; }
+function freshViewport() { return { widthMin: Infinity, widthMax: 0, heightMin: Infinity, heightMax: 0, fovMin: Infinity, fovMax: 0 }; }
+function freshLinks() { return { intentsCreated: 0, firstAcceptedIntents: 0, duplicateIntentPresents: 0, supersededBeforeFirstAccepted: 0,
+  firstAcceptedAfterSuperseded: 0, expiredUnacceptedIntents: 0, unknownIntentLookups: 0, stateIdentityRotations: 0,
+  preparationsStarted: 0, preparationsFinished: 0, expiredUnconsumedPreparations: 0, expiredUnconsumedCpuMs: 0,
+  expiredIncompletePreparations: 0, requests: 0, requestsWithUnknownPreparation: 0, requestsWithUnknownIntent: 0,
+  linkageMismatches: 0, frameIdentityRotations: 0, inheritedFrames: 0, duplicateFramePresents: 0, unknownAcceptedFrames: 0,
+  syntheticPublications: 0, prepareFinishUnknown: 0, prepareFinishDuplicate: 0, latencyUnknownIntents: 0 }; }
+function relative(): number | null {
+  if (!hasPerformanceClock || !runId) return null;
+  const value = now() - armedAt;
+  return Number.isFinite(value) && value >= 0 && value <= 60000 ? value : null;
+}
+const id = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value > 0 && value <= COUNT_LIMIT;
+const revision = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value >= 0 && value <= COUNT_LIMIT;
+const object = (value: unknown): value is object => value !== null && typeof value === "object";
+function getIntent(value: number | null) { const item = value === null ? undefined : intentRing[(value - 1) % SAMPLE_LIMIT]; return item?.id === value ? item : undefined; }
+function getPreparation(value: number | null) { const item = value === null ? undefined : prepareRing[(value - 1) % SAMPLE_LIMIT]; return item?.id === value ? item : undefined; }
+function rememberState(state: object, value: number) {
+  if (!stateIds.has(state)) { if (stateEntries >= IDENTITY_LIMIT) { stateIds = new WeakMap(); stateEntries = 0; links.stateIdentityRotations = add(links.stateIdentityRotations); } stateEntries++; }
+  stateIds.set(state, value);
+}
+function rememberFrame(frame: object, value: FrameFacts) {
+  if (!frames.has(frame)) { if (frameEntries >= IDENTITY_LIMIT) { frames = new WeakMap(); frameEntries = 0; links.frameIdentityRotations = add(links.frameIdentityRotations); } frameEntries++; }
+  frames.set(frame, value);
+}
+function record(target: Samples, value: number) {
+  if (!Number.isFinite(value) || value < 0) return;
+  target.calls = add(target.calls); target.totalMs = add(target.totalMs, value); target.minMs = Math.min(target.minMs, value); target.maxMs = Math.max(target.maxMs, value);
+  if (target.values.length < SAMPLE_LIMIT) target.values.push(value);
+}
+function summarize(value: Samples) {
+  const ordered = [...value.values].sort((a, b) => a - b);
+  return { calls: value.calls, totalMs: value.totalMs, minMs: value.calls ? value.minMs : 0, maxMs: value.maxMs,
+    keptSamples: ordered.length, p50Ms: ordered.length ? ordered[Math.floor(ordered.length * .5)]! : 0,
+    p95Ms: ordered.length ? ordered[Math.floor(ordered.length * .95)]! : 0, overflow: value.calls > SAMPLE_LIMIT };
+}
+function eventTime(target: TimeFacts, at: unknown) {
+  if (typeof at !== "string") return;
+  const instant = Date.parse(at); if (!Number.isFinite(instant)) return;
+  originInstant ??= instant;
+  target.events = add(target.events); target.first ??= instant; target.last = instant;
+  target.minimum = target.minimum === null ? instant : Math.min(target.minimum, instant);
+  target.maximum = target.maximum === null ? instant : Math.max(target.maximum, instant);
+  if (target.values.size < SAMPLE_LIMIT) target.values.add(instant); else if (!target.values.has(instant)) target.overflow = true;
+}
+const summarizeTime = (value: TimeFacts) => ({ events: value.events, distinct: value.values.size,
+  firstRelativeMs: value.first === null || originInstant === null ? null : value.first - originInstant,
+  lastRelativeMs: value.last === null || originInstant === null ? null : value.last - originInstant,
+  minRelativeMs: value.minimum === null || originInstant === null ? null : value.minimum - originInstant,
+  maxRelativeMs: value.maximum === null || originInstant === null ? null : value.maximum - originInstant, overflow: value.overflow });
+function publicIdentifier(target: Set<string>, value: unknown) {
+  if (target.size < 8 && typeof value === "string" && /^[A-Za-z0-9_.:+/-]{1,160}$/.test(value)) target.add(value);
+}
+const finiteMinimum = (value: number) => Number.isFinite(value) ? value : 0;
+const cloneControls = (value: Record<Control, ControlFacts>) => Object.fromEntries(CONTROL_NAMES.map(key => [key, { ...value[key] }]));
+function stop(nextReason: "limit" | "manual" = "manual") {
+  const wasRunning = active || armed;
+  if (active) elapsedMs = Math.max(0, now() - startAt);
+  active = armed = false; if (wasRunning) reason = nextReason;
+  if (arm !== undefined) clearTimeout(arm); if (deadline !== undefined) clearTimeout(deadline);
+  arm = deadline = undefined;
+}
+function acceptedIdentity(frame: unknown, synthetic: boolean) {
+  const facts = object(frame) ? frames.get(frame) : undefined;
+  if (synthetic) links.syntheticPublications = add(links.syntheticPublications);
+  if (!facts) { if (!synthetic) links.unknownAcceptedFrames = add(links.unknownAcceptedFrames); return; }
+  const preparation = getPreparation(facts.token), intent = getIntent(facts.intent), wall = relative();
+  if (synthetic) { if (preparation) preparation.synthetic = add(preparation.synthetic); return; }
+  if (facts.accepted) links.duplicateFramePresents = add(links.duplicateFramePresents);
+  facts.accepted = true;
+  if (preparation) {
+    if (preparation.acceptedOnce) preparation.duplicates = add(preparation.duplicates);
+    else { preparation.acceptedOnce = true; preparation.accepted = wall; }
+  }
+  if (!intent || intent.scope !== facts.scope) { links.unknownAcceptedFrames = add(links.unknownAcceptedFrames); return; }
+  if (intent.acceptedOnce) { links.duplicateIntentPresents = add(links.duplicateIntentPresents); return; }
+  intent.acceptedOnce = true; intent.firstAccepted = wall; links.firstAcceptedIntents = add(links.firstAcceptedIntents);
+  if (intent.superseded) links.firstAcceptedAfterSuperseded = add(links.firstAcceptedAfterSuperseded);
+  if (wall === null || intent.wall === null) { links.latencyUnknownIntents = add(links.latencyUnknownIntents); return; }
+  record(latency.intentToFirstAcceptedMs, wall - intent.wall);
+  record(intent.superseded ? latency.supersededIntentToFirstAcceptedMs : latency.unsupersededIntentToFirstAcceptedMs, wall - intent.wall);
+}
+function summarizeLinks() {
+  let unacceptedIntents = 0, supersededUnacceptedIntents = 0, consumedPreparations = 0, unconsumedPreparations = 0, incompletePreparations = 0;
+  let consumedCpuMs = 0, unconsumedCpuMs = 0, preparationsWithUnknownCpu = 0, knownResourceRevisions = 0;
+  for (const value of intentRing) if (value && !value.acceptedOnce) { unacceptedIntents++; if (value.superseded) supersededUnacceptedIntents++; }
+  const retained = prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id);
+  for (const value of retained) {
+    if (value.resourceRevision !== null) knownResourceRevisions++;
+    if (value.completed === null) incompletePreparations++;
+    if (value.cpuMs === null) preparationsWithUnknownCpu++;
+    if (!value.used) { unconsumedPreparations++; unconsumedCpuMs = add(unconsumedCpuMs, value.cpuMs ?? 0); }
+    else { consumedPreparations++; consumedCpuMs = add(consumedCpuMs, value.cpuMs ?? 0); }
+  }
+  const selected = retained.length <= LINK_LIMIT ? retained : [...retained.slice(0, LINK_LIMIT / 2), ...retained.slice(-LINK_LIMIT / 2)];
+  return { capacity: SAMPLE_LIMIT, identityMapCapacity: IDENTITY_LIMIT, linkLimit: LINK_LIMIT, ...links,
+    unacceptedIntents, supersededUnacceptedIntents, consumedPreparations, unconsumedPreparations, incompletePreparations,
+    consumedCpuMs, unconsumedCpuMs, preparationsWithUnknownCpu, knownResourceRevisions,
+    retainedIntents: intentRing.filter(Boolean).length, retainedPreparations: retained.length,
+    linkSampleTruncated: retained.length > LINK_LIMIT, latency: Object.fromEntries(Object.entries(latency).map(([key, value]) => [key, summarize(value)])),
+    links: selected.map(value => ({ prepareToken: value.id, intentSequence: value.intent, scopeGeneration: value.scope,
+      kind: value.kind, resourceRevision: value.resourceRevision, startedRelativeMs: value.started, finishedRelativeMs: value.finished,
+      cpuMs: value.cpuMs, completed: value.completed, requests: value.requests, paintAttempts: value.paints,
+      firstConsumedRelativeMs: value.consumed, consumed: value.used, firstAcceptedRelativeMs: value.accepted, firstAcceptedObserved: value.acceptedOnce, syntheticPublications: value.synthetic,
+      duplicatePresents: value.duplicates, intentRelativeMs: getIntent(value.intent)?.wall ?? null,
+      intentFirstAcceptedRelativeMs: getIntent(value.intent)?.firstAccepted ?? null, intentFirstAcceptedObserved: getIntent(value.intent)?.acceptedOnce ?? null,
+      intentSuperseded: getIntent(value.intent)?.superseded ?? null })) };
+}
+export const r17Probe = {
+  now,
+  configureBinding(value: Binding) {
+    if (active || armed || !MODES.includes(value.mode) || !(value.buildGeneration === null || revision(value.buildGeneration)) ||
+      !(value.buildSourceSha256 === null || /^[a-f0-9]{64}$/.test(value.buildSourceSha256))) return false;
+    configuration = { mode: value.mode, buildGeneration: value.buildGeneration, buildSourceSha256: value.buildSourceSha256 }; return true;
+  },
+  start(selected: CaseKey) {
+    stop(); caseKey = selected; runId = `r17-${++sequence}-${Math.random().toString(36).slice(2, 12)}`;
+    binding = { ...configuration, windowId: sequence }; armedAt = now(); sealed = terminalSealed = false;
+    metricsSealRelativeMs = terminalSealRelativeMs = recordingStartRelativeMs = null; controls = controlFacts(); controlsAtSeal = controlFacts();
+    observations = { tm: scalarFacts(), page: scalarFacts(), scene: scalarFacts(), memo: scalarFacts() };
+    counters = Object.fromEntries(COUNTERS.map(key => [key, 0])) as Record<Counter, number>;
+    cpu = Object.fromEntries(STAGES.map(key => [key, sample()])) as Record<Stage, Samples>;
+    timing = { nativeCallbackMs: sample(), acceptedGapMs: sample(), intentToAcceptedWallMs: sample() };
+    times = { intent: timeFacts(), prepared: timeFacts(), painted: timeFacts(), accepted: timeFacts() };
+    originInstant = null; latestIntent = null; previousAcceptedWall = null; lastRequestedMinusAcceptedMs = maximumRequestedMinusAcceptedMs = null;
+    elapsedMs = 0; scene = freshScene(); viewport = freshViewport();
+    scopeGeneration = 1; intentSequence = prepareSequence = 0; latestIntentSequence = null;
+    intentRing = new Array(SAMPLE_LIMIT); prepareRing = new Array(SAMPLE_LIMIT);
+    stateIds = new WeakMap(); frames = new WeakMap(); stateEntries = frameEntries = 0; links = freshLinks();
+    latency = { intentToFirstAcceptedMs: sample(), unsupersededIntentToFirstAcceptedMs: sample(), supersededIntentToFirstAcceptedMs: sample() };
+    armed = true;
+    arm = setTimeout(() => { arm = undefined; armed = false; active = true; startAt = now(); recordingStartRelativeMs = relative();
+      deadline = setTimeout(() => stop("limit"), 45000); }, 1000);
+  },
+  stop,
+  status: () => armed ? "armed" : active ? "recording" : runId ? "stopped" : "empty",
+  control(name: Control, result: boolean | null = null) {
+    if (!runId || terminalSealed || !CONTROL_NAMES.includes(name)) return false;
+    const value = controls[name], at = relative(); value.calls = add(value.calls);
+    if (value.calls === 1) value.firstRelativeMs = at;
+    value.lastRelativeMs = at; value.lastResult = typeof result === "boolean" ? result : null; return true;
+  },
+  controlResult(name: "pauseAttempt", result: boolean | null) {
+    // Report the actual guarded callback result without inventing a second
+    // attempt or a successful Pause. Unknown remains null.
+    if (!runId || terminalSealed || name !== "pauseAttempt" || !controls.pauseAttempt.calls) return false;
+    controls.pauseAttempt.lastResult = typeof result === "boolean" ? result : null; return true;
+  },
+  scalars(owner: "tm" | "page" | "scene" | "memo", source: unknown) {
+    if (!runId || sealed || !object(source) || !Object.hasOwn(observations, owner)) return false;
+    const values: Record<string, number | boolean | null> = {};
+    const input = source as Record<string, unknown>;
+    const countKeys = owner === "tm" ? TM_COUNTS : owner === "page" ? PAGE_COUNTS : owner === "memo" ? MEMO_COUNTS : SCENE_COUNTS;
+    for (const key of countKeys) values[key] = revision(input[key]) ? input[key] as number : null;
+    for (const key of owner === "page" ? PAGE_NUMBERS : []) values[key] = typeof input[key] === "number" && Number.isFinite(input[key]) && (input[key] as number) >= 0 && (input[key] as number) <= COUNT_LIMIT ? input[key] as number : null;
+    for (const key of owner === "tm" ? ["retired", "available"] : owner === "page" ? ["enableDebug"] : owner === "memo" ? [] : ["frozen", "retired"]) values[key] = typeof input[key] === "boolean" ? input[key] as boolean : null;
+    const facts = observations[owner], capture = { relativeMs: relative(), values };
+    facts.captures = add(facts.captures); facts.first ??= capture; facts.last = capture; return true;
+  },
+  measure<T>(stage: Stage, work: () => T, after?: (result: T) => void): T {
+    if (!active) return work();
+    const started = now(); try { const result = work(); after?.(result); return result; } finally { if (active) record(cpu[stage], now() - started); }
+  },
+  cpuSince(stage: Stage, started: number) { if (active) record(cpu[stage], now() - started); },
+  count(name: Counter) { if (active && Object.hasOwn(counters, name)) counters[name] = add(counters[name]); },
+  intent(state: { at: string }) {
+    if (!active) return null;
+    counters.timeIntentPublications = add(counters.timeIntentPublications); eventTime(times.intent, state.at);
+    const at = Date.parse(state.at); if (Number.isFinite(at)) latestIntent = { at, wall: now() };
+    const existing = stateIds.get(state); if (existing !== undefined) return existing;
+    if (intentSequence >= COUNT_LIMIT) return null;
+    const previous = getIntent(latestIntentSequence);
+    if (previous && !previous.acceptedOnce && !previous.superseded) { previous.superseded = true; links.supersededBeforeFirstAccepted = add(links.supersededBeforeFirstAccepted); }
+    const next = ++intentSequence, slot = (next - 1) % SAMPLE_LIMIT, retired = intentRing[slot];
+    if (retired && !retired.acceptedOnce) links.expiredUnacceptedIntents = add(links.expiredUnacceptedIntents);
+    intentRing[slot] = { id: next, scope: scopeGeneration, wall: relative(), firstAccepted: null, acceptedOnce: false, superseded: false };
+    latestIntentSequence = next; rememberState(state, next); links.intentsCreated = add(links.intentsCreated); return next;
+  },
+  intentSequence(state: unknown): number | null {
+    if (!active || !object(state)) return null;
+    const value = stateIds.get(state);
+    if (value === undefined || !getIntent(value)) { links.unknownIntentLookups = add(links.unknownIntentLookups); return null; }
+    return value;
+  },
+  scopeChanged() { if (!active || scopeGeneration >= COUNT_LIMIT) return null; latestIntentSequence = null; return ++scopeGeneration; },
+  prepareStarted(sequence: number | null, kind: "presentation" = "presentation", resourceRevision: number | null = null): number | null {
+    if (!active || prepareSequence >= COUNT_LIMIT || kind !== "presentation") return null;
+    const intent = id(sequence) ? getIntent(sequence) : undefined;
+    const next = ++prepareSequence, slot = (next - 1) % SAMPLE_LIMIT, retired = prepareRing[slot];
+    if (retired) {
+      // After eviction a future consumer can no longer be linked: this cost is
+      // explicitly unresolved, never silently added to proven wasted work.
+      if (retired.completed === null) links.expiredIncompletePreparations = add(links.expiredIncompletePreparations);
+      if (!retired.used) { links.expiredUnconsumedPreparations = add(links.expiredUnconsumedPreparations); links.expiredUnconsumedCpuMs = add(links.expiredUnconsumedCpuMs, retired.cpuMs ?? 0); }
+    }
+    prepareRing[slot] = { id: next, scope: scopeGeneration, intent: intent?.scope === scopeGeneration ? intent.id : null,
+      kind, resourceRevision: revision(resourceRevision) ? resourceRevision : null, started: relative(), finished: null, cpuMs: null, completed: null,
+      requests: 0, paints: 0, consumed: null, used: false, accepted: null, acceptedOnce: false, synthetic: 0, duplicates: 0 };
+    links.preparationsStarted = add(links.preparationsStarted); return next;
+  },
+  prepareFinished(token: number | null, completed = true) {
+    if (!active) return;
+    const value = getPreparation(token); if (!value) { links.prepareFinishUnknown = add(links.prepareFinishUnknown); return; }
+    if (value.completed !== null) { links.prepareFinishDuplicate = add(links.prepareFinishDuplicate); return; }
+    value.finished = relative(); value.completed = completed;
+    value.cpuMs = value.finished !== null && value.started !== null ? Math.max(0, value.finished - value.started) : null;
+    links.preparationsFinished = add(links.preparationsFinished);
+  },
+  request(frame: unknown, token: number | null, sequence: number | null) {
+    if (!active || !object(frame)) return false;
+    let preparation = getPreparation(token), intent = getIntent(sequence);
+    if (intent?.scope !== scopeGeneration) intent = undefined;
+    if (preparation && (preparation.scope !== scopeGeneration || preparation.intent !== (intent?.id ?? null))) { links.linkageMismatches = add(links.linkageMismatches); preparation = undefined; intent = undefined; }
+    links.requests = add(links.requests);
+    if (!preparation) links.requestsWithUnknownPreparation = add(links.requestsWithUnknownPreparation); else preparation.requests = add(preparation.requests);
+    if (!intent) links.requestsWithUnknownIntent = add(links.requestsWithUnknownIntent);
+    rememberFrame(frame, { token: preparation?.id ?? null, intent: intent?.id ?? null, scope: scopeGeneration, attempt: null, accepted: false }); return true;
+  },
+  inheritFrame(resolved: unknown, original: unknown) {
+    if (!active || !object(resolved) || !object(original)) return false;
+    const value = frames.get(original); if (!value) return false;
+    if (resolved !== original) { rememberFrame(resolved, { ...value }); links.inheritedFrames = add(links.inheritedFrames); } return true;
+  },
+  prepared(frame: any) { if (active) { counters.preparedRequests = add(counters.preparedRequests); eventTime(times.prepared, frame?.frameAt); } },
+  paintStarted(frame: any) {
+    if (!active) return; counters.paintAttempts = add(counters.paintAttempts); eventTime(times.painted, frame?.frameAt);
+    if (!object(frame)) return;
+    const facts = frames.get(frame) ?? { token: null, intent: null, scope: scopeGeneration, attempt: null, accepted: false };
+    facts.attempt = now(); rememberFrame(frame, facts);
+    const value = getPreparation(facts.token); if (value) { value.paints = add(value.paints); if (!value.used) value.consumed = relative(); value.used = true; }
+  },
+  callback(frame: any) {
+    if (!active) return; counters.nativeCallbacks = add(counters.nativeCallbacks);
+    const started = object(frame) ? frames.get(frame)?.attempt : null; if (started !== null && started !== undefined) record(timing.nativeCallbackMs, now() - started);
+  },
+  tiles(count: number) { if (active && Number.isSafeInteger(count) && count >= 0) { scene.selectedTilesMin = Math.min(scene.selectedTilesMin, count); scene.selectedTilesMax = Math.max(scene.selectedTilesMax, count); } },
+  sceneFinished(data: any, frameAt: unknown, base: any, supplement: any, width: number, height: number, fov: number, mode: string, bsc: number, sao: number) {
+    if (!active) return;
+    counters.sceneFinishes = add(counters.sceneFinishes); counters.bscSubmittedStars = add(counters.bscSubmittedStars, bsc); counters.saoSubmittedStars = add(counters.saoSubmittedStars, sao);
+    const baseRows = base?.pointCount ?? base?.points?.length ?? 0, saoRows = supplement?.pointCount ?? supplement?.points?.length ?? 0;
+    scene.baseRowsMin = Math.min(scene.baseRowsMin, baseRows); scene.baseRowsMax = Math.max(scene.baseRowsMax, baseRows);
+    scene.saoRowsMin = Math.min(scene.saoRowsMin, saoRows); scene.saoRowsMax = Math.max(scene.saoRowsMax, saoRows);
+    publicIdentifier(scene.catalogVersions, data?.skyScene?.catalog?.catalogVersion); publicIdentifier(scene.saoPublicationHashes, supplement?.publicationHash);
+    const geometry = data?.observationFrames?.find((value: any) => value.at === frameAt);
+    publicIdentifier(scene.modelAlgorithms, geometry?.modelAlgorithmVersion); publicIdentifier(scene.modes, mode);
+    viewport.widthMin = Math.min(viewport.widthMin, width); viewport.widthMax = Math.max(viewport.widthMax, width);
+    viewport.heightMin = Math.min(viewport.heightMin, height); viewport.heightMax = Math.max(viewport.heightMax, height);
+    viewport.fovMin = Math.min(viewport.fovMin, fov); viewport.fovMax = Math.max(viewport.fovMax, fov);
+  },
+  syntheticAccepted(frame: unknown) { if (active) acceptedIdentity(frame, true); },
+  accepted(frame: any, snapshot: any) {
+    if (!active) return; acceptedIdentity(frame, false);
+    const wall = now(); counters.acceptedCopies = add(counters.acceptedCopies); eventTime(times.accepted, frame?.frameAt);
+    if (previousAcceptedWall !== null) record(timing.acceptedGapMs, wall - previousAcceptedWall); previousAcceptedWall = wall;
+    for (const value of snapshot?.objects ?? []) {
+      if (typeof value.reference === "string" && value.reference.startsWith("HR:")) counters.acceptedBscObjects = add(counters.acceptedBscObjects);
+      if (typeof value.reference === "string" && value.reference.startsWith("SAO:")) counters.acceptedSaoObjects = add(counters.acceptedSaoObjects);
+    }
+    // Kept unchanged for continuity; this legacy conditional sample is NOT the
+    // new first-accepted distribution and may include repeated final presents.
+    if (latestIntent) {
+      const accepted = Date.parse(frame?.frameAt); if (Number.isFinite(accepted)) {
+        lastRequestedMinusAcceptedMs = latestIntent.at - accepted;
+        maximumRequestedMinusAcceptedMs = maximumRequestedMinusAcceptedMs === null ? lastRequestedMinusAcceptedMs : Math.max(maximumRequestedMinusAcceptedMs, lastRequestedMinusAcceptedMs);
+        if (accepted === latestIntent.at) record(timing.intentToAcceptedWallMs, wall - latestIntent.wall);
+      }
+    }
+  },
+  snapshot() {
+    if (!sealed) { stop(); metricsSealRelativeMs = relative(); controlsAtSeal = cloneControls(controls) as Record<Control, ControlFacts>; sealed = true; }
+    return { schemaVersion: "starward-r17-phone-probe-v2", variant, runId, caseKey, clock: hasPerformanceClock ? "performance.now" : "Date.now",
+      window: { startDelayMs: 1000, durationLimitMs: 45000, elapsedMs, reason }, sampleLimit: SAMPLE_LIMIT,
+      counters: { ...counters }, cpu: Object.fromEntries(STAGES.map(stage => [stage, summarize(cpu[stage])])),
+      timing: Object.fromEntries(Object.entries(timing).map(([key, value]) => [key, summarize(value)])),
+      time: { ...Object.fromEntries(Object.entries(times).map(([key, value]) => [key, summarizeTime(value)])), lastRequestedMinusAcceptedMs, maximumRequestedMinusAcceptedMs },
+      scene: { baseRowsMin: finiteMinimum(scene.baseRowsMin), baseRowsMax: scene.baseRowsMax, saoRowsMin: finiteMinimum(scene.saoRowsMin), saoRowsMax: scene.saoRowsMax,
+        selectedTilesMin: finiteMinimum(scene.selectedTilesMin), selectedTilesMax: scene.selectedTilesMax,
+        catalogVersions: [...scene.catalogVersions], saoPublicationHashes: [...scene.saoPublicationHashes], modelAlgorithms: [...scene.modelAlgorithms], modes: [...scene.modes] },
+      viewport: Object.fromEntries(Object.entries(viewport).map(([key, value]) => [key, finiteMinimum(value)])),
+      binding: { ...binding }, controls: { monotonicClock: hasPerformanceClock, recordingStartRelativeMs, sealRelativeMs: metricsSealRelativeMs, events: cloneControls(controlsAtSeal) },
+      observations: { tm: cloneScalar(observations.tm), page: cloneScalar(observations.page), scene: cloneScalar(observations.scene), memo: cloneScalar(observations.memo) }, linkage: summarizeLinks() };
+  },
+  terminalSnapshot() {
+    if (!sealed || !runId) return null;
+    if (!terminalSealed) { terminalSealRelativeMs = relative(); terminalSealed = true; }
+    return { schemaVersion: "starward-r17-phone-probe-v2-terminal", variant, runId, binding: { ...binding },
+      metricsSeal: { relativeMs: metricsSealRelativeMs, recordingStartRelativeMs, startDelayMs: 1000, durationLimitMs: 45000, elapsedMs, reason },
+      controls: { monotonicClock: hasPerformanceClock, sealRelativeMs: terminalSealRelativeMs, events: cloneControls(controls) } };
+  },
+};
+function cloneScalar(value: ScalarFacts) {
+  const clone = (item: ScalarCapture | null) => item === null ? null : { relativeMs: item.relativeMs, values: { ...item.values } };
+  return { captures: value.captures, first: clone(value.first), last: clone(value.last) };
+}

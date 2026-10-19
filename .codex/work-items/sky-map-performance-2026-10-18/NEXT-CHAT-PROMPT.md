@@ -1,29 +1,35 @@
-请承接 Starward 当前任务，**现在开始按已经完成的研究和唯一方案实施，继续 Goal**。这条是准备结束后的明确开始指令，不要再次停在“方案准备好，等我确认”。无需重做已完成的调研、恢复、N01–N06或全量历史测试，也不要只解释做法。
+# Starward 新对话接手提示词
 
-工作区：`E:/dev/worktrees/Starward/remote-main-20260908`。继续该 worktree 的 `codex/remote-main-20260908`，先核对实际 Git 状态和未提交成果；不要为迎合默认 main 规则切分支、重置、回退业务代码或另建 worktree。最终仍需按原授权收口提交、推当前分支、审慎整合并推 main。
+此文件是用户将在新对话明确采用的接手文本。仅保存或读取文件不激活实施；用户在新对话要求“按此提示词继续Goal”即构成继续指令，取代原对话“改完方案先停下”的边界。原对话仍保持paused。
 
-唯一恢复入口：
-`E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/sky-map-performance-2026-10-18/INDEX.md`
+请接手Starward，按最新方案继续实施并继续完整Goal。可以多开新agent，必要人类动作尽量后置。复用已完成成果，不重新做前期研究或再停在同一轮方案审查。
 
-先读仓库 AGENTS.md、project_context/global.md 及该目录的 REQUIREMENTS.md、INHERITED-REQUIREMENTS.md、PLAN.md、HANDOFF.md，再按模块读取当前 Context/skill 和证据，不把所有历史记录当成当前待办。PLAN 是唯一方案，HANDOFF 是唯一当前状态；NEXT-CHAT-PROMPT 只是本次启动指令。
+工作区：E:/dev/worktrees/Starward/remote-main-20260908
+保留当前分支codex/remote-main-20260908及全部成果；HEAD与提交/推送状态先按HANDOFF和实际Git核对，不能回退到旧944a1d6c基线。不切main、不reset/clean、不另建worktree。
 
-请先 get_goal；本新对话没有未完成 Goal 时，用 GOAL-OBJECTIVE.md 中“Goal 正文”创建执行 Goal，不设 token 预算。已有同任务 Goal 则续用；有无关未完成 Goal 才说明冲突。旧聊天工具 blocked 不代表产品完成，也不阻止这次明确启动；不要改内部数据库、伪造完成或建立第二套任务记录。旧聊天及“最新开发 (2)”不再并行实施，由本对话接手。
+先get_goal。新对话无Goal时，以GOAL-OBJECTIVE.md中“Goal 正文”下的完整正文创建，绝不使用摘要缩减目标，也不设token预算；已有同目标则续用并核实际状态，不制造重复Goal或声称自动继承原对话状态。原对话Goal paused只是交接前状态，不是本次继续指令之后仍需等待的授权。若工具不能改变已有暂停状态，如实说明具体工具边界，不假称已恢复。
 
-按现有依赖推进，重点如下，完整范围以 R1–R18/H1–H8 为准：
+完整读取以下最新内容，当前事实由HANDOFF拥有：
+1. .codex/work-items/sky-map-performance-2026-10-18/INDEX.md
+2. 同目录GOAL-OBJECTIVE.md、REQUIREMENTS.md、INHERITED-REQUIREMENTS.md、PLAN.md、HANDOFF.md
+3. 项目最新AGENTS.md、project_context/global.md、相关Context owner
+4. .codex/skills/starward-miniapp-development/SKILL.md及references/performance-investigation.md
+设备操作时再组合starward-wechat-device-verification及同步后的官方wechatide场景；沿原正常会话/完整构建owner，优先恢复首个未通过边界。
 
-1. **EOG 原始数据与稳定同步。** 我已打开有权限下载的 EOG 页面。官方2025/v22目录的精确两个 `.tif.gz` 已记录在 `data-pipelines/runtime-data/current.lock.json` 的 `officialSource`，尚未下载/解压/hash验证或备份。复用现有浏览器授权和已下载的匹配文件，将原始数据放外部缓存，校验锁定的 TIFF 大小/SHA-256，优先将核验过的原 GZIP 存入既有 owner-only Google Drive，完成远端读回，记录传输及解压身份。沿 `tools/resources/backend-data.mjs` 补齐实际需要的共享接收/解包/验证流程，更新同一锁、README和相关Context，不另造清单或每文件脚本。当前 `prepare --profile rebuild` 只验证已有TIFF缓存，不是假定已实现的下载器。压缩标示约238M+1.9G、解压约17.42GB、公共运行成品约235MB是不同东西。原r6/固定地形/私有库已恢复，不能重新生产替代原发布；这个数据传输不阻塞其他独立模块，比较性能时避开大传输/解压竞争。
-2. **云观星 R17 先实施。** 修复地景/夜景间拖动及进入背面后的淡灰提示；修复上方年月日时分秒选择器只改数字却不改星图的问题，统一选择器/时间轴/播放、取消和显式应用。按已有方案提供受权限和时段约束的只读几何窗口，不为每次预览提交公共Context。研究和有界试验已在 SKY-INTERACTION-RESEARCH.md 及关联JSON，直接利用。优化真实时间轴卡顿，覆盖8,404颗BSC基础星及实际按视野加载的SAO（发布246,280条），不减星、不近似时刻、不任意限帧。精确向量早剔除只是有数值依据的候选，须完整消费者集成和真机前后结果，不能把CPU局部收益当手机帧率。
-3. **地形/云量/光害优化完整保留。** 沿 PLAN 的 overlay 模块和 ARCHITECTURE-ADVICE-RECONCILIATION，继续Web GPT Pro建议中的稳定请求窗口、有效旧覆盖、细档成品与静态分发，按测量决定分块/预取。静态夜光独立读取、数据恢复、共享源读取等已完成，别重做。约4km细档地形仍有首次3,926ms、复读6ms的服务样本，旧固定地形没有该z12窗；需要改善真实冷缺口和连续拖动/缩放体验，不能用粗档/缓存命中掩盖。保配准、半透明叠色、来源/版本/五档/缺测与0的区别、真实云格/小时、细节和有界资源成本。LFS是开发存储，不能当运行CDN。
-4. **继续剩余用户结果和交付。** 保约4km选点/中面板/可见区居中且不抢回手势，完成H1–H8明确的连续地形、山体/真实照片、原生权限/选址/触摸窄屏、真实分享接收/文件交接、最终包体/CI/独审/main同步及精确清理。Android证据不外推iOS，静态/API/构建通过不替代目标体验。只针对变更、明确未验或实际风险检查，达到必要证据就推进；不重跑省份×日期×主题矩阵。
+最新方法已经定案：
+- 每轮从待决问题、竞争解释、最小有效观察和结果分支出发，不按相邻模块连续disable或派生实现形状变体。
+- Sky A为输入到首个accepted的响应性。已有真实正常Sky CPU证据可复用；只补能区分准备、等待/合并和数据更新责任的关联/映射缺口，不重录同样CPU，也不凭热点排名直接改状态所有权。
+- Sky B为完整正常Play的持续内存/退出/恢复。正常Sky分配采样是当前首选，需正确目标、正常负载和可解释窗口；更便宜的观察只有能区分同一问题时才替代。存活分配、总churn、保留链与PSS/RSS/Swap分别解释。gen22/23阴性复用；gen24 scene-memo仍暂停。独立工作不关闭B，不为缺自动化而断言运行时不支持，不重试资格未变的重型heap/native路线。
+- 地形先在明确候选/缓存条件下关联相关响应/数据就绪与首个有效覆盖，区分请求等待和响应后等待，再沿证据细分。全链路指标是可选证据；分块、预取、cloud anchors和worker都是条件分支。复用稳定窗口、共享源读取与有限细档成品；HTTP/local metadata快不代表手机缺口改善。
 
-PLAN的“Bounded decisions delegated to the execution model”已给默认方案和重评依据。允许你在这些局部选择内定案并回写，不必为普通实现选择反复询问。只有超出约定范围、改变架构/结果、增费或需要新的实际外部权限时，给出具体证据和可审阅方案，先推进独立工作。必要人类动作尽量集中后置；需要独立审查时可新建只读审查子代理，限制其范围，不让多个代理控制同一手机或修改同一owner，完成即结束。
+现场接手要点（只作最后记录，先按需核对实际状态）：
+- 当前feedback保存的是H3 gen26，已选中完整包并调用过一次auto_preview，但官方返回结果/可能的taskId被两层包装丢失。保存的completed不证明终态，实际UNKNOWN；手机最后仍显示旧Sky，deviceSession=null，H3未绑定。先读H3-PREVIEW-BOUNDARY-REVIEW，尝试从原调用已有结果恢复原taskId；没有则保留UNKNOWN，不能盲重发或bind。未来新预览前应修复结果保留/分类，但不以该修复冒充这次送达已解决。
+- 正常Sky gen25已有有效CPU/完整Play证据；刷新26后旧输入session失效。既有结果可复用，旧session/截图不可直接输入。H3包不能当正常Sky基线。
+- 无线ADB在暂停前已恢复并精确匹配旧目标，之后可用性未重新确认；不要再沿用“无线永久断开”的旧摘要。每次输入前按设备owner fresh capture并view返回的唯一图片路径，守60秒/一次输入边界。
+- 8798→8799是恢复PG/r6和已有SAMPLE_DATA天气的隔离公共服务，不是8791账号恢复或真实天气通过。服务/候选/外部证据/精确防火墙清理owner见HANDOFF；PID或端口不是身份凭证。
+- 8791最后无监听/账号检查点，N05仍UNKNOWN；不得reseed或清存储来制造恢复。R6提醒已送达，绝不重发。保原配对、VPN、账号与权限；不得扫描聊天/相册/存储。敏感原始资料留外部私有owner。
+- EOG精确原始数据、私有Drive读回和fresh receiver恢复已有完成证据，不再重哈希17GB或重产r6。既有源码合批、数据流程和CI结果按证据复用；不要把它们当作未完成的真机验收。
 
-保护现有成果和环境：
+root独占手机/ADB/DevTools/feedback/服务；新agent只承担不冲突的工作，用完结束、不复用旧agent。不向其他聊天或外部人发送消息。H1–H8/R1–R18/A01–A15/N01–N09全部未撤销义务保留，正常目标设备性能、真实天气、真实分享/文件接收、必要独审、授权Git/main收口和精确清理仍按各自证据完成。未完成必需结果不得标complete。
 
-- 8787 canonical服务、8791旧手机内存API、8794恢复后API的身份/配置见HANDOFF，先核实，不能把旧服务当新代码或随意重启清状态。手机generation9仍是旧普通候选，新静态夜光本地构建没有绑定手机。恢复库在外部私有目录，保持自动迁移和提醒发送关闭，不能开默认worker误接它。
-- 继续使用已有官方DevTools和配对无线手机流程，重新读回候选/服务/前台/新鲜像素后操作；仓库源码→完整编译→工具/手机，只开必要窗口，关闭前核对同步。不能把临时副本反写源码或用旧构建验新改动。
-- 原N05手机草稿身份仍未确认，不在数据库备份中；保护原账号/草稿/历史/配对/VPN，不清存储制造测试状态。R6提醒已送达，绝不重发。真实接收人不能擅选；手机仅那张任务SPOT海报待旅程完成后精确清理，不扫相册。
-- 夜间拟物、读屏、大文字、100m/cm/物理屏幕研究继续不做；R17外云观星内部不扩范围；B04规模性能保持条件项。原Stitch迁移/已删祖先分支不重复处理。
-- 不输出secret/cookie/密钥/私有资料，不扩大Drive权限；无新付费/生产部署授权。LFS的$0预算未实际建成，现账号无付款方式，只能用免费额度；原交接密钥不能复用为长期备份密钥。
-
-持续更新同一HANDOFF和相应证据，合理复用最近 `581a5a9b` 的完整CI与已有独审范围。报告真实完成、仍欠证据和必要人工动作。准备文件、局部性能样本或绿色CI都不等于整个Goal完成；请从现有状态实做，直到所需结果完成或遇到确实需要我的最小外部动作。
+这是新对话接到用户明确采用时的继续实施指令。先核候选/在途操作与受影响观察入口，然后按PLAN中当前能推进的责任持续执行；不要把工具准备、文档或局部样本当成Goal完成。

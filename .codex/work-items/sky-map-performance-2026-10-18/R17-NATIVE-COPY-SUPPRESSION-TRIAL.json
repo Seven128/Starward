@@ -1,0 +1,126 @@
+{
+  "scope": "TASK_ONLY_NATIVE_COPY_SUPPRESSION_SYNTHETIC_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_SYNTHETIC_DIAGNOSTIC_NATIVE_MEMORY_UNVERIFIED",
+  "head": "124217e166ee5ee7688b29e2ef37086b30ae1fa4",
+  "builderSha256": "64eafb86a431b534afd1bafd192a62dfa5fa7ba044fb8d79b267791c0b9027e4",
+  "diagnosticControlsSha256": "894e78864c8e5287a2027163d59fd40db44294f4f799e6ad392eef4efc0fa868",
+  "originalCandidateSha256": "a95a2a7389e9023d49e3ca4932adb0322126892bf8d958dc988b5c909c36c8bf",
+  "originalBaselineSha256": "61b5ce1bc7f5ab1954a992c69fb2224468488ee750a3488a54832bb0dd54bef5",
+  "originalSourceManifestSha256": "77326a8d52f0a4973c9452e6c71081f77347932a7231cb74d25c979d70f2d277",
+  "originalBuildEvidenceSha256": "01d7218e08cc7b9b438551faa132fa23a1b3f9def031827a369c051cd4bf51bb",
+  "sourceFiles": 1563,
+  "candidateSourceSnapshotSha256": "87be4e623a9af512043aa73cac44f885ecc92fd888f3139672822872c2e54a02",
+  "trialSourceSnapshotSha256": "03a4e133e3d9898f589bcac80e8ebec4125544b2004d2f5d2fe2e2d2b22b745b",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-native-copy-suppression-trial/manifest.json",
+  "sourceManifestSha256": "807c8beb9cbc6e77492cf097560d0a424084413075e55f9dc1d23d051aee9454",
+  "exactSourceDifferences": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "candidateSha256": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+      "trialSha256": "70b5fc2d46617c28a8d62ce11d075c8cd92118f9098f0eb1cfcbe7d212005380"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "candidateSha256": "5ce566daafcaa7f2be25ef824aeac7ece96490aae6331e3b146e5a462ae381d2",
+      "trialSha256": "894e78864c8e5287a2027163d59fd40db44294f4f799e6ad392eef4efc0fa868"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "candidateSha256": "a9e94983ff7b30a74a82e77c66dd7b46ae32af8b26ce98e732e7fa4ae51b8857",
+      "trialSha256": "dda31cb461dabe566ea264fbfd83c9673639e1289ac39fe6da26d2e45f287d64"
+    }
+  ],
+  "normalSourceUnchanged": true,
+  "originalPairSourceAndBundlesUnchanged": true,
+  "fullSourceBuildNotGeneratedPatch": true,
+  "postBuildSourceAndBundleReadback": true,
+  "diagnosticLabel": "冻结画面诊断 / synthetic",
+  "protocolVariant": "candidate",
+  "measurementWindow": {
+    "startDelayMs": 1000,
+    "durationLimitMs": 45000,
+    "sampleLimit": 2048
+  },
+  "productPlaybackUnchanged": true,
+  "diagnosticAutoExport": {
+    "wallDelayFromStartMs": 15000,
+    "snapshotReason": "manual",
+    "expectedActiveMsWithoutSchedulingDelay": 14000,
+    "stopsProductPlayback": false,
+    "retriesReuseExactPayload": true
+  },
+  "nativeCopyPolicy": "first-successful-copy-per-surface-then-suppress-only-full-frame-drawImage",
+  "publicationPolicy": "synthetic-real-attempt-publish-retained-r17Probe-accepted-omitted",
+  "scalarStatusCounters": {
+    "S": "successfully-created-surfaces",
+    "C": "successful-actual-full-frame-native-copies",
+    "X": "suppressed-full-frame-native-copies"
+  },
+  "originClass": "authorized-physical-LAN-development-bridge-8795",
+  "scopeBehaviorChecks": {
+    "firstSuccessfulCopyPerSurface": true,
+    "failedFirstCopyRetries": true,
+    "subsequentCopiesSuppressed": true,
+    "glFlushCaptionsAndReticleRetained": true,
+    "realAttemptPublishRetained": true,
+    "acceptedProbeNotCalled": true,
+    "acceptedCopyAndAcceptedTimeCountersZero": true,
+    "noPerPresentCanvasAllocationOrResize": true,
+    "boundedScalarCountersOnly": true,
+    "autoExportOnceAt15SecondsManual": true,
+    "original45SecondDurationUnchanged": true,
+    "idempotentPayloadRetry": true,
+    "concurrentExportAndStartGuarded": true,
+    "pageHideAndUnmountCancelTimer": true,
+    "fixtureOnlyNotNativePixelsOrMemory": true
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-native-copy-suppression-trial/source/apps/wechat-miniapp/dist/weapp-check-r17-copy-suppression",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-native-copy-suppression-trial/project",
+    "bundleSha256": "837404e3e5af4f7d86ff8652354d9746ea95d9c60b65039048aad75550532ad9",
+    "fileCount": 338,
+    "totalBytes": 4974888,
+    "packages": {
+      "main": {
+        "bytes": 2016773,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041374,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598325,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1318416,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80379,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    }
+  },
+  "limitations": [
+    "Synthetic frozen-image diagnosis is invalid for product correctness, CPU comparison, current accepted-time or successful-frame acceptance.",
+    "Only each surface's first successful full-frame drawImage is performed. Real GL rendering/flush, captions, reticles and attempt.publish continue unchanged.",
+    "The accepted probe call is omitted entirely; acceptedCopies and accepted-time events must remain zero, including the initial real native copy.",
+    "The 15-second wall timer exports an early manual snapshot, nominally 14 active seconds after the one-second arm. The 45000ms limit is unchanged.",
+    "Auto export stops measurement only and does not pause product playback; the parent must promptly pause through actual UI.",
+    "S/C/X are bounded cumulative scalar counters displayed at export status; they are not extra collector schema fields or per-frame React updates.",
+    "No phone, feedback entry, DevTools, service, database, production source or original paired staging was changed by this builder.",
+    "Probe receipts retain variant=candidate; bind each receipt to this exact trial bundle and its device generation externally."
+  ]
+}

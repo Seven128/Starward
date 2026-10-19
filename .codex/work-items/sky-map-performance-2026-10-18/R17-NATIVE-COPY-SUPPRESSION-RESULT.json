@@ -1,0 +1,432 @@
+{
+  "schemaVersion": "starward-r17-copy-suppression-target-result-v1",
+  "status": "GROWTH_PERSISTS_WITH_FULLFRAME_NATIVE_COPY_SUPPRESSED",
+  "evidenceMode": "development_feedback_synthetic_frozen_image",
+  "generation": 18,
+  "bundleSha256": "837404e3e5af4f7d86ff8652354d9746ea95d9c60b65039048aad75550532ad9",
+  "buildOwner": "R17-NATIVE-COPY-SUPPRESSION-TRIAL.json",
+  "productionSourceChanged": false,
+  "officialAutoPreviewCompleted": true,
+  "operatorBound": true,
+  "visibleDiagnosticLabel": "冻结画面诊断 / synthetic",
+  "phoneBundleBytesVerified": false,
+  "runtimeAppIdVerified": false,
+  "scenario": {
+    "preparedFovDeg": 10.8,
+    "actualProductPlayButtonUsed": true,
+    "actualPauseButtonUsed": true,
+    "visiblePausedElapsedSeconds": 35,
+    "contextApplyDuringTrial": false,
+    "previewClosedAfterPause": true,
+    "nativeFailureObserved": false
+  },
+  "scalarNativeCounters": {
+    "beforeActualPlayback": {
+      "S": 1,
+      "C": 1,
+      "X": 139
+    },
+    "afterPauseAndPreviewClose": {
+      "S": 1,
+      "C": 1,
+      "X": 1154
+    },
+    "observedInActualMenu": true,
+    "meaning": "One successful surface and fullframe copy; 1,015 additional present calls suppressed only native fullframe copy. Full GL, captions and actual state publication remained in the staged source."
+  },
+  "memory": {
+    "source": "suppression-play-1792330434672.ndjson",
+    "sourceSha256": "fd859b7397163560c575ccf09f1d2165fef24103ee6f5e67545f6357a334bfe5",
+    "unit": "KiB",
+    "samples": [
+      {
+        "elapsedMs": 2154,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1123896,
+            "totalRssKiB": 1443936,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 115408,
+            "dalvikHeapPssKiB": 30839,
+            "glMtrackPssKiB": 13320,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 550480,
+            "otherMmapPssKiB": 22747,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 31408,
+            "nativeHeapSummaryKiB": 115388,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6572,
+            "graphicsSummaryKiB": 94200,
+            "privateOtherSummaryKiB": 581728,
+            "systemSummaryKiB": 107496
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217543,
+            "totalRssKiB": 237224,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15900,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15872,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15240,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      },
+      {
+        "elapsedMs": 9316,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1419484,
+            "totalRssKiB": 1739524,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 127068,
+            "dalvikHeapPssKiB": 24147,
+            "glMtrackPssKiB": 13072,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 842156,
+            "otherMmapPssKiB": 21959,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 24716,
+            "nativeHeapSummaryKiB": 127048,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6572,
+            "graphicsSummaryKiB": 93952,
+            "privateOtherSummaryKiB": 872596,
+            "systemSummaryKiB": 107496
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217183,
+            "totalRssKiB": 236864,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15544,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15516,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15236,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      },
+      {
+        "elapsedMs": 16443,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1824852,
+            "totalRssKiB": 2144896,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 141908,
+            "dalvikHeapPssKiB": 25303,
+            "glMtrackPssKiB": 13072,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 1231372,
+            "otherMmapPssKiB": 22115,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 25872,
+            "nativeHeapSummaryKiB": 141888,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6572,
+            "graphicsSummaryKiB": 93952,
+            "privateOtherSummaryKiB": 1261964,
+            "systemSummaryKiB": 107500
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217131,
+            "totalRssKiB": 236812,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15500,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15472,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15228,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      },
+      {
+        "elapsedMs": 23525,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1841180,
+            "totalRssKiB": 2161224,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 144340,
+            "dalvikHeapPssKiB": 24123,
+            "glMtrackPssKiB": 13072,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 1246004,
+            "otherMmapPssKiB": 22555,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 24692,
+            "nativeHeapSummaryKiB": 144320,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6572,
+            "graphicsSummaryKiB": 93952,
+            "privateOtherSummaryKiB": 1277040,
+            "systemSummaryKiB": 107500
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217143,
+            "totalRssKiB": 236824,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15512,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15484,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15228,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      },
+      {
+        "elapsedMs": 30905,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 2123212,
+            "totalRssKiB": 2443232,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 151972,
+            "dalvikHeapPssKiB": 24359,
+            "glMtrackPssKiB": 13072,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 1520044,
+            "otherMmapPssKiB": 22703,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 24928,
+            "nativeHeapSummaryKiB": 151952,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6572,
+            "graphicsSummaryKiB": 93952,
+            "privateOtherSummaryKiB": 1551228,
+            "systemSummaryKiB": 107476
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217119,
+            "totalRssKiB": 236800,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15492,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15464,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15224,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      },
+      {
+        "elapsedMs": 38482,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 2290620,
+            "totalRssKiB": 2610628,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 158452,
+            "dalvikHeapPssKiB": 24619,
+            "glMtrackPssKiB": 15052,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 1678268,
+            "otherMmapPssKiB": 23175,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 25188,
+            "nativeHeapSummaryKiB": 158432,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6572,
+            "graphicsSummaryKiB": 95932,
+            "privateOtherSummaryKiB": 1709928,
+            "systemSummaryKiB": 107464
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217159,
+            "totalRssKiB": 236840,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15532,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15504,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15224,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      },
+      {
+        "elapsedMs": 46168,
+        "state": "miniapp_foreground",
+        "foregroundOwnerVerified": true,
+        "processes": [
+          {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 2000000,
+            "totalRssKiB": 2320008,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 161752,
+            "dalvikHeapPssKiB": 22507,
+            "glMtrackPssKiB": 13436,
+            "eglMtrackPssKiB": 80880,
+            "unknownPssKiB": 1388676,
+            "otherMmapPssKiB": 22599,
+            "soMmapPssKiB": 161719,
+            "javaHeapSummaryKiB": 23076,
+            "nativeHeapSummaryKiB": 161732,
+            "codeSummaryKiB": 187104,
+            "stackSummaryKiB": 6556,
+            "graphicsSummaryKiB": 94316,
+            "privateOtherSummaryKiB": 1419752,
+            "systemSummaryKiB": 107464
+          },
+          {
+            "slot": 1,
+            "foregroundActivityOwner": false,
+            "totalPssKiB": 217159,
+            "totalRssKiB": 236840,
+            "totalSwapPssKiB": 147685,
+            "nativeHeapPssKiB": 11822,
+            "dalvikHeapPssKiB": 15528,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "unknownPssKiB": 3137,
+            "otherMmapPssKiB": 464,
+            "soMmapPssKiB": 9573,
+            "javaHeapSummaryKiB": 15500,
+            "nativeHeapSummaryKiB": 10776,
+            "codeSummaryKiB": 980,
+            "stackSummaryKiB": 1552,
+            "graphicsSummaryKiB": 1024,
+            "privateOtherSummaryKiB": 15228,
+            "systemSummaryKiB": 172099
+          }
+        ]
+      }
+    ],
+    "foregroundOwnerVerifiedAtEverySample": true,
+    "rawProviderDumpsRetained": false,
+    "pssIncreaseBeforePeakKiB": 1166724,
+    "unknownIncreaseBeforePeakKiB": 1127788,
+    "afterPauseFinalPssKiB": 2000000,
+    "allocatorAttribution": "UNKNOWN_PRIVATE_OTHER_NOT_A_JS_OR_V8_PROOF"
+  },
+  "earlyProbe": {
+    "source": "candidate-r17-1-g9dntknl96.json",
+    "sourceSha256": "71ab54828adb3b1c56f11c487dce64eeac635459ef2a8d49b92fe66ce60a5368",
+    "schemaValidated": true,
+    "status": "INVALID_EMPTY_WINDOW",
+    "window": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 14002,
+      "reason": "manual"
+    },
+    "explanation": "15-second automatic export completed before the later actual UI Play tap. All counters are zero. It proves neither scene workload nor playback CPU; the file remains retained and excluded.",
+    "productAcceptance": false
+  },
+  "mediaOwner": "E:/Dev/Starward-data/verification/sky-map-20261018/native-play-copy-trial",
+  "media": [
+    {
+      "filename": "suppression-after-counters.png",
+      "bytes": 236234,
+      "sha256": "39e9287f3867c2c6634f8700ef996fae785ec2fc8b47e5a4c6eeace859c81841"
+    },
+    {
+      "filename": "suppression-play-active.png",
+      "bytes": 247627,
+      "sha256": "bf4bb9241f48cc3dac0b8a3a6e8e2acfd5447ceadadaae0831f81944fa54c2ea"
+    },
+    {
+      "filename": "suppression-play-paused.png",
+      "bytes": 248830,
+      "sha256": "66059906ac7e0cad16a48018d35c7cf9c3d25c528c5edc9d9c47b4983dcc8808"
+    }
+  ],
+  "decision": "Subsequent fullframe WebGL-to-Canvas2D drawImage is not necessary for the observed rapid foreground-process growth. Do not adopt copy or clear-screen repair on this evidence. Next separate pure JS retained heap from native GL upload and React/Taro publication boundaries.",
+  "limits": [
+    "Synthetic publication and frozen imagery are deliberately invalid for pixel/current accepted-time/CPU performance acceptance.",
+    "The scalar counters and source pin show present calls, not GL completion, physical scanout or identical frame schedules.",
+    "Native/Private Other categories do not identify allocator, JS heap, V8 or the exact cause of earlier aborts.",
+    "No repeated long playback or further crash was needed for this diagnostic; all original R17 acceptance remains open."
+  ]
+}

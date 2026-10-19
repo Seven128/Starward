@@ -1,0 +1,97 @@
+{
+  "scope": "TASK_ONLY_CANVAS_COPY_BUILD_READY_NOT_TARGET_ACCEPTANCE",
+  "status": "BUILD_READY_TARGET_NATIVE_PIXELS_AND_MEMORY_UNVERIFIED",
+  "head": "124217e166ee5ee7688b29e2ef37086b30ae1fa4",
+  "builderSha256": "44c26407691bc26098da6ffeda589cd912c27f05cd95511be8e59c18f3428508",
+  "originalCandidateSha256": "a95a2a7389e9023d49e3ca4932adb0322126892bf8d958dc988b5c909c36c8bf",
+  "originalBaselineSha256": "61b5ce1bc7f5ab1954a992c69fb2224468488ee750a3488a54832bb0dd54bef5",
+  "originalSourceManifestSha256": "77326a8d52f0a4973c9452e6c71081f77347932a7231cb74d25c979d70f2d277",
+  "originalBuildEvidenceSha256": "01d7218e08cc7b9b438551faa132fa23a1b3f9def031827a369c051cd4bf51bb",
+  "sourceFiles": 1563,
+  "candidateSourceSnapshotSha256": "87be4e623a9af512043aa73cac44f885ecc92fd888f3139672822872c2e54a02",
+  "trialSourceSnapshotSha256": "ae829a006ad8c5bd849921ab15dffa1231e328043c3e381ada13327cadc258ef",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-canvas-copy-trial/manifest.json",
+  "sourceManifestSha256": "c599bdf95a00740505935ae222809ba25e7bd6ce76d062479032ea1207b16367",
+  "exactSourceDifferences": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "candidateSha256": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+      "trialSha256": "9bbbe883b13cf5938269bde8a27ff8852d27dd0676b7958683da5ee359490c2c"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "candidateSha256": "5ce566daafcaa7f2be25ef824aeac7ece96490aae6331e3b146e5a462ae381d2",
+      "trialSha256": "daa98b0c6476ad7d8d415ad7917f8a813a382d749e00f4b48c656d22247e10d5"
+    }
+  ],
+  "normalSourceUnchanged": true,
+  "originalPairSourceAndBundlesUnchanged": true,
+  "fullSourceBuildNotGeneratedPatch": true,
+  "postBuildSourceAndBundleReadback": true,
+  "diagnosticLabel": "candidate/canvas-copy",
+  "protocolVariant": "candidate",
+  "measurementWindow": {
+    "startDelayMs": 1000,
+    "durationLimitMs": 45000,
+    "sampleLimit": 2048
+  },
+  "productPlaybackUnchanged": true,
+  "originClass": "authorized-physical-LAN-development-bridge-8795",
+  "scopeBehaviorChecks": {
+    "scopedCopy": true,
+    "captionAndReticleSourceOver": true,
+    "nativeFailureRestores": true,
+    "noPerPresentCanvasAllocationOrResize": true,
+    "fixtureOnlyNotNativePixelsOrMemory": true
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-canvas-copy-trial/source/apps/wechat-miniapp/dist/weapp-check-r17-canvas-copy-trial",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-canvas-copy-trial/project",
+    "bundleSha256": "1d63353782af185908cf6e5ddaf86f98ca7747528e29ad78f2ba8e0d3e82d056",
+    "fileCount": 338,
+    "totalBytes": 4973219,
+    "packages": {
+      "main": {
+        "bytes": 2016773,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041374,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598325,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1316747,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80379,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    }
+  },
+  "mechanismReferences": [
+    "https://github.com/wechat-miniprogram/api-typings/blob/master/types/wx/lib.wx.canvas.d.ts",
+    "https://www.w3.org/2015/06/2dcontext.html"
+  ],
+  "limitations": [
+    "Canvas copy support and standard replacement semantics do not prove current WeChat native pixels, retained-memory behavior or runtime correctness.",
+    "Only the full-frame drawImage is wrapped in save/copy/finally-restore. Caption/reticle operations follow in the original source-over state.",
+    "No phone, feedback entry, DevTools, service, database, production source or original paired staging was changed by this builder.",
+    "The 45-second probe stops measurement only; target playback must continue for the parent-owned 120-second observation.",
+    "Probe receipts retain variant=candidate; bind each receipt to this exact trial bundle and its device generation externally."
+  ]
+}

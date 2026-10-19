@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "starward-performance-method-update-v1",
+  "updatedOn": "2026-10-19",
+  "scope": "PERFORMANCE_METHOD_AND_MEASUREMENT_CONTRACT_ONLY",
+  "sourceHashes": {
+    ".codex/skills/starward-miniapp-development/SKILL.md": "51505a06830bfbeed604299d1108b3702c963972a24fafd56275fcd0da3a61f5",
+    ".codex/skills/starward-miniapp-development/references/performance-investigation.md": "ee068a67a99638d8401d9e84fa85a39fd496db8306212e3557cf1319f11b39db",
+    "project_context/development-workflow/development-feedback.md": "ee0f41d30dd7bec3cf1e91e014c24b707dbb22b205676a989566b28ed601169e",
+    ".codex/work-items/sky-map-performance-2026-10-18/PLAN.md": "cd9aba095417c2591ed88f71c9cc3346a469ae6a46a5b41cb43e5c4905c7a902",
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3-runtime.ts": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3-protocol.mjs": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120",
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3.test.mjs": "0e03345870e11795021c1ba73d5ffbc0e6c437de5b502f634aff92598177fae4",
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-collector.mjs": "688c3491e38e36f344fbb12723651806504504e223268b40f2bbed3b0e6c0279"
+  },
+  "method": {
+    "generalMiniappSymptomEntrypoints": 8,
+    "capabilityStates": [
+      "unverified",
+      "blocked-at-named-boundary",
+      "unsupported-under-current-conditions",
+      "validated-useful-target-sample"
+    ],
+    "newSkillCreated": false,
+    "projectSpecificCollectorRequired": false,
+    "taskVersionsKeptOutsideReusableSkill": true
+  },
+  "probe": {
+    "schema": "starward-r17-phone-probe-v3",
+    "clock": "Date.now wall-elapsed ms",
+    "monotonic": false,
+    "unknownAndKnownCoverageSeparate": true,
+    "previousRunIdentityReuseFixed": true,
+    "legacyV1V2SemanticsPreserved": true,
+    "existingCollectorDispatchUpdated": true,
+    "candidateMaterialized": false,
+    "wholeBuild": false,
+    "phoneDeployed": false,
+    "liveServiceReloaded": false,
+    "integrationInstructions": "scripts/R17-PROBE-V3.md"
+  },
+  "validation": {
+    "portableTests": {
+      "passed": 23,
+      "failed": 0,
+      "v3Cases": 10
+    },
+    "strictTypecheck": "passed",
+    "previousRunRegression": {
+      "beforeFix": "failed: firstAcceptedIntents was 1 instead of 0",
+      "afterFix": "passed"
+    },
+    "skillStructureAndLinks": "local YAML/relative-reference checks passed",
+    "officialPythonSkillValidator": "not run: available Python environments lacked PyYAML",
+    "profileEvidenceHashesAndCounts": "matched private archived originals"
+  },
+  "independentReview": {
+    "methodCases": 3,
+    "methodFindings": [
+      "PLAN top current-scope conflict corrected",
+      "collector/writer/session assumptions generalized"
+    ],
+    "probeFindings": [
+      "cross-run memo identities could alias new run; fixed with runtime-lifetime unique identifiers"
+    ],
+    "remainingRequiredFixes": 0
+  },
+  "notPerformed": [
+    "Sky root-cause experiment",
+    "product changes",
+    "candidate refresh or preview",
+    "account or storage changes",
+    "reminder replay",
+    "pairing or VPN change",
+    "original conversation or Goal resumption",
+    "commit/push/deploy"
+  ]
+}

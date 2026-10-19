@@ -1,0 +1,242 @@
+{
+  "scope": "TASK_ONLY_ACCEPTED_ACTION_FROZEN_SYNTHETIC_NOT_PRODUCT_ACCEPTANCE",
+  "status": "DIAGNOSTIC_COMPLETED_NOT_PRODUCT_ACCEPTANCE",
+  "mode": "accepted-action-direct",
+  "buildGeneration": 23,
+  "bridgePort": 8797,
+  "selection": {
+    "state": "PHONE_OPERATOR_BOUND_AND_DIAGNOSTIC_COMPLETED",
+    "bridgePort": 8797,
+    "sourceProject": "E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/sky-map-performance-2026-10-18/tmp/phone-source-project",
+    "preservedParent": "E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/sky-map-performance-2026-10-18/tmp/phone-source-project-gen22-preserved",
+    "bundleSha256": "25f4742bc30f46765a286788fb10db6e81439cc7940ca6ff676738f5736d389f",
+    "phoneGenerationBound": true,
+    "result": "R17-ACCEPTED-ACTION-RESULT.json"
+  },
+  "previousPrepared": {
+    "role": "UNSELECTED_PREPARATION",
+    "bridgePort": 8795,
+    "evidence": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/inherited-8795-preparation-evidence.json",
+    "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct/manifest.json",
+    "sourceManifestSha256": "159322f73ec1008028abd94cd9d807bddd58a9d6e014f4d97eff96ae9bea5eea",
+    "sourceSnapshotSha256": "1873ffcd033cf00b247d0cfd715d5b47a4b9f7a679a1d162eae9c3ce57fa6335",
+    "result": {
+      "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct/source/apps/wechat-miniapp/dist/weapp-check-r17-accepted-direct",
+      "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct/project",
+      "bundleSha256": "e3e3e1cfaecd3da91aaac2ee1f35b56553e768c767e8f67e4dc320077f1f3550",
+      "fileCount": 338,
+      "totalBytes": 5003995,
+      "packages": {
+        "main": {
+          "bytes": 2016853,
+          "source_map_bytes": 0
+        },
+        "content": {
+          "bytes": 1041396,
+          "source_map_bytes": 0
+        },
+        "spot": {
+          "bytes": 598327,
+          "source_map_bytes": 0
+        },
+        "sky": {
+          "bytes": 1347419,
+          "source_map_bytes": 0
+        }
+      },
+      "mainHeadroomBytes": 80299,
+      "staticChecks": {
+        "native_project": true,
+        "filter_population": true,
+        "curated_spots": true,
+        "capability_flags": true,
+        "no_direct_provider": true,
+        "no_html_delivery": true,
+        "recovery_semantics": true,
+        "explicit_location_only": true,
+        "response_cache_entity_identity": true,
+        "package_budget": true,
+        "route_files": true
+      },
+      "inheritedBridgeOriginSha256": "e6e55c52d9084d44e97af690f48843836c0554c380c9e6805b584f701deb3877"
+    },
+    "archivedBuilder": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/inherited-8795-builder.mjs.snapshot"
+  },
+  "builderSha256": "b4ba2069c9713c47768053f2c517761172298ed91455f934b54115e9d0beeb5b",
+  "templateBindings": {
+    "r17-accepted-action.ts": "5a9da057b4d6bab6e95081d84ccf8b204e3e7b076bd0d0566c7ec6a00a738e57",
+    "r17-accepted-action-controls.tsx": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+    "r17-accepted-action-fixture.mjs": "2ddecb69bf778248330287a2a3695d1dde8bdd9149661461858ca5e85d6ab3f2",
+    "r17-phone-probe-v2-runtime.ts": "cf7d8c1e62b00c2bf2494818fc1983557e0f9ab9f0eed80d8a5c4ecf19550f45",
+    "r17-phone-probe-v2-protocol.mjs": "d88ffcb877736102e564ceeeb3cfe241561bb14b861f314912f322758b85077f",
+    "r17-phone-probe-v2.test.mjs": "823dd2c52d185ea40655434a91a669c00e1ff1bd8458cdd958572cfb3968370d",
+    "r17-phone-probe-protocol.mjs": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9"
+  },
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct-origin-8797/manifest.json",
+  "sourceManifestSha256": "de10bc2376cbd526e84e706af2091a8b6e5b3e01ca798090b90027cacdc7d30c",
+  "sourceFiles": 1567,
+  "sourceSnapshotSha256": "e1db6155ee6ae56ea9450bb7564d63bb61a204889898d25266f2c3dd85503099",
+  "buildSourceSha256": "da7bbb913bfc115316f4525c77e8dcf2ba36edb896e3161f9c62578ef32a117e",
+  "buildSourceBindingMeaning": "pre-build-parent-and-delta-template-binding-not-bundle-bytes",
+  "parent": {
+    "manifestSha256": "8c0a1a0fb006da9bb9b953d83c9e4eaf6d40efaed544f6cea6817e0f0c5fd639",
+    "evidenceSha256": "3f4d22ab376f52a0f57526a307c8b37df722023f950fee3918e54b7142218ff6",
+    "sourceSnapshotSha256": "4b700a7a83e0b49154cc56f59680718e013d819e500196eab496c506688b28c4",
+    "bundleSha256": "da4eedbb6cf06bd895c53bd06b6f414c021e1ab4f8df4840533927cebc48b842",
+    "admittedAt": "2026-10-18T17:37:12.010Z",
+    "currentSourceAndBothBundleCopiesReadOnce": true,
+    "inheritedChecks": {
+      "inheritedParentCpuChecks": {
+        "exactSceneSourceAndFullInputsRetained": true,
+        "allImagePortsUseSameFacade": true,
+        "initialReadyNativeCopyAndPublishRequiredBeforeFreeze": true,
+        "copyAndPublishFailureDoNotFreeze": true,
+        "syntheticFacadeNoNativeRendererCalls": true,
+        "optionalLevelsReadinessAndImageCallbacks": true,
+        "actualPublicationRetainedButSyntheticAcceptanceOmitted": true,
+        "recurringGlHealthReadSkippedWhileFrozen": true,
+        "captionMeasurementsAndNativeRafClockRetained": true,
+        "resizeHideRetirementFenced": true,
+        "actualGuardedNormalPlayArms15secondExport": true,
+        "zeroSyntheticAcceptedTimesAndCopies": true,
+        "bounded20secondOriginalPauseUsesLatestCallbackAndSameRun": true,
+        "hiddenUnmountNewCaseCancelTimers": true,
+        "fixtureOnlyNotPhoneOrProductEvidence": true
+      },
+      "exactCommonSourceBinding": true,
+      "textMetricsChecks": {
+        "actualSurfaceHitBeforeNativeSaveFontMeasureRestore": true,
+        "countercheckCacheRemovedFails": true,
+        "countercheckHitContinuesNativeFails": true,
+        "initialUnfrozenMeasurementsUnchanged": true,
+        "fontTextLineHeightLetterSpacingDistinct": true,
+        "onlyTwoCurrentValidFontDeclarationsCacheable": true,
+        "parsedFiveNumberCopiesPreventConsumerMutationAndNativeRetention": true,
+        "invalidInputsResultsAndNativeThrowsNotStoredWithOriginalRestore": true,
+        "bounded256LruEvictionContinuesNativeMisses": true,
+        "actualNativeGlyphInvocationCounterMatches": true,
+        "currentControlsResetCountersButPreserveCacheAndLifetime": true,
+        "fixedMenuExportScalarsAnd15secondTimer": true,
+        "disposedAndMissingMeasurementCapabilityRejectBeforeCacheHit": true,
+        "resizedOwnerInvalidNewSurfaceIndependent": true,
+        "fixtureNotPhoneEvidence": true
+      }
+    },
+    "historyEvidenceReusedWithoutSiblingTraversal": true
+  },
+  "exactSourceDifferencesFromParent": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "parentSha256": "1ac0ae58d8c3856fd7aaf0a38573ab87de5b0524fbbfc9eabf3445f5395e8a09",
+      "currentSha256": "5039e1afc2adf44ff23ce29c07e6262cc2b17e6df2fd3d8fcaaf28a930606b70"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "parentSha256": "0c8a29aa0008f4568cdac80539a97c971c1da5651895d70f9980564792d7ff69",
+      "currentSha256": "784e92c662f39023f1cdda92554072b47ba7a1274b239321b9b0387a7f5ae948"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+      "parentSha256": "29296cfd22a1629f2fc93da7e5650ef71b20fdd8c2b3b1315b2aff270fed5f74",
+      "currentSha256": "40255f43857a04b238c76a8630fb975209444a2011886971e7f4de4c49c622e1"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-accepted-action.ts",
+      "parentSha256": null,
+      "currentSha256": "2ff933611d1592794435581f6d44e57c67f17e60bcf7cf46c3376608206d54a0"
+    }
+  ],
+  "completeSourceBuildNotGeneratedPatch": true,
+  "currentSourceReadback": true,
+  "bothBundleCopiesReadback": {
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct-origin-8797/source/apps/wechat-miniapp/dist/weapp-check-r17-accepted-direct-8797": "25f4742bc30f46765a286788fb10db6e81439cc7940ca6ff676738f5736d389f",
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct-origin-8797/project/weapp": "25f4742bc30f46765a286788fb10db6e81439cc7940ca6ff676738f5736d389f"
+  },
+  "productionSourceReadback": {
+    "files": 1561,
+    "bindingsSha256": "65337151decc9f36501b210a08326a1cdacc1ae70abecfd6e63db98a7d200df9",
+    "unchanged": true
+  },
+  "checks": {
+    "originalUpdaterImmediateExactlyOnceAndRefBeforeDispatch": true,
+    "directObjectNullVersusClosureActionOnly": true,
+    "fullStateIdentityEqualityAndAllThreeNullRetirementsRetained": true,
+    "sameIdentityStillDispatches": true,
+    "sequentialAToBToAAndUpdaterFailureRetainOriginalSemantics": true,
+    "sharedCommandSetterAndAffectedConsumersByteIdentical": true,
+    "actualPresentationMemoOriginalDependenciesAndExactResultIdentity": true,
+    "fallbackExplicitlyUnbound": true,
+    "completeRequestFieldsAndDrawDependenciesUnchanged": true,
+    "explicitPreparationIdentitySurvivesResolveClone": true,
+    "syntheticPublicationDoesNotClaimAcceptedCopy": true,
+    "guardedNormalPlayAnd15sMetricsKept": true,
+    "exactSameRun20sOriginalPauseAndSeparateTerminalReceipt": true,
+    "hiddenUnmountReplacementRunAndExportFailureGuarded": true,
+    "sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay": true,
+    "lateMetricsAfterHideCannotSendRetiredTerminal": true,
+    "fixturesNotPhoneEvidence": true
+  },
+  "deltaTypecheck": {
+    "parentDiagnostics": 20,
+    "currentDiagnostics": 20,
+    "addedDiagnostics": [],
+    "noAddedDiagnostics": true,
+    "comparison": "same-relative-file-code-message-multiset-line-independent-source-root-normalized"
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct-origin-8797/source/apps/wechat-miniapp/dist/weapp-check-r17-accepted-direct-8797",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-accepted-action-trial/accepted-action-direct-origin-8797/project",
+    "bundleSha256": "25f4742bc30f46765a286788fb10db6e81439cc7940ca6ff676738f5736d389f",
+    "fileCount": 338,
+    "totalBytes": 5004508,
+    "packages": {
+      "main": {
+        "bytes": 2016853,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041396,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598327,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1347932,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80299,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    },
+    "compiledBridgeOriginSha256": "fd828ba7fdb4a74bc6e6b6fb84d9fffefd83cb7afaf1081e165c5beba33d7e43",
+    "inheritedAddressOriginSha256": "e6e55c52d9084d44e97af690f48843836c0554c380c9e6805b584f701deb3877",
+    "bridgePort": 8797,
+    "originReadback": {
+      "originSha256": "fd828ba7fdb4a74bc6e6b6fb84d9fffefd83cb7afaf1081e165c5beba33d7e43",
+      "literalUses": 7,
+      "filesWithOrigin": 3,
+      "otherTrialBridgeOrigins": 0
+    }
+  },
+  "limitations": [
+    "Task-only finite action-shape comparison; no product repair, phone result or R17 acceptance.",
+    "The complete accepted record remains in React state/queue. Only direct object|null versus closure-returning-the-same-value changes.",
+    "Frozen CPU/text-cache/synthetic background remains. Synthetic publication is not a native accepted copy.",
+    "Preparation association spans only actual timePresentation memo execution, with original dependencies and exact public-state identity; other CPU stages remain separate.",
+    "The15s metrics receipt and20s guarded Pause terminal sidecar are separate same-run observations.",
+    "No phone, DevTools, feedback, service, production source, prior trial, PLAN, HANDOFF, INDEX or commit is changed by this builder."
+  ]
+}

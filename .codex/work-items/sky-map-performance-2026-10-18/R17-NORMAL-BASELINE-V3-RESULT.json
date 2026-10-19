@@ -1,0 +1,1563 @@
+{
+  "schemaVersion": "starward-r17-normal-v3-target-result-v1",
+  "status": "NORMAL_GROWTH_REPRODUCED_CPU_ATTRIBUTED_B_ALLOCATION_PENDING",
+  "generation": 25,
+  "probeVersion": 3,
+  "bundleSha256": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+  "buildSourceSha256": "10236f0e034ae96d9e31ed5e081a837a53f4cdd128e3f9ac34da6d588f151a4c",
+  "mode": "normal",
+  "variant": "baseline",
+  "officialAutoPreviewCompleted": true,
+  "phoneVisibleUniqueLabel": true,
+  "operatorBound": true,
+  "phoneBundleBytesVerified": false,
+  "runtimeAppIdVerified": false,
+  "weather": "SAMPLE_DATA",
+  "accountRestored": false,
+  "contextApplied": false,
+  "productPauseSucceededOnce": true,
+  "cancelPreviewRestoredCommittedTime": true,
+  "cpuProfileStopped": true,
+  "phoneProfileOriginalPreserved": true,
+  "scene": {
+    "baseRowsMin": 8404,
+    "baseRowsMax": 8404,
+    "saoRowsMin": 666,
+    "saoRowsMax": 666,
+    "selectedTilesMin": 16,
+    "selectedTilesMax": 16,
+    "catalogVersions": [
+      "bsc5p-bright-stars.v3"
+    ],
+    "saoPublicationHashes": [
+      "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+    ],
+    "modelAlgorithms": [],
+    "modes": [
+      "DAY"
+    ]
+  },
+  "viewport": {
+    "widthMin": 384,
+    "widthMax": 384,
+    "heightMin": 796.800048828125,
+    "heightMax": 796.800048828125,
+    "fovMin": 45,
+    "fovMax": 45
+  },
+  "clock": {
+    "source": "Date.now",
+    "unit": "ms",
+    "kind": "wall-elapsed",
+    "monotonic": false,
+    "availability": "available",
+    "nominalResolutionMs": 1,
+    "effectiveResolutionMs": null,
+    "reads": 17271,
+    "invalidReads": 0,
+    "backwardReads": 0
+  },
+  "window": {
+    "startDelayMs": 1000,
+    "durationLimitMs": 45000,
+    "elapsedMs": 14006,
+    "elapsedStatus": "valid",
+    "reason": "manual"
+  },
+  "counters": {
+    "timeIntentPublications": 511,
+    "preparedRequests": 608,
+    "paintAttempts": 480,
+    "nativeCallbacks": 480,
+    "acceptedCopies": 480,
+    "sceneFinishes": 480,
+    "glDrawSubmissions": 5760,
+    "bscSubmittedStars": 87090,
+    "saoSubmittedStars": 65203,
+    "acceptedBscObjects": 87090,
+    "acceptedSaoObjects": 49363,
+    "failedFrames": 0,
+    "invalidations": 0
+  },
+  "stageElapsed": {
+    "presentation": {
+      "observedCalls": 464,
+      "validCalls": 226,
+      "unknownCalls": 238,
+      "unknown": {
+        "belowResolution": 238,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 250,
+      "minMs": 1,
+      "maxMs": 4,
+      "keptSamples": 226,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "base": {
+      "observedCalls": 2944,
+      "validCalls": 39,
+      "unknownCalls": 2905,
+      "unknown": {
+        "belowResolution": 2905,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 48,
+      "minMs": 1,
+      "maxMs": 4,
+      "keptSamples": 39,
+      "p50Ms": 1,
+      "p95Ms": 3,
+      "overflow": false
+    },
+    "selection": {
+      "observedCalls": 464,
+      "validCalls": 78,
+      "unknownCalls": 386,
+      "unknown": {
+        "belowResolution": 386,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 80,
+      "minMs": 1,
+      "maxMs": 3,
+      "keptSamples": 78,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "supplement": {
+      "observedCalls": 464,
+      "validCalls": 22,
+      "unknownCalls": 442,
+      "unknown": {
+        "belowResolution": 442,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 26,
+      "minMs": 1,
+      "maxMs": 4,
+      "keptSamples": 22,
+      "p50Ms": 1,
+      "p95Ms": 2,
+      "overflow": false
+    },
+    "constellations": {
+      "observedCalls": 464,
+      "validCalls": 464,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1249,
+      "minMs": 1,
+      "maxMs": 7,
+      "keptSamples": 464,
+      "p50Ms": 2,
+      "p95Ms": 5,
+      "overflow": false
+    },
+    "draw": {
+      "observedCalls": 480,
+      "validCalls": 480,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 4926,
+      "minMs": 4,
+      "maxMs": 45,
+      "keptSamples": 480,
+      "p50Ms": 10,
+      "p95Ms": 13,
+      "overflow": false
+    },
+    "nativePaintOwner": {
+      "observedCalls": 480,
+      "validCalls": 480,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 4950,
+      "minMs": 4,
+      "maxMs": 45,
+      "keptSamples": 480,
+      "p50Ms": 10,
+      "p95Ms": 13,
+      "overflow": false
+    },
+    "displayCopy": {
+      "observedCalls": 480,
+      "validCalls": 46,
+      "unknownCalls": 434,
+      "unknown": {
+        "belowResolution": 434,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 46,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 46,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "publishAccepted": {
+      "observedCalls": 480,
+      "validCalls": 49,
+      "unknownCalls": 431,
+      "unknown": {
+        "belowResolution": 431,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 49,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 49,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    }
+  },
+  "timing": {
+    "nativeCallbackMs": {
+      "observedCalls": 480,
+      "validCalls": 480,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 4827,
+      "minMs": 4,
+      "maxMs": 45,
+      "keptSamples": 480,
+      "p50Ms": 10,
+      "p95Ms": 13,
+      "overflow": false
+    },
+    "acceptedGapMs": {
+      "observedCalls": 479,
+      "validCalls": 479,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 13974,
+      "minMs": 7,
+      "maxMs": 103,
+      "keptSamples": 479,
+      "p50Ms": 29,
+      "p95Ms": 36,
+      "overflow": false
+    },
+    "intentToAcceptedWallMs": {
+      "observedCalls": 2,
+      "validCalls": 2,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 60,
+      "minMs": 30,
+      "maxMs": 30,
+      "keptSamples": 2,
+      "p50Ms": 30,
+      "p95Ms": 30,
+      "overflow": false
+    }
+  },
+  "controls": {
+    "recordingStartRelativeMs": 1012,
+    "sealRelativeMs": 15018,
+    "events": {
+      "actualPlay": {
+        "calls": 1,
+        "firstRelativeMs": 2,
+        "lastRelativeMs": 2,
+        "lastResult": true
+      },
+      "export": {
+        "calls": 1,
+        "firstRelativeMs": 15018,
+        "lastRelativeMs": 15018,
+        "lastResult": null
+      },
+      "pauseAttempt": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "pauseSuccess": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "terminalExport": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      }
+    }
+  },
+  "terminal": {
+    "sealRelativeMs": 20014,
+    "events": {
+      "actualPlay": {
+        "calls": 1,
+        "firstRelativeMs": 2,
+        "lastRelativeMs": 2,
+        "lastResult": true
+      },
+      "export": {
+        "calls": 1,
+        "firstRelativeMs": 15018,
+        "lastRelativeMs": 15018,
+        "lastResult": null
+      },
+      "pauseAttempt": {
+        "calls": 1,
+        "firstRelativeMs": 20013,
+        "lastRelativeMs": 20013,
+        "lastResult": true
+      },
+      "pauseSuccess": {
+        "calls": 1,
+        "firstRelativeMs": 20013,
+        "lastRelativeMs": 20013,
+        "lastResult": true
+      },
+      "terminalExport": {
+        "calls": 1,
+        "firstRelativeMs": 20014,
+        "lastRelativeMs": 20014,
+        "lastResult": null
+      }
+    }
+  },
+  "observations": {
+    "tm": {
+      "captures": 2,
+      "first": {
+        "relativeMs": 1,
+        "values": {
+          "hits": null,
+          "misses": null,
+          "evictions": null,
+          "nativeGlyphCalls": 0,
+          "lifetimeHits": null,
+          "lifetimeMisses": null,
+          "lifetimeEvictions": null,
+          "lifetimeNativeGlyphCalls": 0,
+          "entries": null,
+          "capacity": null,
+          "observationResets": 1,
+          "retired": false,
+          "available": true
+        }
+      },
+      "last": {
+        "relativeMs": 15018,
+        "values": {
+          "hits": null,
+          "misses": null,
+          "evictions": null,
+          "nativeGlyphCalls": 0,
+          "lifetimeHits": null,
+          "lifetimeMisses": null,
+          "lifetimeEvictions": null,
+          "lifetimeNativeGlyphCalls": 0,
+          "entries": null,
+          "capacity": null,
+          "observationResets": 1,
+          "retired": false,
+          "available": true
+        }
+      }
+    },
+    "page": {
+      "captures": 2,
+      "first": {
+        "relativeMs": 1,
+        "values": {
+          "available": 1,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "failedBeforeCallback": 0,
+          "callbackMissing": 0,
+          "pending": 0,
+          "inheritedPending": 0,
+          "maxPending": 0,
+          "duplicateCallback": 0,
+          "keyCountTotal": 0,
+          "maxKeyCount": 0,
+          "keyCountFailures": 0,
+          "sampledCalls": 0,
+          "sampledBytes": 0,
+          "maxSampledBytes": 0,
+          "serializationFailures": 0,
+          "bufferDataCalls": 0,
+          "totalTypedUploadBytes": 0,
+          "maxTypedUploadBytes": 0,
+          "latencyTotalMs": 0,
+          "latencyMaxMs": 0,
+          "enableDebug": false
+        }
+      },
+      "last": {
+        "relativeMs": 15018,
+        "values": {
+          "available": 1,
+          "submitted": 496,
+          "completed": 495,
+          "failed": 0,
+          "failedBeforeCallback": 0,
+          "callbackMissing": 0,
+          "pending": 1,
+          "inheritedPending": 0,
+          "maxPending": 2,
+          "duplicateCallback": 0,
+          "keyCountTotal": 4411,
+          "maxKeyCount": 10,
+          "keyCountFailures": 0,
+          "sampledCalls": 16,
+          "sampledBytes": 18830,
+          "maxSampledBytes": 1266,
+          "serializationFailures": 0,
+          "bufferDataCalls": 1018,
+          "totalTypedUploadBytes": 8228844,
+          "maxTypedUploadBytes": 11448,
+          "latencyTotalMs": 14229,
+          "latencyMaxMs": 62,
+          "enableDebug": false
+        }
+      }
+    },
+    "scene": {
+      "captures": 2,
+      "first": {
+        "relativeMs": 1,
+        "values": {
+          "nativeCopies": 0,
+          "readyNativeCopies": 0,
+          "syntheticBegins": 0,
+          "syntheticFinishes": 0,
+          "syntheticPublications": 0,
+          "discs": null,
+          "segments": null,
+          "images": null,
+          "readiness": null,
+          "frozen": false,
+          "retired": false
+        }
+      },
+      "last": {
+        "relativeMs": 15018,
+        "values": {
+          "nativeCopies": 509,
+          "readyNativeCopies": 509,
+          "syntheticBegins": 0,
+          "syntheticFinishes": 0,
+          "syntheticPublications": 0,
+          "discs": null,
+          "segments": null,
+          "images": null,
+          "readiness": null,
+          "frozen": false,
+          "retired": false
+        }
+      }
+    },
+    "memo": {
+      "captures": 0,
+      "first": null,
+      "last": null
+    }
+  },
+  "memory": {
+    "unit": "KiB",
+    "scope": "same bound foreground Appbrand process; warm footprint; includes profiler condition",
+    "playInputHostRelativeBracketMs": {
+      "start": 27431,
+      "end": 30292
+    },
+    "rows": [
+      {
+        "sampleStartElapsedMs": 0,
+        "sampleEndElapsedMs": 1785,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3903102,
+        "totalRssKiB": 1342500,
+        "totalSwapPssKiB": 2852972,
+        "nativeHeapPssKiB": 208484,
+        "dalvikHeapPssKiB": 136136,
+        "glMtrackPssKiB": 33636,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 282100,
+        "otherMmapPssKiB": 77600,
+        "soMmapPssKiB": 103785,
+        "javaHeapSummaryKiB": 135976,
+        "nativeHeapSummaryKiB": 202880,
+        "codeSummaryKiB": 89388,
+        "stackSummaryKiB": 5536,
+        "graphicsSummaryKiB": 172476,
+        "privateOtherSummaryKiB": 377220,
+        "systemSummaryKiB": 2919626
+      },
+      {
+        "sampleStartElapsedMs": 6800,
+        "sampleEndElapsedMs": 8626,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3840581,
+        "totalRssKiB": 1280344,
+        "totalSwapPssKiB": 2852732,
+        "nativeHeapPssKiB": 217072,
+        "dalvikHeapPssKiB": 53536,
+        "glMtrackPssKiB": 33636,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 294232,
+        "otherMmapPssKiB": 77180,
+        "soMmapPssKiB": 103796,
+        "javaHeapSummaryKiB": 53364,
+        "nativeHeapSummaryKiB": 211812,
+        "codeSummaryKiB": 89396,
+        "stackSummaryKiB": 5540,
+        "graphicsSummaryKiB": 172476,
+        "privateOtherSummaryKiB": 388596,
+        "systemSummaryKiB": 2919397
+      },
+      {
+        "sampleStartElapsedMs": 13629,
+        "sampleEndElapsedMs": 15350,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3811481,
+        "totalRssKiB": 1251244,
+        "totalSwapPssKiB": 2852732,
+        "nativeHeapPssKiB": 218496,
+        "dalvikHeapPssKiB": 28384,
+        "glMtrackPssKiB": 33636,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 288892,
+        "otherMmapPssKiB": 77180,
+        "soMmapPssKiB": 103796,
+        "javaHeapSummaryKiB": 28212,
+        "nativeHeapSummaryKiB": 213236,
+        "codeSummaryKiB": 89396,
+        "stackSummaryKiB": 5540,
+        "graphicsSummaryKiB": 172476,
+        "privateOtherSummaryKiB": 383224,
+        "systemSummaryKiB": 2919397
+      },
+      {
+        "sampleStartElapsedMs": 20358,
+        "sampleEndElapsedMs": 22372,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3812705,
+        "totalRssKiB": 1252468,
+        "totalSwapPssKiB": 2852732,
+        "nativeHeapPssKiB": 219960,
+        "dalvikHeapPssKiB": 28272,
+        "glMtrackPssKiB": 33636,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 288772,
+        "otherMmapPssKiB": 77180,
+        "soMmapPssKiB": 103796,
+        "javaHeapSummaryKiB": 28100,
+        "nativeHeapSummaryKiB": 214700,
+        "codeSummaryKiB": 89396,
+        "stackSummaryKiB": 5540,
+        "graphicsSummaryKiB": 172476,
+        "privateOtherSummaryKiB": 383096,
+        "systemSummaryKiB": 2919397
+      },
+      {
+        "sampleStartElapsedMs": 27381,
+        "sampleEndElapsedMs": 29182,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3814189,
+        "totalRssKiB": 1253952,
+        "totalSwapPssKiB": 2852732,
+        "nativeHeapPssKiB": 221428,
+        "dalvikHeapPssKiB": 28272,
+        "glMtrackPssKiB": 33636,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 288772,
+        "otherMmapPssKiB": 77180,
+        "soMmapPssKiB": 103796,
+        "javaHeapSummaryKiB": 28100,
+        "nativeHeapSummaryKiB": 216168,
+        "codeSummaryKiB": 89404,
+        "stackSummaryKiB": 5540,
+        "graphicsSummaryKiB": 172476,
+        "privateOtherSummaryKiB": 383104,
+        "systemSummaryKiB": 2919397
+      },
+      {
+        "sampleStartElapsedMs": 34195,
+        "sampleEndElapsedMs": 35688,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4078741,
+        "totalRssKiB": 1520024,
+        "totalSwapPssKiB": 2851260,
+        "nativeHeapPssKiB": 233084,
+        "dalvikHeapPssKiB": 31188,
+        "glMtrackPssKiB": 33268,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 540436,
+        "otherMmapPssKiB": 77144,
+        "soMmapPssKiB": 103928,
+        "javaHeapSummaryKiB": 31016,
+        "nativeHeapSummaryKiB": 227852,
+        "codeSummaryKiB": 89524,
+        "stackSummaryKiB": 5564,
+        "graphicsSummaryKiB": 172108,
+        "privateOtherSummaryKiB": 634704,
+        "systemSummaryKiB": 2917973
+      },
+      {
+        "sampleStartElapsedMs": 40693,
+        "sampleEndElapsedMs": 42233,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4832573,
+        "totalRssKiB": 2273908,
+        "totalSwapPssKiB": 2851216,
+        "nativeHeapPssKiB": 251560,
+        "dalvikHeapPssKiB": 32324,
+        "glMtrackPssKiB": 33252,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1275032,
+        "otherMmapPssKiB": 76568,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 32152,
+        "nativeHeapSummaryKiB": 246320,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5564,
+        "graphicsSummaryKiB": 172092,
+        "privateOtherSummaryKiB": 1368736,
+        "systemSummaryKiB": 2917937
+      },
+      {
+        "sampleStartElapsedMs": 47245,
+        "sampleEndElapsedMs": 48990,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4674445,
+        "totalRssKiB": 2116524,
+        "totalSwapPssKiB": 2850476,
+        "nativeHeapPssKiB": 264752,
+        "dalvikHeapPssKiB": 34428,
+        "glMtrackPssKiB": 33252,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1102556,
+        "otherMmapPssKiB": 76356,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 34256,
+        "nativeHeapSummaryKiB": 259556,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5568,
+        "graphicsSummaryKiB": 172092,
+        "privateOtherSummaryKiB": 1196000,
+        "systemSummaryKiB": 2917201
+      },
+      {
+        "sampleStartElapsedMs": 53995,
+        "sampleEndElapsedMs": 55717,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4669133,
+        "totalRssKiB": 2111236,
+        "totalSwapPssKiB": 2850428,
+        "nativeHeapPssKiB": 259548,
+        "dalvikHeapPssKiB": 30568,
+        "glMtrackPssKiB": 35240,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1102664,
+        "otherMmapPssKiB": 78072,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 30396,
+        "nativeHeapSummaryKiB": 254356,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5568,
+        "graphicsSummaryKiB": 174080,
+        "privateOtherSummaryKiB": 1197832,
+        "systemSummaryKiB": 2917129
+      },
+      {
+        "sampleStartElapsedMs": 60728,
+        "sampleEndElapsedMs": 63045,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4666845,
+        "totalRssKiB": 2108948,
+        "totalSwapPssKiB": 2850428,
+        "nativeHeapPssKiB": 259624,
+        "dalvikHeapPssKiB": 28828,
+        "glMtrackPssKiB": 34696,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1102600,
+        "otherMmapPssKiB": 78072,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 28656,
+        "nativeHeapSummaryKiB": 254432,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5568,
+        "graphicsSummaryKiB": 173536,
+        "privateOtherSummaryKiB": 1197752,
+        "systemSummaryKiB": 2917129
+      },
+      {
+        "sampleStartElapsedMs": 68050,
+        "sampleEndElapsedMs": 69652,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4667829,
+        "totalRssKiB": 2109932,
+        "totalSwapPssKiB": 2850428,
+        "nativeHeapPssKiB": 261048,
+        "dalvikHeapPssKiB": 28400,
+        "glMtrackPssKiB": 34696,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1102596,
+        "otherMmapPssKiB": 78072,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 28228,
+        "nativeHeapSummaryKiB": 255856,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5568,
+        "graphicsSummaryKiB": 173536,
+        "privateOtherSummaryKiB": 1197740,
+        "systemSummaryKiB": 2917129
+      },
+      {
+        "sampleStartElapsedMs": 74659,
+        "sampleEndElapsedMs": 76330,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4669129,
+        "totalRssKiB": 2111232,
+        "totalSwapPssKiB": 2850428,
+        "nativeHeapPssKiB": 262468,
+        "dalvikHeapPssKiB": 28276,
+        "glMtrackPssKiB": 34696,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1102596,
+        "otherMmapPssKiB": 78072,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 28104,
+        "nativeHeapSummaryKiB": 257276,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5568,
+        "graphicsSummaryKiB": 173536,
+        "privateOtherSummaryKiB": 1197744,
+        "systemSummaryKiB": 2917129
+      },
+      {
+        "sampleStartElapsedMs": 81343,
+        "sampleEndElapsedMs": 82837,
+        "state": "miniapp_foreground",
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 4670489,
+        "totalRssKiB": 2112592,
+        "totalSwapPssKiB": 2850428,
+        "nativeHeapPssKiB": 263872,
+        "dalvikHeapPssKiB": 28236,
+        "glMtrackPssKiB": 34696,
+        "eglMtrackPssKiB": 138840,
+        "unknownPssKiB": 1102596,
+        "otherMmapPssKiB": 78072,
+        "soMmapPssKiB": 104176,
+        "javaHeapSummaryKiB": 28064,
+        "nativeHeapSummaryKiB": 258680,
+        "codeSummaryKiB": 89772,
+        "stackSummaryKiB": 5568,
+        "graphicsSummaryKiB": 173536,
+        "privateOtherSummaryKiB": 1197740,
+        "systemSummaryKiB": 2917129
+      }
+    ],
+    "before": {
+      "sampleStartElapsedMs": 20358,
+      "sampleEndElapsedMs": 22372,
+      "state": "miniapp_foreground",
+      "slot": 0,
+      "foregroundActivityOwner": true,
+      "totalPssKiB": 3812705,
+      "totalRssKiB": 1252468,
+      "totalSwapPssKiB": 2852732,
+      "nativeHeapPssKiB": 219960,
+      "dalvikHeapPssKiB": 28272,
+      "glMtrackPssKiB": 33636,
+      "eglMtrackPssKiB": 138840,
+      "unknownPssKiB": 288772,
+      "otherMmapPssKiB": 77180,
+      "soMmapPssKiB": 103796,
+      "javaHeapSummaryKiB": 28100,
+      "nativeHeapSummaryKiB": 214700,
+      "codeSummaryKiB": 89396,
+      "stackSummaryKiB": 5540,
+      "graphicsSummaryKiB": 172476,
+      "privateOtherSummaryKiB": 383096,
+      "systemSummaryKiB": 2919397
+    },
+    "firstDefinitelyAfterProductPause": {
+      "sampleStartElapsedMs": 53995,
+      "sampleEndElapsedMs": 55717,
+      "state": "miniapp_foreground",
+      "slot": 0,
+      "foregroundActivityOwner": true,
+      "totalPssKiB": 4669133,
+      "totalRssKiB": 2111236,
+      "totalSwapPssKiB": 2850428,
+      "nativeHeapPssKiB": 259548,
+      "dalvikHeapPssKiB": 30568,
+      "glMtrackPssKiB": 35240,
+      "eglMtrackPssKiB": 138840,
+      "unknownPssKiB": 1102664,
+      "otherMmapPssKiB": 78072,
+      "soMmapPssKiB": 104176,
+      "javaHeapSummaryKiB": 30396,
+      "nativeHeapSummaryKiB": 254356,
+      "codeSummaryKiB": 89772,
+      "stackSummaryKiB": 5568,
+      "graphicsSummaryKiB": 174080,
+      "privateOtherSummaryKiB": 1197832,
+      "systemSummaryKiB": 2917129
+    },
+    "peak": {
+      "sampleStartElapsedMs": 40693,
+      "sampleEndElapsedMs": 42233,
+      "state": "miniapp_foreground",
+      "slot": 0,
+      "foregroundActivityOwner": true,
+      "totalPssKiB": 4832573,
+      "totalRssKiB": 2273908,
+      "totalSwapPssKiB": 2851216,
+      "nativeHeapPssKiB": 251560,
+      "dalvikHeapPssKiB": 32324,
+      "glMtrackPssKiB": 33252,
+      "eglMtrackPssKiB": 138840,
+      "unknownPssKiB": 1275032,
+      "otherMmapPssKiB": 76568,
+      "soMmapPssKiB": 104176,
+      "javaHeapSummaryKiB": 32152,
+      "nativeHeapSummaryKiB": 246320,
+      "codeSummaryKiB": 89772,
+      "stackSummaryKiB": 5564,
+      "graphicsSummaryKiB": 172092,
+      "privateOtherSummaryKiB": 1368736,
+      "systemSummaryKiB": 2917937
+    },
+    "last": {
+      "sampleStartElapsedMs": 81343,
+      "sampleEndElapsedMs": 82837,
+      "state": "miniapp_foreground",
+      "slot": 0,
+      "foregroundActivityOwner": true,
+      "totalPssKiB": 4670489,
+      "totalRssKiB": 2112592,
+      "totalSwapPssKiB": 2850428,
+      "nativeHeapPssKiB": 263872,
+      "dalvikHeapPssKiB": 28236,
+      "glMtrackPssKiB": 34696,
+      "eglMtrackPssKiB": 138840,
+      "unknownPssKiB": 1102596,
+      "otherMmapPssKiB": 78072,
+      "soMmapPssKiB": 104176,
+      "javaHeapSummaryKiB": 28064,
+      "nativeHeapSummaryKiB": 258680,
+      "codeSummaryKiB": 89772,
+      "stackSummaryKiB": 5568,
+      "graphicsSummaryKiB": 173536,
+      "privateOtherSummaryKiB": 1197740,
+      "systemSummaryKiB": 2917129
+    },
+    "pssPeakDeltaFromBefore": 1019868,
+    "unknownPeakDeltaFromBefore": 986260,
+    "pssDrainDeltaFromBefore": 857784,
+    "unknownDrainDeltaFromBefore": 813824
+  },
+  "cpu": {
+    "file": "normal-v3-r2/normal-sky-main.cpuprofile",
+    "bytes": 6677178,
+    "sha256": "50111e1805eb8629928856f5cd0db5c8fecc90bace35066f1c790f406cd59320",
+    "nodes": 9182,
+    "samples": 737165,
+    "durationUs": 160577639,
+    "rawOutsideGit": true,
+    "scope": "ordinary-preview official capsule CPU sampling; includes paused/Play/drain and menu transitions; exact sample timing subject to profile validity audit",
+    "attribution": "R17-NORMAL-CPU-ATTRIBUTION.json",
+    "negativeTimeDeltas": 8561,
+    "exactFourteenSecondWindowEstablished": false
+  },
+  "evidence": [
+    {
+      "file": "probe-metrics/baseline-r17-1-kld3md55q3.json",
+      "bytes": 40383,
+      "sha256": "31046ac272dfc30e662672f5651727e3017b0c98a85f2d1b605c5edccf73dcf1"
+    },
+    {
+      "file": "probe-metrics/baseline-r17-1-kld3md55q3-terminal.json",
+      "bytes": 1587,
+      "sha256": "714d391538a7c458de339b0e997a39573d6b21ab8044ca061faa04962383a6f0"
+    },
+    {
+      "file": "native-play-copy-trial/normal-v3-r2-cpu-1792360492564.ndjson",
+      "bytes": 8470,
+      "sha256": "4ad3f5f2b17d9d8e18ff78232c2e5a452d1ed850da655d9ef843ed113f581144"
+    },
+    {
+      "file": "normal-v3-r2/normal-sky-main.cpuprofile",
+      "bytes": 6677178,
+      "sha256": "50111e1805eb8629928856f5cd0db5c8fecc90bace35066f1c790f406cd59320"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-02bcd502-828d-4825-ba42-82b4de669603.png",
+      "bytes": 343102,
+      "sha256": "a73d949bbdae7f32680472be25fe5e5996fb9676a79382e3b6d0371052665123"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-02bcd502-828d-4825-ba42-82b4de669603.png.json",
+      "bytes": 391,
+      "sha256": "4f5fa1ec698af12482853510bf8b8e0de6ef46d02a6876aeede706ccfaee5ac2"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-1cc1ce5e-1414-424a-bd7f-4d4277c7ab36.png",
+      "bytes": 856615,
+      "sha256": "4bb1bab85a472cf9ad76c83e0fa14c446c13f1b94eeb59b22968bc1601de195f"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-1cc1ce5e-1414-424a-bd7f-4d4277c7ab36.png.json",
+      "bytes": 391,
+      "sha256": "2246c5acc81420336977e4a165c245aa5d1d15db74b683821029951540935fed"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-1f12f76e-a3be-471f-a0f0-7716751e46db.png",
+      "bytes": 318960,
+      "sha256": "18681897d2325eaa721891fddc075dedd291f97d55e1b9d64ee72295ee7a4e94"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-1f12f76e-a3be-471f-a0f0-7716751e46db.png.json",
+      "bytes": 391,
+      "sha256": "a4a986d8dd97fd7d32cbbc83688fa940ddaaa28e36e909ddde3538b539efa9b0"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-3c78b629-5ced-4014-9e66-2bad55657c7d.png",
+      "bytes": 857095,
+      "sha256": "8a5818c3102d5c40783bccedb488f940acbedbaa960d097b342e25d2994a4579"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-3c78b629-5ced-4014-9e66-2bad55657c7d.png.json",
+      "bytes": 391,
+      "sha256": "cec1117ebe0598a9827a5fc9fa991b0972569f406e85bd0d8947845ae8720115"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-4dbfe1d7-3f82-4c79-aab4-52167bdf84b6.png",
+      "bytes": 319630,
+      "sha256": "823ff9ba0617135149cb4e74b8e5e33c3e23e354c2408918edacd57d599916b9"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-4dbfe1d7-3f82-4c79-aab4-52167bdf84b6.png.json",
+      "bytes": 391,
+      "sha256": "78968f2eeb1b5d5530262d2f95d42e442f9495a6390b0c402b041314620e2492"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-73d61010-eb6b-4f69-a830-f26987d882bb.png",
+      "bytes": 676287,
+      "sha256": "014544a4390e092af9add8466feef76ce44dc481e20fb679f426c89cc0771be7"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-73d61010-eb6b-4f69-a830-f26987d882bb.png.json",
+      "bytes": 391,
+      "sha256": "8d3e97faefb0451036af3ad145612058541c3b3af181998efa5f5318cb3a373f"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-73ef25a4-e9ba-4431-ba11-d0a351af18b0.png",
+      "bytes": 676431,
+      "sha256": "2a2a25b870d655cfd3dbde94c1afc79c6132cd7da15322f2cb07e80ef6b83cb1"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-73ef25a4-e9ba-4431-ba11-d0a351af18b0.png.json",
+      "bytes": 391,
+      "sha256": "3a62d9d9e83762e66a70a48dd469d5d91f55f5863c0b47ced0b88924d5721a47"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-7fef0afa-d194-4634-87fa-a473fbee39f6.png",
+      "bytes": 638839,
+      "sha256": "ce1722d77273aa0d803591010691ac32cc7c2bbf0289ea0992a7fff8859096ab"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-7fef0afa-d194-4634-87fa-a473fbee39f6.png.json",
+      "bytes": 391,
+      "sha256": "9ee4762fb8d4fe7af1bc4bd212c6963efc64539ed3925c0092e3d25d70f1254e"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-83ae6800-aa05-4132-aead-de959ba1932c.png",
+      "bytes": 694580,
+      "sha256": "eb9c45936e29e5c14726ce40e64a9c216df10dd866e3ccdf361a6bb71226776b"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-83ae6800-aa05-4132-aead-de959ba1932c.png.json",
+      "bytes": 391,
+      "sha256": "a2564991b789892edcfc4d9945293a9ae4859d4c286ccad1d4cb2a1398d85cca"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-890e1f61-64ab-49ac-a6f7-e46a36c9cfd2.png",
+      "bytes": 320045,
+      "sha256": "8aa85aecab3758897c25e76df5a4b89636858517429baa18840f6a572787c4a2"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-890e1f61-64ab-49ac-a6f7-e46a36c9cfd2.png.json",
+      "bytes": 391,
+      "sha256": "bfda787be433a7246bd8b6132a11ae814583389dac5acd74b93d410a5ae0c497"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-891fe266-c852-421d-9e42-52c8b525accd.png",
+      "bytes": 684713,
+      "sha256": "6d57a9912767890315c7059f7ecbabd55e31820c60602d7a4c524b611a5e11e1"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-891fe266-c852-421d-9e42-52c8b525accd.png.json",
+      "bytes": 391,
+      "sha256": "9e13eabcbd46c569c3334116f7e05673f1cb791431e70533e6419315c490281e"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-9415ce82-21b3-460f-a838-042a8dd176f3.png",
+      "bytes": 345149,
+      "sha256": "6f798d956cac4092beda2bd1f07e14d05bb93c948e8183486f17816cf07a3685"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-9415ce82-21b3-460f-a838-042a8dd176f3.png.json",
+      "bytes": 391,
+      "sha256": "a76d1ad1c7e3d57e11d13ff34d9411abea76a3bfed9ec4b5113ec24e28839e21"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-a5a83045-ef99-4742-b886-ea03dee75c70.png",
+      "bytes": 801032,
+      "sha256": "5d65c5422c3c683898ed889f6367772ce609dd42277e2a7a9ef34aca51035816"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-a5a83045-ef99-4742-b886-ea03dee75c70.png.json",
+      "bytes": 391,
+      "sha256": "5bb0ed29b335f2118ab9953c9abb3dc633668416508409b48791d81bdbb40f20"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-ae7786b2-932f-4c12-afa1-7440d7ab40be.png",
+      "bytes": 637272,
+      "sha256": "79a8980572667f4c403fe928648c888509a2049ba199bfa6436d59d6c79e6c49"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-ae7786b2-932f-4c12-afa1-7440d7ab40be.png.json",
+      "bytes": 391,
+      "sha256": "cd3362aca5fee3d07730b5365519aa1148cec7b43bc7ad250e67db3d1188831c"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-c6983704-2a0e-4020-aa62-67adde11260f.png",
+      "bytes": 683060,
+      "sha256": "dc371e73e1557b9f3ae3e58960d3e56329d44bbf0bc349aefe628a4de85f95c8"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-c6983704-2a0e-4020-aa62-67adde11260f.png.json",
+      "bytes": 391,
+      "sha256": "53618e8d41b384d80217613483e4b96c2a95ea783a3bf7550ea65f7f9efaef83"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e055b52e-c373-4486-bb57-c005e75b921e.png",
+      "bytes": 319668,
+      "sha256": "1cb0ab88bd87a581fd93dea08cd2c2b240d8b91f8ace891e787fbcc685cd104d"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e055b52e-c373-4486-bb57-c005e75b921e.png.json",
+      "bytes": 391,
+      "sha256": "a1c3e79dae6490fdb97edecfa8141f85ca1c53485b0f8b5a23b64292fb945a0c"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e36f0c03-488a-47d1-8066-10d6f85c47d4.png",
+      "bytes": 728516,
+      "sha256": "53a66445dcb4b1ef6026858197a043a952d04d9c90ce3ce235654db448bbfd89"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e36f0c03-488a-47d1-8066-10d6f85c47d4.png.json",
+      "bytes": 391,
+      "sha256": "26cfbf4f763db95aafebf9606bc5a222fc6bb92f607da3b84a0a8895827dd326"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e6050423-008b-4e23-9a14-24ad640d7d19.png",
+      "bytes": 683791,
+      "sha256": "e6e0f297ab88db029f8dfd46088dd686d02cc1fe14e4d12cbed07c0aed1b2018"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e6050423-008b-4e23-9a14-24ad640d7d19.png.json",
+      "bytes": 391,
+      "sha256": "ebdfa6e814b399f1c06df5a2b8d5ac36736d71abdd97da3ab9ed42d6379f651a"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-ebd17776-c717-4995-93e0-957d1c312866.png",
+      "bytes": 677969,
+      "sha256": "ed0733804d31a71cfb7804eba9d533ff73bf3e1c17b18025fc9d40e40bb69a17"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-ebd17776-c717-4995-93e0-957d1c312866.png.json",
+      "bytes": 391,
+      "sha256": "e5c897bf8b73ae7f0626198459209ef16eb8e7ff53afb0e816bb6e269a4190fa"
+    },
+    {
+      "file": "normal-v3-r2/prebinding-device-session/screen-14754102-43b5-4205-8368-6640862fab0c.png",
+      "bytes": 637152,
+      "sha256": "1d1019b3cbec9a4c71f1476f271f4fd86b5aeb5ec83bc5a3989bca482108c9a7"
+    },
+    {
+      "file": "normal-v3-r2/prebinding-device-session/screen-14754102-43b5-4205-8368-6640862fab0c.png.json",
+      "bytes": 391,
+      "sha256": "bff7c15405af9dc2828ca7eface34fa7b0c2bdb729056387fe80163cf51cba2a"
+    },
+    {
+      "file": "normal-v3-r2/prebinding-device-session/screen-2ec17574-feb0-4714-b8cf-95b3312174f8.png",
+      "bytes": 856474,
+      "sha256": "7fc7041214ad5dcee49befbe611a2ae6c636808b40c3721c0daeb267398a9488"
+    },
+    {
+      "file": "normal-v3-r2/prebinding-device-session/screen-2ec17574-feb0-4714-b8cf-95b3312174f8.png.json",
+      "bytes": 391,
+      "sha256": "f9816fe17f8342575ce953f2f9c3538e96da9500412a46eaeece355defd38873"
+    },
+    {
+      "file": "normal-v3-r2/prebinding-device-session/screen-37684aa7-54d6-48e3-b623-62d6bf838011.png",
+      "bytes": 800945,
+      "sha256": "79b5043e30b1f2171dd4c609f93894af3f3d077d81f4ea80a37ee497dd7801dd"
+    },
+    {
+      "file": "normal-v3-r2/prebinding-device-session/screen-37684aa7-54d6-48e3-b623-62d6bf838011.png.json",
+      "bytes": 391,
+      "sha256": "bea30f97a1329de6f4c33c46416bf2b0dd08fcf1aaa7eb51ead33601ac81d9d9"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-0bc877ee-332f-4cbd-b593-72b264057e82.png",
+      "bytes": 134394,
+      "sha256": "41cc86e63ee46d5dd3a42026c758db14dd61ce01ababb09cc74767a38d768dc6"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-0bc877ee-332f-4cbd-b593-72b264057e82.png.json",
+      "bytes": 391,
+      "sha256": "0c6f23e193c3331de9ed53eaac960cb003505ab5f1ee2a07af55538bf90b7a64"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-2a70a0de-899f-4b38-a2d3-7820a71cce0b.png",
+      "bytes": 169309,
+      "sha256": "e031dc68cb5c0abca5c9c86268f591de9eedad26db43fa0c4c6770e00085aa46"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-2a70a0de-899f-4b38-a2d3-7820a71cce0b.png.json",
+      "bytes": 391,
+      "sha256": "9b123d133da41b8e4cd6d0de22b8d1964eb3ac3fe6e3fa183a4fceedaadfd653"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-40517bbd-b617-4b28-b0fb-7846321dac1a.png",
+      "bytes": 676204,
+      "sha256": "9f7397fcbc7ddb368d0df6630681b295756aca9bdbfd676f3eea9e4119c166e9"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-40517bbd-b617-4b28-b0fb-7846321dac1a.png.json",
+      "bytes": 391,
+      "sha256": "0b4a97323bd975b953ced8adc9a81487f59212f6202f8b2dae08b8d9fb5cb161"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-97506449-892f-4970-9854-371fb3149794.png",
+      "bytes": 210919,
+      "sha256": "7a5bd8202970d800212c4d08d0c5916e1425a35b60783ae3cee90185a08b3342"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-97506449-892f-4970-9854-371fb3149794.png.json",
+      "bytes": 391,
+      "sha256": "f920f8c43ece0550904f9c6246894f5d15b3a2c981cc4f5f0d1702eb906f69fc"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e295ea78-68c3-40aa-8cae-22e30373e5fb.png",
+      "bytes": 857768,
+      "sha256": "26aeeecc71c25379d60938fe58aa142b24aaa43277ba38fb7d566dd60a86d048"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e295ea78-68c3-40aa-8cae-22e30373e5fb.png.json",
+      "bytes": 391,
+      "sha256": "7f70101d3b72bbab3aa17e7af3751564d1232f555b4bb51754d926166a7d6e29"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e330624d-da53-454b-8039-ce3cd1c9a42c.png",
+      "bytes": 208463,
+      "sha256": "7dc1db552590ebbd656063c23221e6f656c93c7e80bbabda79836e82cc0164b7"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e330624d-da53-454b-8039-ce3cd1c9a42c.png.json",
+      "bytes": 391,
+      "sha256": "207c02d5a69cd38663830e12f53d33f19f38c5f9c0730be0c8e466a0fd123113"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e77309ef-4c3f-4195-8fa1-d70569e5637a.png",
+      "bytes": 144125,
+      "sha256": "57e3a531e44bf3bf17257668c987eba3013079d310793b6dbc6d8c8fa611a2ab"
+    },
+    {
+      "file": "normal-v3-r2/bound-device-session/screen-e77309ef-4c3f-4195-8fa1-d70569e5637a.png.json",
+      "bytes": 391,
+      "sha256": "1df81d55c3b7e98c10c55173fc8eb50fa76e652b0a3fa02d57fc7e60c631dc42"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-02bcd502-828d-4825-ba42-82b4de669603.png",
+      "bytes": 343102,
+      "sha256": "a73d949bbdae7f32680472be25fe5e5996fb9676a79382e3b6d0371052665123"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-02bcd502-828d-4825-ba42-82b4de669603.png.json",
+      "bytes": 391,
+      "sha256": "4f5fa1ec698af12482853510bf8b8e0de6ef46d02a6876aeede706ccfaee5ac2"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-0bc877ee-332f-4cbd-b593-72b264057e82.png",
+      "bytes": 134394,
+      "sha256": "41cc86e63ee46d5dd3a42026c758db14dd61ce01ababb09cc74767a38d768dc6"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-0bc877ee-332f-4cbd-b593-72b264057e82.png.json",
+      "bytes": 391,
+      "sha256": "0c6f23e193c3331de9ed53eaac960cb003505ab5f1ee2a07af55538bf90b7a64"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-1cc1ce5e-1414-424a-bd7f-4d4277c7ab36.png",
+      "bytes": 856615,
+      "sha256": "4bb1bab85a472cf9ad76c83e0fa14c446c13f1b94eeb59b22968bc1601de195f"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-1cc1ce5e-1414-424a-bd7f-4d4277c7ab36.png.json",
+      "bytes": 391,
+      "sha256": "2246c5acc81420336977e4a165c245aa5d1d15db74b683821029951540935fed"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-1f12f76e-a3be-471f-a0f0-7716751e46db.png",
+      "bytes": 318960,
+      "sha256": "18681897d2325eaa721891fddc075dedd291f97d55e1b9d64ee72295ee7a4e94"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-1f12f76e-a3be-471f-a0f0-7716751e46db.png.json",
+      "bytes": 391,
+      "sha256": "a4a986d8dd97fd7d32cbbc83688fa940ddaaa28e36e909ddde3538b539efa9b0"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-2a70a0de-899f-4b38-a2d3-7820a71cce0b.png",
+      "bytes": 169309,
+      "sha256": "e031dc68cb5c0abca5c9c86268f591de9eedad26db43fa0c4c6770e00085aa46"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-2a70a0de-899f-4b38-a2d3-7820a71cce0b.png.json",
+      "bytes": 391,
+      "sha256": "9b123d133da41b8e4cd6d0de22b8d1964eb3ac3fe6e3fa183a4fceedaadfd653"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-3c78b629-5ced-4014-9e66-2bad55657c7d.png",
+      "bytes": 857095,
+      "sha256": "8a5818c3102d5c40783bccedb488f940acbedbaa960d097b342e25d2994a4579"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-3c78b629-5ced-4014-9e66-2bad55657c7d.png.json",
+      "bytes": 391,
+      "sha256": "cec1117ebe0598a9827a5fc9fa991b0972569f406e85bd0d8947845ae8720115"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-40517bbd-b617-4b28-b0fb-7846321dac1a.png",
+      "bytes": 676204,
+      "sha256": "9f7397fcbc7ddb368d0df6630681b295756aca9bdbfd676f3eea9e4119c166e9"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-40517bbd-b617-4b28-b0fb-7846321dac1a.png.json",
+      "bytes": 391,
+      "sha256": "0b4a97323bd975b953ced8adc9a81487f59212f6202f8b2dae08b8d9fb5cb161"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-4dbfe1d7-3f82-4c79-aab4-52167bdf84b6.png",
+      "bytes": 319630,
+      "sha256": "823ff9ba0617135149cb4e74b8e5e33c3e23e354c2408918edacd57d599916b9"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-4dbfe1d7-3f82-4c79-aab4-52167bdf84b6.png.json",
+      "bytes": 391,
+      "sha256": "78968f2eeb1b5d5530262d2f95d42e442f9495a6390b0c402b041314620e2492"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-73d61010-eb6b-4f69-a830-f26987d882bb.png",
+      "bytes": 676287,
+      "sha256": "014544a4390e092af9add8466feef76ce44dc481e20fb679f426c89cc0771be7"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-73d61010-eb6b-4f69-a830-f26987d882bb.png.json",
+      "bytes": 391,
+      "sha256": "8d3e97faefb0451036af3ad145612058541c3b3af181998efa5f5318cb3a373f"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-73ef25a4-e9ba-4431-ba11-d0a351af18b0.png",
+      "bytes": 676431,
+      "sha256": "2a2a25b870d655cfd3dbde94c1afc79c6132cd7da15322f2cb07e80ef6b83cb1"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-73ef25a4-e9ba-4431-ba11-d0a351af18b0.png.json",
+      "bytes": 391,
+      "sha256": "3a62d9d9e83762e66a70a48dd469d5d91f55f5863c0b47ced0b88924d5721a47"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-7fef0afa-d194-4634-87fa-a473fbee39f6.png",
+      "bytes": 638839,
+      "sha256": "ce1722d77273aa0d803591010691ac32cc7c2bbf0289ea0992a7fff8859096ab"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-7fef0afa-d194-4634-87fa-a473fbee39f6.png.json",
+      "bytes": 391,
+      "sha256": "9ee4762fb8d4fe7af1bc4bd212c6963efc64539ed3925c0092e3d25d70f1254e"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-83ae6800-aa05-4132-aead-de959ba1932c.png",
+      "bytes": 694580,
+      "sha256": "eb9c45936e29e5c14726ce40e64a9c216df10dd866e3ccdf361a6bb71226776b"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-83ae6800-aa05-4132-aead-de959ba1932c.png.json",
+      "bytes": 391,
+      "sha256": "a2564991b789892edcfc4d9945293a9ae4859d4c286ccad1d4cb2a1398d85cca"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-890e1f61-64ab-49ac-a6f7-e46a36c9cfd2.png",
+      "bytes": 320045,
+      "sha256": "8aa85aecab3758897c25e76df5a4b89636858517429baa18840f6a572787c4a2"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-890e1f61-64ab-49ac-a6f7-e46a36c9cfd2.png.json",
+      "bytes": 391,
+      "sha256": "bfda787be433a7246bd8b6132a11ae814583389dac5acd74b93d410a5ae0c497"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-891fe266-c852-421d-9e42-52c8b525accd.png",
+      "bytes": 684713,
+      "sha256": "6d57a9912767890315c7059f7ecbabd55e31820c60602d7a4c524b611a5e11e1"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-891fe266-c852-421d-9e42-52c8b525accd.png.json",
+      "bytes": 391,
+      "sha256": "9e13eabcbd46c569c3334116f7e05673f1cb791431e70533e6419315c490281e"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-9415ce82-21b3-460f-a838-042a8dd176f3.png",
+      "bytes": 345149,
+      "sha256": "6f798d956cac4092beda2bd1f07e14d05bb93c948e8183486f17816cf07a3685"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-9415ce82-21b3-460f-a838-042a8dd176f3.png.json",
+      "bytes": 391,
+      "sha256": "a76d1ad1c7e3d57e11d13ff34d9411abea76a3bfed9ec4b5113ec24e28839e21"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-97506449-892f-4970-9854-371fb3149794.png",
+      "bytes": 210919,
+      "sha256": "7a5bd8202970d800212c4d08d0c5916e1425a35b60783ae3cee90185a08b3342"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-97506449-892f-4970-9854-371fb3149794.png.json",
+      "bytes": 391,
+      "sha256": "f920f8c43ece0550904f9c6246894f5d15b3a2c981cc4f5f0d1702eb906f69fc"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-a5a83045-ef99-4742-b886-ea03dee75c70.png",
+      "bytes": 801032,
+      "sha256": "5d65c5422c3c683898ed889f6367772ce609dd42277e2a7a9ef34aca51035816"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-a5a83045-ef99-4742-b886-ea03dee75c70.png.json",
+      "bytes": 391,
+      "sha256": "5bb0ed29b335f2118ab9953c9abb3dc633668416508409b48791d81bdbb40f20"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-ae7786b2-932f-4c12-afa1-7440d7ab40be.png",
+      "bytes": 637272,
+      "sha256": "79a8980572667f4c403fe928648c888509a2049ba199bfa6436d59d6c79e6c49"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-ae7786b2-932f-4c12-afa1-7440d7ab40be.png.json",
+      "bytes": 391,
+      "sha256": "cd3362aca5fee3d07730b5365519aa1148cec7b43bc7ad250e67db3d1188831c"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-c6983704-2a0e-4020-aa62-67adde11260f.png",
+      "bytes": 683060,
+      "sha256": "dc371e73e1557b9f3ae3e58960d3e56329d44bbf0bc349aefe628a4de85f95c8"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-c6983704-2a0e-4020-aa62-67adde11260f.png.json",
+      "bytes": 391,
+      "sha256": "53618e8d41b384d80217613483e4b96c2a95ea783a3bf7550ea65f7f9efaef83"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e055b52e-c373-4486-bb57-c005e75b921e.png",
+      "bytes": 319668,
+      "sha256": "1cb0ab88bd87a581fd93dea08cd2c2b240d8b91f8ace891e787fbcc685cd104d"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e055b52e-c373-4486-bb57-c005e75b921e.png.json",
+      "bytes": 391,
+      "sha256": "a1c3e79dae6490fdb97edecfa8141f85ca1c53485b0f8b5a23b64292fb945a0c"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e295ea78-68c3-40aa-8cae-22e30373e5fb.png",
+      "bytes": 857768,
+      "sha256": "26aeeecc71c25379d60938fe58aa142b24aaa43277ba38fb7d566dd60a86d048"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e295ea78-68c3-40aa-8cae-22e30373e5fb.png.json",
+      "bytes": 391,
+      "sha256": "7f70101d3b72bbab3aa17e7af3751564d1232f555b4bb51754d926166a7d6e29"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e330624d-da53-454b-8039-ce3cd1c9a42c.png",
+      "bytes": 208463,
+      "sha256": "7dc1db552590ebbd656063c23221e6f656c93c7e80bbabda79836e82cc0164b7"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e330624d-da53-454b-8039-ce3cd1c9a42c.png.json",
+      "bytes": 391,
+      "sha256": "207c02d5a69cd38663830e12f53d33f19f38c5f9c0730be0c8e466a0fd123113"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e36f0c03-488a-47d1-8066-10d6f85c47d4.png",
+      "bytes": 728516,
+      "sha256": "53a66445dcb4b1ef6026858197a043a952d04d9c90ce3ce235654db448bbfd89"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e36f0c03-488a-47d1-8066-10d6f85c47d4.png.json",
+      "bytes": 391,
+      "sha256": "26cfbf4f763db95aafebf9606bc5a222fc6bb92f607da3b84a0a8895827dd326"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e6050423-008b-4e23-9a14-24ad640d7d19.png",
+      "bytes": 683791,
+      "sha256": "e6e0f297ab88db029f8dfd46088dd686d02cc1fe14e4d12cbed07c0aed1b2018"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e6050423-008b-4e23-9a14-24ad640d7d19.png.json",
+      "bytes": 391,
+      "sha256": "ebdfa6e814b399f1c06df5a2b8d5ac36736d71abdd97da3ab9ed42d6379f651a"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e77309ef-4c3f-4195-8fa1-d70569e5637a.png",
+      "bytes": 144125,
+      "sha256": "57e3a531e44bf3bf17257668c987eba3013079d310793b6dbc6d8c8fa611a2ab"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e77309ef-4c3f-4195-8fa1-d70569e5637a.png.json",
+      "bytes": 391,
+      "sha256": "1df81d55c3b7e98c10c55173fc8eb50fa76e652b0a3fa02d57fc7e60c631dc42"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e823c67f-9325-4ad4-966c-6f803327810e.png",
+      "bytes": 139699,
+      "sha256": "faef000b10a4b14f5ba03a3d0dc464cc5dc2e98315e1253473aa5bf8465cf09f"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-e823c67f-9325-4ad4-966c-6f803327810e.png.json",
+      "bytes": 391,
+      "sha256": "375a713eeac4ab618628238a38b8a323aff9535b655025e13aab60fde1d57267"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-ebd17776-c717-4995-93e0-957d1c312866.png",
+      "bytes": 677969,
+      "sha256": "ed0733804d31a71cfb7804eba9d533ff73bf3e1c17b18025fc9d40e40bb69a17"
+    },
+    {
+      "file": "h3-gen26-pre-delivery/gen25-device-session/screen-ebd17776-c717-4995-93e0-957d1c312866.png.json",
+      "bytes": 391,
+      "sha256": "e5c897bf8b73ae7f0626198459209ef16eb8e7ff53afb0e816bb6e269a4190fa"
+    }
+  ],
+  "limitations": [
+    "CPU samples and process footprint are not allocation or retention graphs.",
+    "nativeGlyphCalls/lifetimeNativeGlyphCalls were zero in this sample; no nonempty text-measure coverage claim.",
+    "Clock intervals are Date.now wall elapsed, not thread CPU or physical FPS.",
+    "The process was already warm with large swap; no reset or fresh-process plateau claim.",
+    "SAMPLE_DATA fixture preserves normal renderer demand but does not close real weather/H4.",
+    "A/B and complete normal sustainability/recovery remain unverified."
+  ],
+  "currentDeviceState": {
+    "wirelessTransportReady": true,
+    "priorSaltedTargetMatched": true,
+    "lastVerifiedPixels": "Map after product Sky exit and search Back",
+    "nextIndependentModule": "H3",
+    "gen25EvidenceArchivedBeforeRefresh": true
+  },
+  "exitObservation": {
+    "mapVisiblyRenderedAfterProductExit": true,
+    "settledMapRendered": true,
+    "crossRunPidContinuityNotRetained": true,
+    "resourceReleaseAcceptance": "UNVERIFIED"
+  }
+}

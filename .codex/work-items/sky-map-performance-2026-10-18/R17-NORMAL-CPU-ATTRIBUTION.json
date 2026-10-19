@@ -1,0 +1,1943 @@
+{
+  "schemaVersion": "r17-normal-cpu-attribution-v1",
+  "status": "useful-target-cpu-sample-with-explicit-clock-and-runtime-map-gaps",
+  "binding": {
+    "generation": 25,
+    "probeVersion": 3,
+    "mode": "normal",
+    "variant": "baseline",
+    "bundleSha256": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+    "localBundleReadbackSha256": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+    "buildSourceSha256": "10236f0e034ae96d9e31ed5e081a837a53f4cdd128e3f9ac34da6d588f151a4c",
+    "manifestSha256": "f87c10fb0b6ff0c24f3a979e99aa30cbde4ca1940af85805c5af56905642d0ba",
+    "rootResultSha256": "cf15ca31f26fc68fb580c3c9df0fdf7665aef81ab485feef624e06c64ef6f461",
+    "profileSha256": "50111e1805eb8629928856f5cd0db5c8fecc90bace35066f1c790f406cd59320",
+    "profileBytes": 6677178,
+    "originalPhoneProfilePreserved": true,
+    "operatorBound": true,
+    "phoneBundleBytesVerified": false,
+    "runtimeAppIdVerified": false,
+    "sourceAssociation": "Official delivery/operator binding plus actual embedded probe source identity. Local bundle and maps have exact readback; no phone bundle byte readback or runtime AppID verification is claimed."
+  },
+  "profileValidity": {
+    "nodeCount": 9182,
+    "sampleCount": 737165,
+    "timeDeltaCount": 737165,
+    "invalidSampleReferences": 0,
+    "invalidChildReferences": 0,
+    "duplicateParents": 0,
+    "hitCountSum": 726024,
+    "sampleMinusHitCount": 11141,
+    "durationUs": 160577639,
+    "deltaSumUs": 160572458,
+    "uncoveredTailUs": 5181,
+    "timeDeltas": {
+      "negative": 8561,
+      "zero": 0,
+      "above10ms": 8,
+      "above100ms": 1,
+      "min": -7189,
+      "max": 1259442,
+      "negativeTotalUs": -614392
+    },
+    "timestampRangeMs": {
+      "min": 1259.442,
+      "max": 160572.458
+    },
+    "outsideTimestampSamples": 0,
+    "interpretation": "Actual samples[] count is primary. timeDeltas contain negative values: do not turn signed intervals or hitCount into precise CPU milliseconds, pause durations or rates. Ten-second bins use the as-exported signed cumulative timestamps and are coarse observations only."
+  },
+  "alignment": {
+    "method": "Intersect Start capture bracket with Stop capture bracket minus exported duration; locate Play inside its existing host input bracket. This is conditional elapsed-clock association, not exact target-clock synchronization.",
+    "startBracketWidthMs": 17184,
+    "playInputBracketWidthMs": 2861,
+    "earliestPlayRelativeToProfileMs": 41738,
+    "latestPlayRelativeToProfileMs": 61783,
+    "productPauseAfterPlayMs": 20011,
+    "earliestPauseRelativeToProfileMs": 61749,
+    "latestPauseRelativeToProfileMs": 81794,
+    "exactMetricsWindowRelativeToActualPlayMs": {
+      "start": 1010,
+      "end": 15016,
+      "elapsed": 14006
+    },
+    "guaranteedPlayOnlyIntersectionMs": 0,
+    "fileMtimeMinusHostPlayStartMs": 115005,
+    "fileMtimeIsNotStopTimestamp": true,
+    "captureEvidence": [
+      {
+        "sidecarSha256": "4f5fa1ec698af12482853510bf8b8e0de6ef46d02a6876aeede706ccfaee5ac2",
+        "imageSha256": "a73d949bbdae7f32680472be25fe5e5996fb9676a79382e3b6d0371052665123"
+      },
+      {
+        "sidecarSha256": "e5c897bf8b73ae7f0626198459209ef16eb8e7ff53afb0e816bb6e269a4190fa",
+        "imageSha256": "ed0733804d31a71cfb7804eba9d533ff73bf3e1c17b18025fc9d40e40bb69a17"
+      },
+      {
+        "sidecarSha256": "a76d1ad1c7e3d57e11d13ff34d9411abea76a3bfed9ec4b5113ec24e28839e21",
+        "imageSha256": "6f798d956cac4092beda2bd1f07e14d05bb93c948e8183486f17816cf07a3685"
+      },
+      {
+        "sidecarSha256": "a2564991b789892edcfc4d9945293a9ae4859d4c286ccad1d4cb2a1398d85cca",
+        "imageSha256": "eb9c45936e29e5c14726ce40e64a9c216df10dd866e3ccdf361a6bb71226776b"
+      }
+    ],
+    "exactCpuAndProbeSameWindow": false
+  },
+  "overall": {
+    "samples": 737165,
+    "leafCategories": {
+      "profilerNamed": 9803,
+      "idle": 620495,
+      "noUrlOther": 6009,
+      "wechatRuntimeScripts": 7226,
+      "appServiceRuntimeScript": 24021,
+      "sampledGc": 7473,
+      "skyRuntimeScript": 42212,
+      "runtimeCommonScript": 19926
+    },
+    "namedSubtreeSamples": {
+      "forEachProjected": 21006,
+      "motionAt": 3341,
+      "mayProjectVector": 1719,
+      "updateValues": 24303,
+      "_updateValues": 23760,
+      "commitUpdate": 2380,
+      "prepareUpdate": 1013,
+      "batchRender": 2210,
+      "paint": 33761,
+      "artwork": 2137,
+      "solarLight": 786,
+      "galacticBand": 583,
+      "measure": 44491,
+      "drawImage": 43,
+      "bufferData": 58
+    },
+    "nonIdleSamples": 116670,
+    "gcPercentOfAllSamples": 1.0137486180163193,
+    "gcPercentOfNonIdleSamples": 6.4052455644124455,
+    "profilerNamedPercentOfNonIdleSamples": 8.402331361961087
+  },
+  "windows": [
+    {
+      "key": "prePlayCapture",
+      "startMs": 0,
+      "endMs": 41738,
+      "meaning": "Definitely before Play under host/capture clock association; includes profiler startup and control interaction, not a clean idle baseline.",
+      "samples": 184260,
+      "leafCategories": {
+        "profilerNamed": 2620,
+        "idle": 180361,
+        "noUrlOther": 338,
+        "wechatRuntimeScripts": 312,
+        "appServiceRuntimeScript": 410,
+        "sampledGc": 87,
+        "skyRuntimeScript": 84,
+        "runtimeCommonScript": 48
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 45,
+        "motionAt": 4,
+        "mayProjectVector": 0,
+        "updateValues": 59,
+        "_updateValues": 57,
+        "commitUpdate": 13,
+        "prepareUpdate": 0,
+        "batchRender": 5,
+        "paint": 70,
+        "artwork": 3,
+        "solarLight": 3,
+        "galacticBand": 1,
+        "measure": 74,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "key": "possiblePlayEnvelope",
+      "startMs": 41738,
+      "endMs": 81794,
+      "meaning": "Contains the entire real Play run under host/capture clock association; includes uncertain ready/drain margins. Not the exact 14,006ms metrics window.",
+      "samples": 197386,
+      "leafCategories": {
+        "idle": 90300,
+        "profilerNamed": 2089,
+        "wechatRuntimeScripts": 6638,
+        "noUrlOther": 5358,
+        "appServiceRuntimeScript": 23609,
+        "skyRuntimeScript": 42128,
+        "runtimeCommonScript": 19878,
+        "sampledGc": 7386
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 20961,
+        "motionAt": 3337,
+        "mayProjectVector": 1719,
+        "updateValues": 24244,
+        "_updateValues": 23703,
+        "commitUpdate": 2367,
+        "prepareUpdate": 1013,
+        "batchRender": 2205,
+        "paint": 33691,
+        "artwork": 2134,
+        "solarLight": 783,
+        "galacticBand": 582,
+        "measure": 44417,
+        "drawImage": 43,
+        "bufferData": 58
+      }
+    },
+    {
+      "key": "postPauseCapture",
+      "startMs": 81794,
+      "endMs": 160577.639,
+      "meaning": "Definitely after original product Pause under host/capture clock association; includes Stop-menu overhead, not pure quiescent drain.",
+      "samples": 355519,
+      "leafCategories": {
+        "idle": 349834,
+        "profilerNamed": 5094,
+        "wechatRuntimeScripts": 276,
+        "noUrlOther": 313,
+        "appServiceRuntimeScript": 2
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    }
+  ],
+  "coarseBins": [
+    {
+      "startMs": 0,
+      "endMs": 10000,
+      "samples": 39932,
+      "leafCategories": {
+        "profilerNamed": 559,
+        "idle": 39284,
+        "noUrlOther": 52,
+        "wechatRuntimeScripts": 35,
+        "appServiceRuntimeScript": 2
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 10000,
+      "endMs": 20000,
+      "samples": 45455,
+      "leafCategories": {
+        "idle": 44733,
+        "profilerNamed": 655,
+        "noUrlOther": 37,
+        "wechatRuntimeScripts": 29,
+        "sampledGc": 1
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 20000,
+      "endMs": 30000,
+      "samples": 45752,
+      "leafCategories": {
+        "appServiceRuntimeScript": 408,
+        "wechatRuntimeScripts": 206,
+        "noUrlOther": 209,
+        "skyRuntimeScript": 84,
+        "profilerNamed": 644,
+        "idle": 44067,
+        "runtimeCommonScript": 48,
+        "sampledGc": 86
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 45,
+        "motionAt": 4,
+        "mayProjectVector": 0,
+        "updateValues": 59,
+        "_updateValues": 57,
+        "commitUpdate": 13,
+        "prepareUpdate": 0,
+        "batchRender": 5,
+        "paint": 70,
+        "artwork": 3,
+        "solarLight": 3,
+        "galacticBand": 1,
+        "measure": 74,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 30000,
+      "endMs": 40000,
+      "samples": 45583,
+      "leafCategories": {
+        "idle": 44858,
+        "profilerNamed": 648,
+        "noUrlOther": 37,
+        "wechatRuntimeScripts": 40
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 40000,
+      "endMs": 50000,
+      "samples": 47101,
+      "leafCategories": {
+        "idle": 31219,
+        "profilerNamed": 575,
+        "noUrlOther": 737,
+        "wechatRuntimeScripts": 1004,
+        "appServiceRuntimeScript": 3463,
+        "skyRuntimeScript": 6294,
+        "runtimeCommonScript": 2809,
+        "sampledGc": 1000
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 2957,
+        "motionAt": 453,
+        "mayProjectVector": 271,
+        "updateValues": 3466,
+        "_updateValues": 3387,
+        "commitUpdate": 391,
+        "prepareUpdate": 82,
+        "batchRender": 312,
+        "paint": 4800,
+        "artwork": 288,
+        "solarLight": 116,
+        "galacticBand": 79,
+        "measure": 6499,
+        "drawImage": 10,
+        "bufferData": 5
+      }
+    },
+    {
+      "startMs": 50000,
+      "endMs": 60000,
+      "samples": 53335,
+      "leafCategories": {
+        "sampledGc": 3703,
+        "skyRuntimeScript": 21041,
+        "appServiceRuntimeScript": 11667,
+        "noUrlOther": 2723,
+        "profilerNamed": 405,
+        "wechatRuntimeScripts": 3318,
+        "runtimeCommonScript": 10096,
+        "idle": 382
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 10429,
+        "motionAt": 1670,
+        "mayProjectVector": 874,
+        "updateValues": 12271,
+        "_updateValues": 11993,
+        "commitUpdate": 1160,
+        "prepareUpdate": 536,
+        "batchRender": 1099,
+        "paint": 16849,
+        "artwork": 1075,
+        "solarLight": 396,
+        "galacticBand": 299,
+        "measure": 22196,
+        "drawImage": 25,
+        "bufferData": 35
+      }
+    },
+    {
+      "startMs": 60000,
+      "endMs": 70000,
+      "samples": 51214,
+      "leafCategories": {
+        "runtimeCommonScript": 6973,
+        "sampledGc": 2683,
+        "appServiceRuntimeScript": 8479,
+        "wechatRuntimeScripts": 2267,
+        "noUrlOther": 1857,
+        "idle": 13704,
+        "skyRuntimeScript": 14793,
+        "profilerNamed": 458
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 7575,
+        "motionAt": 1214,
+        "mayProjectVector": 574,
+        "updateValues": 8507,
+        "_updateValues": 8323,
+        "commitUpdate": 816,
+        "prepareUpdate": 395,
+        "batchRender": 794,
+        "paint": 12042,
+        "artwork": 771,
+        "solarLight": 271,
+        "galacticBand": 204,
+        "measure": 15722,
+        "drawImage": 8,
+        "bufferData": 18
+      }
+    },
+    {
+      "startMs": 70000,
+      "endMs": 80000,
+      "samples": 45335,
+      "leafCategories": {
+        "idle": 44617,
+        "profilerNamed": 647,
+        "noUrlOther": 35,
+        "wechatRuntimeScripts": 36
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 80000,
+      "endMs": 90000,
+      "samples": 45066,
+      "leafCategories": {
+        "idle": 44342,
+        "profilerNamed": 645,
+        "wechatRuntimeScripts": 37,
+        "noUrlOther": 42
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 90000,
+      "endMs": 100000,
+      "samples": 46025,
+      "leafCategories": {
+        "idle": 45303,
+        "profilerNamed": 645,
+        "noUrlOther": 38,
+        "wechatRuntimeScripts": 39
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 100000,
+      "endMs": 110000,
+      "samples": 46044,
+      "leafCategories": {
+        "idle": 45318,
+        "profilerNamed": 648,
+        "noUrlOther": 43,
+        "wechatRuntimeScripts": 35
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 110000,
+      "endMs": 120000,
+      "samples": 45228,
+      "leafCategories": {
+        "idle": 44519,
+        "profilerNamed": 642,
+        "noUrlOther": 26,
+        "wechatRuntimeScripts": 41
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 120000,
+      "endMs": 130000,
+      "samples": 44273,
+      "leafCategories": {
+        "idle": 43562,
+        "profilerNamed": 648,
+        "noUrlOther": 30,
+        "wechatRuntimeScripts": 31,
+        "appServiceRuntimeScript": 2
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 130000,
+      "endMs": 140000,
+      "samples": 45298,
+      "leafCategories": {
+        "idle": 44569,
+        "profilerNamed": 643,
+        "wechatRuntimeScripts": 38,
+        "noUrlOther": 48
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 140000,
+      "endMs": 150000,
+      "samples": 44146,
+      "leafCategories": {
+        "idle": 43411,
+        "profilerNamed": 658,
+        "wechatRuntimeScripts": 34,
+        "noUrlOther": 43
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 150000,
+      "endMs": 160000,
+      "samples": 44872,
+      "leafCategories": {
+        "idle": 44144,
+        "profilerNamed": 647,
+        "noUrlOther": 49,
+        "wechatRuntimeScripts": 32
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    },
+    {
+      "startMs": 160000,
+      "endMs": 160577.639,
+      "samples": 2506,
+      "leafCategories": {
+        "idle": 2463,
+        "profilerNamed": 36,
+        "wechatRuntimeScripts": 4,
+        "noUrlOther": 3
+      },
+      "namedSubtreeSamples": {
+        "forEachProjected": 0,
+        "motionAt": 0,
+        "mayProjectVector": 0,
+        "updateValues": 0,
+        "_updateValues": 0,
+        "commitUpdate": 0,
+        "prepareUpdate": 0,
+        "batchRender": 0,
+        "paint": 0,
+        "artwork": 0,
+        "solarLight": 0,
+        "galacticBand": 0,
+        "measure": 0,
+        "drawImage": 0,
+        "bufferData": 0
+      }
+    }
+  ],
+  "mapping": {
+    "currentMapCount": 31,
+    "mapReadback": [
+      {
+        "file": "app.js.map",
+        "bytes": 249158,
+        "sha256": "287dd3da7290129b1ca2b21d79a8a40d2e3db4c86aa96d16b8961fa273ea3a00"
+      },
+      {
+        "file": "common.js.map",
+        "bytes": 1457605,
+        "sha256": "9db5b5e53f375b2e374e4af35cd820a3572787424c0be9b798daff1e57cd6420"
+      },
+      {
+        "file": "content/achievement/index.js.map",
+        "bytes": 18862,
+        "sha256": "0470d8f769e2c4321919a9437307f3130ee352a645f08af5509e4f8a5b5c0816"
+      },
+      {
+        "file": "content/article/detail/index.js.map",
+        "bytes": 28819,
+        "sha256": "4923c1736440717d9586458fe1b9f75a2aeefc0b8bebdbc93c6436f0b04daa41"
+      },
+      {
+        "file": "content/contribution/index.js.map",
+        "bytes": 52555,
+        "sha256": "580b05bc16d62804cf1755fd30eef0d7b176636322c726fafe5f9a7a266e5b83"
+      },
+      {
+        "file": "content/event/detail/index.js.map",
+        "bytes": 1698,
+        "sha256": "4c75edc671f2affa337f6c8ef6958dcc4e7ace84a50efcf53abee26b045e3e17"
+      },
+      {
+        "file": "content/event/list/index.js.map",
+        "bytes": 1646,
+        "sha256": "aa68df0c12c6293c565a4a608a7b84709556c3db76d60fd382bb5a3b08569f3e"
+      },
+      {
+        "file": "content/plan/detail/index.js.map",
+        "bytes": 1679,
+        "sha256": "1199dc97a5ac1560100bc01414a2023932ebec6afa5ffc0214ad31cb124e892d"
+      },
+      {
+        "file": "content/plan/edit/index.js.map",
+        "bytes": 1835,
+        "sha256": "e680c5583790378be67e5de694c0a7030af96a9d81d3f3ca77e3c22d604b28ca"
+      },
+      {
+        "file": "content/plan/list/index.js.map",
+        "bytes": 22549,
+        "sha256": "766c6f139a342ddc204791a5ed5c25c490cf82a7b15e32121ccd1f3c3e522dee"
+      },
+      {
+        "file": "content/settings/index.js.map",
+        "bytes": 111904,
+        "sha256": "8d4c8ce689ca8b57aa35e61f762508223d113ddef6147a44d38cf37c67c59988"
+      },
+      {
+        "file": "content/share/index.js.map",
+        "bytes": 108909,
+        "sha256": "dd3a171c975ef055be97c7edaa81103092d0bb14b4dc9e1e4f9c15ca108ab5e8"
+      },
+      {
+        "file": "content/spot-feedback/index.js.map",
+        "bytes": 111301,
+        "sha256": "533949191910fc1bd588b397e59904608c281bc62bfe3969733b22abfb905f5e"
+      },
+      {
+        "file": "content/sub-vendors.js.map",
+        "bytes": 317033,
+        "sha256": "eee531b90ca59dcf46b6301f14f40fe886c5a0cd586f7768cf8fa34142ce09c2"
+      },
+      {
+        "file": "custom-tab-bar/index.js.map",
+        "bytes": 15615,
+        "sha256": "aee294a9a3d25ae061910f210ffed48542987ed6481dcf04e228bb13d38e255b"
+      },
+      {
+        "file": "pages/auth/index.js.map",
+        "bytes": 20742,
+        "sha256": "fb7cbd2f9617e7a071b8954d56a9f33ddad86e8ee9d607c79c3d2444e3065ed1"
+      },
+      {
+        "file": "pages/map/index.js.map",
+        "bytes": 757828,
+        "sha256": "4c40fafa1bec5528f6bc2aa3d61dc3cdd35b0fea503424c9b968012dc9f29588"
+      },
+      {
+        "file": "pages/my/index.js.map",
+        "bytes": 70165,
+        "sha256": "20218c41a9b435a33a12ba722a4ccb5b5f1602feae5988e96071a7be5b111808"
+      },
+      {
+        "file": "runtime.js.map",
+        "bytes": 10680,
+        "sha256": "359a7648782c32d6f8d5e1489496179c74f3b0e97c2c4ed995fc8a0afd6a3cf3"
+      },
+      {
+        "file": "sky/detail/index.js.map",
+        "bytes": 2535627,
+        "sha256": "3c44701a7813bc7090296837b93c7f347bf0e742773c713c3ec37dba359d61a8"
+      },
+      {
+        "file": "sky/sources/index.js.map",
+        "bytes": 34572,
+        "sha256": "f3aace4efd8c197ac02dbf3caeb34ce907719905b690f03f2bee21d0d58aa2b2"
+      },
+      {
+        "file": "sky/sub-vendors.js.map",
+        "bytes": 356477,
+        "sha256": "6de4d68d826af3c91f79c642737f5b6c3c0655e868c7fadbc9694d9fe69a7197"
+      },
+      {
+        "file": "spot/data-source/index.js.map",
+        "bytes": 16857,
+        "sha256": "17213000f168644ff122197bce328d966997ff50cc8f25b24b8c94f7d6083f6d"
+      },
+      {
+        "file": "spot/field/index.js.map",
+        "bytes": 1624,
+        "sha256": "2f7cc637020713dccfb04809685de042d3acb1773ad01f21757706d656b09cee"
+      },
+      {
+        "file": "spot/guides/index.js.map",
+        "bytes": 1632,
+        "sha256": "d10fa7b4780c601b91f2cb07ed2a17603ebce3bdd8601de3aa9913a54b1d679f"
+      },
+      {
+        "file": "spot/native/packaged-icon/index.js.map",
+        "bytes": 1195,
+        "sha256": "a6d3f93df29b8ec539cbf81ed8a27937dba12d5f5890e31d0f49f8ad075b5c4f"
+      },
+      {
+        "file": "spot/plan/index.js.map",
+        "bytes": 7764,
+        "sha256": "50a507ad8d51a774a1835057f7f302f4f6f67cf53e6c0085a19fa6c710fe025b"
+      },
+      {
+        "file": "spot/search/index.js.map",
+        "bytes": 92837,
+        "sha256": "ec1218681509e968543bf1e8084ae46b8eefbaf7b61b7c16d3a7534fd4509111"
+      },
+      {
+        "file": "spot/sub-vendors.js.map",
+        "bytes": 50568,
+        "sha256": "185af472d92e633af0ad9d6304e8250d02b4fc174de32b7866381af86230aabc"
+      },
+      {
+        "file": "taro.js.map",
+        "bytes": 450871,
+        "sha256": "300d9487bb4e8d3765de0ed4f4d2d3131f45a9b7fe980fe96531151dbef71d42"
+      },
+      {
+        "file": "vendors.js.map",
+        "bytes": 271186,
+        "sha256": "424430d7f55b732540e27cc80a386b768f66fad39dc11aa1e2d1b10f88b8f78a"
+      }
+    ],
+    "currentAstFunctionCount": 10522,
+    "directRuntimePositionSourceMapping": false,
+    "reason": "Official phone packaging changes script names, lines, function ordering and columns. Original Taro maps cannot be applied directly to runtime coordinates. Pure reformat/compress trials did not reproduce the runtime positions and were not adopted.",
+    "evidenceExamples": {
+      "motionAt": {
+        "runtime": {
+          "scriptId": 38,
+          "line0": 62,
+          "column0": 447575
+        },
+        "currentTaro": {
+          "file": "sky/detail/index.js",
+          "line0": 1,
+          "column0": 475009
+        }
+      },
+      "mayProjectVector": {
+        "runtime": {
+          "scriptId": 38,
+          "line0": 62,
+          "column0": 46158
+        },
+        "currentTaro": {
+          "file": "sky/detail/index.js",
+          "line0": 1,
+          "column0": 49801
+        }
+      }
+    },
+    "semanticOwners": [
+      {
+        "name": "forEachProjected",
+        "selfSamples": 2425,
+        "subtreeUnionSamples": 21006,
+        "percentOfNonIdleSamples": 18.004628439187453,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 119476,
+            "selfSamples": 366
+          },
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 118062,
+            "selfSamples": 2056
+          },
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 462568,
+            "selfSamples": 3
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "forEachProjected",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 126079,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+            "sourceLine": 43,
+            "sourceColumn": 56,
+            "originalName": "forEachProjected",
+            "sourceContentBound": true
+          },
+          {
+            "name": "forEachProjected",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 127596,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+            "sourceLine": 129,
+            "sourceColumn": 93,
+            "originalName": "forEachProjected",
+            "sourceContentBound": true
+          },
+          {
+            "name": "forEachProjected",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 132863,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+            "sourceLine": 83,
+            "sourceColumn": 4,
+            "originalName": "forEachProjected",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Shared or ambiguous current semantic name; candidate owners only, no direct runtime position mapping."
+      },
+      {
+        "name": "motionAt",
+        "selfSamples": 3341,
+        "subtreeUnionSamples": 3341,
+        "percentOfNonIdleSamples": 2.8636324676437814,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 447575,
+            "selfSamples": 3341
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "motionAt",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 475009,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+            "sourceLine": 88,
+            "sourceColumn": 50,
+            "originalName": "publication",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Unique current semantic method and hash-bound source owner; runtime generated position is NOT directly mapped."
+      },
+      {
+        "name": "mayProjectVector",
+        "selfSamples": 558,
+        "subtreeUnionSamples": 1719,
+        "percentOfNonIdleSamples": 1.4733864746721521,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 46158,
+            "selfSamples": 558
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "mayProjectVector",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 49801,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+            "sourceLine": 314,
+            "sourceColumn": 4,
+            "originalName": "mayProjectVector",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Unique current semantic method and hash-bound source owner; runtime generated position is NOT directly mapped."
+      },
+      {
+        "name": "updateValues",
+        "selfSamples": 23,
+        "subtreeUnionSamples": 24303,
+        "percentOfNonIdleSamples": 20.830547698637183,
+        "runtimeLocations": [
+          {
+            "scriptId": 23,
+            "script": "WASubContext.js",
+            "line0": 0,
+            "column0": 377242,
+            "selfSamples": 23
+          }
+        ],
+        "currentAstSourceCandidates": [],
+        "mappingScope": "No current Taro AST source mapping; runtime name and stack only."
+      },
+      {
+        "name": "_updateValues",
+        "selfSamples": 30,
+        "subtreeUnionSamples": 23760,
+        "percentOfNonIdleSamples": 20.365132424787863,
+        "runtimeLocations": [
+          {
+            "scriptId": 23,
+            "script": "WASubContext.js",
+            "line0": 0,
+            "column0": 377984,
+            "selfSamples": 30
+          }
+        ],
+        "currentAstSourceCandidates": [],
+        "mappingScope": "No current Taro AST source mapping; runtime name and stack only."
+      },
+      {
+        "name": "commitUpdate",
+        "selfSamples": 17,
+        "subtreeUnionSamples": 2380,
+        "percentOfNonIdleSamples": 2.039941715950973,
+        "runtimeLocations": [
+          {
+            "scriptId": 30,
+            "script": "appservice.app.js",
+            "line0": 7800,
+            "column0": 13032,
+            "selfSamples": 17
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "commitUpdate",
+            "compiledFile": "taro.js",
+            "compiledLine0": 0,
+            "compiledColumn0": 13393,
+            "source": "unresolved-source:46541852cc09",
+            "sourceLine": 140,
+            "sourceColumn": 14,
+            "originalName": "(anonymous)",
+            "sourceContentBound": false
+          }
+        ],
+        "mappingScope": "Shared or ambiguous current semantic name; candidate owners only, no direct runtime position mapping."
+      },
+      {
+        "name": "prepareUpdate",
+        "selfSamples": 336,
+        "subtreeUnionSamples": 1013,
+        "percentOfNonIdleSamples": 0.8682609068312334,
+        "runtimeLocations": [
+          {
+            "scriptId": 30,
+            "script": "appservice.app.js",
+            "line0": 7800,
+            "column0": 12064,
+            "selfSamples": 336
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "prepareUpdate",
+            "compiledFile": "taro.js",
+            "compiledLine0": 0,
+            "compiledColumn0": 12425,
+            "source": "unresolved-source:46541852cc09",
+            "sourceLine": 78,
+            "sourceColumn": 15,
+            "originalName": "(anonymous)",
+            "sourceContentBound": false
+          }
+        ],
+        "mappingScope": "Shared or ambiguous current semantic name; candidate owners only, no direct runtime position mapping."
+      },
+      {
+        "name": "batchRender",
+        "selfSamples": 2210,
+        "subtreeUnionSamples": 2210,
+        "percentOfNonIdleSamples": 1.8942315933830463,
+        "runtimeLocations": [
+          {
+            "scriptId": 46,
+            "script": "magicbrush_legacy.js",
+            "line0": 0,
+            "column0": 6126,
+            "selfSamples": 15
+          },
+          {
+            "scriptId": 0,
+            "script": "no-url",
+            "line0": -1,
+            "column0": -1,
+            "selfSamples": 2195
+          }
+        ],
+        "currentAstSourceCandidates": [],
+        "mappingScope": "No current Taro AST source mapping; runtime name and stack only."
+      },
+      {
+        "name": "paint",
+        "selfSamples": 64,
+        "subtreeUnionSamples": 33761,
+        "percentOfNonIdleSamples": 28.93717322362218,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 395049,
+            "selfSamples": 60
+          },
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 326985,
+            "selfSamples": 4
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "paint",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 390878,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-selection-reticle.ts",
+            "sourceLine": 46,
+            "sourceColumn": 109,
+            "originalName": "context",
+            "sourceContentBound": true
+          },
+          {
+            "name": "paint",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 450037,
+            "source": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+            "sourceLine": 1554,
+            "sourceColumn": 28,
+            "originalName": "resolved",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Shared or ambiguous current semantic name; candidate owners only, no direct runtime position mapping."
+      },
+      {
+        "name": "artwork",
+        "selfSamples": 31,
+        "subtreeUnionSamples": 2137,
+        "percentOfNonIdleSamples": 1.8316619525156423,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 387506,
+            "selfSamples": 31
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "artwork",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 299219,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+            "sourceLine": 1126,
+            "sourceColumn": 72,
+            "originalName": "texture",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Unique current semantic method and hash-bound source owner; runtime generated position is NOT directly mapped."
+      },
+      {
+        "name": "solarLight",
+        "selfSamples": 16,
+        "subtreeUnionSamples": 786,
+        "percentOfNonIdleSamples": 0.673695037284649,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 366338,
+            "selfSamples": 16
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "solarLight",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 277934,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+            "sourceLine": 771,
+            "sourceColumn": 6,
+            "originalName": "(anonymous)",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Unique current semantic method and hash-bound source owner; runtime generated position is NOT directly mapped."
+      },
+      {
+        "name": "galacticBand",
+        "selfSamples": 50,
+        "subtreeUnionSamples": 583,
+        "percentOfNonIdleSamples": 0.4997000085711837,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 375720,
+            "selfSamples": 50
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "galacticBand",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 287336,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+            "sourceLine": 869,
+            "sourceColumn": 6,
+            "originalName": "galacticBand",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Unique current semantic method and hash-bound source owner; runtime generated position is NOT directly mapped."
+      },
+      {
+        "name": "measure",
+        "selfSamples": 381,
+        "subtreeUnionSamples": 44491,
+        "percentOfNonIdleSamples": 38.13405331276249,
+        "runtimeLocations": [
+          {
+            "scriptId": 38,
+            "script": "chunk_0.appservice.js",
+            "line0": 62,
+            "column0": 11141,
+            "selfSamples": 381
+          }
+        ],
+        "currentAstSourceCandidates": [
+          {
+            "name": "measure",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 14155,
+            "source": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+            "sourceLine": 272,
+            "sourceColumn": 80,
+            "originalName": "capture",
+            "sourceContentBound": true
+          },
+          {
+            "name": "measure",
+            "compiledFile": "sky/detail/index.js",
+            "compiledLine0": 1,
+            "compiledColumn0": 447811,
+            "source": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+            "sourceLine": 284,
+            "sourceColumn": 4,
+            "originalName": "(anonymous)",
+            "sourceContentBound": true
+          }
+        ],
+        "mappingScope": "Shared or ambiguous current semantic name; candidate owners only, no direct runtime position mapping."
+      },
+      {
+        "name": "drawImage",
+        "selfSamples": 43,
+        "subtreeUnionSamples": 43,
+        "percentOfNonIdleSamples": 0.036856089826004974,
+        "runtimeLocations": [
+          {
+            "scriptId": 0,
+            "script": "no-url",
+            "line0": -1,
+            "column0": -1,
+            "selfSamples": 43
+          }
+        ],
+        "currentAstSourceCandidates": [],
+        "mappingScope": "No current Taro AST source mapping; runtime name and stack only."
+      },
+      {
+        "name": "bufferData",
+        "selfSamples": 12,
+        "subtreeUnionSamples": 58,
+        "percentOfNonIdleSamples": 0.04971286534670438,
+        "runtimeLocations": [
+          {
+            "scriptId": 46,
+            "script": "magicbrush_legacy.js",
+            "line0": 0,
+            "column0": 9940,
+            "selfSamples": 12
+          }
+        ],
+        "currentAstSourceCandidates": [],
+        "mappingScope": "No current Taro AST source mapping; runtime name and stack only."
+      }
+    ],
+    "topUnmappedOrPartlyMappedRuntimeLocations": [
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "x",
+        "line0": 0,
+        "column0": 3693,
+        "selfSamples": 7329
+      },
+      {
+        "scriptId": 30,
+        "script": "appservice.app.js",
+        "function": "s",
+        "line0": 7796,
+        "column0": 380825,
+        "selfSamples": 4643
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "n2",
+        "line0": 62,
+        "column0": 65095,
+        "selfSamples": 3814
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "motionAt",
+        "line0": 62,
+        "column0": 447575,
+        "selfSamples": 3341
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "l",
+        "line0": 62,
+        "column0": 117586,
+        "selfSamples": 3115
+      },
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "N",
+        "line0": 0,
+        "column0": 8785,
+        "selfSamples": 3037
+      },
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "e",
+        "line0": 0,
+        "column0": 6655,
+        "selfSamples": 2897
+      },
+      {
+        "scriptId": 30,
+        "script": "appservice.app.js",
+        "function": "o",
+        "line0": 7802,
+        "column0": 74382,
+        "selfSamples": 2584
+      },
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "hn",
+        "line0": 0,
+        "column0": 1166,
+        "selfSamples": 2333
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "u",
+        "line0": 62,
+        "column0": 76925,
+        "selfSamples": 2089
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "forEachProjected",
+        "line0": 62,
+        "column0": 118062,
+        "selfSamples": 2056
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "l",
+        "line0": 62,
+        "column0": 119234,
+        "selfSamples": 1343
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "ts",
+        "line0": 62,
+        "column0": 360090,
+        "selfSamples": 1308
+      },
+      {
+        "scriptId": 30,
+        "script": "appservice.app.js",
+        "function": "(anonymous)",
+        "line0": 7800,
+        "column0": 79305,
+        "selfSamples": 1269
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "ns",
+        "line0": 62,
+        "column0": 44502,
+        "selfSamples": 1151
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "rR",
+        "line0": 62,
+        "column0": 76295,
+        "selfSamples": 1098
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "(anonymous)",
+        "line0": 62,
+        "column0": 478809,
+        "selfSamples": 1052
+      },
+      {
+        "scriptId": 23,
+        "script": "WASubContext.js",
+        "function": "yo",
+        "line0": 0,
+        "column0": 373791,
+        "selfSamples": 973
+      },
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "b",
+        "line0": 0,
+        "column0": 8940,
+        "selfSamples": 898
+      },
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "rv",
+        "line0": 0,
+        "column0": 1456,
+        "selfSamples": 872
+      },
+      {
+        "scriptId": 30,
+        "script": "appservice.app.js",
+        "function": "_object_spread",
+        "line0": 7774,
+        "column0": 90,
+        "selfSamples": 776
+      },
+      {
+        "scriptId": 29,
+        "script": "common.app.js",
+        "function": "K",
+        "line0": 0,
+        "column0": 25373,
+        "selfSamples": 749
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "cC",
+        "line0": 62,
+        "column0": 273451,
+        "selfSamples": 715
+      },
+      {
+        "scriptId": 38,
+        "script": "chunk_0.appservice.js",
+        "function": "v",
+        "line0": 62,
+        "column0": 295024,
+        "selfSamples": 643
+      }
+    ],
+    "nativeAndGenericFrameLimit": "Named native wrappers, generic minified functions and generated tmpl_* stacks are not exact TS-line, native allocator or GPU execution attribution."
+  },
+  "actualWorkload": {
+    "metricWindow": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 14006,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "counters": {
+      "timeIntentPublications": 511,
+      "preparedRequests": 608,
+      "paintAttempts": 480,
+      "nativeCallbacks": 480,
+      "acceptedCopies": 480,
+      "sceneFinishes": 480,
+      "glDrawSubmissions": 5760,
+      "bscSubmittedStars": 87090,
+      "saoSubmittedStars": 65203,
+      "acceptedBscObjects": 87090,
+      "acceptedSaoObjects": 49363,
+      "failedFrames": 0,
+      "invalidations": 0
+    },
+    "scene": {
+      "baseRowsMin": 8404,
+      "baseRowsMax": 8404,
+      "saoRowsMin": 666,
+      "saoRowsMax": 666,
+      "selectedTilesMin": 16,
+      "selectedTilesMax": 16,
+      "catalogVersions": [
+        "bsc5p-bright-stars.v3"
+      ],
+      "saoPublicationHashes": [
+        "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+      ],
+      "modelAlgorithms": [],
+      "modes": [
+        "DAY"
+      ]
+    },
+    "viewport": {
+      "widthMin": 384,
+      "widthMax": 384,
+      "heightMin": 796.800048828125,
+      "heightMax": 796.800048828125,
+      "fovMin": 45,
+      "fovMax": 45
+    },
+    "stageElapsed": {
+      "presentation": {
+        "observedCalls": 464,
+        "validCalls": 226,
+        "unknownCalls": 238,
+        "unknown": {
+          "belowResolution": 238,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 250,
+        "minMs": 1,
+        "maxMs": 4,
+        "keptSamples": 226,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "base": {
+        "observedCalls": 2944,
+        "validCalls": 39,
+        "unknownCalls": 2905,
+        "unknown": {
+          "belowResolution": 2905,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 48,
+        "minMs": 1,
+        "maxMs": 4,
+        "keptSamples": 39,
+        "p50Ms": 1,
+        "p95Ms": 3,
+        "overflow": false
+      },
+      "selection": {
+        "observedCalls": 464,
+        "validCalls": 78,
+        "unknownCalls": 386,
+        "unknown": {
+          "belowResolution": 386,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 80,
+        "minMs": 1,
+        "maxMs": 3,
+        "keptSamples": 78,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "supplement": {
+        "observedCalls": 464,
+        "validCalls": 22,
+        "unknownCalls": 442,
+        "unknown": {
+          "belowResolution": 442,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 26,
+        "minMs": 1,
+        "maxMs": 4,
+        "keptSamples": 22,
+        "p50Ms": 1,
+        "p95Ms": 2,
+        "overflow": false
+      },
+      "constellations": {
+        "observedCalls": 464,
+        "validCalls": 464,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1249,
+        "minMs": 1,
+        "maxMs": 7,
+        "keptSamples": 464,
+        "p50Ms": 2,
+        "p95Ms": 5,
+        "overflow": false
+      },
+      "draw": {
+        "observedCalls": 480,
+        "validCalls": 480,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 4926,
+        "minMs": 4,
+        "maxMs": 45,
+        "keptSamples": 480,
+        "p50Ms": 10,
+        "p95Ms": 13,
+        "overflow": false
+      },
+      "nativePaintOwner": {
+        "observedCalls": 480,
+        "validCalls": 480,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 4950,
+        "minMs": 4,
+        "maxMs": 45,
+        "keptSamples": 480,
+        "p50Ms": 10,
+        "p95Ms": 13,
+        "overflow": false
+      },
+      "displayCopy": {
+        "observedCalls": 480,
+        "validCalls": 46,
+        "unknownCalls": 434,
+        "unknown": {
+          "belowResolution": 434,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 46,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 46,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "publishAccepted": {
+        "observedCalls": 480,
+        "validCalls": 49,
+        "unknownCalls": 431,
+        "unknown": {
+          "belowResolution": 431,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 49,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 49,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      }
+    },
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 17275,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "productPause": {
+      "attempts": 1,
+      "successCalls": 1,
+      "success": true,
+      "afterPlayMs": 20011
+    },
+    "pageLast": {
+      "relativeMs": 15018,
+      "values": {
+        "available": 1,
+        "submitted": 496,
+        "completed": 495,
+        "failed": 0,
+        "failedBeforeCallback": 0,
+        "callbackMissing": 0,
+        "pending": 1,
+        "inheritedPending": 0,
+        "maxPending": 2,
+        "duplicateCallback": 0,
+        "keyCountTotal": 4411,
+        "maxKeyCount": 10,
+        "keyCountFailures": 0,
+        "sampledCalls": 16,
+        "sampledBytes": 18830,
+        "maxSampledBytes": 1266,
+        "serializationFailures": 0,
+        "bufferDataCalls": 1018,
+        "totalTypedUploadBytes": 8228844,
+        "maxTypedUploadBytes": 11448,
+        "latencyTotalMs": 14229,
+        "latencyMaxMs": 62,
+        "enableDebug": false
+      }
+    },
+    "surfaceLast": {
+      "relativeMs": 15018,
+      "values": {
+        "nativeCopies": 509,
+        "readyNativeCopies": 509,
+        "syntheticBegins": 0,
+        "syntheticFinishes": 0,
+        "syntheticPublications": 0,
+        "discs": null,
+        "segments": null,
+        "images": null,
+        "readiness": null,
+        "frozen": false,
+        "retired": false
+      }
+    },
+    "textLast": {
+      "relativeMs": 15018,
+      "values": {
+        "hits": null,
+        "misses": null,
+        "evictions": null,
+        "nativeGlyphCalls": 0,
+        "lifetimeHits": null,
+        "lifetimeMisses": null,
+        "lifetimeEvictions": null,
+        "lifetimeNativeGlyphCalls": 0,
+        "entries": null,
+        "capacity": null,
+        "observationResets": 1,
+        "retired": false,
+        "available": true
+      }
+    },
+    "textCoverageLimit": "nativeGlyphCalls and lifetime counter are zero in this capture. Full source path is retained, but active name/text rendering workload is not established; do not generalize these rankings to text-heavy Sky."
+  },
+  "processFootprint": {
+    "source": "Root current normal-baseline result, same guarded process watch; root report retains raw evidence hashes.",
+    "unit": "KiB",
+    "samples": 13,
+    "playHostRelativeBracketMs": {
+      "start": 27431,
+      "end": 30292
+    },
+    "before": {
+      "sampleStartElapsedMs": 20358,
+      "sampleEndElapsedMs": 22372,
+      "totalPssKiB": 3812705,
+      "totalRssKiB": 1252468,
+      "totalSwapPssKiB": 2852732,
+      "unknownPssKiB": 288772,
+      "nativeHeapPssKiB": 219960,
+      "dalvikHeapPssKiB": 28272,
+      "glMtrackPssKiB": 33636,
+      "eglMtrackPssKiB": 138840
+    },
+    "peak": {
+      "sampleStartElapsedMs": 40693,
+      "sampleEndElapsedMs": 42233,
+      "totalPssKiB": 4832573,
+      "totalRssKiB": 2273908,
+      "totalSwapPssKiB": 2851216,
+      "unknownPssKiB": 1275032,
+      "nativeHeapPssKiB": 251560,
+      "dalvikHeapPssKiB": 32324,
+      "glMtrackPssKiB": 33252,
+      "eglMtrackPssKiB": 138840
+    },
+    "firstDefinitelyAfterProductPause": {
+      "sampleStartElapsedMs": 53995,
+      "sampleEndElapsedMs": 55717,
+      "totalPssKiB": 4669133,
+      "totalRssKiB": 2111236,
+      "totalSwapPssKiB": 2850428,
+      "unknownPssKiB": 1102664,
+      "nativeHeapPssKiB": 259548,
+      "dalvikHeapPssKiB": 30568,
+      "glMtrackPssKiB": 35240,
+      "eglMtrackPssKiB": 138840
+    },
+    "last": {
+      "sampleStartElapsedMs": 81343,
+      "sampleEndElapsedMs": 82837,
+      "totalPssKiB": 4670489,
+      "totalRssKiB": 2112592,
+      "totalSwapPssKiB": 2850428,
+      "unknownPssKiB": 1102596,
+      "nativeHeapPssKiB": 263872,
+      "dalvikHeapPssKiB": 28236,
+      "glMtrackPssKiB": 34696,
+      "eglMtrackPssKiB": 138840
+    },
+    "pssPeakDelta": 1019868,
+    "unknownPeakDelta": 986260,
+    "pssDrainDelta": 857784,
+    "unknownDrainDelta": 813824,
+    "interpretation": "Growth persists under this profiling condition and remains high during bounded paused drain. Starting footprint is already warm/high. Android Unknown is not JS heap or a named allocator; CPU does not assign this growth to a source owner. No per-frame growth ratio is computed from mismatched windows."
+  },
+  "decisions": [
+    {
+      "claim": "A/CPU",
+      "finding": "Both stellar projection and actual WeChat data/template update paths have substantial samples. Stellar transform ownership is semantically attributable; generic render/memo and template nodes still need the official packaged-script mapping before exact-line optimization.",
+      "nextAction": "Use these owners for a focused responsiveness investigation when A is next. Preserve accepted identity, complete BSC/SAO and resource demand. Do not claim a CPU improvement or change page-state ownership from this one sample."
+    },
+    {
+      "claim": "B/memory",
+      "finding": "The normal run reproduces process growth with real accepted/copy/GPU work; CPU stacks and GC samples do not explain allocation volume or retention.",
+      "nextAction": "Keep the validated ordinary true-debug allocation-sampling route as the next discriminating B observation, coupled to actual Sky and the current packaged script/source mapping. Do not run another adjacent disable or parked scene-memo variant merely because it is prepared."
+    },
+    {
+      "claim": "tool economy",
+      "finding": "This CPU file is a useful nonempty Sky capture. Another CPU recording or failed heavy heap/native route would repeat a qualified boundary without resolving B.",
+      "nextAction": "Reuse this sample. Obtain the narrow official runtime-to-Taro map or exported packaged script only through an existing supported route if exact-line attribution changes the next decision; keep the gap until available."
+    }
+  ],
+  "limitations": [
+    "CPU sample counts are not allocation sizes, retained objects, precise thread CPU duration, native/GPU duration or physical FPS.",
+    "GC sampled stacks are activity evidence, not complete GC events or exact pauses.",
+    "Inclusive subtrees overlap; each named union is deduplicated per sample and rows must not be summed.",
+    "No exact same-window alignment between the CPU file and the 14,006ms receipt is established.",
+    "The high warm process footprint, profiler samples and inactive glyph/name workload constrain representativeness.",
+    "No product source, build, device session, service or authoritative plan was changed by this analysis."
+  ]
+}

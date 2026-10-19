@@ -1,0 +1,50 @@
+{
+  "schema": "starward-r17-collector-integration-v1",
+  "scope": "TASK_DEVELOPMENT_BRIDGE_ONLY",
+  "bridge": {
+    "port": 8797,
+    "managedExecSession": 21165,
+    "legacy8795Retained": true,
+    "priorStopAutoReview": "rejected_before_execution",
+    "legacyAccountOwner": "8791",
+    "publicMapOwner": "8796",
+    "accountRestarted": false,
+    "pairingOrVpnChanged": false,
+    "previousManagedExecSession": 39102,
+    "previousManagedSessionStoppedViaCtrlC": true
+  },
+  "health": {
+    "status": 200,
+    "protocols": [
+      "v1",
+      "v2",
+      "v2-terminal"
+    ],
+    "limit": 32,
+    "terminalRequiresStoredMetrics": true
+  },
+  "actualHttp": {
+    "v1IdenticalRetryStatus": 200,
+    "invalidSchemaStatus": 400,
+    "fileCountBefore": 17,
+    "fileCountAfter": 17,
+    "createdNoReceipt": true
+  },
+  "focusedVerification": "Existing v2 protocol/runtime and actual-filesystem collector checks passed; independent review owns detailed results.",
+  "sourceHashes": {
+    "bridge": "c6a897a18aa85fb85826c1da665874d96db23c0c120e0d25c0ad14b90bb365d0",
+    "collector": "83291e3ba6506d5104e23aec3aad5a4495805927595023801c28c442bf64ab6d",
+    "protocol": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127"
+  },
+  "limits": "New v2 metrics/terminal and phone workload are not established by this collector readiness check. No identifiers, endpoint, credentials, raw phone bytes or private account state are retained.",
+  "optionalSceneMemo": {
+    "protocolSha256": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127",
+    "oldV2MetricsIdenticalRetry": 200,
+    "oldV2TerminalIdenticalRetry": 200,
+    "unknownMemoFieldRejected": 400,
+    "fileCountBefore": 19,
+    "fileCountAfter": 19,
+    "newPhoneReceipt": false,
+    "focusedProbeCollectorChecks": 9
+  }
+}

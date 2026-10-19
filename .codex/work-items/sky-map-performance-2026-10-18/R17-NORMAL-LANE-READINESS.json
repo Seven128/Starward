@@ -1,0 +1,51 @@
+{
+  "schema": "starward-r17-normal-lane-readiness-v1",
+  "port": 8798,
+  "upstreamPort": 8799,
+  "methods": "anonymous-public-products-and-strict-metrics",
+  "checks": [
+    {
+      "route": "/__development_bridge_health",
+      "status": 200
+    },
+    {
+      "route": "/v2/me/profile",
+      "status": 403
+    },
+    {
+      "route": "/v2/me/plans",
+      "status": 403
+    },
+    {
+      "route": "/v2/auth/wechat/login",
+      "status": 403
+    },
+    {
+      "route": "/admin/operations",
+      "status": 403
+    },
+    {
+      "route": "/v2/shares",
+      "status": 403
+    },
+    {
+      "route": "public-capabilities-with-rejected-private-headers-stripped",
+      "status": 200
+    }
+  ],
+  "formalSpotExistingPublished": true,
+  "accountCreated": false,
+  "legacy8791Restored": false,
+  "migrations": false,
+  "reminders": false,
+  "sharedRedis": false,
+  "skyStatus": 200,
+  "skyDataState": "SAMPLE_DATA",
+  "sceneState": "AVAILABLE",
+  "observationFrames": 48,
+  "fixtureWeather": true,
+  "phoneHttpStatus": 200,
+  "phoneCheckMeaning": "actual bounded HTTP response, no input; prior empty bare nc output not readiness",
+  "ownedFirewallRule": "Starward-R17-Normal-Profile-8798",
+  "cleanupPending": true
+}

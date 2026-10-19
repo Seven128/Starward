@@ -1,0 +1,189 @@
+{
+  "schema": "starward-h3-component-fixture-v1",
+  "preparedAt": "2026-10-19",
+  "status": "COMPLETE_SOURCE_BUILD_AND_BOUNDED_COMPONENT_CHECKS_PREPARED_INACTIVE",
+  "acceptanceBoundary": "MAP_POINT_COMPONENT_ONLY_NOT_FORMAL_NOT_PUBLISHED_NOT_PHONE_NOT_FULL_H3",
+  "inputOwner": "H3-SAME-SITE-ISOLATED-INPUT.md",
+  "formalAdmission": "DATA_INSUFFICIENT rejected by actual ObservationContextService: formal_spot_not_found",
+  "realMetadata": {
+    "capturedAt": "2025-05-02T16:57:53+08:00",
+    "direction": "274.2285766826039°（真北；原EXIF）",
+    "author": "LN9267",
+    "license": "CC BY-SA 4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:East_Dam_of_High_Island_Reservoir_minibus_terminus_02-05-2025.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "build": {
+    "schema": "starward-h3-component-fixture-build-v1",
+    "status": "BUILT_NOT_ACTIVATED",
+    "sourceFiles": 1560,
+    "sourceBytes": 9914688,
+    "sourceCopyUnchangedDuringBuild": true,
+    "sourceOverlayCount": 16,
+    "unchangedRealComponentOwners": [
+      "src/pages/map/spot-panel.tsx",
+      "src/components/spot-image-viewer.tsx",
+      "src/components/spot-media-gallery-position.ts",
+      "src/pages/map/use-panel-return-position.ts",
+      "src/components/provenance.tsx",
+      "src/components/source-attribution.tsx",
+      "src/pages/map/spot-terrain-overview.tsx",
+      "src/pages/map/spot-terrain-horizon.tsx",
+      "src/hooks/use-resource-query.ts",
+      "src/services/terrain-horizon-response.ts",
+      "src/utils/spot-media.ts"
+    ],
+    "frontendGenericFixtureMode": false,
+    "componentInputBoundary": "MAP_POINT_COMPONENT_ONLY_NOT_PUBLISHED",
+    "project": ".codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/source/apps/wechat-miniapp",
+    "route": "pages/h3-component/index",
+    "bundleSha256": "a282341a408821832d65284ab651e0431113092cce59f5b3e5754cc8f9ed2e66",
+    "fileCount": 341,
+    "totalBytes": 4979044,
+    "packages": {
+      "main": {
+        "bytes": 2030725,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041374,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598325,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1308620,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 66427,
+    "media": {
+      "delivery": "same-origin inactive H3 handler; no JPEG embedded in package",
+      "bytes": 3038007,
+      "sha256": "cc96b87d972a558bf7543fd1263cb7001cc81af83e3d75e1a507fb0a0e987a39"
+    },
+    "originClass": "INERT_LOOPBACK_NOT_PHONE_READY",
+    "namespaceIsolation": true,
+    "readOnlyRecoveryTransport": true,
+    "listenersOpened": 0,
+    "existingServicesCalled": false,
+    "devtoolsTouched": false,
+    "phoneTouched": false,
+    "normalFormalBusinessConsumer": "NOT_ADMITTED",
+    "visualAcceptance": "UNVERIFIED",
+    "recoverySuccess": "UNVERIFIED"
+  },
+  "typecheck": {
+    "status": "PASSED",
+    "scope": "new fixture entry and its entire imported production dependency graph; unrelated repository tests/config excluded",
+    "observedExitCode": 0,
+    "typescript": "5.9.3",
+    "command": "node tools/run-node.cjs apps/wechat-miniapp/node_modules/typescript/lib/tsc.js --noEmit --pretty false --project .codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/source/apps/wechat-miniapp/tsconfig.component.json",
+    "sourceManifestSha256": "20ed25723317ecbf792bdc0f11edf15cc3b756203ecffb2344a5e43c6bf9c2d3",
+    "preparationFailuresResolved": [
+      "Root --bin typescript selected TS6; use installed Mini Program TS5.9.3.",
+      "First complete copied-app typecheck exposed required native Map onError; fixture host repaired, then the complete WEAPP bundle rebuilt.",
+      "Unchanged full app test sources import backend fixtures outside this isolated project; the fixture dependency graph is checked explicitly rather than claiming whole-repository type success."
+    ]
+  },
+  "boundedSoftwareBehavior": {
+    "formalRejectedByRealOwner": true,
+    "dataInsufficientStillVisible": true,
+    "originalGalleryOpensOriginalViewer": true,
+    "realCaptureTimeAndTrueNorthDirectionVisible": true,
+    "authorAndLicenseVisible": true,
+    "sourceAndLicenseLinksInOriginalProvenance": true,
+    "internalFixtureSourceExcluded": true,
+    "decodeFailureKeepsKnownMetadata": true,
+    "originalViewerRetryAndClose": true,
+    "documentReturnPositionRetained": true,
+    "nativeViewerOwnershipReleased": true,
+    "horizonReadFailureOriginalHookBoundedAttempts": 2,
+    "horizonErrorHasOriginalRetry": true,
+    "failedHorizonCanvasCount": 0,
+    "independentPhotoStillOpens": true,
+    "exactStationRecoveryDelegatesOriginalOwner": true,
+    "wrongStationRejected": true
+  },
+  "behaviorMethod": "Whole original component modules transpiled without source extraction; controlled React hooks/native boundaries; original Query function with real TanStack QueryObserver",
+  "unverified": [
+    "WEAPP/simulator mounting and actual appearance",
+    "native media reachability/download/decode",
+    "native gallery/source return position",
+    "independent native map persistence during horizon failure",
+    "real same-site successful horizon response and redraw after recovery",
+    "ordinary FORMAL_SPOT selection and normal publication/business consumer",
+    "Android/iOS and full H3 acceptance"
+  ],
+  "protectedBoundaries": {
+    "productionFilesEdited": false,
+    "formalCatalogEdited": false,
+    "databaseOrAccountsWritten": false,
+    "listenersOpened": 0,
+    "existingServicesCalled": false,
+    "devtoolsOrDeviceTouched": false,
+    "feedbackOrPortOwnersTouched": false,
+    "planHandoffIndexEdited": false,
+    "originalPhotoModified": false,
+    "privateCoordinatesOrDeviceIdentityPublished": false
+  },
+  "files": [
+    {
+      "path": "tmp/h3-component-fixture/prepare.mts",
+      "bytes": 1947,
+      "sha256": "62491bbf931baa23c19399fce69490b2df557331bed28690f89b6944f6c1001f"
+    },
+    {
+      "path": "tmp/h3-component-fixture/build.mjs",
+      "bytes": 10546,
+      "sha256": "615a82857f5ff7e808e937d9aad465e0a72f0ea3dbbb7eb64fc1a4fe326d981c"
+    },
+    {
+      "path": "tmp/h3-component-fixture/fixture-app.tsx",
+      "bytes": 1345,
+      "sha256": "a2fca4c95ff96f4c46f7e449dfb925fef59f38097e3833a9aed1226b5e00b838"
+    },
+    {
+      "path": "tmp/h3-component-fixture/fixture-page.tsx",
+      "bytes": 4451,
+      "sha256": "29c36453fbfebe019c8b4bb7d15ebe66bfef631f90cd95e0431e266e556d0cb2"
+    },
+    {
+      "path": "tmp/h3-component-fixture/fixture-page.scss",
+      "bytes": 877,
+      "sha256": "b986fe24e9fc1b847581c369f66e7f2a4cc508e42af15c06ed8ae03446c0c23c"
+    },
+    {
+      "path": "tmp/h3-component-fixture/horizon-input.ts",
+      "bytes": 1316,
+      "sha256": "f7526cfff54ac770277539e30a48f19421406ef9c92b7c35473a2586be4713e5"
+    },
+    {
+      "path": "tmp/h3-component-fixture/verify.mts",
+      "bytes": 19272,
+      "sha256": "9d5009e03f356d217760677c9aaf5eb00965fa11367e509a568cac17385d14f2"
+    },
+    {
+      "path": "tmp/h3-component-fixture/build-receipt.json",
+      "bytes": 2018,
+      "sha256": "45d02b19a50605003be59e072a283c24f42ae8708863a67fb738074e51a9590d"
+    },
+    {
+      "path": "tmp/h3-component-fixture/behavior-receipt.json",
+      "bytes": 3279,
+      "sha256": "560dae005ba6dda6920272c94c374b436c74b63a4fead0b440fa8c044586320b"
+    },
+    {
+      "path": "tmp/h3-component-fixture/typecheck-receipt.json",
+      "bytes": 1009,
+      "sha256": "6bd77749059a9d6e8d0786237602175e35e36350a8a56fa0afb0effb0e58b43b"
+    },
+    {
+      "path": "tmp/h3-component-fixture/source-snapshot.json",
+      "bytes": 307928,
+      "sha256": "20ed25723317ecbf792bdc0f11edf15cc3b756203ecffb2344a5e43c6bf9c2d3"
+    }
+  ]
+}

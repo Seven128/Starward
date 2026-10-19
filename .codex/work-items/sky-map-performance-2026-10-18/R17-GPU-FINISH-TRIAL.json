@@ -1,0 +1,149 @@
+{
+  "scope": "TASK_ONLY_GPU_FINISH_BACKPRESSURE_DIAGNOSTIC_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_GPU_FINISH_DIAGNOSTIC_TARGET_EFFECT_UNVERIFIED",
+  "head": "dcec3722e987b2f7954d4f840e6f212b64aa0b56",
+  "builderSha256": "a0f7f57785492e1a2e195a68f9043c1e92f26bc7b0499f2b8a41f07dd7a799f1",
+  "diagnosticControlsSha256": "017cc7e60197176eaf472811af55d3cec13d26bcc000531175d1a88c08bdbea5",
+  "originalCandidateSha256": "a95a2a7389e9023d49e3ca4932adb0322126892bf8d958dc988b5c909c36c8bf",
+  "originalBaselineSha256": "61b5ce1bc7f5ab1954a992c69fb2224468488ee750a3488a54832bb0dd54bef5",
+  "originalSourceManifestSha256": "77326a8d52f0a4973c9452e6c71081f77347932a7231cb74d25c979d70f2d277",
+  "originalBuildEvidenceSha256": "01d7218e08cc7b9b438551faa132fa23a1b3f9def031827a369c051cd4bf51bb",
+  "sourceFiles": 1563,
+  "candidateSourceSnapshotSha256": "87be4e623a9af512043aa73cac44f885ecc92fd888f3139672822872c2e54a02",
+  "trialSourceSnapshotSha256": "c33d54b94d0f9be1dd5caa4646aff5e15aa4065c054483c3dcef7c402bcd6bd4",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-gpu-finish-trial/manifest.json",
+  "sourceManifestSha256": "02d170aea08c5b26d3341fcbed182ed1a96265cfc7dffc101bf4b9600182f304",
+  "exactSourceDifferences": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "candidateSha256": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+      "trialSha256": "eff2eb6ee63f2dc85bee813f2495734c3ff4d0560bce0bff853a88058db335d7"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "candidateSha256": "5ce566daafcaa7f2be25ef824aeac7ece96490aae6331e3b146e5a462ae381d2",
+      "trialSha256": "017cc7e60197176eaf472811af55d3cec13d26bcc000531175d1a88c08bdbea5"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "candidateSha256": "a9e94983ff7b30a74a82e77c66dd7b46ae32af8b26ce98e732e7fa4ae51b8857",
+      "trialSha256": "9bd2599c44d1b2d207ebce2434c13acee0075056466a4a3274e8b078a7d73b91"
+    }
+  ],
+  "normalSourceUnchanged": true,
+  "originalPairSourceAndBundlesUnchanged": true,
+  "fullSourceBuildNotGeneratedPatch": true,
+  "postBuildSourceAndBundleReadback": true,
+  "precedingTrialSourceAndBundlesUnchanged": {
+    "r17-canvas-copy-trial": {
+      "manifestSha256": "c599bdf95a00740505935ae222809ba25e7bd6ce76d062479032ea1207b16367",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "ae829a006ad8c5bd849921ab15dffa1231e328043c3e381ada13327cadc258ef",
+      "bundleSha256": "1d63353782af185908cf6e5ddaf86f98ca7747528e29ad78f2ba8e0d3e82d056"
+    },
+    "r17-native-copy-suppression-trial": {
+      "manifestSha256": "807c8beb9cbc6e77492cf097560d0a424084413075e55f9dc1d23d051aee9454",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "03a4e133e3d9898f589bcac80e8ebec4125544b2004d2f5d2fe2e2d2b22b745b",
+      "bundleSha256": "837404e3e5af4f7d86ff8652354d9746ea95d9c60b65039048aad75550532ad9"
+    }
+  },
+  "diagnosticLabel": "R17 candidate/gpu-finish",
+  "protocolVariant": "candidate",
+  "measurementWindow": {
+    "startDelayMs": 1000,
+    "durationLimitMs": 45000,
+    "sampleLimit": 2048
+  },
+  "productPlaybackUnchanged": true,
+  "diagnosticAutoExport": {
+    "playCaseSelection": "arm-next-accepted-actual-product-Play-without-timer-or-autoplay",
+    "wallDelayFromActualProductPlayMs": 15000,
+    "snapshotReason": "manual",
+    "expectedActiveMsWithoutSchedulingDelay": 14000,
+    "stopsProductPlayback": false,
+    "retriesReuseExactPayload": true
+  },
+  "gpuCommandPolicy": "ownedGl.finish-before-original-fullframe-copy-instead-of-ownedGl.flush-with-no-fallback",
+  "nativeCopyPolicy": "all-original-fullframe-copies-retained",
+  "publicationPolicy": "real-attempt.publish-and-r17Probe.accepted-retained",
+  "scalarStatusCounters": {
+    "S": "successfully-created-surfaces",
+    "F": "finish-calls-returned-successfully",
+    "C": "successful-actual-full-frame-native-copies"
+  },
+  "originClass": "authorized-physical-LAN-development-bridge-8795",
+  "scopeBehaviorChecks": {
+    "finishBeforeEveryOriginalNativeCopy": true,
+    "noFlushFallback": true,
+    "missingAndThrowingFinishPropagate": true,
+    "failedCopyRetriesNormally": true,
+    "captionsAndReticleRetained": true,
+    "realAttemptPublishAndAcceptedRetained": true,
+    "failedFinishDoesNotPublishOrAccept": true,
+    "noPerPresentAllocationOrResize": true,
+    "boundedScalarCountersOnly": true,
+    "actualProductPlayOnClickThroughOriginalGuardedOwner": true,
+    "playSelectionArmsWithoutStartingTimersOrPlayback": true,
+    "rejectedOrPauseActionDoesNotBeginMeasurement": true,
+    "otherCasesStartImmediately": true,
+    "autoExportOnce15SecondsAfterActualPlay": true,
+    "nominal14ActiveSecondsManualWithOriginal45SecondLimit": true,
+    "nonemptyAcceptedCopiesAndDistinctTimesInFixture": true,
+    "exportDoesNotPauseProductPlayback": true,
+    "exactPayloadRetryAndConcurrentExportGuard": true,
+    "replacementHideUnmountClearArmingAndTimers": true,
+    "staleExportCompletionFenced": true,
+    "fixtureOnlyNotTargetPixelsOrMemory": true
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-gpu-finish-trial/source/apps/wechat-miniapp/dist/weapp-check-r17-gpu-finish",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-gpu-finish-trial/project",
+    "bundleSha256": "65d933516c269927bb2095fb3bebb3e0f6126fe737219ccdedddafcd8d6fe767",
+    "fileCount": 338,
+    "totalBytes": 4975415,
+    "packages": {
+      "main": {
+        "bytes": 2016773,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041372,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598321,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1318949,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80379,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    }
+  },
+  "limitations": [
+    "The bounded experiment tests GPU producer-backpressure; it is not an adopted performance repair or target acceptance.",
+    "GL finish is blocking by API semantics; its actual target availability, cost, memory behavior and rendered results require the parent's real phone observation.",
+    "The original full Scene, every normal native fullframe copy, captions, reticle, real attempt.publish and accepted probe remain. No fixed FPS, quality reduction, clear, forced GC or copy compositing is added.",
+    "Play selection opens the original time panel and arms measurement only. A valid actual normal Play action executes its existing guarded observation-time owner before starting measurement.",
+    "The 15-second wall timer starts from that accepted actual Play action and exports an early manual snapshot, nominally 14 active seconds after the one-second arm. The 45000ms limit is unchanged.",
+    "Auto export stops measurement only and does not pause product playback; the parent must promptly pause through actual UI.",
+    "S/F/C are bounded cumulative scalar counters displayed at export status; they are not extra collector schema fields or per-frame React updates.",
+    "No phone, feedback entry, DevTools, service, database, production source or original paired staging was changed by this builder.",
+    "Probe receipts retain variant=candidate; bind each receipt to this exact trial bundle and its device generation externally."
+  ]
+}

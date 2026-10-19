@@ -1,0 +1,577 @@
+{
+  "scope": "TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE",
+  "status": "NORMAL_TARGET_SAMPLE_CAPTURED_ACCEPTANCE_UNVERIFIED",
+  "preparedAt": "2026-10-18T21:49:15.956Z",
+  "mode": "normal",
+  "variant": "baseline",
+  "buildGeneration": 25,
+  "probeVersion": 3,
+  "selection": "GEN25_PHONE_VISIBLE_BOUND",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3-review-r2/manifest.json",
+  "sourceManifestSha256": "f87c10fb0b6ff0c24f3a979e99aa30cbde4ca1940af85805c5af56905642d0ba",
+  "sourceDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3-review-r2/source",
+  "sourceFiles": 1573,
+  "sourceSnapshotSha256": "1226932a842b2e83c63b4c24731fc15fbea9e0d70511dc6e9c6d46979f871674",
+  "buildSourceSha256": "10236f0e034ae96d9e31ed5e081a837a53f4cdd128e3f9ac34da6d588f151a4c",
+  "bindingInput": {
+    "meaning": "pre-build-current-production-source-and-task-template-binding-not-bundle-bytes",
+    "mode": "normal",
+    "variant": "baseline",
+    "buildGeneration": 25,
+    "probeVersion": 3,
+    "productionHead": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+    "productionSourceSha256": "cc1d057f075f5e2b20a66c6cea5e99f125424dd4776f87494ed7a33d16b1bb61",
+    "builderSha256": "f961500532198c97e3184311c9daf96d246a0d7f9c83c3f5c808b702b202f24b",
+    "templateBindings": {
+      "r17-phone-probe-v3-runtime.ts": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+      "r17-phone-probe-v3-protocol.mjs": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120",
+      "r17-phone-probe-v3.test.mjs": "0e03345870e11795021c1ba73d5ffbc0e6c437de5b502f634aff92598177fae4",
+      "r17-phone-probe-v2-protocol.mjs": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127",
+      "r17-phone-probe-protocol.mjs": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9",
+      "r17-accepted-action-controls.tsx": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+      "r17-page-bridge-observer.ts": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d",
+      "r17-normal-observations.ts": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+      "r17-normal-baseline-v3-fixture.mjs": "a0d4b447f3bfd747b1bb55aa4ce63a15767a5561b4a6d93080bdb8427eb8c014"
+    },
+    "bridgePort": 8798,
+    "compiledBridgeOriginSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77"
+  },
+  "sourceDeltas": [
+    {
+      "file": "apps/wechat-miniapp/config/index.ts",
+      "productionSha256": "af245c6a8be9a07c82e24cb1537ece55092d6595ae7b8517d32e65eddb699e25",
+      "diagnosticSha256": "0a6ac371b84e6632f7146887a0db646f59e4bc89d39b331e5667e6882f25892f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+      "productionSha256": "c164b7e3f73dd58ee10f9e97332d392a918d41f4f7c3ff71c66f50913ed7410a",
+      "diagnosticSha256": "8b07a0ba2f25b8245290a32960130a8a3f2fba6af6fef1db1452abc6e853a1d5"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "productionSha256": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+      "diagnosticSha256": "c52b7c341db755d0e37dc1f40ac2210cc8616663f1c2499f21b1da12c56793a2"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-constellation-scene.ts",
+      "productionSha256": "4589a6aaf4bd7cc02f6c231e1348620adc595e21c2e5a555dcd71dc4e3b736eb",
+      "diagnosticSha256": "f92db59e2c0837cabbd404abde8b20467c78a1b56a1252cf4ef7042e016ce969"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+      "productionSha256": "c8b9c61ea179e1a79c969d39ac5217752a1cb6b797efcdcd5565594dfa8089cf",
+      "diagnosticSha256": "3906c40b960fced6439fb628e40c922670cb57d1bbecce5ddb580dbf437ac8eb"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "productionSha256": "3aed31102c4ffd1437e3648f21d158a2893245112d24a0b9bf770cfb844a92c1",
+      "diagnosticSha256": "22f99f713e17ea43a6580baa691314405b0a5bca7abb5460182df5976d14d7fc"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "productionSha256": "e13ca841efaa4e588abbc130dc711186e4eded5c9197320e96bcd4fe5b1e2757",
+      "diagnosticSha256": "3827678f343afa30d01e7f1414439ee91bd5c57287012df6c94a5e2a06b47b3b"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "productionSha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80",
+      "diagnosticSha256": "bb77fa2f01cd99e7f7bda80f204493c7339dbf1bb76c2a20f9d8f51cc9beb0f5"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "productionSha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977",
+      "diagnosticSha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "productionSha256": "6e083c76bac46fa1122b6df3771502ec01cb12fc9d02c8cd53932736e9ff22c6",
+      "diagnosticSha256": "d7d0f156f0e51c6e0ce1bb510ba2d9a5cbc3dfce2e973e07a84f20d4fa4d25f1"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts",
+      "productionSha256": "88ce09a4ca0cdbf98d71cf72323efa8296efbab1bbd21fda8bbc0cb58bc07773",
+      "diagnosticSha256": "170fdf0f64a0290492edf0ac02c0f2b3113fd98af4fa434bb55c03f4dd1f0a3f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "productionSha256": "9bd4599df04e5ec371dc261de413644f9474856b7b8a45423f2158dbad78f197",
+      "diagnosticSha256": "ffe24eb0a7c232a42b5da846f68329b316a0128da1ced385dda54914b470b7fc"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "productionSha256": "9f0490cf0cebc50e76357b0941fbcc50b93f0e72c9bc2ab3ae029fcdead15f50",
+      "diagnosticSha256": "aae652c142a5856aa4d5cbe13233a2d70fd616281e46eb037e79b7b57f5c2f9d"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "1aa6430683bc31dc2e616cb1f059c220f71ab53e37f52991812a3e300c44bddd"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "productionSha256": null,
+      "diagnosticSha256": "b5dda258241f4c237c516bc67a95ad4108b6838b8cd9421488fa945cb5315d28"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-page-bridge-observer.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386"
+    }
+  ],
+  "templateBindings": {
+    "r17-phone-probe-v3-runtime.ts": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+    "r17-phone-probe-v3-protocol.mjs": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120",
+    "r17-phone-probe-v3.test.mjs": "0e03345870e11795021c1ba73d5ffbc0e6c437de5b502f634aff92598177fae4",
+    "r17-phone-probe-v2-protocol.mjs": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127",
+    "r17-phone-probe-protocol.mjs": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9",
+    "r17-accepted-action-controls.tsx": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+    "r17-page-bridge-observer.ts": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d",
+    "r17-normal-observations.ts": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+    "r17-normal-baseline-v3-fixture.mjs": "a0d4b447f3bfd747b1bb55aa4ce63a15767a5561b4a6d93080bdb8427eb8c014"
+  },
+  "productionSourceReadback": {
+    "files": 1569,
+    "bindingsSha256": "cc1d057f075f5e2b20a66c6cea5e99f125424dd4776f87494ed7a33d16b1bb61",
+    "unchanged": true
+  },
+  "completeSourceBuildNotGeneratedPatch": true,
+  "currentSourceReadback": true,
+  "bothBundleCopiesReadback": {
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3-review-r2/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-v3-r2": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+    ".codex\\work-items\\sky-map-performance-2026-10-18\\tmp\\r17-normal-baseline-v3-review-r2\\project\\weapp": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819"
+  },
+  "checks": {
+    "originalSetterImmediateExactlyOnceClosureAndRefBeforeDispatch": true,
+    "fullStateIdentityEqualityAndAllThreeNullRetirementsRetained": true,
+    "sameIdentityStillDispatches": true,
+    "sequentialAToBToAUpdaterAndDispatchFailureRetainOriginalSemantics": true,
+    "productionCommandSetterAndUnaffectedConsumersByteIdentical": true,
+    "actualPresentationMemoOriginalDependenciesAndExactResultIdentity": true,
+    "fallbackExplicitlyUnbound": true,
+    "completeRequestFieldsAndDrawDependenciesUnchanged": true,
+    "explicitPreparationIdentitySurvivesResolveClone": true,
+    "realAcceptedCopyAndNoSyntheticPublication": true,
+    "nativeMeasureTextReturnIdentityAndNumericCountersOnly": true,
+    "explicitVersion3ProtocolAndDateFake": true,
+    "nullElapsedConsumerDisplaysUnknownAndActualReason": true,
+    "guardedNormalPlayAnd15sMetricsKept": true,
+    "exactSameRun20sOriginalPauseAndSeparateTerminalReceipt": true,
+    "hiddenUnmountReplacementRunAndExportFailureGuarded": true,
+    "sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay": true,
+    "lateMetricsAfterHideCannotSendRetiredTerminal": true,
+    "fixturesNotPhoneEvidence": true
+  },
+  "deltaTypecheck": {
+    "productionDiagnostics": 0,
+    "currentDiagnostics": 0,
+    "addedDiagnostics": [],
+    "noAddedDiagnostics": true,
+    "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3-review-r2/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-v3-r2",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3-review-r2/project",
+    "bundleSha256": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+    "fileCount": 338,
+    "totalBytes": 4999195,
+    "packages": {
+      "main": {
+        "bytes": 2016773,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041370,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598321,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1342731,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80379,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    },
+    "compiledBridgeOriginSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77",
+    "inheritedOriginSha256": "fd828ba7fdb4a74bc6e6b6fb84d9fffefd83cb7afaf1081e165c5beba33d7e43",
+    "bridgePort": 8798,
+    "originReadback": {
+      "originSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77",
+      "bridgePort": 8798,
+      "literalUses": 7,
+      "filesWithOrigin": 3,
+      "otherOrigins": 0
+    },
+    "sourceMaps": {
+      "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3-review-r2/source-maps",
+      "count": 31,
+      "bytes": 7181793,
+      "records": [
+        {
+          "file": "app.js.map",
+          "bytes": 249158,
+          "sha256": "287dd3da7290129b1ca2b21d79a8a40d2e3db4c86aa96d16b8961fa273ea3a00",
+          "sourceCount": 8,
+          "mappings": 130674
+        },
+        {
+          "file": "common.js.map",
+          "bytes": 1457605,
+          "sha256": "9db5b5e53f375b2e374e4af35cd820a3572787424c0be9b798daff1e57cd6420",
+          "sourceCount": 181,
+          "mappings": 507455
+        },
+        {
+          "file": "content/achievement/index.js.map",
+          "bytes": 18862,
+          "sha256": "0470d8f769e2c4321919a9437307f3130ee352a645f08af5509e4f8a5b5c0816",
+          "sourceCount": 3,
+          "mappings": 7173
+        },
+        {
+          "file": "content/article/detail/index.js.map",
+          "bytes": 28819,
+          "sha256": "4923c1736440717d9586458fe1b9f75a2aeefc0b8bebdbc93c6436f0b04daa41",
+          "sourceCount": 3,
+          "mappings": 10293
+        },
+        {
+          "file": "content/contribution/index.js.map",
+          "bytes": 52555,
+          "sha256": "580b05bc16d62804cf1755fd30eef0d7b176636322c726fafe5f9a7a266e5b83",
+          "sourceCount": 6,
+          "mappings": 19540
+        },
+        {
+          "file": "content/event/detail/index.js.map",
+          "bytes": 1698,
+          "sha256": "4c75edc671f2affa337f6c8ef6958dcc4e7ace84a50efcf53abee26b045e3e17",
+          "sourceCount": 2,
+          "mappings": 335
+        },
+        {
+          "file": "content/event/list/index.js.map",
+          "bytes": 1646,
+          "sha256": "aa68df0c12c6293c565a4a608a7b84709556c3db76d60fd382bb5a3b08569f3e",
+          "sourceCount": 2,
+          "mappings": 323
+        },
+        {
+          "file": "content/plan/detail/index.js.map",
+          "bytes": 1679,
+          "sha256": "1199dc97a5ac1560100bc01414a2023932ebec6afa5ffc0214ad31cb124e892d",
+          "sourceCount": 2,
+          "mappings": 321
+        },
+        {
+          "file": "content/plan/edit/index.js.map",
+          "bytes": 1835,
+          "sha256": "e680c5583790378be67e5de694c0a7030af96a9d81d3f3ca77e3c22d604b28ca",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "content/plan/list/index.js.map",
+          "bytes": 22549,
+          "sha256": "766c6f139a342ddc204791a5ed5c25c490cf82a7b15e32121ccd1f3c3e522dee",
+          "sourceCount": 3,
+          "mappings": 8096
+        },
+        {
+          "file": "content/settings/index.js.map",
+          "bytes": 111904,
+          "sha256": "8d4c8ce689ca8b57aa35e61f762508223d113ddef6147a44d38cf37c67c59988",
+          "sourceCount": 11,
+          "mappings": 39442
+        },
+        {
+          "file": "content/share/index.js.map",
+          "bytes": 108909,
+          "sha256": "dd3a171c975ef055be97c7edaa81103092d0bb14b4dc9e1e4f9c15ca108ab5e8",
+          "sourceCount": 12,
+          "mappings": 42383
+        },
+        {
+          "file": "content/spot-feedback/index.js.map",
+          "bytes": 111301,
+          "sha256": "533949191910fc1bd588b397e59904608c281bc62bfe3969733b22abfb905f5e",
+          "sourceCount": 7,
+          "mappings": 43859
+        },
+        {
+          "file": "content/sub-vendors.js.map",
+          "bytes": 317033,
+          "sha256": "eee531b90ca59dcf46b6301f14f40fe886c5a0cd586f7768cf8fa34142ce09c2",
+          "sourceCount": 24,
+          "mappings": 122150
+        },
+        {
+          "file": "custom-tab-bar/index.js.map",
+          "bytes": 15615,
+          "sha256": "aee294a9a3d25ae061910f210ffed48542987ed6481dcf04e228bb13d38e255b",
+          "sourceCount": 2,
+          "mappings": 5283
+        },
+        {
+          "file": "pages/auth/index.js.map",
+          "bytes": 20742,
+          "sha256": "fb7cbd2f9617e7a071b8954d56a9f33ddad86e8ee9d607c79c3d2444e3065ed1",
+          "sourceCount": 2,
+          "mappings": 7066
+        },
+        {
+          "file": "pages/map/index.js.map",
+          "bytes": 757828,
+          "sha256": "4c40fafa1bec5528f6bc2aa3d61dc3cdd35b0fea503424c9b968012dc9f29588",
+          "sourceCount": 59,
+          "mappings": 287654
+        },
+        {
+          "file": "pages/my/index.js.map",
+          "bytes": 70165,
+          "sha256": "20218c41a9b435a33a12ba722a4ccb5b5f1602feae5988e96071a7be5b111808",
+          "sourceCount": 7,
+          "mappings": 27556
+        },
+        {
+          "file": "runtime.js.map",
+          "bytes": 10680,
+          "sha256": "359a7648782c32d6f8d5e1489496179c74f3b0e97c2c4ed995fc8a0afd6a3cf3",
+          "sourceCount": 10,
+          "mappings": 2944
+        },
+        {
+          "file": "sky/detail/index.js.map",
+          "bytes": 2535627,
+          "sha256": "3c44701a7813bc7090296837b93c7f347bf0e742773c713c3ec37dba359d61a8",
+          "sourceCount": 166,
+          "mappings": 748195
+        },
+        {
+          "file": "sky/sources/index.js.map",
+          "bytes": 34572,
+          "sha256": "f3aace4efd8c197ac02dbf3caeb34ce907719905b690f03f2bee21d0d58aa2b2",
+          "sourceCount": 6,
+          "mappings": 12118
+        },
+        {
+          "file": "sky/sub-vendors.js.map",
+          "bytes": 356477,
+          "sha256": "6de4d68d826af3c91f79c642737f5b6c3c0655e868c7fadbc9694d9fe69a7197",
+          "sourceCount": 48,
+          "mappings": 111439
+        },
+        {
+          "file": "spot/data-source/index.js.map",
+          "bytes": 16857,
+          "sha256": "17213000f168644ff122197bce328d966997ff50cc8f25b24b8c94f7d6083f6d",
+          "sourceCount": 3,
+          "mappings": 5695
+        },
+        {
+          "file": "spot/field/index.js.map",
+          "bytes": 1624,
+          "sha256": "2f7cc637020713dccfb04809685de042d3acb1773ad01f21757706d656b09cee",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/guides/index.js.map",
+          "bytes": 1632,
+          "sha256": "d10fa7b4780c601b91f2cb07ed2a17603ebce3bdd8601de3aa9913a54b1d679f",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/native/packaged-icon/index.js.map",
+          "bytes": 1195,
+          "sha256": "a6d3f93df29b8ec539cbf81ed8a27937dba12d5f5890e31d0f49f8ad075b5c4f",
+          "sourceCount": 1,
+          "mappings": 306
+        },
+        {
+          "file": "spot/plan/index.js.map",
+          "bytes": 7764,
+          "sha256": "50a507ad8d51a774a1835057f7f302f4f6f67cf53e6c0085a19fa6c710fe025b",
+          "sourceCount": 2,
+          "mappings": 2417
+        },
+        {
+          "file": "spot/search/index.js.map",
+          "bytes": 92837,
+          "sha256": "ec1218681509e968543bf1e8084ae46b8eefbaf7b61b7c16d3a7534fd4509111",
+          "sourceCount": 6,
+          "mappings": 33210
+        },
+        {
+          "file": "spot/sub-vendors.js.map",
+          "bytes": 50568,
+          "sha256": "185af472d92e633af0ad9d6304e8250d02b4fc174de32b7866381af86230aabc",
+          "sourceCount": 2,
+          "mappings": 18158
+        },
+        {
+          "file": "taro.js.map",
+          "bytes": 450871,
+          "sha256": "300d9487bb4e8d3765de0ed4f4d2d3131f45a9b7fe980fe96531151dbef71d42",
+          "sourceCount": 84,
+          "mappings": 139850
+        },
+        {
+          "file": "vendors.js.map",
+          "bytes": 271186,
+          "sha256": "424430d7f55b732540e27cc80a386b768f66fad39dc11aa1e2d1b10f88b8f78a",
+          "sourceCount": 79,
+          "mappings": 72517
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "No phone, DevTools, feedback, service, account, database, private configuration or active candidate was changed.",
+    "Normal product math, memo, full accepted setter/state, GPU/copy/caption/resource demand and retirement remain; observation adds bounded counts/spans, preparation identities and a task menu.",
+    "v3 Date.now intervals are approximate wall elapsed, not thread CPU or physical presentation; unknown and sub-resolution coverage stay null.",
+    "Page observer latency retains its legacy producer clock semantics and is not calibrated by probe v3; key count is not payload bytes; 16 bounded serialization samples add observer cost.",
+    "Native measureText and returned-copy counters add numeric call-site overhead, no native method replacement/cache/history/context retention; unobserved scalar fields stay null.",
+    "15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.",
+    "Hidden source maps are external diagnostic artifacts, absent from both phone bundle copies.",
+    "Static budget/inspection and portable fixtures do not establish official upload size, current bridge admission, real nonempty Sky, target clock coverage, sustainable playback or R17 A/B acceptance."
+  ],
+  "softwareVerification": {
+    "reusedOriginalUnchangedOwners": {
+      "integrationFixture": {
+        "passed": true,
+        "declaredCheckFacts": 19,
+        "source": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs",
+        "expectedProbeVersion": 3,
+        "runtimeClock": "fake Date.now follows fake timers",
+        "unknownElapsedStatusReadback": "elapsed未知/manual"
+      },
+      "portableProtocolAndCollector": {
+        "passed": true,
+        "tests": 23,
+        "failed": 0,
+        "command": "node --test scripts/r17-phone-probe-v3.test.mjs scripts/r17-phone-probe-v2.test.mjs scripts/r17-phone-probe.test.mjs scripts/r17-phone-probe-collector.test.mjs",
+        "commandBase": ".codex/work-items/sky-map-performance-2026-10-18",
+        "runtimeAndProtocolHashesUnchangedSinceCheck": true,
+        "liveServiceTouched": false
+      },
+      "materializedAffectedContracts": {
+        "passed": 53,
+        "initiallyUnresolvedHarnessCases": 6,
+        "domains": [
+          "native surface caption metrics/copy/disposal",
+          "Canvas lifecycle admission/retirement",
+          "observation time/play/pause",
+          "ready image transitions",
+          "stellar tile selection",
+          "page lifecycle recovery"
+        ],
+        "resultOwner": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/affected-contract-checks.log",
+        "scope": "The 53 passing cases remain applicable; final source refinement only adds a runtime-erased Context non-null assertion and missing test/type support files."
+      },
+      "resolvedHarnessBoundaries": [
+        {
+          "boundary": "GPU source extraction did not include imported diagnostic functions",
+          "passed": 4,
+          "originalAssertionsUnchanged": true,
+          "actualMaterializedGpuSource": true,
+          "adapter": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/gpu-fixture-adapter-binding.json",
+          "log": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/observed-gpu-submission-checks.log"
+        },
+        {
+          "boundary": "Complete frontend source snapshot deliberately does not copy the two roughly 56MB backend SAO asset sets",
+          "passed": 13,
+          "actualCurrentProductionConsumerAndRealPublishedAssets": true,
+          "candidateConsumerSourceByteIdentical": {
+            "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-loader.ts": "321e77593f9f75c776cadb163dfd7c9d7efca70cf6c4c215603fb7fab405d793",
+            "apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts": "3d17a5fe928b10ce023869d8bdb83ed2a4f995d7b5ea09238a9f9c8cd5376b5e",
+            "apps/wechat-miniapp/src/services/sao-catalog-client.ts": "7bdcda9b5b22d01d6c6ce6f508f094a902157998971daa459ae26b88a7fe3174"
+          },
+          "log": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/current-production-catalog-checks.log"
+        }
+      ],
+      "typecheck": {
+        "production": 0,
+        "candidate": 0,
+        "added": 0,
+        "noEmit": true,
+        "strict": true,
+        "initialPreparationDiagnosticsRetainedAt": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/preparation-attempt-1/delta-typecheck.json",
+        "initialPreparationScope": "Missing copied type/test-support files and a diagnostic closure narrowing issue; no completed bundle existed."
+      },
+      "completeProductionBuild": true,
+      "inspectionChecks": {
+        "native_project": true,
+        "filter_population": true,
+        "curated_spots": true,
+        "capability_flags": true,
+        "no_direct_provider": true,
+        "no_html_delivery": true,
+        "recovery_semantics": true,
+        "explicit_location_only": true,
+        "response_cache_entity_identity": true,
+        "package_budget": true,
+        "route_files": true
+      },
+      "bothBundleCopiesReadback": {
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-baseline-v3": "848d3240b77fc6b7171a2ef7e96e8104ed4e59601462f3328166bc2ad0cd646d",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/project/weapp": "848d3240b77fc6b7171a2ef7e96e8104ed4e59601462f3328166bc2ad0cd646d"
+      },
+      "exactExternalSourceMapBindings": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/source-map-bindings.json",
+      "artifactsSha256": {
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/affected-contract-checks.log": "40e7f2790bb51870e045d8ff087d82d479aa2548cdc918460b1f2277a54ef9b1",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/current-production-catalog-checks.log": "b63e2269268fcb7f793d442c27cb9b9d619fc63f5ec6edbc11ec61e0587e6ac5",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/observed-gpu-submission-checks.log": "c4196e13b18c86b7545931572411314456cd737ded129961de81f3173d819f09",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/gpu-fixture-adapter-binding.json": "76e292c3f875c5e55650d712243e57ff6f80f0f1808edce7a662caa14b71445a",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/source-map-bindings.json": "301514153251f25c472852617297ef50825c7e5c4e685b9d9c234842ec2830e2",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/delta-typecheck.json": "deb4c1878fc6c51fe49c414af0d3b169f71a45907c0a2e487f24e924ec09e2d6",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-baseline-v3/build-redacted.log": "348025d846996d441d372d0c2b5bb8f5175ec428c543fde8ddb878da27b8510b"
+      }
+    },
+    "currentFixReview": "R17-NORMAL-BASELINE-V3-FIX-REVIEW.md",
+    "currentFixFixtureChecks": 19
+  },
+  "independentReview": {
+    "original": "R17-NORMAL-BASELINE-V3-INDEPENDENT-REVIEW.md",
+    "fix": "R17-NORMAL-BASELINE-V3-FIX-REVIEW.md",
+    "status": "FIX_REVIEW_PASSED_PHONE_UNVERIFIED"
+  },
+  "nextIntegration": [
+    "Use R17-NORMAL-BASELINE-V3-RESULT.json and current CPU source attribution before selecting another comparison.",
+    "Normal Sky allocation sampling and required A/B/recovery remain open."
+  ],
+  "observationWindows": {
+    "controlsOrigin": "actual guarded product Play at relative 0",
+    "recorder": "original 1000ms arm delay, then recording until the15s metrics seal: about14s when valid",
+    "namedScalars": "normal text/copy counters and existing Page/upload observation reset at Play0; scalar first/last captures at0/15s, so these count deltas include the original1s recorder arm interval",
+    "terminal": "separate same-run20s Pause attempt/result and terminal seal; no20s work totals or paused-drain series is manufactured",
+    "countersAfterMetrics": "normal text/copy lifetime counters continue as numeric totals; cached15s metrics bytes do not change"
+  },
+  "revision": "review-r2",
+  "supersededOriginal": {
+    "bundleSha256": "848d3240b77fc6b7171a2ef7e96e8104ed4e59601462f3328166bc2ad0cd646d",
+    "preserved": true,
+    "delivered": false,
+    "preparationArchivedOutsideGit": true
+  }
+}

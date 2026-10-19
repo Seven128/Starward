@@ -1,0 +1,1966 @@
+{
+  "schemaVersion": "starward-r17-phone-comparison-v1",
+  "evidenceMode": "development_feedback",
+  "instrumented": true,
+  "status": "FOUR_MECHANISMS_RECORDED_PLAY_FAILED",
+  "productAcceptance": "NOT_PASSED",
+  "candidates": {
+    "baseline": {
+      "generation": 15,
+      "bundleSha256": "61b5ce1bc7f5ab1954a992c69fb2224468488ee750a3488a54832bb0dd54bef5",
+      "fileCount": 338,
+      "totalBytes": 4970347,
+      "officialDelivery": "same_account_auto_preview",
+      "visibleProbeLabelConfirmed": true,
+      "phoneBundleBytesVerified": false,
+      "runtimeAppIdVerified": false
+    },
+    "candidate": {
+      "generation": 16,
+      "bundleSha256": "a95a2a7389e9023d49e3ca4932adb0322126892bf8d958dc988b5c909c36c8bf",
+      "fileCount": 338,
+      "totalBytes": 4973134,
+      "officialDelivery": "same_account_auto_preview",
+      "visibleProbeLabelConfirmed": true,
+      "phoneBundleBytesVerified": false,
+      "runtimeAppIdVerified": false
+    }
+  },
+  "sourcePairOwner": "R17-PHONE-PROBE-BUILD.json",
+  "conditions": {
+    "phoneCount": 1,
+    "platform": "Android",
+    "viewport": {
+      "width": 384,
+      "height": 796.800048828125
+    },
+    "samePublicFormalSpot": true,
+    "sameCommittedStartingInstant": true,
+    "measuredTimeActionsPreviewOnly": true,
+    "contextApplyDuringMeasurements": false,
+    "cameraGesture": {
+      "kind": "horizontal_right",
+      "durationMs": 1500
+    },
+    "timeGesture": {
+      "kind": "ruler_forward",
+      "durationMs": 1500
+    },
+    "narrowFovPreparation": "existing_camera_owner_button_10.8_degrees",
+    "physicalPinchEstablished": false,
+    "otherHostHeavyBuildOrDataIO": false,
+    "nestedCpuStagesMustNotBeAdded": true,
+    "timingClockResolutionMs": 1
+  },
+  "pairs": [
+    {
+      "caseKey": "wide-camera",
+      "intendedPathMatches": true,
+      "sampledFrameSchedulesIdentical": false,
+      "exactWorkloadCausalSpeedupEstablished": false,
+      "comparabilityNotes": [
+        "Same visible start/end and gesture; transient SAO row maxima differ, so whole-frame timings cannot isolate algorithmic gain."
+      ],
+      "results": [
+        {
+          "sourceFile": "baseline-r17-1-0kjqx1oh41.json",
+          "sourceSha256": "2394e721c2f0ce35d105650f0ded94af406b7484a8f2cbfb871565b8c99fb528",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "baseline",
+            "runId": "r17-1-0kjqx1oh41",
+            "caseKey": "wide-camera",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45003,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 0,
+              "preparedRequests": 271,
+              "paintAttempts": 84,
+              "nativeCallbacks": 84,
+              "acceptedCopies": 84,
+              "sceneFinishes": 84,
+              "glDrawSubmissions": 1040,
+              "bscSubmittedStars": 16562,
+              "saoSubmittedStars": 12072,
+              "acceptedBscObjects": 16505,
+              "acceptedSaoObjects": 9096,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "base": {
+                "calls": 628,
+                "totalMs": 2,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 628,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 75,
+                "totalMs": 12,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 75,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 10,
+                "totalMs": 1,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 10,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 84,
+                "totalMs": 560,
+                "minMs": 4,
+                "maxMs": 11,
+                "keptSamples": 84,
+                "p50Ms": 6,
+                "p95Ms": 10,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 84,
+                "totalMs": 568,
+                "minMs": 4,
+                "maxMs": 11,
+                "keptSamples": 84,
+                "p50Ms": 7,
+                "p95Ms": 10,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 84,
+                "totalMs": 13,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 84,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 84,
+                "totalMs": 18,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 84,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 84,
+                "totalMs": 531,
+                "minMs": 4,
+                "maxMs": 11,
+                "keptSamples": 84,
+                "p50Ms": 6,
+                "p95Ms": 9,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 83,
+                "totalMs": 1557,
+                "minMs": 11,
+                "maxMs": 49,
+                "keptSamples": 83,
+                "p50Ms": 17,
+                "p95Ms": 30,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 0,
+                "distinct": 0,
+                "firstRelativeMs": null,
+                "lastRelativeMs": null,
+                "minRelativeMs": null,
+                "maxRelativeMs": null,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 271,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "painted": {
+                "events": 84,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 84,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": null,
+              "maximumRequestedMinusAcceptedMs": null
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 666,
+              "saoRowsMax": 806,
+              "selectedTilesMin": 16,
+              "selectedTilesMax": 18,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 45,
+              "fovMax": 45
+            }
+          }
+        },
+        {
+          "sourceFile": "candidate-r17-1-p74lnvc9dc.json",
+          "sourceSha256": "6a8e64c6cfbe1fa6af0cba4abc7797451e0eb9d0e8413d2ff3d2363683390d5c",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "candidate",
+            "runId": "r17-1-p74lnvc9dc",
+            "caseKey": "wide-camera",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45003,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 0,
+              "preparedRequests": 263,
+              "paintAttempts": 79,
+              "nativeCallbacks": 79,
+              "acceptedCopies": 79,
+              "sceneFinishes": 79,
+              "glDrawSubmissions": 969,
+              "bscSubmittedStars": 15546,
+              "saoSubmittedStars": 11354,
+              "acceptedBscObjects": 15484,
+              "acceptedSaoObjects": 8548,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "base": {
+                "calls": 588,
+                "totalMs": 6,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 588,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 67,
+                "totalMs": 12,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 67,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 10,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 10,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 79,
+                "totalMs": 608,
+                "minMs": 4,
+                "maxMs": 28,
+                "keptSamples": 79,
+                "p50Ms": 7,
+                "p95Ms": 11,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 79,
+                "totalMs": 616,
+                "minMs": 4,
+                "maxMs": 28,
+                "keptSamples": 79,
+                "p50Ms": 7,
+                "p95Ms": 11,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 79,
+                "totalMs": 16,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 79,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 79,
+                "totalMs": 10,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 79,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 79,
+                "totalMs": 584,
+                "minMs": 3,
+                "maxMs": 27,
+                "keptSamples": 79,
+                "p50Ms": 7,
+                "p95Ms": 10,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 78,
+                "totalMs": 1572,
+                "minMs": 10,
+                "maxMs": 74,
+                "keptSamples": 78,
+                "p50Ms": 16,
+                "p95Ms": 40,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 0,
+                "distinct": 0,
+                "firstRelativeMs": null,
+                "lastRelativeMs": null,
+                "minRelativeMs": null,
+                "maxRelativeMs": null,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 263,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "painted": {
+                "events": 79,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 79,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": null,
+              "maximumRequestedMinusAcceptedMs": null
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 666,
+              "saoRowsMax": 761,
+              "selectedTilesMin": 16,
+              "selectedTilesMax": 18,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 45,
+              "fovMax": 45
+            }
+          }
+        }
+      ]
+    },
+    {
+      "caseKey": "wide-time",
+      "intendedPathMatches": true,
+      "sampledFrameSchedulesIdentical": false,
+      "exactWorkloadCausalSpeedupEstablished": false,
+      "comparabilityNotes": [
+        "Same visible committed starting time and snapped preview endpoint; physical event delivery and accepted intermediate instants differ."
+      ],
+      "results": [
+        {
+          "sourceFile": "baseline-r17-2-vhqth3dwps.json",
+          "sourceSha256": "924dc418dc236443b2899802491ee1801d0099599b86637816505f3719933248",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "baseline",
+            "runId": "r17-2-vhqth3dwps",
+            "caseKey": "wide-time",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45001,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 57,
+              "preparedRequests": 99,
+              "paintAttempts": 68,
+              "nativeCallbacks": 68,
+              "acceptedCopies": 68,
+              "sceneFinishes": 68,
+              "glDrawSubmissions": 599,
+              "bscSubmittedStars": 1351,
+              "saoSubmittedStars": 588,
+              "acceptedBscObjects": 1337,
+              "acceptedSaoObjects": 428,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 44,
+                "totalMs": 24,
+                "minMs": 0,
+                "maxMs": 5,
+                "keptSamples": 44,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "base": {
+                "calls": 430,
+                "totalMs": 232,
+                "minMs": 0,
+                "maxMs": 8,
+                "keptSamples": 430,
+                "p50Ms": 0,
+                "p95Ms": 5,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 44,
+                "totalMs": 10,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 44,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 45,
+                "totalMs": 4,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 45,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 44,
+                "totalMs": 101,
+                "minMs": 1,
+                "maxMs": 4,
+                "keptSamples": 44,
+                "p50Ms": 2,
+                "p95Ms": 3,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 68,
+                "totalMs": 261,
+                "minMs": 2,
+                "maxMs": 17,
+                "keptSamples": 68,
+                "p50Ms": 3,
+                "p95Ms": 10,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 68,
+                "totalMs": 267,
+                "minMs": 2,
+                "maxMs": 17,
+                "keptSamples": 68,
+                "p50Ms": 3,
+                "p95Ms": 11,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 68,
+                "totalMs": 8,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 68,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 68,
+                "totalMs": 5,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 68,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 68,
+                "totalMs": 250,
+                "minMs": 2,
+                "maxMs": 16,
+                "keptSamples": 68,
+                "p50Ms": 3,
+                "p95Ms": 10,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 67,
+                "totalMs": 1882,
+                "minMs": 3,
+                "maxMs": 68,
+                "keptSamples": 67,
+                "p50Ms": 26,
+                "p95Ms": 52,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 23,
+                "totalMs": 3419,
+                "minMs": 31,
+                "maxMs": 303,
+                "keptSamples": 23,
+                "p50Ms": 143,
+                "p95Ms": 288,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 57,
+                "distinct": 56,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 99,
+                "distinct": 44,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "painted": {
+                "events": 68,
+                "distinct": 44,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 68,
+                "distinct": 44,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": 0,
+              "maximumRequestedMinusAcceptedMs": 1580882
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 0,
+              "saoRowsMax": 752,
+              "selectedTilesMin": 0,
+              "selectedTilesMax": 17,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 45,
+              "fovMax": 45
+            }
+          }
+        },
+        {
+          "sourceFile": "candidate-r17-2-qct01gg8tl.json",
+          "sourceSha256": "23371fbe86885b1248bf24abbbf22d7f6d49bfeb707148145629004344308c6d",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "candidate",
+            "runId": "r17-2-qct01gg8tl",
+            "caseKey": "wide-time",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45001,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 55,
+              "preparedRequests": 98,
+              "paintAttempts": 67,
+              "nativeCallbacks": 67,
+              "acceptedCopies": 67,
+              "sceneFinishes": 67,
+              "glDrawSubmissions": 605,
+              "bscSubmittedStars": 1481,
+              "saoSubmittedStars": 868,
+              "acceptedBscObjects": 1470,
+              "acceptedSaoObjects": 642,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 36,
+                "totalMs": 26,
+                "minMs": 0,
+                "maxMs": 6,
+                "keptSamples": 36,
+                "p50Ms": 1,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "base": {
+                "calls": 411,
+                "totalMs": 3,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 411,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 36,
+                "totalMs": 4,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 36,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 37,
+                "totalMs": 2,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 37,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 36,
+                "totalMs": 109,
+                "minMs": 1,
+                "maxMs": 8,
+                "keptSamples": 36,
+                "p50Ms": 3,
+                "p95Ms": 6,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 67,
+                "totalMs": 322,
+                "minMs": 2,
+                "maxMs": 20,
+                "keptSamples": 67,
+                "p50Ms": 4,
+                "p95Ms": 14,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 67,
+                "totalMs": 329,
+                "minMs": 2,
+                "maxMs": 21,
+                "keptSamples": 67,
+                "p50Ms": 4,
+                "p95Ms": 14,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 67,
+                "totalMs": 7,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 67,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 67,
+                "totalMs": 9,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 67,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 67,
+                "totalMs": 309,
+                "minMs": 1,
+                "maxMs": 20,
+                "keptSamples": 67,
+                "p50Ms": 3,
+                "p95Ms": 14,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 66,
+                "totalMs": 1788,
+                "minMs": 6,
+                "maxMs": 90,
+                "keptSamples": 66,
+                "p50Ms": 26,
+                "p95Ms": 51,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 24,
+                "totalMs": 2026,
+                "minMs": 27,
+                "maxMs": 190,
+                "keptSamples": 24,
+                "p50Ms": 65,
+                "p95Ms": 175,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 55,
+                "distinct": 54,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 98,
+                "distinct": 36,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "painted": {
+                "events": 67,
+                "distinct": 35,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 67,
+                "distinct": 35,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": 0,
+              "maximumRequestedMinusAcceptedMs": 2169118
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 0,
+              "saoRowsMax": 752,
+              "selectedTilesMin": 0,
+              "selectedTilesMax": 18,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 45,
+              "fovMax": 45
+            }
+          }
+        }
+      ]
+    },
+    {
+      "caseKey": "narrow-camera",
+      "intendedPathMatches": true,
+      "sampledFrameSchedulesIdentical": false,
+      "exactWorkloadCausalSpeedupEstablished": false,
+      "comparabilityNotes": [
+        "Same visible start/end, 10.8-degree FOV, 6519 loaded SAO rows and 19 selected tiles; one sample per side is not a production percentile."
+      ],
+      "results": [
+        {
+          "sourceFile": "baseline-r17-1-q5vykrrl0g.json",
+          "sourceSha256": "0fb3be5d744a7ed953407d5d8453f5802201b32653a6536084e497614471a167",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "baseline",
+            "runId": "r17-1-q5vykrrl0g",
+            "caseKey": "narrow-camera",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45001,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 0,
+              "preparedRequests": 265,
+              "paintAttempts": 93,
+              "nativeCallbacks": 93,
+              "acceptedCopies": 93,
+              "sceneFinishes": 93,
+              "glDrawSubmissions": 465,
+              "bscSubmittedStars": 860,
+              "saoSubmittedStars": 27692,
+              "acceptedBscObjects": 855,
+              "acceptedSaoObjects": 27550,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "base": {
+                "calls": 634,
+                "totalMs": 3,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 634,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 82,
+                "totalMs": 30,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 82,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 93,
+                "totalMs": 714,
+                "minMs": 4,
+                "maxMs": 42,
+                "keptSamples": 93,
+                "p50Ms": 7,
+                "p95Ms": 11,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 93,
+                "totalMs": 723,
+                "minMs": 4,
+                "maxMs": 43,
+                "keptSamples": 93,
+                "p50Ms": 7,
+                "p95Ms": 11,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 93,
+                "totalMs": 9,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 93,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 93,
+                "totalMs": 11,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 93,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 93,
+                "totalMs": 696,
+                "minMs": 4,
+                "maxMs": 42,
+                "keptSamples": 93,
+                "p50Ms": 7,
+                "p95Ms": 11,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 92,
+                "totalMs": 1561,
+                "minMs": 10,
+                "maxMs": 53,
+                "keptSamples": 92,
+                "p50Ms": 16,
+                "p95Ms": 22,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 0,
+                "distinct": 0,
+                "firstRelativeMs": null,
+                "lastRelativeMs": null,
+                "minRelativeMs": null,
+                "maxRelativeMs": null,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 265,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "painted": {
+                "events": 93,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 93,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": null,
+              "maximumRequestedMinusAcceptedMs": null
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 6519,
+              "saoRowsMax": 6519,
+              "selectedTilesMin": 19,
+              "selectedTilesMax": 19,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 10.8,
+              "fovMax": 10.8
+            }
+          }
+        },
+        {
+          "sourceFile": "candidate-r17-3-8kl9vr8mst.json",
+          "sourceSha256": "87cc1a88cc5e0719d6363318d6cd13962e7f4457eee0fab5c86625ec3734763b",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "candidate",
+            "runId": "r17-3-8kl9vr8mst",
+            "caseKey": "narrow-camera",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45001,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 0,
+              "preparedRequests": 266,
+              "paintAttempts": 98,
+              "nativeCallbacks": 98,
+              "acceptedCopies": 98,
+              "sceneFinishes": 98,
+              "glDrawSubmissions": 490,
+              "bscSubmittedStars": 902,
+              "saoSubmittedStars": 29147,
+              "acceptedBscObjects": 897,
+              "acceptedSaoObjects": 28976,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "base": {
+                "calls": 661,
+                "totalMs": 5,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 661,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 87,
+                "totalMs": 18,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 87,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 98,
+                "totalMs": 612,
+                "minMs": 3,
+                "maxMs": 11,
+                "keptSamples": 98,
+                "p50Ms": 6,
+                "p95Ms": 8,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 98,
+                "totalMs": 621,
+                "minMs": 3,
+                "maxMs": 11,
+                "keptSamples": 98,
+                "p50Ms": 6,
+                "p95Ms": 8,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 98,
+                "totalMs": 12,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 98,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 98,
+                "totalMs": 14,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 98,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 98,
+                "totalMs": 594,
+                "minMs": 3,
+                "maxMs": 11,
+                "keptSamples": 98,
+                "p50Ms": 6,
+                "p95Ms": 8,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 97,
+                "totalMs": 1567,
+                "minMs": 10,
+                "maxMs": 25,
+                "keptSamples": 97,
+                "p50Ms": 16,
+                "p95Ms": 19,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 0,
+                "totalMs": 0,
+                "minMs": 0,
+                "maxMs": 0,
+                "keptSamples": 0,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 0,
+                "distinct": 0,
+                "firstRelativeMs": null,
+                "lastRelativeMs": null,
+                "minRelativeMs": null,
+                "maxRelativeMs": null,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 266,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "painted": {
+                "events": 98,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 98,
+                "distinct": 1,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 0,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 0,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": null,
+              "maximumRequestedMinusAcceptedMs": null
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 6519,
+              "saoRowsMax": 6519,
+              "selectedTilesMin": 19,
+              "selectedTilesMax": 19,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 10.8,
+              "fovMax": 10.8
+            }
+          }
+        }
+      ]
+    },
+    {
+      "caseKey": "narrow-time",
+      "intendedPathMatches": true,
+      "sampledFrameSchedulesIdentical": false,
+      "exactWorkloadCausalSpeedupEstablished": false,
+      "comparabilityNotes": [
+        "Same visible committed starting time and snapped preview endpoint; physical event delivery and accepted intermediate instants differ."
+      ],
+      "results": [
+        {
+          "sourceFile": "baseline-r17-2-ebizcj3660.json",
+          "sourceSha256": "961a92bafb1d62a1bb6a3f22d1e14f543ec0d780fe7274cde5ccb4272faf4cef",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "baseline",
+            "runId": "r17-2-ebizcj3660",
+            "caseKey": "narrow-time",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45001,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 58,
+              "preparedRequests": 84,
+              "paintAttempts": 62,
+              "nativeCallbacks": 62,
+              "acceptedCopies": 62,
+              "sceneFinishes": 62,
+              "glDrawSubmissions": 272,
+              "bscSubmittedStars": 52,
+              "saoSubmittedStars": 1590,
+              "acceptedBscObjects": 52,
+              "acceptedSaoObjects": 1587,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 47,
+                "totalMs": 26,
+                "minMs": 0,
+                "maxMs": 4,
+                "keptSamples": 47,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "base": {
+                "calls": 406,
+                "totalMs": 214,
+                "minMs": 0,
+                "maxMs": 9,
+                "keptSamples": 406,
+                "p50Ms": 0,
+                "p95Ms": 4,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 47,
+                "totalMs": 8,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 47,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 47,
+                "totalMs": 37,
+                "minMs": 0,
+                "maxMs": 17,
+                "keptSamples": 47,
+                "p50Ms": 0,
+                "p95Ms": 6,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 47,
+                "totalMs": 131,
+                "minMs": 1,
+                "maxMs": 20,
+                "keptSamples": 47,
+                "p50Ms": 2,
+                "p95Ms": 4,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 62,
+                "totalMs": 220,
+                "minMs": 1,
+                "maxMs": 16,
+                "keptSamples": 62,
+                "p50Ms": 2,
+                "p95Ms": 14,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 62,
+                "totalMs": 225,
+                "minMs": 1,
+                "maxMs": 16,
+                "keptSamples": 62,
+                "p50Ms": 2,
+                "p95Ms": 14,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 62,
+                "totalMs": 8,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 62,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 62,
+                "totalMs": 6,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 62,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 62,
+                "totalMs": 210,
+                "minMs": 1,
+                "maxMs": 15,
+                "keptSamples": 62,
+                "p50Ms": 2,
+                "p95Ms": 13,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 61,
+                "totalMs": 1670,
+                "minMs": 6,
+                "maxMs": 88,
+                "keptSamples": 61,
+                "p50Ms": 22,
+                "p95Ms": 56,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 15,
+                "totalMs": 1024,
+                "minMs": 19,
+                "maxMs": 151,
+                "keptSamples": 15,
+                "p50Ms": 53,
+                "p95Ms": 151,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 58,
+                "distinct": 57,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23241176,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23241176,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 84,
+                "distinct": 47,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23241176,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23241176,
+                "overflow": false
+              },
+              "painted": {
+                "events": 62,
+                "distinct": 47,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23241176,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23241176,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 62,
+                "distinct": 47,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23241176,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23241176,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": 0,
+              "maximumRequestedMinusAcceptedMs": 2132356
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 0,
+              "saoRowsMax": 6519,
+              "selectedTilesMin": 0,
+              "selectedTilesMax": 19,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 10.8,
+              "fovMax": 10.8
+            }
+          }
+        },
+        {
+          "sourceFile": "candidate-r17-4-pz2f6pcvvp.json",
+          "sourceSha256": "9015327563d4aeb677b02e036d3780283d3c69ae57a2abc846f9c3d36aad2e97",
+          "metrics": {
+            "schemaVersion": "starward-r17-phone-probe-v1",
+            "variant": "candidate",
+            "runId": "r17-4-pz2f6pcvvp",
+            "caseKey": "narrow-time",
+            "clock": "Date.now",
+            "window": {
+              "startDelayMs": 1000,
+              "durationLimitMs": 45000,
+              "elapsedMs": 45001,
+              "reason": "limit"
+            },
+            "sampleLimit": 2048,
+            "counters": {
+              "timeIntentPublications": 57,
+              "preparedRequests": 91,
+              "paintAttempts": 68,
+              "nativeCallbacks": 68,
+              "acceptedCopies": 68,
+              "sceneFinishes": 68,
+              "glDrawSubmissions": 305,
+              "bscSubmittedStars": 81,
+              "saoSubmittedStars": 2263,
+              "acceptedBscObjects": 81,
+              "acceptedSaoObjects": 2255,
+              "failedFrames": 0,
+              "invalidations": 0
+            },
+            "cpu": {
+              "presentation": {
+                "calls": 50,
+                "totalMs": 21,
+                "minMs": 0,
+                "maxMs": 2,
+                "keptSamples": 50,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "base": {
+                "calls": 446,
+                "totalMs": 9,
+                "minMs": 0,
+                "maxMs": 4,
+                "keptSamples": 446,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "selection": {
+                "calls": 50,
+                "totalMs": 7,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 50,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "supplement": {
+                "calls": 50,
+                "totalMs": 2,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 50,
+                "p50Ms": 0,
+                "p95Ms": 0,
+                "overflow": false
+              },
+              "constellations": {
+                "calls": 50,
+                "totalMs": 121,
+                "minMs": 1,
+                "maxMs": 7,
+                "keptSamples": 50,
+                "p50Ms": 2,
+                "p95Ms": 4,
+                "overflow": false
+              },
+              "draw": {
+                "calls": 68,
+                "totalMs": 247,
+                "minMs": 1,
+                "maxMs": 16,
+                "keptSamples": 68,
+                "p50Ms": 2,
+                "p95Ms": 13,
+                "overflow": false
+              },
+              "nativePaintOwner": {
+                "calls": 68,
+                "totalMs": 248,
+                "minMs": 1,
+                "maxMs": 16,
+                "keptSamples": 68,
+                "p50Ms": 2,
+                "p95Ms": 13,
+                "overflow": false
+              },
+              "displayCopy": {
+                "calls": 68,
+                "totalMs": 6,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 68,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              },
+              "publishAccepted": {
+                "calls": 68,
+                "totalMs": 4,
+                "minMs": 0,
+                "maxMs": 1,
+                "keptSamples": 68,
+                "p50Ms": 0,
+                "p95Ms": 1,
+                "overflow": false
+              }
+            },
+            "timing": {
+              "nativeCallbackMs": {
+                "calls": 68,
+                "totalMs": 237,
+                "minMs": 1,
+                "maxMs": 16,
+                "keptSamples": 68,
+                "p50Ms": 2,
+                "p95Ms": 12,
+                "overflow": false
+              },
+              "acceptedGapMs": {
+                "calls": 67,
+                "totalMs": 1673,
+                "minMs": 5,
+                "maxMs": 66,
+                "keptSamples": 67,
+                "p50Ms": 23,
+                "p95Ms": 48,
+                "overflow": false
+              },
+              "intentToAcceptedWallMs": {
+                "calls": 16,
+                "totalMs": 1006,
+                "minMs": 26,
+                "maxMs": 143,
+                "keptSamples": 16,
+                "p50Ms": 48,
+                "p95Ms": 143,
+                "overflow": false
+              }
+            },
+            "time": {
+              "intent": {
+                "events": 57,
+                "distinct": 56,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "prepared": {
+                "events": 91,
+                "distinct": 50,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "painted": {
+                "events": 68,
+                "distinct": 50,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "accepted": {
+                "events": 68,
+                "distinct": 50,
+                "firstRelativeMs": 0,
+                "lastRelativeMs": 23167646,
+                "minRelativeMs": 0,
+                "maxRelativeMs": 23167646,
+                "overflow": false
+              },
+              "lastRequestedMinusAcceptedMs": 0,
+              "maximumRequestedMinusAcceptedMs": 1875003
+            },
+            "scene": {
+              "baseRowsMin": 8404,
+              "baseRowsMax": 8404,
+              "saoRowsMin": 0,
+              "saoRowsMax": 6519,
+              "selectedTilesMin": 0,
+              "selectedTilesMax": 19,
+              "catalogVersions": [
+                "bsc5p-bright-stars.v3"
+              ],
+              "saoPublicationHashes": [
+                "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+              ],
+              "modelAlgorithms": [],
+              "modes": [
+                "DAY"
+              ]
+            },
+            "viewport": {
+              "widthMin": 384,
+              "widthMax": 384,
+              "heightMin": 796.800048828125,
+              "heightMax": 796.800048828125,
+              "fovMin": 10.8,
+              "fovMax": 10.8
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "failedPlay": [
+    {
+      "variant": "baseline",
+      "caseKey": "wide-play",
+      "lastObservedPlaybackElapsedSeconds": 21,
+      "exportedMetrics": false,
+      "outcome": "RETURNED_TO_WECHAT_LAUNCHER",
+      "reason": 2,
+      "status": 11,
+      "exitCategory": "SIGNALED",
+      "pssApproxMiB": 1843,
+      "rssApproxMiB": 2355
+    },
+    {
+      "variant": "baseline",
+      "caseKey": "narrow-play",
+      "lastObservedPlaybackElapsedSeconds": 46,
+      "exportedMetrics": false,
+      "outcome": "RETURNED_TO_WECHAT_LAUNCHER",
+      "reason": 2,
+      "status": 6,
+      "exitCategory": "SIGNALED",
+      "pssApproxMiB": 1126,
+      "rssApproxMiB": 1331
+    },
+    {
+      "variant": "candidate",
+      "caseKey": "narrow-play",
+      "lastObservedPlaybackElapsedSeconds": 59,
+      "exportedMetrics": false,
+      "outcome": "RETURNED_TO_WECHAT_LAUNCHER",
+      "reason": 5,
+      "status": 6,
+      "exitCategory": "APP_CRASH_NATIVE",
+      "pssApproxMiB": 942,
+      "rssApproxMiB": 1229,
+      "lastCapturePartialGlyphLoss": true
+    }
+  ],
+  "exitEvidenceBoundary": {
+    "scope": "com.tencent.mm appbrand exit-info only",
+    "recencyMatchesObservedExits": true,
+    "exactMiniProgramCauseEstablished": false,
+    "memoryValuesFromHumanReadableAndroidUnits": true,
+    "rawLogsRetained": false,
+    "logcatRead": false,
+    "lowMemoryReason": false,
+    "outOfMemoryTextMatched": false,
+    "heapCorruptionTextMatched": false,
+    "graphicsNameMatched": false,
+    "absenceOfMatchedTextDoesNotExcludeMemoryOrGraphicsFailure": true
+  },
+  "excluded": [
+    {
+      "runId": "r17-1-ouio2em8d4",
+      "reason": "INVALID_EMPTY_12_SECOND_WINDOW",
+      "originalPayloadRetained": true
+    }
+  ],
+  "privateRawEvidenceOwner": "Starward-data/verification/sky-map-20261018/android-r17-comparison",
+  "rawEvidence": {
+    "videos": 4,
+    "initialVideoFramesReviewedPerClip": 4,
+    "screenshotPairsReviewed": true,
+    "recordingEncodedFrameRateUsedAsPerformanceEvidence": false,
+    "sessionPrivateIdentityFileCopied": false
+  },
+  "conclusions": [
+    "Exact stellar resolution work is lower in the time samples, but full-frame results are mixed.",
+    "The narrow-camera sample has lower draw p50/p95; wide samples do not demonstrate an overall rendering improvement.",
+    "Shared playback exits prevent R17 completion; the candidate also fails this path.",
+    "No physical display scanout FPS, final normal candidate acceptance, or iOS result is established."
+  ],
+  "handback": {
+    "generation": 16,
+    "variant": "candidate",
+    "phoneSurface": "WECHAT_LAUNCHER_AFTER_EXIT",
+    "sourceProjectStillDiagnosticCandidate": true,
+    "normalCandidateRestored": false,
+    "deviceDataOrPermissionsChanged": false
+  }
+}

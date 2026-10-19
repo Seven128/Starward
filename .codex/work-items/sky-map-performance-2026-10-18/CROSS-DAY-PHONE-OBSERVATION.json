@@ -1,0 +1,313 @@
+{
+  "schema": "starward-cross-day-phone-observation-v1",
+  "mode": "development_feedback",
+  "phoneBundleVerified": false,
+  "runtimeAppIdVerified": false,
+  "gen26OfficialOutcome": "UNKNOWN",
+  "previewResent": false,
+  "applySent": false,
+  "legacy8791Touched": false,
+  "accountTouched": false,
+  "archive": {
+    "owner": "external-normal-existing-resume-20261019",
+    "kind": "delta-with-original-snapshot-preserved",
+    "files": 42,
+    "bytes": 11761817,
+    "manifestSha256": "1ed865192082f0126374c39de0707597f9eb3ea0f8336d4dd92adb5b45b2f93e",
+    "entries": [
+      {
+        "file": "recording-1792368108257.mp4",
+        "bytes": 428503,
+        "sha256": "38b443ede6df39d2a35a7eaceaec58c9a76baa23ba2a8d2b672706fe4b4da7db"
+      },
+      {
+        "file": "recording-1792368365727.mp4",
+        "bytes": 1559032,
+        "sha256": "0186fad86655a87f0faf337a864a9483fef0890373b632ac438188327a1b1d39"
+      },
+      {
+        "file": "recording-1792368408948.mp4",
+        "bytes": 1397001,
+        "sha256": "8238c60173481faa7a0223f90e9138e9ccf024a5d04603d8a73a34e829252d11"
+      },
+      {
+        "file": "recording-1792368458794.mp4",
+        "bytes": 31318,
+        "sha256": "1215e61ee23bbdea46037ff0be72a6fb55e97caeadfb576dc0f0d62f4c47cf94"
+      },
+      {
+        "file": "recording-1792368489817.mp4",
+        "bytes": 211210,
+        "sha256": "551276fa2eee0ab8d6c37d6955b6f9e4a97f4955138da53f2657aa191dbcd97b"
+      },
+      {
+        "file": "recording-1792368600209.mp4",
+        "bytes": 295609,
+        "sha256": "6860ab6cb6bbe3d84986287659f58b3c3654a16361e84808013aff02a8bbcbb8"
+      },
+      {
+        "file": "recording-1792368631969.mp4",
+        "bytes": 152374,
+        "sha256": "0a89678833f049db4ad74214da2a7ca5b0dca68f4951a8c8c71455f824f68187"
+      },
+      {
+        "file": "screen-3663b728-24d0-4412-be73-7a83404e803c.png",
+        "bytes": 118683,
+        "sha256": "d5ee1758fed0fd56752fbd5aee5e0c2da75f9894971c54f505174244f5064739"
+      },
+      {
+        "file": "screen-3663b728-24d0-4412-be73-7a83404e803c.png.json",
+        "bytes": 391,
+        "sha256": "822ef97e56bae88a7796223114656f7507f4069ecc7aadb60dfe1c1bcd6f2594"
+      },
+      {
+        "file": "screen-52550345-41ab-437e-81cc-f57f9aa02099.png",
+        "bytes": 121783,
+        "sha256": "72944333dc887396095c6f9dc14f6ac59fd6a6cf1d84714de8f6896cfa930913"
+      },
+      {
+        "file": "screen-52550345-41ab-437e-81cc-f57f9aa02099.png.json",
+        "bytes": 391,
+        "sha256": "20ec608a3929c02d3680e52ffb0755811909ce15776b8540767895bf8f8d845a"
+      },
+      {
+        "file": "screen-68e3f664-05b2-4700-92db-1a75b6cfd377.png",
+        "bytes": 857272,
+        "sha256": "9520c252146f3a0de0e8d7e76980232aaf9310828cdd2b10bbb444f3b3e1286d"
+      },
+      {
+        "file": "screen-68e3f664-05b2-4700-92db-1a75b6cfd377.png.json",
+        "bytes": 391,
+        "sha256": "7745e79e16a3cf1c4469798dad7627f68c164138c8ee7bc16ea3e0206c9d593a"
+      },
+      {
+        "file": "screen-6bb4ec7a-8b63-4ff7-8216-3ed2d781b9bb.png",
+        "bytes": 229661,
+        "sha256": "b37b6136d2b69919e2ba3da3003a58c5283e12384846ddfee6756d9edee7b9cd"
+      },
+      {
+        "file": "screen-6bb4ec7a-8b63-4ff7-8216-3ed2d781b9bb.png.json",
+        "bytes": 391,
+        "sha256": "4d0dfc302dc33690b3f13ea4014b23c57d31ad75285220436e8875ea552a5c20"
+      },
+      {
+        "file": "screen-81db1371-f5fa-445f-91f9-816a4e4c7ac5.png",
+        "bytes": 796085,
+        "sha256": "43f3d7a10bd80a812e1e033af0eb48789023b41c0384619a9eb4bf800ce8afa5"
+      },
+      {
+        "file": "screen-81db1371-f5fa-445f-91f9-816a4e4c7ac5.png.json",
+        "bytes": 391,
+        "sha256": "98754149802b8b87c431ac3f5a96bd3f2e026adc0ec25e7386405c6b25df5869"
+      },
+      {
+        "file": "screen-8aadf97d-d83b-4cb4-8cd3-175dc1427c69.png",
+        "bytes": 123888,
+        "sha256": "e81ad71932ddb7d50e088ff007d76abbe721803e16e1ddf56811d3f54a29d5ed"
+      },
+      {
+        "file": "screen-8aadf97d-d83b-4cb4-8cd3-175dc1427c69.png.json",
+        "bytes": 391,
+        "sha256": "aed405be512c363fa643e864a314c77be8dcf148107dc69bc50c7f8d9eb06230"
+      },
+      {
+        "file": "screen-91a3b216-3ff8-4c10-9d28-3e9504a2ac47.png",
+        "bytes": 679118,
+        "sha256": "1e8b3630d536b0243ab2f099f9de290eabd5c9023e521d5e9f7b8dc9dd10a869"
+      },
+      {
+        "file": "screen-91a3b216-3ff8-4c10-9d28-3e9504a2ac47.png.json",
+        "bytes": 391,
+        "sha256": "c3deabd71d00c7b9a4f5dd75201e67d328c1d9b3da0b140ec7c6189301a1e5bd"
+      },
+      {
+        "file": "screen-94ea3d2f-1607-4bbb-be9e-83143c65c41a.png",
+        "bytes": 677513,
+        "sha256": "cdcb0cab2fdf8c7c2e514c7909568d39b7fe35404c8833d64b682b43d5098a26"
+      },
+      {
+        "file": "screen-94ea3d2f-1607-4bbb-be9e-83143c65c41a.png.json",
+        "bytes": 391,
+        "sha256": "ff1beed7f14927af2cb3f5d9ed53ba91921b494725cb0339b443b4c3bd7bba5a"
+      },
+      {
+        "file": "screen-a324c7e5-84c9-4745-8404-bff6979affba.png",
+        "bytes": 231914,
+        "sha256": "169dce46ef2650e28a9bd297219999adaa472f888b72ddae0e87f32846e60c1a"
+      },
+      {
+        "file": "screen-a324c7e5-84c9-4745-8404-bff6979affba.png.json",
+        "bytes": 391,
+        "sha256": "cb09071223c6572a407d43d512a77951d1d466725240df9af58a590019dae4b3"
+      },
+      {
+        "file": "screen-a4da27c5-8fdd-430e-9f64-efd7dab1ea93.png",
+        "bytes": 677994,
+        "sha256": "3532d9fcaf5fa4630a9e4b02dbd8df76275137a1c49f9b5480bc47753c3b200b"
+      },
+      {
+        "file": "screen-a4da27c5-8fdd-430e-9f64-efd7dab1ea93.png.json",
+        "bytes": 391,
+        "sha256": "2c30fcd37ec5992b9760a124adbbcf10b3283b6356eb397e28d0804bc9fd8f48"
+      },
+      {
+        "file": "screen-a533ca10-d645-409c-b9df-5df0932d2d30.png",
+        "bytes": 685125,
+        "sha256": "1b70a4a75f2724ec415c1fa43ea1203fff9aa4e88fc22fb27df4414eb5083935"
+      },
+      {
+        "file": "screen-a533ca10-d645-409c-b9df-5df0932d2d30.png.json",
+        "bytes": 391,
+        "sha256": "f9675ba76cd0fd4a51c26668b71ba5a7518a360156c865eb2367b4ecbecd5cce"
+      },
+      {
+        "file": "screen-b992c851-d7c4-4863-9c04-64054220bd4a.png",
+        "bytes": 259235,
+        "sha256": "940fcdd891e261334c3464a4264ab8b0319a58132cc234d0b2a0a839ad0098e5"
+      },
+      {
+        "file": "screen-b992c851-d7c4-4863-9c04-64054220bd4a.png.json",
+        "bytes": 391,
+        "sha256": "88570562d77116099d75309eae06d2495cb0c86693687b90974588c9bcdb4e4c"
+      },
+      {
+        "file": "screen-bc533021-8a22-4d63-80d8-1c523c5d15d9.png",
+        "bytes": 139559,
+        "sha256": "fc8c41e7c26c6ff6c17826eff8c307dd861dbfa26deb05ee0b255fbd91d02408"
+      },
+      {
+        "file": "screen-bc533021-8a22-4d63-80d8-1c523c5d15d9.png.json",
+        "bytes": 391,
+        "sha256": "3ed6308523e1d5d1c38c932ae1a6aa8d511a85a660cb7dcb632688e0ea6d8b11"
+      },
+      {
+        "file": "screen-c604b090-51de-4863-b9f9-7893cce109e9.png",
+        "bytes": 94905,
+        "sha256": "827a3ec6bb82227541c1ffecf02fdae3d59ae3c5f6b5331012d0ec546e3180c2"
+      },
+      {
+        "file": "screen-c604b090-51de-4863-b9f9-7893cce109e9.png.json",
+        "bytes": 390,
+        "sha256": "de5d8f1017a3d3783d8a7f53398e250c63b3dbdb6f9db1804157d708b02afa7d"
+      },
+      {
+        "file": "screen-cc993afc-9d8a-4319-aa74-9116fa45800d.png",
+        "bytes": 673603,
+        "sha256": "5ef9245cdb15237b010d6dc3c2dfa7242b827088021503f6aba277fc335d5b3c"
+      },
+      {
+        "file": "screen-cc993afc-9d8a-4319-aa74-9116fa45800d.png.json",
+        "bytes": 391,
+        "sha256": "1b7e83052262ba7b39e06e9800bb8f9a71b05e07c990add4673c8c81edf042b9"
+      },
+      {
+        "file": "screen-d28d38a2-17c5-41e8-a12c-41accf80e0a3.png",
+        "bytes": 636256,
+        "sha256": "01b6c2bcfc80e95d2c8551aa112c50d0df2ab45349ae1e0697ccc6f95e42a604"
+      },
+      {
+        "file": "screen-d28d38a2-17c5-41e8-a12c-41accf80e0a3.png.json",
+        "bytes": 391,
+        "sha256": "7849752f76ac029fb11fd219b97e2a86038a8bb25a7d9fe176a119c94b64cba5"
+      },
+      {
+        "file": "screen-f343e1d5-db9d-459f-b435-585c646aed87.png",
+        "bytes": 676305,
+        "sha256": "ac7e873c1f0599c35659ef56cdb28e67873772db0fe0ef41b0c54f7c43b9192c"
+      },
+      {
+        "file": "screen-f343e1d5-db9d-459f-b435-585c646aed87.png.json",
+        "bytes": 391,
+        "sha256": "02354638e3fdbbdf9c6047543bcf8667925e80eef81587cc340d31ed98138a56"
+      },
+      {
+        "file": "session.json",
+        "bytes": 1225,
+        "sha256": "5cf9280c729afcadf94b8f44d49cb2d1a9585e88b1499437063a1d6287e7aed4"
+      }
+    ]
+  },
+  "videoReviews": [
+    {
+      "file": "recording-1792368108257.mp4",
+      "durationSeconds": 5.858333,
+      "encodedFrames": 132,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    },
+    {
+      "file": "recording-1792368365727.mp4",
+      "durationSeconds": 5.964756,
+      "encodedFrames": 189,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    },
+    {
+      "file": "recording-1792368408948.mp4",
+      "durationSeconds": 6.011389,
+      "encodedFrames": 283,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    },
+    {
+      "file": "recording-1792368458794.mp4",
+      "durationSeconds": 6.144467,
+      "encodedFrames": 2,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    },
+    {
+      "file": "recording-1792368489817.mp4",
+      "durationSeconds": 5.315467,
+      "encodedFrames": 40,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    },
+    {
+      "file": "recording-1792368600209.mp4",
+      "durationSeconds": 5.241978,
+      "encodedFrames": 49,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    },
+    {
+      "file": "recording-1792368631969.mp4",
+      "durationSeconds": 3.438522,
+      "encodedFrames": 17,
+      "width": 1080,
+      "height": 2376,
+      "review": "ROOT_VIEWED_2HZ_CONTACT_SHEET_NOT_EVERY_FRAME"
+    }
+  ],
+  "httpBoundary": {
+    "scope": "TASK_BRIDGE_ONLY_NOT_PAINTED",
+    "route": "sky-geometry",
+    "method": "GET",
+    "status": 200,
+    "elapsedMs": 114,
+    "returnedAt": "2026-10-19T00:09:54.808Z",
+    "contextPutObserved": false,
+    "bodyRetained": false
+  },
+  "observed": {
+    "searchBridgeFailureThenRecovery": true,
+    "realFixtureSpotSelected": true,
+    "skyReentered": true,
+    "futureDateRejected": true,
+    "crossDayPreviewVisible": true,
+    "cancelFinalCaptureRestored": true,
+    "cancelVideoDoesNotCoverFinalRestoration": true,
+    "rulerPositionMismatch": "FAILED_CURRENT_PHONE",
+    "mapErrors": "UNRESOLVED_NOT_PASSED"
+  },
+  "verifiedScope": "BOUNDED_EXISTING_NORMAL_INSTANCE_OBSERVATIONS_AND_ARCHIVE",
+  "aClosed": false,
+  "bClosed": false,
+  "goalComplete": false
+}

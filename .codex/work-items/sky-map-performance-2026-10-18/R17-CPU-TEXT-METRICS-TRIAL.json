@@ -1,0 +1,201 @@
+{
+  "scope": "TASK_ONLY_CPU_TEXT_METRICS_FROZEN_SYNTHETIC_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_CPU_TEXT_METRICS_FROZEN_SYNTHETIC_PHONE_UNVERIFIED",
+  "head": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+  "builderSha256": "96acdd533a617344616e8ea1b6dda60997267a88295d8347b3128054be899094",
+  "templateBindings": {
+    "r17-cpu-text-metrics.ts": "b598ede6f996b2dd464840d6bdc5291b0a65060d70039146b0ca85122163585e",
+    "r17-cpu-text-metrics-controls.tsx": "0c8a29aa0008f4568cdac80539a97c971c1da5651895d70f9980564792d7ff69",
+    "r17-cpu-text-metrics-fixture.mjs": "8352161c67ce5435c456ef9cb4d5ffd83fbbc31ff0f4e66c09042a0f30c2f6e0"
+  },
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-cpu-text-metrics-trial/manifest.json",
+  "sourceManifestSha256": "8c0a1a0fb006da9bb9b953d83c9e4eaf6d40efaed544f6cea6817e0f0c5fd639",
+  "sourceFiles": 1566,
+  "sourceSnapshotSha256": "4b700a7a83e0b49154cc56f59680718e013d819e500196eab496c506688b28c4",
+  "parent": {
+    "manifestSha256": "ce9d733f4d4553f8e8893f93ba1c59439781b1ab6c32f52182087ef02692f64c",
+    "evidenceSha256": "29efac2abfb1d9d4ddfbd757331c99fdaad33e04b0520b68c46f9f6e67a1bb51",
+    "bundleSha256": "cc40d6e5a80563bcb52d20c3cacef4b8781e5e09410b48c04e375d26467a78b5",
+    "sourceSnapshotSha256": "23c8941110744103172447ead689d548efecd17ee8e50f696d96caf924630f7e"
+  },
+  "original": {
+    "sourceManifestSha256": "77326a8d52f0a4973c9452e6c71081f77347932a7231cb74d25c979d70f2d277",
+    "buildEvidenceSha256": "01d7218e08cc7b9b438551faa132fa23a1b3f9def031827a369c051cd4bf51bb",
+    "bundleHashes": {
+      "baseline": "61b5ce1bc7f5ab1954a992c69fb2224468488ee750a3488a54832bb0dd54bef5",
+      "candidate": "a95a2a7389e9023d49e3ca4932adb0322126892bf8d958dc988b5c909c36c8bf"
+    },
+    "allSourceBindingsSha256": "1cfa1b22048a398de862ea0caf41694c894bf63e1dc6082946127ea89c7e9b2e"
+  },
+  "exactSourceDifferencesFromParent": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "parentSha256": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+      "trialSha256": "fe253203c01131e698016eb4131862a271280593895413fdbf56e7a0508b8bd2"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "parentSha256": "ed646844b6d5046f5e7411e2d9647f965f33776b7b3427a1040dffdcd55ae6fd",
+      "trialSha256": "0c8a29aa0008f4568cdac80539a97c971c1da5651895d70f9980564792d7ff69"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-cpu-text-metrics.ts",
+      "parentSha256": null,
+      "trialSha256": "b598ede6f996b2dd464840d6bdc5291b0a65060d70039146b0ca85122163585e"
+    }
+  ],
+  "originalPairSourceAndBothBundleCopiesUnchanged": true,
+  "normalSourceUnchanged": true,
+  "precedingTrialSourceAndBothBundleCopiesUnchanged": {
+    "r17-canvas-copy-trial": {
+      "manifestSha256": "c599bdf95a00740505935ae222809ba25e7bd6ce76d062479032ea1207b16367",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "ae829a006ad8c5bd849921ab15dffa1231e328043c3e381ada13327cadc258ef",
+      "bundleSha256": "1d63353782af185908cf6e5ddaf86f98ca7747528e29ad78f2ba8e0d3e82d056"
+    },
+    "r17-native-copy-suppression-trial": {
+      "manifestSha256": "807c8beb9cbc6e77492cf097560d0a424084413075e55f9dc1d23d051aee9454",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "03a4e133e3d9898f589bcac80e8ebec4125544b2004d2f5d2fe2e2d2b22b745b",
+      "bundleSha256": "837404e3e5af4f7d86ff8652354d9746ea95d9c60b65039048aad75550532ad9"
+    },
+    "r17-gpu-finish-trial": {
+      "manifestSha256": "02d170aea08c5b26d3341fcbed182ed1a96265cfc7dffc101bf4b9600182f304",
+      "sourceFiles": 1563,
+      "sourceBindingsSha256": "c33d54b94d0f9be1dd5caa4646aff5e15aa4065c054483c3dcef7c402bcd6bd4",
+      "bundleSha256": "65d933516c269927bb2095fb3bebb3e0f6126fe737219ccdedddafcd8d6fe767"
+    },
+    "r17-page-bridge-observation": {
+      "manifestSha256": "ac36df304c2631f440f65682c527cb1a11e5e5ec9174c7f15dcad33826012152",
+      "sourceFiles": 1564,
+      "sourceBindingsSha256": "ecb7ff9a2af937a0ae2f17f512110281c171eb71e3089aeb1dd47dc8dad1d8ac",
+      "bundleSha256": "6cd3bdd1e5bc791ac11941a0ba40eae87f80301d694484b8297a7e06080f815a"
+    },
+    "r17-cpu-page-only-trial": {
+      "manifestSha256": "ce9d733f4d4553f8e8893f93ba1c59439781b1ab6c32f52182087ef02692f64c",
+      "sourceFiles": 1565,
+      "sourceBindingsSha256": "23c8941110744103172447ead689d548efecd17ee8e50f696d96caf924630f7e",
+      "bundleSha256": "cc40d6e5a80563bcb52d20c3cacef4b8781e5e09410b48c04e375d26467a78b5"
+    }
+  },
+  "fullSourceBuildNotGeneratedPatch": true,
+  "postBuildSourceAndBothBundleCopiesReadback": true,
+  "diagnosticLabel": "CPU/text-metrics cache · frozen · synthetic",
+  "protocolVariant": "candidate",
+  "cachePolicy": {
+    "owner": "per-native-surface",
+    "active": "only-after-original-ready-copy-and-real-publication-freeze",
+    "key": [
+      "exact-font",
+      "exact-text",
+      "lineHeight",
+      "letterSpacing"
+    ],
+    "capacity": 256,
+    "boundClassification": "temporary-experiment-not-product-budget",
+    "eviction": "least-recently-used-then-original-native-miss",
+    "value": "five-parsed-finite-nonnegative-numbers-no-native-TextMetrics",
+    "mutation": "frozen-private-copy-on-store-and-fresh-five-number-copy-on-hit",
+    "error": "invalid-input-result-or-native-throw-not-stored",
+    "lifetime": "new-surface-independent-clear-on-dispose-resize-invalidates-owner",
+    "reset": "actual-Play-counters-only-no-entry-or-lifetime-reset",
+    "nativeGlyphCalls": "actual-native-measureText-invocation-attempts-including-initial-unfrozen-and-throwing-calls"
+  },
+  "unchangedCpuPolicy": {
+    "facadeObserverPageGpuRuntime": "byte-identical-to-completed-CPU-page-only-parent",
+    "fullSceneAndRealReactPublication": true,
+    "initialNativeReadyCopy": true,
+    "syntheticR17AcceptedOmitted": true,
+    "nativeRaf": true,
+    "asynchronousImageLoaders": true,
+    "exportWallMs": 15000,
+    "guardedOriginalPauseWallMs": 20000
+  },
+  "observation": "menu-open-and-export-fixed-scalars-no-per-frame-React-or-raw-text-export",
+  "checks": {
+    "inheritedParentCpuChecks": {
+      "exactSceneSourceAndFullInputsRetained": true,
+      "allImagePortsUseSameFacade": true,
+      "initialReadyNativeCopyAndPublishRequiredBeforeFreeze": true,
+      "copyAndPublishFailureDoNotFreeze": true,
+      "syntheticFacadeNoNativeRendererCalls": true,
+      "optionalLevelsReadinessAndImageCallbacks": true,
+      "actualPublicationRetainedButSyntheticAcceptanceOmitted": true,
+      "recurringGlHealthReadSkippedWhileFrozen": true,
+      "captionMeasurementsAndNativeRafClockRetained": true,
+      "resizeHideRetirementFenced": true,
+      "actualGuardedNormalPlayArms15secondExport": true,
+      "zeroSyntheticAcceptedTimesAndCopies": true,
+      "bounded20secondOriginalPauseUsesLatestCallbackAndSameRun": true,
+      "hiddenUnmountNewCaseCancelTimers": true,
+      "fixtureOnlyNotPhoneOrProductEvidence": true
+    },
+    "exactCommonSourceBinding": true,
+    "textMetricsChecks": {
+      "actualSurfaceHitBeforeNativeSaveFontMeasureRestore": true,
+      "countercheckCacheRemovedFails": true,
+      "countercheckHitContinuesNativeFails": true,
+      "initialUnfrozenMeasurementsUnchanged": true,
+      "fontTextLineHeightLetterSpacingDistinct": true,
+      "onlyTwoCurrentValidFontDeclarationsCacheable": true,
+      "parsedFiveNumberCopiesPreventConsumerMutationAndNativeRetention": true,
+      "invalidInputsResultsAndNativeThrowsNotStoredWithOriginalRestore": true,
+      "bounded256LruEvictionContinuesNativeMisses": true,
+      "actualNativeGlyphInvocationCounterMatches": true,
+      "currentControlsResetCountersButPreserveCacheAndLifetime": true,
+      "fixedMenuExportScalarsAnd15secondTimer": true,
+      "disposedAndMissingMeasurementCapabilityRejectBeforeCacheHit": true,
+      "resizedOwnerInvalidNewSurfaceIndependent": true,
+      "fixtureNotPhoneEvidence": true
+    }
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-cpu-text-metrics-trial/source/apps/wechat-miniapp/dist/weapp-check-r17-cpu-text-metrics",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-cpu-text-metrics-trial/project",
+    "bundleSha256": "da4eedbb6cf06bd895c53bd06b6f414c021e1ab4f8df4840533927cebc48b842",
+    "fileCount": 338,
+    "totalBytes": 4989003,
+    "packages": {
+      "main": {
+        "bytes": 2016773,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041372,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598323,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1332535,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80379,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    }
+  },
+  "limitations": [
+    "Diagnostic only; no adopted repair, current pixels, source contribution, accepted time, phone memory result or R17 acceptance.",
+    "Same full CPU Scene/publication and native RAF/image-loader boundaries remain; native rendering and renderer staging remain synthetic after freeze.",
+    "Only surface.measureText is cached. Initial native present caption measurement is intentionally unchanged.",
+    "Native measurement glyph calls count attempts, not successful TextMetrics returns or native allocator bytes.",
+    "The256-entry cache bound is a temporary trial parameter, not a selected production cache budget.",
+    "Inherited15CPU fixtures run on the exact unchanged parent and byte-identical common source; new focused fixtures exercise the current cache/surface and controls integration.",
+    "Do not Apply, pick objects or inspect Sources. Existing15s export and20s guarded original Pause are diagnostic controls.",
+    "No phone, feedback, DevTools, service, DB, remote resource, production source, prior trial, PLAN, HANDOFF, INDEX or commit was changed."
+  ]
+}

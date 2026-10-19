@@ -1,0 +1,684 @@
+{
+  "scope": "TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_NORMAL_A1_UNACTIVATED_PHONE_UNVERIFIED",
+  "observationRevision": "observe-a1",
+  "diagnosticLabel": "正常Sky关联 A1 r3",
+  "terrainWaitAction": "gesture",
+  "protocol": "r17-a-correlation-protocol.mjs",
+  "reviewRevision": 3,
+  "historicalA1OwnerArchive": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/archive-bindings.json",
+  "historicalA1Manifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/manifest.json",
+  "historicalGen25OwnerArchive": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-gen25-owner-before-a1-20261019/archive-bindings.json",
+  "preparedAt": "2026-10-19T01:08:20.920Z",
+  "mode": "normal",
+  "variant": "baseline",
+  "buildGeneration": 27,
+  "probeVersion": 3,
+  "selection": "UNACTIVATED_PREPARATION",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/manifest.json",
+  "sourceManifestSha256": "be6ab705002eac17d33b8107c6e64ef4f06f53039811938b9dafb6731a83a618",
+  "sourceDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source",
+  "sourceFiles": 1580,
+  "sourceSnapshotSha256": "4771be5f6c4edc32ae363a05d742dc765ceba47d34edf68a99b78caad4b4116c",
+  "buildSourceSha256": "f76630fe3c39180d81e272fcef1c2c785018dc530ab6051b81f605e1fc4db472",
+  "bindingInput": {
+    "meaning": "pre-build-current-production-source-and-task-template-binding-not-bundle-bytes",
+    "mode": "normal",
+    "variant": "baseline",
+    "buildGeneration": 27,
+    "probeVersion": 3,
+    "productionHead": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+    "productionSourceSha256": "1462044901892f9fe57e7ebe8a421905181150ed47d6ffccd0f69e5882165019",
+    "builderSha256": "9c2a59408d28a4cd79c59e343d0dc30249a86b039de9227963f28f78c254e948",
+    "templateBindings": {
+      "r17-phone-probe-v3-runtime.ts": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+      "r17-phone-probe-v3-protocol.mjs": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120",
+      "r17-phone-probe-v3.test.mjs": "0e03345870e11795021c1ba73d5ffbc0e6c437de5b502f634aff92598177fae4",
+      "r17-phone-probe-v2-protocol.mjs": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127",
+      "r17-phone-probe-protocol.mjs": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9",
+      "r17-accepted-action-controls.tsx": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+      "r17-page-bridge-observer.ts": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d",
+      "r17-normal-observations.ts": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+      "r17-normal-baseline-v3-fixture.mjs": "21e54ac1b9f462579c8f4b1f70f9ee0dfb05a63120d707fa8c3153ddcdbe0d0a",
+      "r17-a-correlation-runtime.ts": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613",
+      "r17-a-correlation-instrumentation.mjs": "e3c557d31562d296bca04b8ddda10ecc25a17cba434393845c3e1e9213e801e2",
+      "r17-a-correlation-protocol.mjs": "a4a2deb3f5b544c9e2ed0db5e6b2161a430eb50ac969fd88eb6dce18cc61bbf7",
+      "r17-a-correlation.test.mjs": "55067d0aece5164790a31892febd17e517686ca75057677b8cde24520fd65003",
+      "inject-terrain-wait-observer.mjs": "a632676119d79a57404d206b0953ac4012b46a986b2df6648ceefbb5673b04a3",
+      "terrain-wait-observer.ts": "31a171e7266b9d822b5d0086487c08ba486b614edae50ce3b2efb089261682b0",
+      "terrain-wait-marker.tsx": "bf379bdcebd9642eed247f68efca4cccaa9603b2bd718340c1248860ac0bf284",
+      "terrain-wait-observer.test.mjs": "5d70ae67ad7edffeeb7a4ea8a62a5017367e2b3c2af50f2fa1233b552ee9ef58"
+    },
+    "bridgePort": 8798,
+    "compiledBridgeOriginSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77",
+    "observationRevision": "observe-a1",
+    "terrainWaitAction": "gesture",
+    "reviewRevision": 3
+  },
+  "sourceDeltas": [
+    {
+      "file": "apps/wechat-miniapp/config/index.ts",
+      "productionSha256": "af245c6a8be9a07c82e24cb1537ece55092d6595ae7b8517d32e65eddb699e25",
+      "diagnosticSha256": "0a6ac371b84e6632f7146887a0db646f59e4bc89d39b331e5667e6882f25892f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+      "productionSha256": "c164b7e3f73dd58ee10f9e97332d392a918d41f4f7c3ff71c66f50913ed7410a",
+      "diagnosticSha256": "8b07a0ba2f25b8245290a32960130a8a3f2fba6af6fef1db1452abc6e853a1d5"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "productionSha256": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+      "diagnosticSha256": "c52b7c341db755d0e37dc1f40ac2210cc8616663f1c2499f21b1da12c56793a2"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-constellation-scene.ts",
+      "productionSha256": "4589a6aaf4bd7cc02f6c231e1348620adc595e21c2e5a555dcd71dc4e3b736eb",
+      "diagnosticSha256": "f92db59e2c0837cabbd404abde8b20467c78a1b56a1252cf4ef7042e016ce969"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+      "productionSha256": "c8b9c61ea179e1a79c969d39ac5217752a1cb6b797efcdcd5565594dfa8089cf",
+      "diagnosticSha256": "3906c40b960fced6439fb628e40c922670cb57d1bbecce5ddb580dbf437ac8eb"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "productionSha256": "3aed31102c4ffd1437e3648f21d158a2893245112d24a0b9bf770cfb844a92c1",
+      "diagnosticSha256": "22f99f713e17ea43a6580baa691314405b0a5bca7abb5460182df5976d14d7fc"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "productionSha256": "e13ca841efaa4e588abbc130dc711186e4eded5c9197320e96bcd4fe5b1e2757",
+      "diagnosticSha256": "3827678f343afa30d01e7f1414439ee91bd5c57287012df6c94a5e2a06b47b3b"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "productionSha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80",
+      "diagnosticSha256": "bb77fa2f01cd99e7f7bda80f204493c7339dbf1bb76c2a20f9d8f51cc9beb0f5"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "productionSha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977",
+      "diagnosticSha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "productionSha256": "6e083c76bac46fa1122b6df3771502ec01cb12fc9d02c8cd53932736e9ff22c6",
+      "diagnosticSha256": "d7d0f156f0e51c6e0ce1bb510ba2d9a5cbc3dfce2e973e07a84f20d4fa4d25f1"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts",
+      "productionSha256": "88ce09a4ca0cdbf98d71cf72323efa8296efbab1bbd21fda8bbc0cb58bc07773",
+      "diagnosticSha256": "170fdf0f64a0290492edf0ac02c0f2b3113fd98af4fa434bb55c03f4dd1f0a3f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "productionSha256": "9bd4599df04e5ec371dc261de413644f9474856b7b8a45423f2158dbad78f197",
+      "diagnosticSha256": "ffe24eb0a7c232a42b5da846f68329b316a0128da1ced385dda54914b470b7fc"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "productionSha256": "ed4b07a0d684a5163e958070a328522e3785c2f089bf2d6a8a747438ad3c49de",
+      "diagnosticSha256": "ed4a657fad58cbf429b680c90a552338649fc0ca4767cd8d792c9fd39295b331"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/hooks/use-raster-image.ts",
+      "productionSha256": "4ea85720104ad8ca98f8df04f2c05d2c67b10361ca5e1a52582fb4d9f369cde0",
+      "diagnosticSha256": "94f7425aa60988101f8d1a46de0f92367be531cf191a10e50425586aa21aeb90"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/hooks/use-terrain-overlay.ts",
+      "productionSha256": "c86396df706bb8d9df6b537edaffec51a682b3e8acdd524ab2c66c5a6a611465",
+      "diagnosticSha256": "b9e2e03e4b75f286fea3b36d09fda66a9ec866ccba0490a884a32c5a62cc6ebd"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/pages/map/index.tsx",
+      "productionSha256": "d983adaea72fd9b10885fb101bc04d2ce6c62dc64731cd740eed9fc9cb6c6904",
+      "diagnosticSha256": "32357f4d2691095dc9ff13896e176b6d6755fd5402a25465e2a9b6cb748bb501"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts",
+      "productionSha256": "ff0378630f642aad46635573735a278d5f841a43f67fdbfd91ca58224f60da92",
+      "diagnosticSha256": "523f4df8bd8ffdb01e56978bc959f70f2bc3e85b5964fdc8258bacf8b74a31cf"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/raster-file-adapter.ts",
+      "productionSha256": "d7ef3c4ab15267fdc39907e5226a3f9b1c73a12b7ef994e38b1279e2035f56e3",
+      "diagnosticSha256": "1a3ea38fd3177a81ccce1cf7c1c846961301c4040f0911a535bd360d0df6731b"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/raster-image-resources.ts",
+      "productionSha256": "2ae75bcb7233097f5d17783de3c692a848aeee26a3c409b28ec3330da4a5457e",
+      "diagnosticSha256": "603da1df10280ebcb76462eb3f228a66fd969f42907f1faf03cdca9de02f2a98"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "87a5782be101781d67c40201a5dead3b5a379ccfada63a97ba7a32da6d65d8aa"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "productionSha256": null,
+      "diagnosticSha256": "bb62faa5dee007fb20ffcef567b68e8b7e06a8fd111296f46330c53ad31f5ee1"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-page-bridge-observer.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "4d567364a8e54b9e84b821d64a5c41597035337bd63518b0586862c3ec2bfbb2"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-a-correlation-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/terrain-wait-observer.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "4dab707f1df25df328ce1786af2279200ae3c719496c9a20af1671de2949e5ec"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/pages/map/terrain-wait-marker.tsx",
+      "productionSha256": null,
+      "diagnosticSha256": "bf379bdcebd9642eed247f68efca4cccaa9603b2bd718340c1248860ac0bf284"
+    },
+    {
+      "file": "terrain-wait-source.json",
+      "productionSha256": null,
+      "diagnosticSha256": "3ecbab4f6be9d92d190e25ad514cbe609d8841e7780ed060b4c5c124c6400b10"
+    }
+  ],
+  "templateBindings": {
+    "r17-phone-probe-v3-runtime.ts": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+    "r17-phone-probe-v3-protocol.mjs": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120",
+    "r17-phone-probe-v3.test.mjs": "0e03345870e11795021c1ba73d5ffbc0e6c437de5b502f634aff92598177fae4",
+    "r17-phone-probe-v2-protocol.mjs": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127",
+    "r17-phone-probe-protocol.mjs": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9",
+    "r17-accepted-action-controls.tsx": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+    "r17-page-bridge-observer.ts": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d",
+    "r17-normal-observations.ts": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+    "r17-normal-baseline-v3-fixture.mjs": "21e54ac1b9f462579c8f4b1f70f9ee0dfb05a63120d707fa8c3153ddcdbe0d0a",
+    "r17-a-correlation-runtime.ts": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613",
+    "r17-a-correlation-instrumentation.mjs": "e3c557d31562d296bca04b8ddda10ecc25a17cba434393845c3e1e9213e801e2",
+    "r17-a-correlation-protocol.mjs": "a4a2deb3f5b544c9e2ed0db5e6b2161a430eb50ac969fd88eb6dce18cc61bbf7",
+    "r17-a-correlation.test.mjs": "55067d0aece5164790a31892febd17e517686ca75057677b8cde24520fd65003",
+    "inject-terrain-wait-observer.mjs": "a632676119d79a57404d206b0953ac4012b46a986b2df6648ceefbb5673b04a3",
+    "terrain-wait-observer.ts": "31a171e7266b9d822b5d0086487c08ba486b614edae50ce3b2efb089261682b0",
+    "terrain-wait-marker.tsx": "bf379bdcebd9642eed247f68efca4cccaa9603b2bd718340c1248860ac0bf284",
+    "terrain-wait-observer.test.mjs": "5d70ae67ad7edffeeb7a4ea8a62a5017367e2b3c2af50f2fa1233b552ee9ef58"
+  },
+  "productionSourceReadback": {
+    "files": 1572,
+    "bindingsSha256": "1462044901892f9fe57e7ebe8a421905181150ed47d6ffccd0f69e5882165019",
+    "unchanged": true
+  },
+  "completeSourceBuildNotGeneratedPatch": true,
+  "currentSourceReadback": true,
+  "bothBundleCopiesReadback": {
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r3": "a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445",
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/project/weapp": "a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445"
+  },
+  "checks": {
+    "originalSetterImmediateExactlyOnceClosureAndRefBeforeDispatch": true,
+    "fullStateIdentityEqualityAndAllThreeNullRetirementsRetained": true,
+    "sameIdentityStillDispatches": true,
+    "sequentialAToBToAUpdaterAndDispatchFailureRetainOriginalSemantics": true,
+    "productionCommandSetterAndUnaffectedConsumersByteIdentical": true,
+    "actualPresentationMemoOriginalDependenciesAndExactResultIdentity": true,
+    "fallbackExplicitlyUnbound": true,
+    "completeRequestFieldsAndDrawDependenciesUnchanged": true,
+    "explicitPreparationIdentitySurvivesResolveClone": true,
+    "realAcceptedCopyAndNoSyntheticPublication": true,
+    "nativeMeasureTextReturnIdentityAndNumericCountersOnly": true,
+    "explicitVersion3ProtocolAndDateFake": true,
+    "nullElapsedConsumerDisplaysUnknownAndActualReason": true,
+    "guardedNormalPlayAnd15sMetricsKept": true,
+    "exactSameRun20sOriginalPauseAndSeparateTerminalReceipt": true,
+    "hiddenUnmountReplacementRunAndExportFailureGuarded": true,
+    "sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay": true,
+    "lateMetricsAfterHideCannotSendRetiredTerminal": true,
+    "fixturesNotPhoneEvidence": true,
+    "boundedACorrelationUsesActualPreparedRuntimeAndStrictDispatcher": true
+  },
+  "deltaTypecheck": {
+    "productionDiagnostics": 0,
+    "currentDiagnostics": 0,
+    "addedDiagnostics": [],
+    "noAddedDiagnostics": true,
+    "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r3",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/project",
+    "bundleSha256": "a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445",
+    "fileCount": 338,
+    "totalBytes": 5011516,
+    "packages": {
+      "main": {
+        "bytes": 2022137,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041374,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598325,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1349680,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 75015,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    },
+    "compiledBridgeOriginSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77",
+    "inheritedOriginSha256": "fd828ba7fdb4a74bc6e6b6fb84d9fffefd83cb7afaf1081e165c5beba33d7e43",
+    "bridgePort": 8798,
+    "originReadback": {
+      "originSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77",
+      "bridgePort": 8798,
+      "literalUses": 7,
+      "filesWithOrigin": 3,
+      "otherOrigins": 0
+    },
+    "sourceMaps": {
+      "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source-maps",
+      "count": 31,
+      "bytes": 7228132,
+      "records": [
+        {
+          "file": "app.js.map",
+          "bytes": 249158,
+          "sha256": "287dd3da7290129b1ca2b21d79a8a40d2e3db4c86aa96d16b8961fa273ea3a00",
+          "sourceCount": 8,
+          "mappings": 130674
+        },
+        {
+          "file": "common.js.map",
+          "bytes": 1457605,
+          "sha256": "9db5b5e53f375b2e374e4af35cd820a3572787424c0be9b798daff1e57cd6420",
+          "sourceCount": 181,
+          "mappings": 507455
+        },
+        {
+          "file": "content/achievement/index.js.map",
+          "bytes": 18862,
+          "sha256": "0470d8f769e2c4321919a9437307f3130ee352a645f08af5509e4f8a5b5c0816",
+          "sourceCount": 3,
+          "mappings": 7173
+        },
+        {
+          "file": "content/article/detail/index.js.map",
+          "bytes": 28819,
+          "sha256": "4923c1736440717d9586458fe1b9f75a2aeefc0b8bebdbc93c6436f0b04daa41",
+          "sourceCount": 3,
+          "mappings": 10293
+        },
+        {
+          "file": "content/contribution/index.js.map",
+          "bytes": 52555,
+          "sha256": "580b05bc16d62804cf1755fd30eef0d7b176636322c726fafe5f9a7a266e5b83",
+          "sourceCount": 6,
+          "mappings": 19540
+        },
+        {
+          "file": "content/event/detail/index.js.map",
+          "bytes": 1698,
+          "sha256": "4c75edc671f2affa337f6c8ef6958dcc4e7ace84a50efcf53abee26b045e3e17",
+          "sourceCount": 2,
+          "mappings": 335
+        },
+        {
+          "file": "content/event/list/index.js.map",
+          "bytes": 1646,
+          "sha256": "aa68df0c12c6293c565a4a608a7b84709556c3db76d60fd382bb5a3b08569f3e",
+          "sourceCount": 2,
+          "mappings": 323
+        },
+        {
+          "file": "content/plan/detail/index.js.map",
+          "bytes": 1679,
+          "sha256": "1199dc97a5ac1560100bc01414a2023932ebec6afa5ffc0214ad31cb124e892d",
+          "sourceCount": 2,
+          "mappings": 321
+        },
+        {
+          "file": "content/plan/edit/index.js.map",
+          "bytes": 1835,
+          "sha256": "e680c5583790378be67e5de694c0a7030af96a9d81d3f3ca77e3c22d604b28ca",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "content/plan/list/index.js.map",
+          "bytes": 22549,
+          "sha256": "766c6f139a342ddc204791a5ed5c25c490cf82a7b15e32121ccd1f3c3e522dee",
+          "sourceCount": 3,
+          "mappings": 8096
+        },
+        {
+          "file": "content/settings/index.js.map",
+          "bytes": 111904,
+          "sha256": "8d4c8ce689ca8b57aa35e61f762508223d113ddef6147a44d38cf37c67c59988",
+          "sourceCount": 11,
+          "mappings": 39442
+        },
+        {
+          "file": "content/share/index.js.map",
+          "bytes": 108909,
+          "sha256": "dd3a171c975ef055be97c7edaa81103092d0bb14b4dc9e1e4f9c15ca108ab5e8",
+          "sourceCount": 12,
+          "mappings": 42383
+        },
+        {
+          "file": "content/spot-feedback/index.js.map",
+          "bytes": 111301,
+          "sha256": "533949191910fc1bd588b397e59904608c281bc62bfe3969733b22abfb905f5e",
+          "sourceCount": 7,
+          "mappings": 43859
+        },
+        {
+          "file": "content/sub-vendors.js.map",
+          "bytes": 317033,
+          "sha256": "eee531b90ca59dcf46b6301f14f40fe886c5a0cd586f7768cf8fa34142ce09c2",
+          "sourceCount": 24,
+          "mappings": 122150
+        },
+        {
+          "file": "custom-tab-bar/index.js.map",
+          "bytes": 15615,
+          "sha256": "aee294a9a3d25ae061910f210ffed48542987ed6481dcf04e228bb13d38e255b",
+          "sourceCount": 2,
+          "mappings": 5283
+        },
+        {
+          "file": "pages/auth/index.js.map",
+          "bytes": 20742,
+          "sha256": "fb7cbd2f9617e7a071b8954d56a9f33ddad86e8ee9d607c79c3d2444e3065ed1",
+          "sourceCount": 2,
+          "mappings": 7066
+        },
+        {
+          "file": "pages/map/index.js.map",
+          "bytes": 776341,
+          "sha256": "e8f3ac94c3ddac69da02d5c6d4bd8acbdfdd42e692c5f665ca5459802d954d2a",
+          "sourceCount": 61,
+          "mappings": 294624
+        },
+        {
+          "file": "pages/my/index.js.map",
+          "bytes": 70165,
+          "sha256": "20218c41a9b435a33a12ba722a4ccb5b5f1602feae5988e96071a7be5b111808",
+          "sourceCount": 7,
+          "mappings": 27556
+        },
+        {
+          "file": "runtime.js.map",
+          "bytes": 10680,
+          "sha256": "499a597944538e8b36798ddbbd43bdd3d74ff229fda46e256d6ab7dd33b46cc8",
+          "sourceCount": 10,
+          "mappings": 2944
+        },
+        {
+          "file": "sky/detail/index.js.map",
+          "bytes": 2563453,
+          "sha256": "286c731a92bda281dddbeaf70db4e47cd1de7aeab2cd4799a16f719696da1d28",
+          "sourceCount": 168,
+          "mappings": 758885
+        },
+        {
+          "file": "sky/sources/index.js.map",
+          "bytes": 34572,
+          "sha256": "f3aace4efd8c197ac02dbf3caeb34ce907719905b690f03f2bee21d0d58aa2b2",
+          "sourceCount": 6,
+          "mappings": 12118
+        },
+        {
+          "file": "sky/sub-vendors.js.map",
+          "bytes": 356477,
+          "sha256": "6de4d68d826af3c91f79c642737f5b6c3c0655e868c7fadbc9694d9fe69a7197",
+          "sourceCount": 48,
+          "mappings": 111439
+        },
+        {
+          "file": "spot/data-source/index.js.map",
+          "bytes": 16857,
+          "sha256": "17213000f168644ff122197bce328d966997ff50cc8f25b24b8c94f7d6083f6d",
+          "sourceCount": 3,
+          "mappings": 5695
+        },
+        {
+          "file": "spot/field/index.js.map",
+          "bytes": 1624,
+          "sha256": "2f7cc637020713dccfb04809685de042d3acb1773ad01f21757706d656b09cee",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/guides/index.js.map",
+          "bytes": 1632,
+          "sha256": "d10fa7b4780c601b91f2cb07ed2a17603ebce3bdd8601de3aa9913a54b1d679f",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/native/packaged-icon/index.js.map",
+          "bytes": 1195,
+          "sha256": "a6d3f93df29b8ec539cbf81ed8a27937dba12d5f5890e31d0f49f8ad075b5c4f",
+          "sourceCount": 1,
+          "mappings": 306
+        },
+        {
+          "file": "spot/plan/index.js.map",
+          "bytes": 7764,
+          "sha256": "50a507ad8d51a774a1835057f7f302f4f6f67cf53e6c0085a19fa6c710fe025b",
+          "sourceCount": 2,
+          "mappings": 2417
+        },
+        {
+          "file": "spot/search/index.js.map",
+          "bytes": 92837,
+          "sha256": "ec1218681509e968543bf1e8084ae46b8eefbaf7b61b7c16d3a7534fd4509111",
+          "sourceCount": 6,
+          "mappings": 33210
+        },
+        {
+          "file": "spot/sub-vendors.js.map",
+          "bytes": 50568,
+          "sha256": "185af472d92e633af0ad9d6304e8250d02b4fc174de32b7866381af86230aabc",
+          "sourceCount": 2,
+          "mappings": 18158
+        },
+        {
+          "file": "taro.js.map",
+          "bytes": 450871,
+          "sha256": "300d9487bb4e8d3765de0ed4f4d2d3131f45a9b7fe980fe96531151dbef71d42",
+          "sourceCount": 84,
+          "mappings": 139850
+        },
+        {
+          "file": "vendors.js.map",
+          "bytes": 271186,
+          "sha256": "424430d7f55b732540e27cc80a386b768f66fad39dc11aa1e2d1b10f88b8f78a",
+          "sourceCount": 79,
+          "mappings": 72517
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "No phone, DevTools, feedback, service, account, database, private configuration or active candidate was changed.",
+    "Normal product math, memo, full accepted setter/state, GPU/copy/caption/resource demand and retirement remain; observation adds bounded counts/spans, preparation identities and a task menu.",
+    "v3 Date.now intervals are approximate wall elapsed, not thread CPU or physical presentation; unknown and sub-resolution coverage stay null.",
+    "Page observer latency retains its legacy producer clock semantics and is not calibrated by probe v3; key count is not payload bytes; 16 bounded serialization samples add observer cost.",
+    "Native measureText and returned-copy counters add numeric call-site overhead, no native method replacement/cache/history/context retention; unobserved scalar fields stay null.",
+    "15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.",
+    "Hidden source maps are external diagnostic artifacts, absent from both phone bundle copies.",
+    "Static budget/inspection and portable fixtures do not establish official upload size, current bridge admission, real nonempty Sky, target clock coverage, sustainable playback or R17 A/B acceptance.",
+    "Existing gen25 phone observations and earlier A1 HTTP/SDK evidence retain their original identities and are not evidence for this review-r3 candidate."
+  ],
+  "historicalA1": {
+    "status": "PRESERVED_HISTORICAL_NOT_CURRENT_CANDIDATE",
+    "archive": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/archive-bindings.json",
+    "preparationJson": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/R17-NORMAL-A1-PREPARATION.json",
+    "preparationMd": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/R17-NORMAL-A1-PREPARATION.md",
+    "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/manifest.json",
+    "buildSourceSha256": "ba02a4d2f888ac0231c4eab8628821e6cb089ac9532b9628faa82919ed0b11c9",
+    "bundleSha256": "8db09ed4268a08f209f5a9358c101d657c9a7a9c546247062f23e70c87903ba6"
+  },
+  "includedProductionRepair": {
+    "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx#OrientationTimeRuler",
+    "rawSha256": "ed4b07a0d684a5163e958070a328522e3785c2f089bf2d6a8a747438ad3c49de",
+    "normalizedSha256": "7fef56907f471737fcce5dea5f967ad068ead2893f4298c122907492ea16f9f4",
+    "review": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-NATIVE-CADENCE-REVIEW.md",
+    "materializedComponentByteIdenticalAfterLFNormalization": true,
+    "phoneVerified": false
+  },
+  "softwareVerification": {
+    "materializedNormalFixture": {
+      "passed": 20,
+      "total": 20
+    },
+    "strictDeltaTypecheck": {
+      "strict": true,
+      "noUncheckedIndexedAccess": true,
+      "exactOptionalPropertyTypes": true,
+      "productionDiagnostics": 0,
+      "currentDiagnostics": 0,
+      "addedDiagnostics": [],
+      "noAddedDiagnostics": true,
+      "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+    },
+    "reusedAffectedTests": {
+      "passed": 35,
+      "total": 35,
+      "rerun": false,
+      "basis": "All A1/terrain/protocol/fixture template hashes unchanged; production ruler changes have their separate independent review evidence.",
+      "evidence": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/R17-NORMAL-A1-PREPARATION.json",
+      "originalArtifacts": {
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r2-20261019/archive-bindings.json": "634101ed14f0b4b842a8bb0070d124c1f24f55a7420707c9778c397073f05aa2",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/manifest.json": "b12513648a325c99fd33fd77f8918b665a679cadae013f9b5ca5150912fbd560",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/delta-typecheck.json": "deb4c1878fc6c51fe49c414af0d3b169f71a45907c0a2e487f24e924ec09e2d6",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/build-redacted.log": "0a59215f9d552bae691d3c3420095fe3c7e34bc34186cf84741959ebb96f42a6",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/source-map-bindings.json": "bab016f4938c7a7348517e3d8486e1be94693105bb5592d9c92d6aac5f64ce60",
+        ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/historical-a1-preservation.json": "8c898f5e10a5f16ce6936216ee8ad0a3ca063e1c56bc4af84f564e735ea45fde"
+      }
+    },
+    "historicalA1AndGen25ArchiveReadback": {
+      "schema": "starward-normal-a1-preservation-v1",
+      "reviewRevision": 3,
+      "archive": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/archive-bindings.json",
+      "archiveSha256": "37c60fe9ffa8a48e008c54728d96f6c0ed7bef542d24bd7e74fd7da28189c535",
+      "protectedFiles": 4595,
+      "protectedBindingsSha256": "b51e3e8a5949a92fb9149dc323fd7b6df8ebcfddcb3f9ac94d6e4d24c5273b40",
+      "allUnchanged": true,
+      "historicalA1Manifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r2/manifest.json",
+      "historicalA1ManifestSha256": "b12513648a325c99fd33fd77f8918b665a679cadae013f9b5ca5150912fbd560",
+      "historicalA1BundleSha256": "8db09ed4268a08f209f5a9358c101d657c9a7a9c546247062f23e70c87903ba6",
+      "currentBundleSha256": "a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445",
+      "sameTemplates": true,
+      "changedProductionInputs": [
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/orientation-ruler-layout.test.ts",
+          "previousSha256": null,
+          "currentSha256": "567e5838009867a236f363fdbd85122a37701e08e41aeb2872bad674e72f34d2"
+        },
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/orientation-ruler-layout.ts",
+          "previousSha256": null,
+          "currentSha256": "3a908f50ed967d68671c71240c9b4a71695b7e26cfe56579b8d4a4f224728e83"
+        },
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+          "previousSha256": "c045dde854186dd6dbc8645ebb3c2ff3a10089c5c57545bc50e444ce713ff415",
+          "currentSha256": "250177784a1069498046fb6c8bb9f01685b6c8f153e7cdaada4d0bc4277bcfb8"
+        },
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler.test.ts",
+          "previousSha256": "d0a929f064a80c58af90de190e8e016387f92ce20df3717b25432ef765e46b86",
+          "currentSha256": "ff3b836b82c679cf5505c601b611436e693c5bf95d513729e2c5b5dbcd5f2303"
+        },
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/sky-overlay-motion.test.ts",
+          "previousSha256": "a272850f9181628a97009e569ac499bf0ce9802723beb82e0f85f8a621cafdf1",
+          "currentSha256": "3ef4a64ee1e8fed29cd6b6a0f2c7cfb191bef8fe64f1f8bcbb137000dfcf575f"
+        },
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/sky-overlay-motion.tsx",
+          "previousSha256": "7aa7032331b3fe819494a602825b09be5d0e73080a8b89fe62a8247963a16790",
+          "currentSha256": "7bf65cf42ab593ead02eba0bc16e6296c5162fc0e5296b82e4ccee939524f372"
+        },
+        {
+          "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "previousSha256": "5afea619eaef4cc303c0b9486d0187be07d141d22456a051580f679f2265e585",
+          "currentSha256": "ed4b07a0d684a5163e958070a328522e3785c2f089bf2d6a8a747438ad3c49de"
+        }
+      ],
+      "archivedOwnerIsProvenanceNotDirectlyExecutableFromRelocatedPath": true
+    },
+    "hiddenMaps": {
+      "count": 31,
+      "bytes": 7228132,
+      "exactSourcesContent": 18,
+      "bothBundleCopiesHaveNoMapsOrSourceMappingURL": true,
+      "javascriptCopiesChecked": 80,
+      "compiledMarkers": {
+        "diagnosticLabel": true,
+        "terrainMarker": true,
+        "terrainStorageKey": true
+      }
+    },
+    "artifacts": {
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r3-20261019/archive-bindings.json": "37c60fe9ffa8a48e008c54728d96f6c0ed7bef542d24bd7e74fd7da28189c535",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/manifest.json": "be6ab705002eac17d33b8107c6e64ef4f06f53039811938b9dafb6731a83a618",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/delta-typecheck.json": "deb4c1878fc6c51fe49c414af0d3b169f71a45907c0a2e487f24e924ec09e2d6",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/build-redacted.log": "613910991345f3942974e0bdd73bbc1154681b61fcbd9c6831864e99ffff869e",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source-map-bindings.json": "d50156874a3120de8f144d740a22dc65577f8538f090fffa43abc55a31d7fc72",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/historical-a1-preservation.json": "53f1cc66a078cff7c0eca5010479c8aa63ab60b529b052640fb80bf0ff883531",
+      ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-NATIVE-CADENCE-REVIEW.md": "a94d693e519009a17eeb63fe9fa91b7d8991a9bb61f39f1345cc7f58496adbed"
+    },
+    "nativeRulerIndependentChecks": {
+      "passed": 41,
+      "total": 41,
+      "review": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-NATIVE-CADENCE-REVIEW.md",
+      "currentSourceHashesMatchReview": true
+    }
+  },
+  "runtimeContainerObservation": {
+    "observedAt": "2026-10-19T01:57:04.918Z",
+    "applicationRoot": "tmp/r17-normal-a1-review-r3/project/weapp",
+    "projectRoot": "tmp/r17-normal-a1-review-r3/project",
+    "miniprogramRoot": "weapp/",
+    "applicationSha256": "a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445",
+    "applicationFiles": 338,
+    "applicationBytes": 5011516,
+    "outerContainerSha256": "0432b913f678bec774091f9686da68bab411d943566824f1e7b74a0661d73261",
+    "outerContainerFiles": 339,
+    "outerContainerBytes": 5012424,
+    "canonicalBindingsVerified": 1572,
+    "candidateBindingsVerified": 1580,
+    "applicationUnchanged": true,
+    "projectWindow": "OWNED_R3_WINDOW_CLOSED_AFTER_SYNC_VERIFICATION",
+    "normalSkyRuntime": "UNVERIFIED",
+    "officialPreview": "NOT_ISSUED_FOR_R3; GEN26_REMAINS_UNKNOWN",
+    "privateReceiptOwner": "E:/Dev/Starward-data/development/r17-normal-profile/resume-20261019/a1-r3-pre-window-retirement.private.json"
+  }
+}

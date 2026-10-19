@@ -1,0 +1,1036 @@
+{
+  "schemaVersion": "starward-r17-page-bridge-target-result-v1",
+  "status": "TARGET_GROWTH_PERSISTS_WITH_DEBUG_OFF_PAGE_ACK_BACKLOG_NOT_REPRODUCED",
+  "scope": "TASK_ONLY_OBSERVATION_NOT_AN_ADOPTED_REPAIR",
+  "generation": 20,
+  "bundleSha256": "6cd3bdd1e5bc791ac11941a0ba40eae87f80301d694484b8297a7e06080f815a",
+  "buildOwner": {
+    "filename": "R17-PAGE-BRIDGE-OBSERVATION.json",
+    "sha256": "ac4639ed76918b0072dd0fc3249c4d87a8cf6ea201354a2a346e852a89977d1f"
+  },
+  "operatorReportedGenerationAndWholeBundleDelivery": true,
+  "phoneBundleBytesVerified": false,
+  "runtimeAppIdVerified": false,
+  "productionSourceChanged": false,
+  "adopted": false,
+  "renderingPolicy": {
+    "originalFlush": true,
+    "originalFullFrameCopies": true,
+    "originalActualPublishAndAccepted": true,
+    "originalSceneAndCadence": true,
+    "noFinishFreezeClearOrStarReduction": true
+  },
+  "receiptOwner": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\probe-metrics",
+  "memoryAndMediaOwner": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\native-play-copy-trial",
+  "measurementWindow": {
+    "pageAndUploadCountersStart": "accepted actual normal product Play",
+    "receiptStartsAfterMs": 1000,
+    "autoExportWallMsAfterActualPlay": 15000,
+    "receiptAndScalarCountsAreSameWindow": false,
+    "exportStopsProductPlayback": false,
+    "originalDurationLimitMs": 45000,
+    "completedFull45000msReceipt": false,
+    "note": "Pinned scalar counters include the first second omitted by the receipt. GL draw submissions and bufferData calls count different operations. Do not equate either pair of totals."
+  },
+  "debugEnabledRun": {
+    "actualNormalProductPlay": true,
+    "preparedFovDeg": 10.8,
+    "playbackRate": 1,
+    "startTimeReportedByOperator": "04:30:00",
+    "visiblePausedTime": "04:30:45",
+    "normalPauseSucceeded": true,
+    "contextApplyDuringTrial": false,
+    "previewCancelledAndClosed": true,
+    "enableDebugEvidence": "Dtrue in pinned export and later header",
+    "scalarScreenshot": "page-bridge-after-counters.png",
+    "pinnedAtEarlyExport": {
+      "attached": true,
+      "enableDebug": true,
+      "inheritedPending": 0,
+      "submitted": 500,
+      "completed": 500,
+      "failed": 0,
+      "failedBeforeCallback": 0,
+      "pending": 0,
+      "maximumPending": 2,
+      "duplicateCallbacks": 0,
+      "callbackLatencyTotalMs": 13362,
+      "callbackLatencyMaximumMs": 75,
+      "ownKeyTotal": 4381,
+      "ownKeyMaximum": 10,
+      "keyInspectionFailures": 0,
+      "jsonSamplingAttempts": 16,
+      "sampledUtf8Bytes": 18700,
+      "maximumSampledUtf8Bytes": 1256,
+      "serializationFailures": 0,
+      "callsWithoutFunctionCallback": 0,
+      "returnedSubmitBufferDataCalls": 516,
+      "typedUploadBytes": 5656896,
+      "maximumTypedUploadBytes": 11016
+    },
+    "headerAfterPauseAndPreviewClose": {
+      "attached": true,
+      "enableDebug": true,
+      "inheritedPending": 0,
+      "submitted": 1403,
+      "completed": 1403,
+      "failed": 0,
+      "failedBeforeCallback": 0,
+      "pending": 0,
+      "maximumPending": 3,
+      "duplicateCallbacks": 0,
+      "callbackLatencyTotalMs": 40915,
+      "callbackLatencyMaximumMs": 493,
+      "ownKeyTotal": 12384,
+      "ownKeyMaximum": 96,
+      "keyInspectionFailures": 0,
+      "jsonSamplingAttempts": 16,
+      "sampledUtf8Bytes": 18700,
+      "maximumSampledUtf8Bytes": 1256,
+      "serializationFailures": 0,
+      "callsWithoutFunctionCallback": 0,
+      "returnedSubmitBufferDataCalls": 1374,
+      "typedUploadBytes": 15079644,
+      "maximumTypedUploadBytes": 11052
+    },
+    "rawHeader": "A1 Dtrue I0 S1403 C1403 F0/0 P0 M3 X0 L40915/493 K12384/96/0 B16:18700/1256/0 N0 G1374:15079644/11052",
+    "rawPinned": "A1 Dtrue I0 S500 C500 F0/0 P0 M2 X0 L13362/75 K4381/10/0 B16:18700/1256/0 N0 G516:5656896/11016",
+    "receipt": {
+      "filename": "candidate-r17-1-zfayq1keye.json",
+      "bytes": 4582,
+      "sha256": "1002e6b3073c8a5f9a46e771c44f9d1c5b02c95eeac9a4f499f665fea41e5e87",
+      "schemaValidated": true,
+      "status": "VALID_NONEMPTY_EARLY_MANUAL_WINDOW",
+      "runId": "r17-1-zfayq1keye",
+      "caseKey": "narrow-play",
+      "clock": "Date.now",
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 14015,
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 547,
+        "preparedRequests": 682,
+        "paintAttempts": 490,
+        "nativeCallbacks": 490,
+        "acceptedCopies": 490,
+        "sceneFinishes": 490,
+        "glDrawSubmissions": 2450,
+        "bscSubmittedStars": 4900,
+        "saoSubmittedStars": 144358,
+        "acceptedBscObjects": 4900,
+        "acceptedSaoObjects": 143868,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "drawCpu": {
+        "calls": 490,
+        "totalMs": 5416,
+        "minMs": 3,
+        "maxMs": 61,
+        "keptSamples": 490,
+        "p50Ms": 11,
+        "p95Ms": 14,
+        "overflow": false
+      },
+      "nativePaintOwnerCpu": {
+        "calls": 490,
+        "totalMs": 5445,
+        "minMs": 3,
+        "maxMs": 62,
+        "keptSamples": 490,
+        "p50Ms": 11,
+        "p95Ms": 14,
+        "overflow": false
+      },
+      "displayCopyCpu": {
+        "calls": 490,
+        "totalMs": 45,
+        "minMs": 0,
+        "maxMs": 1,
+        "keptSamples": 490,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "timing": {
+        "nativeCallbackMs": {
+          "calls": 490,
+          "totalMs": 5315,
+          "minMs": 3,
+          "maxMs": 62,
+          "keptSamples": 490,
+          "p50Ms": 11,
+          "p95Ms": 14,
+          "overflow": false
+        },
+        "acceptedGapMs": {
+          "calls": 489,
+          "totalMs": 14001,
+          "minMs": 9,
+          "maxMs": 120,
+          "keptSamples": 489,
+          "p50Ms": 29,
+          "p95Ms": 36,
+          "overflow": false
+        },
+        "intentToAcceptedWallMs": {
+          "calls": 0,
+          "totalMs": 0,
+          "minMs": 0,
+          "maxMs": 0,
+          "keptSamples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "overflow": false
+        }
+      },
+      "time": {
+        "intent": {
+          "events": 547,
+          "distinct": 547,
+          "firstRelativeMs": 0,
+          "lastRelativeMs": 14004,
+          "minRelativeMs": 0,
+          "maxRelativeMs": 14004,
+          "overflow": false
+        },
+        "prepared": {
+          "events": 682,
+          "distinct": 466,
+          "firstRelativeMs": -19,
+          "lastRelativeMs": 13971,
+          "minRelativeMs": -19,
+          "maxRelativeMs": 13971,
+          "overflow": false
+        },
+        "painted": {
+          "events": 490,
+          "distinct": 461,
+          "firstRelativeMs": -85,
+          "lastRelativeMs": 13947,
+          "minRelativeMs": -85,
+          "maxRelativeMs": 13947,
+          "overflow": false
+        },
+        "accepted": {
+          "events": 490,
+          "distinct": 461,
+          "firstRelativeMs": -85,
+          "lastRelativeMs": 13947,
+          "minRelativeMs": -85,
+          "maxRelativeMs": 13947,
+          "overflow": false
+        },
+        "lastRequestedMinusAcceptedMs": 57,
+        "maximumRequestedMinusAcceptedMs": 131
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 6519,
+        "saoRowsMax": 6519,
+        "selectedTilesMin": 19,
+        "selectedTilesMax": 19,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 10.8,
+        "fovMax": 10.8
+      }
+    },
+    "idleMemory": {
+      "filename": "page-bridge-idle-1792333496292.ndjson",
+      "bytes": 1017,
+      "sha256": "c02baf2eacea3b33a844105b7e64e291e2e39bd49887e91d5669bbb7ad89e6ce",
+      "unit": "KiB",
+      "sampleCount": 1,
+      "foregroundOwnerVerifiedAtEverySample": true,
+      "projection": "Only the actual foreground Activity owner; other slots remain in the source NDJSON.",
+      "samples": [
+        {
+          "elapsedMs": 3226,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 3196841,
+            "totalRssKiB": 2295612,
+            "totalSwapPssKiB": 1249408,
+            "nativeHeapPssKiB": 163576,
+            "dalvikHeapPssKiB": 81667,
+            "glMtrackPssKiB": 26240,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 1232796,
+            "otherMmapPssKiB": 25052,
+            "soMmapPssKiB": 153838,
+            "javaHeapSummaryKiB": 82112,
+            "nativeHeapSummaryKiB": 158524,
+            "codeSummaryKiB": 176588,
+            "stackSummaryKiB": 4912,
+            "graphicsSummaryKiB": 145760,
+            "privateOtherSummaryKiB": 1270976,
+            "systemSummaryKiB": 1357969
+          }
+        }
+      ]
+    },
+    "playMemory": {
+      "filename": "page-bridge-play-1792333500426.ndjson",
+      "bytes": 6090,
+      "sha256": "d758f90fb5085931d8def5ead7d68425e8d41adfaad86aef53aa40585965b212",
+      "unit": "KiB",
+      "sampleCount": 6,
+      "foregroundOwnerVerifiedAtEverySample": true,
+      "projection": "Only the actual foreground Activity owner; other slots remain in the source NDJSON.",
+      "samples": [
+        {
+          "elapsedMs": 3078,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 3136003,
+            "totalRssKiB": 2234780,
+            "totalSwapPssKiB": 1249408,
+            "nativeHeapPssKiB": 161512,
+            "dalvikHeapPssKiB": 23123,
+            "glMtrackPssKiB": 26240,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 1232740,
+            "otherMmapPssKiB": 25052,
+            "soMmapPssKiB": 153838,
+            "javaHeapSummaryKiB": 23568,
+            "nativeHeapSummaryKiB": 156460,
+            "codeSummaryKiB": 176588,
+            "stackSummaryKiB": 4912,
+            "graphicsSummaryKiB": 145760,
+            "privateOtherSummaryKiB": 1270752,
+            "systemSummaryKiB": 1357963
+          }
+        },
+        {
+          "elapsedMs": 9467,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 4048471,
+            "totalRssKiB": 3147444,
+            "totalSwapPssKiB": 1249248,
+            "nativeHeapPssKiB": 176884,
+            "dalvikHeapPssKiB": 26603,
+            "glMtrackPssKiB": 25120,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 2127524,
+            "otherMmapPssKiB": 25128,
+            "soMmapPssKiB": 153838,
+            "javaHeapSummaryKiB": 27048,
+            "nativeHeapSummaryKiB": 171844,
+            "codeSummaryKiB": 176588,
+            "stackSummaryKiB": 4920,
+            "graphicsSummaryKiB": 144640,
+            "privateOtherSummaryKiB": 2165592,
+            "systemSummaryKiB": 1357839
+          }
+        },
+        {
+          "elapsedMs": 15759,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 4795256,
+            "totalRssKiB": 3760392,
+            "totalSwapPssKiB": 1331416,
+            "nativeHeapPssKiB": 185472,
+            "dalvikHeapPssKiB": 27271,
+            "glMtrackPssKiB": 25120,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 2885504,
+            "otherMmapPssKiB": 21522,
+            "soMmapPssKiB": 120128,
+            "javaHeapSummaryKiB": 27520,
+            "nativeHeapSummaryKiB": 180436,
+            "codeSummaryKiB": 106492,
+            "stackSummaryKiB": 4768,
+            "graphicsSummaryKiB": 144640,
+            "privateOtherSummaryKiB": 2921528,
+            "systemSummaryKiB": 1409872
+          }
+        },
+        {
+          "elapsedMs": 22042,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 3746280,
+            "totalRssKiB": 2485032,
+            "totalSwapPssKiB": 1557816,
+            "nativeHeapPssKiB": 187840,
+            "dalvikHeapPssKiB": 28455,
+            "glMtrackPssKiB": 25120,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 1606412,
+            "otherMmapPssKiB": 21330,
+            "soMmapPssKiB": 120076,
+            "javaHeapSummaryKiB": 28888,
+            "nativeHeapSummaryKiB": 182804,
+            "codeSummaryKiB": 106616,
+            "stackSummaryKiB": 4740,
+            "graphicsSummaryKiB": 144640,
+            "privateOtherSummaryKiB": 1642304,
+            "systemSummaryKiB": 1636288
+          }
+        },
+        {
+          "elapsedMs": 29208,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 3971214,
+            "totalRssKiB": 2317016,
+            "totalSwapPssKiB": 1948672,
+            "nativeHeapPssKiB": 194848,
+            "dalvikHeapPssKiB": 27759,
+            "glMtrackPssKiB": 25120,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 1436748,
+            "otherMmapPssKiB": 21801,
+            "soMmapPssKiB": 117672,
+            "javaHeapSummaryKiB": 28192,
+            "nativeHeapSummaryKiB": 189808,
+            "codeSummaryKiB": 104912,
+            "stackSummaryKiB": 4704,
+            "graphicsSummaryKiB": 144640,
+            "privateOtherSummaryKiB": 1473200,
+            "systemSummaryKiB": 2025758
+          }
+        },
+        {
+          "elapsedMs": 35354,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 4137210,
+            "totalRssKiB": 2341708,
+            "totalSwapPssKiB": 2089952,
+            "nativeHeapPssKiB": 200364,
+            "dalvikHeapPssKiB": 26843,
+            "glMtrackPssKiB": 25120,
+            "eglMtrackPssKiB": 119520,
+            "unknownPssKiB": 1457044,
+            "otherMmapPssKiB": 21613,
+            "soMmapPssKiB": 117716,
+            "javaHeapSummaryKiB": 27276,
+            "nativeHeapSummaryKiB": 195324,
+            "codeSummaryKiB": 104956,
+            "stackSummaryKiB": 4704,
+            "graphicsSummaryKiB": 144640,
+            "privateOtherSummaryKiB": 1493296,
+            "systemSummaryKiB": 2167014
+          }
+        }
+      ]
+    },
+    "processWasAlreadyWarmAndSwapping": true
+  },
+  "debugDisabledRun": {
+    "debugSettingAction": "Normal WeChat capsule Development debugging > Close debugging; app exited; sole operator reopened the unchanged official auto-preview.",
+    "enableDebugObservedBeforePlay": false,
+    "beforeScreenshot": "page-bridge-debug-off-before.png",
+    "vConsoleBadgeVisibleBeforePlay": false,
+    "noFurtherDebugSettingChangeReportedDuringPlay": true,
+    "actualNormalProductPlay": true,
+    "preparedFovDeg": 10.8,
+    "playbackRate": 1,
+    "startTimeReportedByOperator": "04:30:00",
+    "lastVisiblePlayingTime": "04:30:31",
+    "receipt": {
+      "filename": "candidate-r17-1-ble5msdhok.json",
+      "bytes": 4579,
+      "sha256": "babe9851586cc3655cb46c4968e87b67f9b1906122e91c0146b57097b28ae4e4",
+      "schemaValidated": true,
+      "status": "VALID_NONEMPTY_EARLY_MANUAL_WINDOW",
+      "runId": "r17-1-ble5msdhok",
+      "caseKey": "narrow-play",
+      "clock": "Date.now",
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 13988,
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 510,
+        "preparedRequests": 681,
+        "paintAttempts": 489,
+        "nativeCallbacks": 489,
+        "acceptedCopies": 489,
+        "sceneFinishes": 489,
+        "glDrawSubmissions": 2445,
+        "bscSubmittedStars": 4890,
+        "saoSubmittedStars": 144061,
+        "acceptedBscObjects": 4890,
+        "acceptedSaoObjects": 143571,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "drawCpu": {
+        "calls": 489,
+        "totalMs": 5278,
+        "minMs": 3,
+        "maxMs": 26,
+        "keptSamples": 489,
+        "p50Ms": 11,
+        "p95Ms": 14,
+        "overflow": false
+      },
+      "nativePaintOwnerCpu": {
+        "calls": 489,
+        "totalMs": 5317,
+        "minMs": 3,
+        "maxMs": 26,
+        "keptSamples": 489,
+        "p50Ms": 11,
+        "p95Ms": 14,
+        "overflow": false
+      },
+      "displayCopyCpu": {
+        "calls": 489,
+        "totalMs": 53,
+        "minMs": 0,
+        "maxMs": 1,
+        "keptSamples": 489,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "timing": {
+        "nativeCallbackMs": {
+          "calls": 489,
+          "totalMs": 5181,
+          "minMs": 3,
+          "maxMs": 25,
+          "keptSamples": 489,
+          "p50Ms": 11,
+          "p95Ms": 14,
+          "overflow": false
+        },
+        "acceptedGapMs": {
+          "calls": 488,
+          "totalMs": 13977,
+          "minMs": 9,
+          "maxMs": 66,
+          "keptSamples": 488,
+          "p50Ms": 29,
+          "p95Ms": 36,
+          "overflow": false
+        },
+        "intentToAcceptedWallMs": {
+          "calls": 6,
+          "totalMs": 204,
+          "minMs": 31,
+          "maxMs": 38,
+          "keptSamples": 6,
+          "p50Ms": 36,
+          "p95Ms": 38,
+          "overflow": false
+        }
+      },
+      "time": {
+        "intent": {
+          "events": 510,
+          "distinct": 510,
+          "firstRelativeMs": 59,
+          "lastRelativeMs": 14036,
+          "minRelativeMs": 59,
+          "maxRelativeMs": 14036,
+          "overflow": false
+        },
+        "prepared": {
+          "events": 681,
+          "distinct": 462,
+          "firstRelativeMs": 31,
+          "lastRelativeMs": 14004,
+          "minRelativeMs": 31,
+          "maxRelativeMs": 14004,
+          "overflow": false
+        },
+        "painted": {
+          "events": 489,
+          "distinct": 456,
+          "firstRelativeMs": 0,
+          "lastRelativeMs": 13971,
+          "minRelativeMs": 0,
+          "maxRelativeMs": 13971,
+          "overflow": false
+        },
+        "accepted": {
+          "events": 489,
+          "distinct": 456,
+          "firstRelativeMs": 0,
+          "lastRelativeMs": 13971,
+          "minRelativeMs": 0,
+          "maxRelativeMs": 13971,
+          "overflow": false
+        },
+        "lastRequestedMinusAcceptedMs": 33,
+        "maximumRequestedMinusAcceptedMs": 80
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 6519,
+        "saoRowsMax": 6519,
+        "selectedTilesMin": 19,
+        "selectedTilesMax": 19,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 10.8,
+        "fovMax": 10.8
+      }
+    },
+    "idleMemory": {
+      "filename": "page-bridge-debug-off-idle-1792333926739.ndjson",
+      "bytes": 1002,
+      "sha256": "6a4e401c6d55f9189e39de52dbd592836bbf0f32443cbdc4d02c68c8d55523ff",
+      "unit": "KiB",
+      "sampleCount": 1,
+      "foregroundOwnerVerifiedAtEverySample": true,
+      "projection": "Only the actual foreground Activity owner; other slots remain in the source NDJSON.",
+      "samples": [
+        {
+          "elapsedMs": 2682,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 906862,
+            "totalRssKiB": 1188724,
+            "totalSwapPssKiB": 134,
+            "nativeHeapPssKiB": 89933,
+            "dalvikHeapPssKiB": 81863,
+            "glMtrackPssKiB": 9356,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 291216,
+            "otherMmapPssKiB": 20154,
+            "soMmapPssKiB": 160515,
+            "javaHeapSummaryKiB": 83184,
+            "nativeHeapSummaryKiB": 89912,
+            "codeSummaryKiB": 205308,
+            "stackSummaryKiB": 6496,
+            "graphicsSummaryKiB": 98488,
+            "privateOtherSummaryKiB": 321760,
+            "systemSummaryKiB": 101714
+          }
+        }
+      ]
+    },
+    "playMemory": {
+      "filename": "page-bridge-debug-off-play-1792333958012.ndjson",
+      "bytes": 7038,
+      "sha256": "bf2d86a31c2ec4a41ebe4dc873957a8cbd8d60e5cfd28259129881c171135b79",
+      "unit": "KiB",
+      "sampleCount": 7,
+      "foregroundOwnerVerifiedAtEverySample": true,
+      "projection": "Only the actual foreground Activity owner; other slots remain in the source NDJSON.",
+      "samples": [
+        {
+          "elapsedMs": 2340,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 840538,
+            "totalRssKiB": 1125460,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 88501,
+            "dalvikHeapPssKiB": 21939,
+            "glMtrackPssKiB": 9356,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 287536,
+            "otherMmapPssKiB": 19578,
+            "soMmapPssKiB": 160011,
+            "javaHeapSummaryKiB": 22452,
+            "nativeHeapSummaryKiB": 88480,
+            "codeSummaryKiB": 204724,
+            "stackSummaryKiB": 6496,
+            "graphicsSummaryKiB": 98488,
+            "privateOtherSummaryKiB": 317332,
+            "systemSummaryKiB": 102566
+          }
+        },
+        {
+          "elapsedMs": 8520,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1078513,
+            "totalRssKiB": 1363468,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 100041,
+            "dalvikHeapPssKiB": 23231,
+            "glMtrackPssKiB": 8272,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 513428,
+            "otherMmapPssKiB": 19826,
+            "soMmapPssKiB": 160074,
+            "javaHeapSummaryKiB": 23744,
+            "nativeHeapSummaryKiB": 100020,
+            "codeSummaryKiB": 204788,
+            "stackSummaryKiB": 6496,
+            "graphicsSummaryKiB": 97404,
+            "privateOtherSummaryKiB": 543464,
+            "systemSummaryKiB": 102597
+          }
+        },
+        {
+          "elapsedMs": 14873,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1412929,
+            "totalRssKiB": 1697888,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 112133,
+            "dalvikHeapPssKiB": 25871,
+            "glMtrackPssKiB": 8256,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 832972,
+            "otherMmapPssKiB": 20026,
+            "soMmapPssKiB": 160074,
+            "javaHeapSummaryKiB": 26384,
+            "nativeHeapSummaryKiB": 112112,
+            "codeSummaryKiB": 204788,
+            "stackSummaryKiB": 6440,
+            "graphicsSummaryKiB": 97388,
+            "privateOtherSummaryKiB": 863216,
+            "systemSummaryKiB": 102601
+          }
+        },
+        {
+          "elapsedMs": 21266,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1600192,
+            "totalRssKiB": 1884680,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 119177,
+            "dalvikHeapPssKiB": 25879,
+            "glMtrackPssKiB": 8256,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 1012908,
+            "otherMmapPssKiB": 19802,
+            "soMmapPssKiB": 160561,
+            "javaHeapSummaryKiB": 26392,
+            "nativeHeapSummaryKiB": 119156,
+            "codeSummaryKiB": 205348,
+            "stackSummaryKiB": 6440,
+            "graphicsSummaryKiB": 97388,
+            "privateOtherSummaryKiB": 1042924,
+            "systemSummaryKiB": 102544
+          }
+        },
+        {
+          "elapsedMs": 27170,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1823516,
+            "totalRssKiB": 2108008,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 128137,
+            "dalvikHeapPssKiB": 25775,
+            "glMtrackPssKiB": 8256,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 1226824,
+            "otherMmapPssKiB": 20346,
+            "soMmapPssKiB": 160561,
+            "javaHeapSummaryKiB": 26288,
+            "nativeHeapSummaryKiB": 128116,
+            "codeSummaryKiB": 205348,
+            "stackSummaryKiB": 6440,
+            "graphicsSummaryKiB": 97388,
+            "privateOtherSummaryKiB": 1257388,
+            "systemSummaryKiB": 102548
+          }
+        },
+        {
+          "elapsedMs": 33204,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 1943764,
+            "totalRssKiB": 2228260,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 132281,
+            "dalvikHeapPssKiB": 25395,
+            "glMtrackPssKiB": 8256,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 1344360,
+            "otherMmapPssKiB": 19334,
+            "soMmapPssKiB": 160561,
+            "javaHeapSummaryKiB": 25908,
+            "nativeHeapSummaryKiB": 132260,
+            "codeSummaryKiB": 205348,
+            "stackSummaryKiB": 6400,
+            "graphicsSummaryKiB": 97388,
+            "privateOtherSummaryKiB": 1373908,
+            "systemSummaryKiB": 102552
+          }
+        },
+        {
+          "elapsedMs": 39510,
+          "state": "miniapp_foreground",
+          "foregroundOwnerVerified": true,
+          "foregroundProcess": {
+            "slot": 0,
+            "foregroundActivityOwner": true,
+            "totalPssKiB": 2034905,
+            "totalRssKiB": 2319408,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 139941,
+            "dalvikHeapPssKiB": 25479,
+            "glMtrackPssKiB": 8256,
+            "eglMtrackPssKiB": 89132,
+            "unknownPssKiB": 1427640,
+            "otherMmapPssKiB": 19466,
+            "soMmapPssKiB": 160561,
+            "javaHeapSummaryKiB": 25992,
+            "nativeHeapSummaryKiB": 139920,
+            "codeSummaryKiB": 205348,
+            "stackSummaryKiB": 6400,
+            "graphicsSummaryKiB": 97388,
+            "privateOtherSummaryKiB": 1457328,
+            "systemSummaryKiB": 102529
+          }
+        }
+      ]
+    },
+    "pageAndUploadScalarsAfterPlayCaptured": false,
+    "pageAndUploadScalarsFromDebugOnReused": false,
+    "pauseAttempt": "FOREGROUND_GUARD_REJECTED_NO_INPUT_SENT",
+    "subsequentCaptureAttempt": "FOREGROUND_GUARD_REJECTED",
+    "successfulPauseEstablished": false,
+    "contextApplyDuringTrial": false,
+    "exactLossOfForegroundOrExitTimeEstablished": false,
+    "observedForegroundMemoryChange": {
+      "elapsedMs": [
+        2340,
+        39510
+      ],
+      "totalPssKiB": [
+        840538,
+        2034905
+      ],
+      "totalRssKiB": [
+        1125460,
+        2319408
+      ],
+      "totalSwapPssKiB": [
+        40,
+        40
+      ],
+      "unknownPssKiB": [
+        287536,
+        1427640
+      ],
+      "nativeHeapPssKiB": [
+        88501,
+        139941
+      ],
+      "glMtrackPssKiB": [
+        9356,
+        8256
+      ],
+      "eglMtrackPssKiB": [
+        89132,
+        89132
+      ],
+      "allocatorAttribution": "NOT_ESTABLISHED_UNKNOWN_PRIVATE_OTHER_IS_NOT_JS_OR_V8_PROOF"
+    }
+  },
+  "laterExitHistory": {
+    "filename": "page-bridge-debug-off-exit-summary.json",
+    "bytes": 1177,
+    "sha256": "3c703693b21a68af9581e35b4863920bc93f0734f97dda486020904dd7581da9",
+    "observations": [
+      {
+        "ageSeconds": 69,
+        "reason": 1,
+        "status": 0,
+        "pssKiB": 885760,
+        "rssKiB": 1153434,
+        "nativeCrash": false,
+        "signaledAbort": false,
+        "lowMemoryReason": false,
+        "descriptionClasses": {
+          "outOfMemory": false,
+          "heapCorruption": false,
+          "graphics": false
+        }
+      },
+      {
+        "ageSeconds": 662,
+        "reason": 5,
+        "status": 6,
+        "pssKiB": 1153434,
+        "rssKiB": 1363149,
+        "nativeCrash": true,
+        "signaledAbort": false,
+        "lowMemoryReason": false,
+        "descriptionClasses": {
+          "outOfMemory": false,
+          "heapCorruption": false,
+          "graphics": false
+        }
+      },
+      {
+        "ageSeconds": 1014,
+        "reason": 2,
+        "status": 9,
+        "pssKiB": 3040870,
+        "rssKiB": 1992294,
+        "nativeCrash": false,
+        "signaledAbort": false,
+        "lowMemoryReason": false,
+        "descriptionClasses": {
+          "outOfMemory": false,
+          "heapCorruption": false,
+          "graphics": false
+        }
+      }
+    ],
+    "readAfterLaterPerformancePanelSettingExit": true,
+    "newestReason1Status0": "Later settings restart, not the playback crash.",
+    "secondReason5Status6": "Native-crash classification at age 662 s is temporally nearby; exact trial/process/instant association remains unproven.",
+    "exactForegroundProcessAssociation": false,
+    "causalOutOfMemoryEstablished": false,
+    "rawProviderDumpsRetained": false
+  },
+  "media": [
+    {
+      "filename": "page-bridge-play-active.png",
+      "bytes": 372857,
+      "sha256": "8ad95f50516a44884655c780364c652748f5af6c5866c150b41af490f14bce08",
+      "review": "VIEWED_BY_SOLE_PHONE_OPERATOR",
+      "evidenceWriterViewed": false
+    },
+    {
+      "filename": "page-bridge-play-paused.png",
+      "bytes": 374434,
+      "sha256": "70c2e02de8850f6c50476b5dd77cb4934015223a225793bb1cbfa83fcf085fc8",
+      "review": "VIEWED_BY_SOLE_PHONE_OPERATOR",
+      "evidenceWriterViewed": true
+    },
+    {
+      "filename": "page-bridge-after-counters.png",
+      "bytes": 394380,
+      "sha256": "e6777c90764ccc0580f139284f4d5fb9c5c9c804ed7f4a5593d766f7db7a0d08",
+      "review": "VIEWED_BY_SOLE_PHONE_OPERATOR",
+      "evidenceWriterViewed": true
+    },
+    {
+      "filename": "page-bridge-debug-off-before.png",
+      "bytes": 659788,
+      "sha256": "8b14377cb88715c337a3466ddbab234e32c07a6a9d6d34593f9cc2573d0fc32b",
+      "review": "VIEWED_BY_SOLE_PHONE_OPERATOR",
+      "evidenceWriterViewed": true
+    },
+    {
+      "filename": "page-bridge-debug-off-play-last.png",
+      "bytes": 363880,
+      "sha256": "68fb87e93e0c7aae18556d78a05ddad15daa2abd16ad3476813196b16dc7f1d7",
+      "review": "VIEWED_BY_SOLE_PHONE_OPERATOR",
+      "evidenceWriterViewed": true
+    },
+    {
+      "filename": "page-bridge-debug-off-play.mp4",
+      "bytes": 786373,
+      "sha256": "57ff5b17ef5bcd19886e9b4e6d579059d7cad8dcb4b876329dd10ae418cbb593",
+      "review": "CAPTURED_NOT_FULLY_REVIEWED",
+      "evidenceWriterViewed": false
+    }
+  ],
+  "findings": [
+    "With debug enabled, the observed raw Page wrapper acknowledged all 500 submitted calls at early export and all 1403 by the later header. Pending was 0 at both snapshots, maximum 2/3, no invocation failures, duplicates or missing callbacks. This does not reproduce a growing callback-bearing raw Page backlog in that observed run.",
+    "The maximum callback latency later reached 493 ms. Acknowledgements are not native presentation, render completion or a bound on custom-wrapper/native queues.",
+    "The first 16 serialized samples total 18700 UTF8 bytes. This is bounded sampling, not total traffic or retained heap. Typed bufferData uploads likewise measure submitted bytes, not retained JS/native/GPU storage or all texture allocations.",
+    "After normal UI disabled debugging and Dfalse was observed, normal 1x playback still showed rapid foreground PSS/RSS/Unknown growth with 40 KiB swap during all 7 samples. Disabling debugging is insufficient as the repair.",
+    "The debug-enabled process already had substantial swap and prior-trial state; the two runs are not a clean performance or memory A/B comparison. Reported TOTAL PSS must not be described as physical DRAM or JS heap."
+  ],
+  "decision": "No production repair is adopted. Debug-off, blocking finish and copy changes have not supplied the required continuous-play result. Observe target JS heap ownership at the next available native snapshot boundary; preserve ordinary rendering and all original acceptance obligations.",
+  "acceptance": {
+    "nonemptyRealWorkloadEarlyWindows": true,
+    "debugOffSettingObserved": true,
+    "rawPageBacklogObserved": false,
+    "debugOffPageScalarsVerified": false,
+    "nativeAllocatorOrJsRetainerIdentified": false,
+    "memoryImprovement": false,
+    "continuousPlayback": false,
+    "overallR17": false
+  },
+  "limitations": [
+    "Generation and selected bundle are bound by the sole phone operator and build provenance; actual installed phone bytes and runtime AppID are not independently read back.",
+    "Receipt schema validates bounded workload data, not pixels, native playback survival, physical scanout or the phone process allocator.",
+    "Only current raw Page setData callback-bearing calls are observed. Custom-wrapper/native queues are outside this boundary.",
+    "Debug-disabled post-Play scalar screenshots are absent. Debug-enabled values must not be attributed to the debug-disabled run.",
+    "The 15-second recording is retained and hashed but has not been fully reviewed; screenshot review is not full video review.",
+    "The failed pause sent no input and must not be recorded as a successful pause. Later exit history does not establish an exact playback-crash process/time or OOM cause.",
+    "Target fix, normal candidate acceptance, landscape motion and reverse-order wide-camera comparison remain open with their existing owners.",
+    "Later heap-snapshot or performance-panel work is outside this result and remains with the sole phone operator."
+  ]
+}

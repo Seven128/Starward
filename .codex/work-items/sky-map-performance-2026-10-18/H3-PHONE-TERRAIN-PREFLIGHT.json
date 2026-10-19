@@ -1,0 +1,32 @@
+{
+  "scope": "H3_REAL_SAME_SITE_TERRAIN_HTTP_ONLY_NOT_PHONE",
+  "httpStatus": 200,
+  "elapsedMs": 7068,
+  "bytes": 35393,
+  "sha256": "5c309657f265f2893d5721c5a137585ecd2b3a1771e4dd26b59d4db3fdc1adeb",
+  "dataState": "FRESH",
+  "dataKeys": [
+    "state",
+    "centerGcj02",
+    "publicationId",
+    "derivedAt",
+    "model",
+    "sourceProof",
+    "source",
+    "coverageLabel",
+    "limitations"
+  ],
+  "errorCode": null,
+  "phoneVerified": false,
+  "photoHandlerActivated": false,
+  "requestedStationAndCompleteAngleIndexValidated": true,
+  "state": "AVAILABLE",
+  "radiusM": 20000,
+  "sectorWidthDegrees": 1,
+  "bearingReference": "TRUE_NORTH_CLOCKWISE",
+  "sectors": 360,
+  "knownSectors": 360,
+  "unknownSectors": 0,
+  "zeroElevationSectors": 0,
+  "sourceProofPresent": true
+}

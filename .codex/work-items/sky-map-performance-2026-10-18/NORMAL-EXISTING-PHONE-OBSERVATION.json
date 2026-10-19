@@ -1,0 +1,514 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-19T00:04:14.7278849Z",
+  "scope": "TASK_ONLY_EXISTING_NORMAL_SKY_PHONE_DEVELOPMENT_FEEDBACK",
+  "status": "BOUNDED_VISUAL_OBSERVATIONS_ARCHIVED_NOT_R17_A_B_ACCEPTANCE",
+  "mode": "development_feedback",
+  "candidateIdentity": {
+    "visibleLabel": "R17 正常Sky基线 v3",
+    "visibleLabelActuallyViewed": true,
+    "labelScreenshot": {
+      "externalRelativePath": "device-session-archive/screen-980c7a42-606b-4d15-a3be-98bc6e2774f6.png",
+      "bytes": 638690,
+      "sha256": "5d0e281f6529282d7e4fe1f88ab0b1a8f722503a176c2dabe4096353cc3fd54b"
+    },
+    "expectedHistoricalGeneration": 25,
+    "expectedHistoricalRevision": "review-r2",
+    "expectedBuildSourceSha256": "10236f0e034ae96d9e31ed5e081a837a53f4cdd128e3f9ac34da6d588f151a4c",
+    "expectedBundleSha256": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+    "expectedIdentityOwner": "R17-NORMAL-BASELINE-V3-PREPARATION.json",
+    "phoneBundleBytesReadbackVerified": false,
+    "runtimeAppIdVerified": false,
+    "feedbackGeneration26Status": "UNKNOWN",
+    "feedbackGeneration26Changed": false,
+    "newPreviewIssued": false,
+    "newGenerationBound": false
+  },
+  "archive": {
+    "externalOwner": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019",
+    "directory": "device-session-archive",
+    "privateManifest": "device-session-archive-manifest.private.json",
+    "privateManifestSha256": "bacd299f44371df6f718bae3d55a8c848d4daaae97e77a817e40136a04929780",
+    "fileCount": 44,
+    "totalBytes": 17602727,
+    "videoFiles": 7,
+    "screenshots": 18,
+    "captureMetadataFiles": 18,
+    "originalSessionFiles": 1,
+    "sourceStableDuringCopy": true,
+    "receiverLengthsAndSha256AllMatch": true,
+    "copiedWithoutOverwrite": true,
+    "captureMetadataImageBytesAndHashesMatched": 18,
+    "captureTimeRangeUtc": {
+      "first": "10/18/2026 23:19:47",
+      "last": "10/19/2026 00:01:30"
+    },
+    "scopeOfRange": "Complete session snapshot at copy time, including extra captures not promoted into the seven sampled observations.",
+    "orderedFiles": [
+      {
+        "relativePath": "recording-1792365751791.mp4",
+        "bytes": 551225,
+        "sha256": "3d4dd016b15594733a4967fc276525dc364c3bbb1b725943a1892b7175644d56"
+      },
+      {
+        "relativePath": "recording-1792365780158.mp4",
+        "bytes": 690268,
+        "sha256": "1b97e8f3f4403efeb058064f061d119fd919d9db0068b07f7d5328319610b5f2"
+      },
+      {
+        "relativePath": "recording-1792365810729.mp4",
+        "bytes": 787162,
+        "sha256": "adaead18e78c60ac20036cd94ebd1e5bc8bdccb3fdf0c349eb5b7eafd90f59ff"
+      },
+      {
+        "relativePath": "recording-1792365838556.mp4",
+        "bytes": 807043,
+        "sha256": "7556834043305510031ec62f34927dc5957dd6de8f96a4b9b3403d8529e19837"
+      },
+      {
+        "relativePath": "recording-1792366327131.mp4",
+        "bytes": 717686,
+        "sha256": "84fdd6219656f2849474a4991b492af6bd2fa806c633e7081bc921b5cf480d4e"
+      },
+      {
+        "relativePath": "recording-1792366513358.mp4",
+        "bytes": 99722,
+        "sha256": "5d796077a116a41e1ea2bf12b4b35e56258eb245905d8b288491a5ed60f5019e"
+      },
+      {
+        "relativePath": "recording-1792366556049.mp4",
+        "bytes": 270528,
+        "sha256": "8f97afeb4775437c62276fd1986e2ae529918cdc6481d6f453cbfdeab2aa935e"
+      },
+      {
+        "relativePath": "screen-0d5ea10b-04af-4ebf-8455-c0bf8e77c558.png",
+        "bytes": 635359,
+        "sha256": "71e91cb514ecd96115c2471a610b69e8adb3a70afbae72f13e554e1ef04ddecc"
+      },
+      {
+        "relativePath": "screen-0d5ea10b-04af-4ebf-8455-c0bf8e77c558.png.json",
+        "bytes": 391,
+        "sha256": "64198ce47f41ce530ff6cb960270ea6fc7e15bf363883c8ecc8228bbc4634b83"
+      },
+      {
+        "relativePath": "screen-0dacf2ad-a208-4129-85a4-411fb650c85a.png",
+        "bytes": 633427,
+        "sha256": "43558513348fb40f7e9245fd1d32b1c07a56158fa0dd1ed74323f29dce1d1743"
+      },
+      {
+        "relativePath": "screen-0dacf2ad-a208-4129-85a4-411fb650c85a.png.json",
+        "bytes": 391,
+        "sha256": "a6f2e0f1b83f20018675dbb0a8867cfc0fbaeb1c6d81bfe83fb1e99973c5784a"
+      },
+      {
+        "relativePath": "screen-232ec22a-8c8e-4bc5-a0ff-8b1ecc3b480c.png",
+        "bytes": 801138,
+        "sha256": "b379c40adbf1b334b54d325a04720711c5b5a1930d00a1c84c7b122a0e862031"
+      },
+      {
+        "relativePath": "screen-232ec22a-8c8e-4bc5-a0ff-8b1ecc3b480c.png.json",
+        "bytes": 391,
+        "sha256": "8b725d9854ccb61e7e5b086645a7a8ee6d30a7a0d910f28e7dfd4ea70f912cd3"
+      },
+      {
+        "relativePath": "screen-3032094a-5578-4a68-929a-bea2145c74c8.png",
+        "bytes": 634879,
+        "sha256": "73b3fba4a227153c58748a72c8291c3448c70b37c06490eb21cd574248bdefea"
+      },
+      {
+        "relativePath": "screen-3032094a-5578-4a68-929a-bea2145c74c8.png.json",
+        "bytes": 391,
+        "sha256": "7c7739bbf47bec579c26a5e2547ae3a01b47b2cbfd4bf507b25dae5360d3af0b"
+      },
+      {
+        "relativePath": "screen-52af732f-5bbd-4048-a1d9-bbc15bde1e52.png",
+        "bytes": 936980,
+        "sha256": "fecb440bb38eccfe99eff33fe00e9cc60def3af7b176da892d43a9826cffd478"
+      },
+      {
+        "relativePath": "screen-52af732f-5bbd-4048-a1d9-bbc15bde1e52.png.json",
+        "bytes": 391,
+        "sha256": "19ab0d9bc9f849ffb0ac6cbcaeb82e245ea2295eadd559521cda7a48d371d780"
+      },
+      {
+        "relativePath": "screen-7505ac8a-0a24-4409-a451-a18af0d2d78c.png",
+        "bytes": 638847,
+        "sha256": "4ba10b70b50afa5854c5bff97ac1a7cbc3c78a05613de03846f69ad2867f2265"
+      },
+      {
+        "relativePath": "screen-7505ac8a-0a24-4409-a451-a18af0d2d78c.png.json",
+        "bytes": 391,
+        "sha256": "06428b6e2388a8c559017ddba6c6dbc408fe6c503ad0b1a5059e2a9208c5151d"
+      },
+      {
+        "relativePath": "screen-77a65aea-f9e6-4bf5-8ec8-91153a22d999.png",
+        "bytes": 796273,
+        "sha256": "bf362238111e605d156ba00d835f076e7c6edac8e09b30074cfe7955d82f15db"
+      },
+      {
+        "relativePath": "screen-77a65aea-f9e6-4bf5-8ec8-91153a22d999.png.json",
+        "bytes": 391,
+        "sha256": "4d9d6895a9dd453a7a328884c89e09ecf831beddf8ce62557bc0e53bd3732b42"
+      },
+      {
+        "relativePath": "screen-8b057907-6535-46b8-a952-a943d980d693.png",
+        "bytes": 795723,
+        "sha256": "88145f43b0595598efe53ab76dae5b4efc479174dd680ab7b3f84d07ef0308e8"
+      },
+      {
+        "relativePath": "screen-8b057907-6535-46b8-a952-a943d980d693.png.json",
+        "bytes": 391,
+        "sha256": "06461e6537951c4083e4ee19c19c0dc23e1f99ee96583964cca19ea6e887cc33"
+      },
+      {
+        "relativePath": "screen-980c7a42-606b-4d15-a3be-98bc6e2774f6.png",
+        "bytes": 638690,
+        "sha256": "5d0e281f6529282d7e4fe1f88ab0b1a8f722503a176c2dabe4096353cc3fd54b"
+      },
+      {
+        "relativePath": "screen-980c7a42-606b-4d15-a3be-98bc6e2774f6.png.json",
+        "bytes": 391,
+        "sha256": "a861f4951ea40e83e869531939e7c198d6a1753f9aaa28c591cff92d3292c2ee"
+      },
+      {
+        "relativePath": "screen-b35a1408-dbfe-48e7-a4b2-71f4fb465c50.png",
+        "bytes": 938688,
+        "sha256": "082930f8701077c9abb7233dee2b6bb10610acc0ebb23f2c0391956926ecff43"
+      },
+      {
+        "relativePath": "screen-b35a1408-dbfe-48e7-a4b2-71f4fb465c50.png.json",
+        "bytes": 391,
+        "sha256": "e94435ef18f3804c955c73a8694f8f26b4f252018577e88e0aeab7350ef7874a"
+      },
+      {
+        "relativePath": "screen-ba75a63b-9c74-4c23-a8ed-4555b1ca1e87.png",
+        "bytes": 889088,
+        "sha256": "d72c5fcff8e5e5d084ee46b1fee51a643247ea03c87ce6a9a3a4d8c607a0c407"
+      },
+      {
+        "relativePath": "screen-ba75a63b-9c74-4c23-a8ed-4555b1ca1e87.png.json",
+        "bytes": 391,
+        "sha256": "31412920bfa2662fe037af696b19119f7b1d2e3a7396861520ad69ed647f7f94"
+      },
+      {
+        "relativePath": "screen-be46c42c-a2bd-4ae0-ace7-44c8dc49c91b.png",
+        "bytes": 889473,
+        "sha256": "e5ec689fbf0f397c6b588415337c9cd632075fa2d2fb7bfe0856945430b7b4eb"
+      },
+      {
+        "relativePath": "screen-be46c42c-a2bd-4ae0-ace7-44c8dc49c91b.png.json",
+        "bytes": 391,
+        "sha256": "caa7056de795b6f52a486530a9b48c41aad9d3fd7f1bad0e8019b7f348cb51df"
+      },
+      {
+        "relativePath": "screen-c2c6d749-0749-4775-83bd-60e198fcf452.png",
+        "bytes": 395786,
+        "sha256": "97ae9813f84e305c3d702f9c1cda54c38a3b111f28e47e25a87c050263fff131"
+      },
+      {
+        "relativePath": "screen-c2c6d749-0749-4775-83bd-60e198fcf452.png.json",
+        "bytes": 391,
+        "sha256": "39622a703fbd6f9b5251d1821e7b11532a8c7e50b41a3833b6f2cf551ef48482"
+      },
+      {
+        "relativePath": "screen-c5768517-2645-4877-933a-8a08ff5fc806.png",
+        "bytes": 801530,
+        "sha256": "15dbaa79414a95114064f8ffec49b94ba63c4af9e4438c37117b7ea1805d68ce"
+      },
+      {
+        "relativePath": "screen-c5768517-2645-4877-933a-8a08ff5fc806.png.json",
+        "bytes": 391,
+        "sha256": "5849cd46aece986e6c1598d4b3df081d76a8395165b2b3414939766417b28b9f"
+      },
+      {
+        "relativePath": "screen-cacbf148-12eb-4cd6-9eac-24b85672268c.png",
+        "bytes": 856795,
+        "sha256": "c22ed026ede731cffb251331ef80051ea4f2772505176772dfda0457e3254df8"
+      },
+      {
+        "relativePath": "screen-cacbf148-12eb-4cd6-9eac-24b85672268c.png.json",
+        "bytes": 391,
+        "sha256": "278c41933172bc070108a1a43b29c6bbbdfa0b6f93f8c7810029e9a535a2abbf"
+      },
+      {
+        "relativePath": "screen-d0deebed-2860-4364-9c64-7778e4ad6592.png",
+        "bytes": 703536,
+        "sha256": "059727a81bf7987a66381ce527d6de15bdb2a1cbe80c0ce6a8e6bbd60f00dcb0"
+      },
+      {
+        "relativePath": "screen-d0deebed-2860-4364-9c64-7778e4ad6592.png.json",
+        "bytes": 391,
+        "sha256": "c02066414de3cd7d32151588e6d29b180f756a2df94e6ef6a39ca7bec51bf930"
+      },
+      {
+        "relativePath": "screen-d1254e94-ab97-4a23-abff-3bd1ec94c79c.png",
+        "bytes": 888443,
+        "sha256": "377995078cf60884f1c104b593dd4402cc5034284d0c9fefe55a76c9650a9393"
+      },
+      {
+        "relativePath": "screen-d1254e94-ab97-4a23-abff-3bd1ec94c79c.png.json",
+        "bytes": 391,
+        "sha256": "e82652a0d012d8d06e362502487e98b95a9360f3313085b687f8ec9aec162df7"
+      },
+      {
+        "relativePath": "screen-e531c54d-c66f-4101-ab16-8facb97dbfcb.png",
+        "bytes": 796175,
+        "sha256": "a8a77cf6b97e5b1e5f8e1c4bc801ab472975d57752972b3ed99c5a643765fcc9"
+      },
+      {
+        "relativePath": "screen-e531c54d-c66f-4101-ab16-8facb97dbfcb.png.json",
+        "bytes": 391,
+        "sha256": "3d5aee9074cfecf74d053604665a97ad2fe93f6e6b0dc8177a2f766b23cb0b80"
+      },
+      {
+        "relativePath": "session.json",
+        "bytes": 1225,
+        "sha256": "1fe131c85ba57d6d15c09e0abe195329eec1c4065fabcbe4dfbdd246bf0bf1aa"
+      }
+    ]
+  },
+  "videos": [
+    {
+      "sampleId": "L1",
+      "role": "sky_toward_horizon",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792365751791.mp4",
+        "bytes": 551225,
+        "sha256": "3d4dd016b15594733a4967fc276525dc364c3bbb1b725943a1892b7175644d56"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 5.890567,
+        "encodedFrames": 88,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "landscape-review/grid-1792365751791.png",
+        "bytes": 660884,
+        "sha256": "883b75570773812bd2135a239d364f1948c7117e9fc8422eb0c4c6d20e7407bd",
+        "samplesPerSecond": 6,
+        "columns": 6,
+        "rows": 6,
+        "existingContactSheetReused": true,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled star field, constellation lines and artwork move toward the horizon.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    },
+    {
+      "sampleId": "L2",
+      "role": "horizon_crossing",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792365780158.mp4",
+        "bytes": 690268,
+        "sha256": "1b97e8f3f4403efeb058064f061d119fd919d9db0068b07f7d5328319610b5f2"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 6.251933,
+        "encodedFrames": 115,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "landscape-review/grid-1792365780158.png",
+        "bytes": 702064,
+        "sha256": "5c106f123f9bf34b948fb2696a40459ee4dbfd108b5cc26df2ac70d3be43c581",
+        "samplesPerSecond": 6,
+        "columns": 6,
+        "rows": 6,
+        "existingContactSheetReused": true,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled horizon and dark terrain silhouette enter while sky content remains visible.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    },
+    {
+      "sampleId": "L3",
+      "role": "backside_gray_cue",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792365810729.mp4",
+        "bytes": 787162,
+        "sha256": "adaead18e78c60ac20036cd94ebd1e5bc8bdccb3fdf0c349eb5b7eafd90f59ff"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 6.083,
+        "encodedFrames": 110,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "landscape-review/grid-1792365810729.png",
+        "bytes": 722188,
+        "sha256": "38609b71a9ca4febe653a1b6d46973c1c3f083ab0fbaca6cafa8381eaff3aab9",
+        "samplesPerSecond": 6,
+        "columns": 6,
+        "rows": 6,
+        "existingContactSheetReused": true,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled muted gray layer coexists with stars, constellation lines and artwork.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    },
+    {
+      "sampleId": "L4",
+      "role": "reverse_toward_horizon",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792365838556.mp4",
+        "bytes": 807043,
+        "sha256": "7556834043305510031ec62f34927dc5957dd6de8f96a4b9b3403d8529e19837"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 5.117789,
+        "encodedFrames": 88,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "landscape-review/grid-1792365838556.png",
+        "bytes": 746666,
+        "sha256": "686e1e7312e5a8de9e65b263b6bb332efef75c17622a8222c97c180685a3de1a",
+        "samplesPerSecond": 6,
+        "columns": 6,
+        "rows": 6,
+        "existingContactSheetReused": true,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled reverse motion reduces the gray layer and returns toward darker sky and terrain.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    },
+    {
+      "sampleId": "L5",
+      "role": "reverse_above_horizon",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792366327131.mp4",
+        "bytes": 717686,
+        "sha256": "84fdd6219656f2849474a4991b492af6bd2fa806c633e7081bc921b5cf480d4e"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 5.345522,
+        "encodedFrames": 102,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "landscape-review/grid-1792366327131.png",
+        "bytes": 643928,
+        "sha256": "a0da7a869b13fcf44598f9a80aeecff4c9947660ef151ddd44ede2ffbb5f462d",
+        "samplesPerSecond": 6,
+        "columns": 6,
+        "rows": 6,
+        "existingContactSheetReused": true,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled further reverse motion returns above the horizon with sky content retained.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    },
+    {
+      "sampleId": "T1",
+      "role": "hour_preview_0430_to_0530",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792366513358.mp4",
+        "bytes": 99722,
+        "sha256": "5d796077a116a41e1ea2bf12b4b35e56258eb245905d8b288491a5ed60f5019e"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 3.341878,
+        "encodedFrames": 13,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "time-review/grid-1792366513358.png",
+        "bytes": 209076,
+        "sha256": "01a7b11d1e810d72b4154459c3209183c12e7964c1799d0c57cd8fd674b6523c",
+        "samplesPerSecond": 2,
+        "columns": 4,
+        "rows": 3,
+        "existingContactSheetReused": false,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled picker changes 04:30:00 to 05:30:00 preview and the star field changes; date remains 2026-10-19.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    },
+    {
+      "sampleId": "T2",
+      "role": "cancel_preview_0530_to_0430",
+      "source": {
+        "externalRelativePath": "device-session-archive/recording-1792366556049.mp4",
+        "bytes": 270528,
+        "sha256": "8f97afeb4775437c62276fd1986e2ae529918cdc6481d6f453cbfdeab2aa935e"
+      },
+      "encodedMetadata": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "durationSeconds": 4.966011,
+        "encodedFrames": 68,
+        "physicalFpsClaim": false
+      },
+      "sampledReview": {
+        "externalRelativePath": "time-review/grid-1792366556049.png",
+        "bytes": 326086,
+        "sha256": "2d91fc01e6a8916e9b2e599a53fd481c893aa27e118c1392ecfed8252bc1c3bf",
+        "samplesPerSecond": 2,
+        "columns": 4,
+        "rows": 3,
+        "existingContactSheetReused": false,
+        "actuallyViewed": true,
+        "order": "left-to-right then top-to-bottom; unused tail cells are contact-sheet padding"
+      },
+      "observed": "Sampled cancel restores 04:30:00, the earlier star field and removes preview wording.",
+      "verdict": "OBSERVED_BOUNDED_SAMPLE_NOT_ACCEPTANCE"
+    }
+  ],
+  "verified": [
+    "Complete archived snapshot has matching source/receiver byte counts and SHA256.",
+    "Eighteen capture receipts match their archived PNG bytes and SHA256.",
+    "The existing normal-baseline v3 label is visibly present.",
+    "The reviewed landscape samples retain sky content and show a muted gray backside cue with reverse return.",
+    "The reviewed time samples show 04:30 to 05:30 preview and cancel restoration on the same displayed date."
+  ],
+  "unverified": [
+    "Phone whole-bundle bytes and runtime AppID",
+    "Exact pitch or full-pole coverage",
+    "Physical continuous gestures, two-finger interaction, complete frame continuity or physical FPS",
+    "A responsiveness acceptance",
+    "B normal sustained Play, retained allocation, paused drain and exit acceptance",
+    "Cross-day data supply, real weather and iOS",
+    "Complete normal product path, R17 acceptance and complete Goal"
+  ],
+  "invalidated": [
+    "Archived captures cannot grant fresh device input authority.",
+    "The retired gen25 nested device session remains invalid after gen26 refresh.",
+    "Files added after the copied snapshot require a later explicit archive."
+  ],
+  "cleanup": {
+    "rawMediaRemainOutsideGit": true,
+    "originalSourceSessionRetained": true,
+    "phoneTouchedByArchivist": false,
+    "adbOrDevtoolsUsedByArchivist": false,
+    "httpOrServicesUsedByArchivist": false,
+    "feedbackOrAccountsChanged": false,
+    "pairingOrVpnChanged": false,
+    "resourcesDeletedOrStopped": false,
+    "finalCleanupOwner": "root"
+  }
+}

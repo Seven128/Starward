@@ -1,0 +1,101 @@
+{
+  "schema": "starward-r17-scene-owned-memo-preparation-v1",
+  "status": "COMPLETE_BUILD_READY_INDEPENDENT_REVIEW_AND_PHONE_UNVERIFIED",
+  "parentManifestSha256": "de10bc2376cbd526e84e706af2091a8b6e5b3e01ca798090b90027cacdc7d30c",
+  "parentSourceBindings": 1567,
+  "parentMode": "accepted-action-direct",
+  "parentGeneration": 23,
+  "sourceDirectory": "E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/sky-map-performance-2026-10-18/tmp/r17-scene-memo-trial/source",
+  "delta": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "parentSha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102",
+      "currentSha256": "57f3da8fb35d4636cd7d64522c1ccb23e8eca6ebdb9b17168e3100a631e9ac32"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+      "parentSha256": "40255f43857a04b238c76a8630fb975209444a2011886971e7f4de4c49c622e1",
+      "currentSha256": "c889ac7d15c14b909a6c84d1ad7b2e19b26fc920827fd7b469c9a6af95525ac4"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "parentSha256": "784e92c662f39023f1cdda92554072b47ba7a1274b239321b9b0387a7f5ae948",
+      "currentSha256": "016615ccae2ebbc8f96d80ac48c3e5d45573e827fab1cc87499666d1aa683f7b"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-scene-owned-memo.ts",
+      "parentSha256": null,
+      "currentSha256": "a8bf4ef31ed359b3424d0afc52123b25298a4e1d44e8123f815ade6788a81446"
+    }
+  ],
+  "arithmeticOrCatalogConsumerChanged": false,
+  "privateSceneCellNonEnumerable": true,
+  "legacyWeakMapFallbackRetained": true,
+  "prototypeSourceChanged": false,
+  "wholeBuild": false,
+  "phoneTouched": false,
+  "buildGeneration": 24,
+  "buildSourceSha256": "f1e695ff12648c53ed3df9c1174c904232cdabb46560fc8ddb2f9d4ab27cdd01",
+  "pending": [
+    "Independent source/consumer and final bundle review",
+    "Root selection and one official delivery",
+    "Phone result"
+  ],
+  "deltaTypecheck": {
+    "parentDiagnostics": 20,
+    "currentDiagnostics": 20,
+    "addedDiagnostics": [],
+    "noAddedDiagnostics": true
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-scene-memo-trial/source/apps/wechat-miniapp/dist/weapp-check-r17-scene-owned-memo",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-scene-memo-trial/project",
+    "bundleSha256": "c3298cd6904b308a49a44c1818131aa95106c4dfdfb349f94f2d94cd0952c763",
+    "fileCount": 338,
+    "totalBytes": 5006381,
+    "packages": {
+      "main": {
+        "bytes": 2016772,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041373,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598322,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1349914,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 80380,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    },
+    "compiledBridgeOriginSha256": "fd828ba7fdb4a74bc6e6b6fb84d9fffefd83cb7afaf1081e165c5beba33d7e43",
+    "bothBundleCopiesReadback": true,
+    "sourceReadbackAfterBuild": true
+  },
+  "manifestSha256": "6739328fd43c3218643b2b6a0cbb42cfec10ac5cecf58537093975df1da4a041",
+  "builderSha256": "a06f6468002432b0c4867378d1a0b0070ed36f938e5ec07cb098d9d8d6eb7831",
+  "selection": {
+    "state": "ROOT_SELECTED_FOR_BOUNDED_DIAGNOSTIC_REVIEW_PENDING",
+    "bundleSha256": "c3298cd6904b308a49a44c1818131aa95106c4dfdfb349f94f2d94cd0952c763",
+    "phoneBound": false,
+    "previousGenerationEvidenceVerified": 9,
+    "preservedGen23Source": "E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/sky-map-performance-2026-10-18/tmp/phone-source-project-gen23-preserved"
+  }
+}

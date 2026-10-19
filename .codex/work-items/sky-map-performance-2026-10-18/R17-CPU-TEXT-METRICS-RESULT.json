@@ -1,0 +1,786 @@
+{
+  "schemaVersion": "starward-r17-cpu-text-metrics-target-result-v1",
+  "status": "VALID_NONEMPTY_WIDE_NAMES_NATIVE_MEASUREMENT_ZERO_RAPID_GROWTH_PERSISTS",
+  "generation": 22,
+  "bundleSha256": "da4eedbb6cf06bd895c53bd06b6f414c021e1ab4f8df4840533927cebc48b842",
+  "sourceHead": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+  "productionSourceChanged": false,
+  "adopted": false,
+  "phoneBundleBytesVerified": false,
+  "officialPreviewReplayed": false,
+  "diagnosticLabelVisuallyVerified": true,
+  "operatorBound": true,
+  "scenario": {
+    "normalProductPlay": true,
+    "guardedOriginalPause": true,
+    "visiblePausedElapsedSeconds": 20,
+    "apply": false,
+    "previewCancelled": true,
+    "debugEnabled": false,
+    "performanceOverlay": false,
+    "nativeFailureObserved": false,
+    "frozenSyntheticNotProductAcceptance": true
+  },
+  "narrowFirstRun": {
+    "validity": "NONEMPTY_SCENE_BUT_NAME_EMPTY_NOT_A_CACHE_INTERVENTION_RESULT",
+    "receipt": "candidate-r17-1-er8dzxlgv3.json",
+    "metricsAtExport": {
+      "hits": 0,
+      "misses": 0,
+      "entries": 1,
+      "capacity": 256,
+      "evictions": 0,
+      "nativeGlyphCalls": 0,
+      "lifetimeHits": 83,
+      "lifetimeMisses": 1,
+      "lifetimeNativeGlyphCalls": 6,
+      "observationResets": 1
+    },
+    "memoryFirstToLastKiB": {
+      "totalPss": 931084,
+      "unknown": 877356
+    }
+  },
+  "wideValidRun": {
+    "validity": "NONEMPTY_BSC_SAO_NAMES_FULL_CPU_AND_REAL_PUBLICATION_NATIVE_MEASURE_REMOVED",
+    "receipt": "candidate-r17-2-2hypgsbrql.json",
+    "metricsAtExport": {
+      "hits": 104,
+      "lifetimeHits": 221,
+      "misses": 0,
+      "lifetimeMisses": 1,
+      "entries": 1,
+      "capacity": 256,
+      "evictions": 0,
+      "nativeGlyphCalls": 0,
+      "lifetimeNativeGlyphCalls": 6,
+      "observationResets": 2
+    },
+    "scalarsAtExport": {
+      "nativeCopies": 1,
+      "readyNativeCopies": 1,
+      "syntheticBegins": 1395,
+      "syntheticFinishes": 1395,
+      "syntheticPublications": 1395,
+      "pageSubmissions": 507,
+      "pageCallbacks": 507,
+      "pagePending": 0,
+      "pageMaxPending": 2,
+      "pageLatencyTotalMs": 13922,
+      "pageLatencyMaxMs": 459,
+      "pageEnumerableOwnKeysTotal": 4528,
+      "pageEnumerableOwnKeysMax": 10,
+      "gpuUploads": 0
+    },
+    "scalarsAfterPause": {
+      "syntheticBegins": 1573,
+      "syntheticFinishes": 1573,
+      "syntheticPublications": 1573,
+      "cacheHits": 112,
+      "pageSubmissions": 685,
+      "pageCallbacks": 685,
+      "pagePending": 0,
+      "pageMaxPending": 3,
+      "gpuUploads": 0
+    },
+    "memoryFirstToLastKiB": {
+      "totalPss": 504760,
+      "unknown": 474528
+    },
+    "memoryPeakPssKiB": 3142138
+  },
+  "receipts": {
+    "candidate-r17-1-er8dzxlgv3.json": {
+      "schemaValidated": true,
+      "caseKey": "narrow-play",
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 13997,
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 519,
+        "preparedRequests": 680,
+        "paintAttempts": 492,
+        "nativeCallbacks": 492,
+        "acceptedCopies": 0,
+        "sceneFinishes": 492,
+        "glDrawSubmissions": 0,
+        "bscSubmittedStars": 4920,
+        "saoSubmittedStars": 144933,
+        "acceptedBscObjects": 0,
+        "acceptedSaoObjects": 0,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 6519,
+        "saoRowsMax": 6519,
+        "selectedTilesMin": 19,
+        "selectedTilesMax": 19,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 10.8,
+        "fovMax": 10.8
+      },
+      "time": {
+        "intent": {
+          "events": 519,
+          "distinct": 519,
+          "firstRelativeMs": 68,
+          "lastRelativeMs": 14037,
+          "minRelativeMs": 68,
+          "maxRelativeMs": 14037,
+          "overflow": false
+        },
+        "prepared": {
+          "events": 680,
+          "distinct": 464,
+          "firstRelativeMs": 34,
+          "lastRelativeMs": 14010,
+          "minRelativeMs": 34,
+          "maxRelativeMs": 14010,
+          "overflow": false
+        },
+        "painted": {
+          "events": 492,
+          "distinct": 456,
+          "firstRelativeMs": 0,
+          "lastRelativeMs": 13980,
+          "minRelativeMs": 0,
+          "maxRelativeMs": 13980,
+          "overflow": false
+        },
+        "accepted": {
+          "events": 0,
+          "distinct": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "minRelativeMs": null,
+          "maxRelativeMs": null,
+          "overflow": false
+        },
+        "lastRequestedMinusAcceptedMs": null,
+        "maximumRequestedMinusAcceptedMs": null
+      }
+    },
+    "candidate-r17-2-2hypgsbrql.json": {
+      "schemaValidated": true,
+      "caseKey": "wide-play",
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 14002,
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 547,
+        "preparedRequests": 630,
+        "paintAttempts": 478,
+        "nativeCallbacks": 478,
+        "acceptedCopies": 0,
+        "sceneFinishes": 478,
+        "glDrawSubmissions": 0,
+        "bscSubmittedStars": 86996,
+        "saoSubmittedStars": 65008,
+        "acceptedBscObjects": 0,
+        "acceptedSaoObjects": 0,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 666,
+        "saoRowsMax": 666,
+        "selectedTilesMin": 16,
+        "selectedTilesMax": 16,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 45,
+        "fovMax": 45
+      },
+      "time": {
+        "intent": {
+          "events": 547,
+          "distinct": 547,
+          "firstRelativeMs": 59,
+          "lastRelativeMs": 14031,
+          "minRelativeMs": 59,
+          "maxRelativeMs": 14031,
+          "overflow": false
+        },
+        "prepared": {
+          "events": 630,
+          "distinct": 469,
+          "firstRelativeMs": 0,
+          "lastRelativeMs": 13974,
+          "minRelativeMs": 0,
+          "maxRelativeMs": 13974,
+          "overflow": false
+        },
+        "painted": {
+          "events": 478,
+          "distinct": 467,
+          "firstRelativeMs": 0,
+          "lastRelativeMs": 13974,
+          "minRelativeMs": 0,
+          "maxRelativeMs": 13974,
+          "overflow": false
+        },
+        "accepted": {
+          "events": 0,
+          "distinct": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "minRelativeMs": null,
+          "maxRelativeMs": null,
+          "overflow": false
+        },
+        "lastRequestedMinusAcceptedMs": null,
+        "maximumRequestedMinusAcceptedMs": null
+      }
+    }
+  },
+  "foregroundMemory": {
+    "cpu-text-metrics-ready-1792343691849.ndjson": [
+      {
+        "elapsedMs": 2543,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 1868098,
+        "totalRssKiB": 2187728,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 180016,
+        "dalvikHeapPssKiB": 59483,
+        "glMtrackPssKiB": 19868,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1128912,
+        "otherMmapPssKiB": 49701,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 60028,
+        "nativeHeapSummaryKiB": 179996,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110408,
+        "privateOtherSummaryKiB": 1186020,
+        "systemSummaryKiB": 106018
+      }
+    ],
+    "cpu-text-metrics-play-1792343704996.ndjson": [
+      {
+        "elapsedMs": 2345,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 1831002,
+        "totalRssKiB": 2150644,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 179896,
+        "dalvikHeapPssKiB": 23579,
+        "glMtrackPssKiB": 19868,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1128652,
+        "otherMmapPssKiB": 49117,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 24124,
+        "nativeHeapSummaryKiB": 179876,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110408,
+        "privateOtherSummaryKiB": 1184960,
+        "systemSummaryKiB": 106006
+      },
+      {
+        "elapsedMs": 8942,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 1830170,
+        "totalRssKiB": 2149812,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 179896,
+        "dalvikHeapPssKiB": 22767,
+        "glMtrackPssKiB": 19868,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1128652,
+        "otherMmapPssKiB": 49117,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 23312,
+        "nativeHeapSummaryKiB": 179876,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110408,
+        "privateOtherSummaryKiB": 1184940,
+        "systemSummaryKiB": 106006
+      },
+      {
+        "elapsedMs": 15532,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 1830134,
+        "totalRssKiB": 2149776,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 179896,
+        "dalvikHeapPssKiB": 22731,
+        "glMtrackPssKiB": 19868,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1128652,
+        "otherMmapPssKiB": 49117,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 23276,
+        "nativeHeapSummaryKiB": 179876,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110408,
+        "privateOtherSummaryKiB": 1184940,
+        "systemSummaryKiB": 106006
+      },
+      {
+        "elapsedMs": 21915,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2513634,
+        "totalRssKiB": 2833304,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 199760,
+        "dalvikHeapPssKiB": 24271,
+        "glMtrackPssKiB": 18892,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1792044,
+        "otherMmapPssKiB": 48765,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 24816,
+        "nativeHeapSummaryKiB": 199740,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109432,
+        "privateOtherSummaryKiB": 1847984,
+        "systemSummaryKiB": 106034
+      },
+      {
+        "elapsedMs": 28101,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2343942,
+        "totalRssKiB": 2663612,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 212960,
+        "dalvikHeapPssKiB": 24587,
+        "glMtrackPssKiB": 18680,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1609064,
+        "otherMmapPssKiB": 48745,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 25132,
+        "nativeHeapSummaryKiB": 212940,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109220,
+        "privateOtherSummaryKiB": 1664988,
+        "systemSummaryKiB": 106034
+      },
+      {
+        "elapsedMs": 34527,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2698118,
+        "totalRssKiB": 3017804,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 235468,
+        "dalvikHeapPssKiB": 25787,
+        "glMtrackPssKiB": 18680,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1939568,
+        "otherMmapPssKiB": 48689,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 26332,
+        "nativeHeapSummaryKiB": 235448,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109220,
+        "privateOtherSummaryKiB": 1995440,
+        "systemSummaryKiB": 106050
+      },
+      {
+        "elapsedMs": 41197,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2762086,
+        "totalRssKiB": 3081744,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 230776,
+        "dalvikHeapPssKiB": 24903,
+        "glMtrackPssKiB": 20660,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2006008,
+        "otherMmapPssKiB": 49841,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 25448,
+        "nativeHeapSummaryKiB": 230756,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 111200,
+        "privateOtherSummaryKiB": 2063032,
+        "systemSummaryKiB": 106022
+      }
+    ],
+    "cpu-text-metrics-paused-drain-1792343764602.ndjson": [
+      {
+        "elapsedMs": 2692,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2758654,
+        "totalRssKiB": 3078312,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 230696,
+        "dalvikHeapPssKiB": 23903,
+        "glMtrackPssKiB": 19044,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2005856,
+        "otherMmapPssKiB": 49265,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 24448,
+        "nativeHeapSummaryKiB": 230676,
+        "codeSummaryKiB": 218924,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109584,
+        "privateOtherSummaryKiB": 2062296,
+        "systemSummaryKiB": 106022
+      }
+    ],
+    "cpu-text-metrics-wide-ready-1792343956071.ndjson": [
+      {
+        "elapsedMs": 2812,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2588410,
+        "totalRssKiB": 2908404,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 217460,
+        "dalvikHeapPssKiB": 64727,
+        "glMtrackPssKiB": 19908,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1806948,
+        "otherMmapPssKiB": 49773,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 65272,
+        "nativeHeapSummaryKiB": 217440,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110448,
+        "privateOtherSummaryKiB": 1863928,
+        "systemSummaryKiB": 106358
+      }
+    ],
+    "cpu-text-metrics-wide-play-1792343969876.ndjson": [
+      {
+        "elapsedMs": 2512,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2546106,
+        "totalRssKiB": 2866100,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 217216,
+        "dalvikHeapPssKiB": 23587,
+        "glMtrackPssKiB": 19908,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1806628,
+        "otherMmapPssKiB": 49197,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 24132,
+        "nativeHeapSummaryKiB": 217196,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110448,
+        "privateOtherSummaryKiB": 1863008,
+        "systemSummaryKiB": 106358
+      },
+      {
+        "elapsedMs": 9008,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2545938,
+        "totalRssKiB": 2865932,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 217216,
+        "dalvikHeapPssKiB": 23415,
+        "glMtrackPssKiB": 19908,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1806640,
+        "otherMmapPssKiB": 49197,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 23960,
+        "nativeHeapSummaryKiB": 217196,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110448,
+        "privateOtherSummaryKiB": 1863012,
+        "systemSummaryKiB": 106358
+      },
+      {
+        "elapsedMs": 15250,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2573718,
+        "totalRssKiB": 2896804,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 217692,
+        "dalvikHeapPssKiB": 23587,
+        "glMtrackPssKiB": 20320,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 1836492,
+        "otherMmapPssKiB": 49113,
+        "soMmapPssKiB": 176223,
+        "javaHeapSummaryKiB": 24132,
+        "nativeHeapSummaryKiB": 217672,
+        "codeSummaryKiB": 213996,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 110860,
+        "privateOtherSummaryKiB": 1892784,
+        "systemSummaryKiB": 107570
+      },
+      {
+        "elapsedMs": 21908,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3142138,
+        "totalRssKiB": 3462156,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 235188,
+        "dalvikHeapPssKiB": 24703,
+        "glMtrackPssKiB": 18744,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2384864,
+        "otherMmapPssKiB": 49049,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 25248,
+        "nativeHeapSummaryKiB": 235168,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109284,
+        "privateOtherSummaryKiB": 2441092,
+        "systemSummaryKiB": 106382
+      },
+      {
+        "elapsedMs": 28053,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 2961702,
+        "totalRssKiB": 3281720,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 247288,
+        "dalvikHeapPssKiB": 24643,
+        "glMtrackPssKiB": 18744,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2192448,
+        "otherMmapPssKiB": 48993,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 25188,
+        "nativeHeapSummaryKiB": 247268,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109284,
+        "privateOtherSummaryKiB": 2248616,
+        "systemSummaryKiB": 106382
+      },
+      {
+        "elapsedMs": 34422,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3059250,
+        "totalRssKiB": 3379300,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 248980,
+        "dalvikHeapPssKiB": 26783,
+        "glMtrackPssKiB": 20836,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2282948,
+        "otherMmapPssKiB": 50077,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 27328,
+        "nativeHeapSummaryKiB": 248960,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 111376,
+        "privateOtherSummaryKiB": 2340208,
+        "systemSummaryKiB": 106414
+      },
+      {
+        "elapsedMs": 41166,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3050866,
+        "totalRssKiB": 3370868,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 248212,
+        "dalvikHeapPssKiB": 23207,
+        "glMtrackPssKiB": 19212,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2281156,
+        "otherMmapPssKiB": 49501,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 23752,
+        "nativeHeapSummaryKiB": 248192,
+        "codeSummaryKiB": 218260,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 109752,
+        "privateOtherSummaryKiB": 2337840,
+        "systemSummaryKiB": 106366
+      }
+    ],
+    "cpu-text-metrics-wide-paused-drain-1792344087504.ndjson": [
+      {
+        "elapsedMs": 2456,
+        "slot": 0,
+        "foregroundActivityOwner": true,
+        "totalPssKiB": 3063744,
+        "totalRssKiB": 3383740,
+        "totalSwapPssKiB": 40,
+        "nativeHeapPssKiB": 241852,
+        "dalvikHeapPssKiB": 28735,
+        "glMtrackPssKiB": 31828,
+        "eglMtrackPssKiB": 90540,
+        "unknownPssKiB": 2282300,
+        "otherMmapPssKiB": 49467,
+        "soMmapPssKiB": 179295,
+        "javaHeapSummaryKiB": 29280,
+        "nativeHeapSummaryKiB": 241832,
+        "codeSummaryKiB": 218236,
+        "stackSummaryKiB": 6704,
+        "graphicsSummaryKiB": 122368,
+        "privateOtherSummaryKiB": 2338960,
+        "systemSummaryKiB": 106364
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "folder": "native-play-copy-trial",
+      "name": "cpu-text-metrics-ready-1792343691849.ndjson",
+      "bytes": 1011,
+      "sha256": "f0fe534edfd0b894c8c5aba3a8361e6971a3b1812929234e0b8966da3b582f49"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "cpu-text-metrics-play-1792343704996.ndjson",
+      "bytes": 7082,
+      "sha256": "52ebd3d7ff8c342b9c5dde7a44c44c860497a859d45d26280ff8b0a919a4aa5c"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "cpu-text-metrics-paused-drain-1792343764602.ndjson",
+      "bytes": 1011,
+      "sha256": "972a3e914a4f985c417b2ead0a0f8b70bf8d1d7de9aef915c7826265cd6215f5"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "cpu-text-metrics-wide-ready-1792343956071.ndjson",
+      "bytes": 1011,
+      "sha256": "9da7e132d4cc625acfa422f4645cc1b61289a0637896934aca804b643a576e28"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "cpu-text-metrics-wide-play-1792343969876.ndjson",
+      "bytes": 7082,
+      "sha256": "df93d123089cd1481db6e6c4e4c7d5088ecb2a306bfb5521d0df2c6315418b15"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "cpu-text-metrics-wide-paused-drain-1792344087504.ndjson",
+      "bytes": 1011,
+      "sha256": "193943ebad37f87d4bfba6f3796830827e826206d6bc000666e2a9397d9c3db8"
+    },
+    {
+      "folder": "probe-metrics",
+      "name": "candidate-r17-1-er8dzxlgv3.json",
+      "bytes": 4548,
+      "sha256": "ce758daa0bb9c854b42a4fe561b385df806bbee93be692b508470a47fd53e2cb"
+    },
+    {
+      "folder": "probe-metrics",
+      "name": "candidate-r17-2-2hypgsbrql.json",
+      "bytes": 4540,
+      "sha256": "c411711ce5f01928e099d21f01f979fe7b5be38c68697939a4aafd8337884f90"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen22-visible-diagnostic-identity.png",
+      "bytes": 268455,
+      "sha256": "0a38c78057263a57568c88a9bc646dad7d8460239efd5e03cbc50808a3b9672d"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen22-normal-pause-043020.png",
+      "bytes": 235413,
+      "sha256": "3eee429903c27a5055052b1abf5832ede7f6d3f9d966a510428abd8c4d752f01"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen22-first-name-empty-counters.png",
+      "bytes": 332773,
+      "sha256": "6367b1d076ed54eec8cdd76969c665904b4b494c72bdd262d11043955c5a3257"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen22-wide-normal-pause-043020.png",
+      "bytes": 231528,
+      "sha256": "fb2945f6e4712821760f94e7806590b26f22e3d118bce2650c72d3baf48cec07"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen22-wide-name-positive-counters.png",
+      "bytes": 326152,
+      "sha256": "822cace062981ac856e6bf80abc8e30a2d0b5a9b720320e17d54e0884fa58c79"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen22-preview-cancelled-to-committed.png",
+      "bytes": 223061,
+      "sha256": "1a2031f6a3788129b0f1e950ea4848a88dbac701574f93ac33ccd4a74beacc43"
+    }
+  ],
+  "conclusion": {
+    "repeatedNativeLayoutTextMeasurementNecessaryForObservedGrowth": false,
+    "nativeOrJsAllocatorIdentified": false,
+    "fullNormalPathFixed": false,
+    "next": "One minimal accepted dispatch action comparison: immediately evaluate updater and update full ref; compare closure action with direct object|null value while keeping full React state and consumers."
+  },
+  "limits": [
+    "Memory watch starts before Play and includes successful Pause; counter/export/Scene windows differ, no precise rate or percentage claim.",
+    "No app/WeChat restart, GC or storage/account reset; high warm baseline carries earlier process allocation.",
+    "Wide and narrow data/viewport differ. Wide result is a valid nonempty mechanism check, not a quantitative paired benefit against gen21 narrow.",
+    "TM/Page scalar summaries were transcribed from pinned UI evidence, not included by v1 receipt.",
+    "Synthetic publication and frozen pixels cannot establish input-to-accepted responsiveness, continuous normal rendering, picking or Sources acceptance.",
+    "PSS/RSS/Unknown cover the verified foreground Appbrand process, not an identified JS/native/GPU allocator."
+  ]
+}

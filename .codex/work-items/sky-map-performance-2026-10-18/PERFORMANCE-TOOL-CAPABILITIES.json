@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "starward-performance-capability-observation-v1",
+  "observedAt": "2026-10-18T16:50:52.210Z",
+  "scope": "ANDROID_PROPERTIES_FIXED_WECHAT_PACKAGE_FLAGS_AND_PERFETTO_SERVICE_QUERY_ONLY",
+  "inputSent": false,
+  "profilerStarted": false,
+  "settingsChanged": false,
+  "packageMetadataAvailable": true,
+  "androidApi": "34",
+  "androidRelease": "14",
+  "androidBuildType": "user",
+  "androidIncrementalBuild": "34.1742563281",
+  "wechatVersionName": "8.0.78",
+  "wechatVersionCode": "3180",
+  "flagsObserved": true,
+  "debuggableFlag": false,
+  "profileableByShellFlag": false,
+  "profileableOtherFlag": false,
+  "perfettoQueryAvailable": true,
+  "perfettoDataSources": {
+    "linux.process_stats": true,
+    "linux.sys_stats": true,
+    "linux.ftrace": true,
+    "android.heapprofd": true,
+    "android.surfaceflinger.frametimeline": true
+  },
+  "actualMiniappSDKVersion": null,
+  "actualRenderer": null,
+  "dpr": null,
+  "limits": [
+    "Package flags are a capability preflight, not a successful target allocation profile.",
+    "Data source registration does not prove target process eligibility or nonempty capture.",
+    "No target PID or VM/isolate identity established by this read; no process profile attempted.",
+    "Project libVersion=trial is not the actual phone SDK version.",
+    "Raw package/query output, connection and device identifiers are not retained."
+  ]
+}

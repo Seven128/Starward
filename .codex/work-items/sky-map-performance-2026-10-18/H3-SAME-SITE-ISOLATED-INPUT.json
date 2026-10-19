@@ -1,0 +1,117 @@
+{
+  "schema": "starward-h3-same-site-isolated-input-v1",
+  "status": "PREPARED_INACTIVE_NOT_PHONE_ACCEPTED",
+  "observedCodeCommit": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+  "spotId": "spot:development:h3-high-island-east-dam-minibus-20261018",
+  "productStatus": "DATA_INSUFFICIENT",
+  "siteMediaState": "UNKNOWN",
+  "contextKind": "MAP_POINT",
+  "formalSelectionCountercheck": "REJECTED_BY_REAL_OWNER_formal_spot_not_found",
+  "ordinaryV2Requests": "UNTOUCHED",
+  "routePrefix": "/__development_h3_input",
+  "listenersOpened": false,
+  "existingServicesCalled": false,
+  "accountsOrDatabaseWritten": false,
+  "formalCatalogChanged": false,
+  "deviceOrAlbumAccessed": false,
+  "original": {
+    "bytes": 3050409,
+    "sha256": "84c3ac48ee8d54541e4e24fe0232890e970f21938de766d56541513e5191fc84",
+    "sha1": "f330487184dc5170db52b22f0a6e491d6e45d67c",
+    "width": 4032,
+    "height": 3024
+  },
+  "servedAsset": {
+    "file": "high-island-east-dam-minibus-20250502.metadata-stripped.jpg",
+    "bytes": 3038007,
+    "sha256": "cc96b87d972a558bf7543fd1263cb7001cc81af83e3d75e1a507fb0a0e987a39",
+    "mimeType": "image/jpeg",
+    "width": 4032,
+    "height": 3024,
+    "modification": "Removed EXIF/IPTC/comments through existing sanitizeContributionImage; compressed image samples unchanged."
+  },
+  "source": {
+    "author": "LN9267",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:East_Dam_of_High_Island_Reservoir_minibus_terminus_02-05-2025.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "capturedAt": "2025-05-02T16:57:53+08:00",
+    "direction": "274.2285766826039°（真北；原EXIF）",
+    "site": "万宜水库东坝小巴总站",
+    "wgs84": {
+      "system": "WGS84",
+      "latitude": 22.361994444444445,
+      "longitude": 114.37164999999999
+    },
+    "limitation": "Historical photograph; no current transit/access/parking/safety/clear-horizon claim."
+  },
+  "checks": {
+    "contractStatus": "PASSED_TASK_PREPARATION_NOT_PHONE_ACCEPTANCE",
+    "groupedChecks": 9,
+    "taskTypes": "PASSED",
+    "jpegDecode": {
+      "status": "PASSED_REAL_JPEG_DECODE",
+      "size": [
+        4032,
+        3024
+      ],
+      "orientationOriginal": 1,
+      "DateTimeOriginal": "2025:05:02 16:57:53",
+      "OffsetTimeOriginal": "+08:00",
+      "GPSImgDirectionRef": "T",
+      "GPSImgDirection": "274.2285766826039",
+      "sanitizedExifEntries": 0,
+      "decodedRgbIdentical": true,
+      "originalRgbSha256": "17776c6a7f293bc12f7f2d65659401b3a989af78b256402b5a59773fa4c29acd",
+      "servedRgbSha256": "17776c6a7f293bc12f7f2d65659401b3a989af78b256402b5a59773fa4c29acd"
+    },
+    "phone": "UNVERIFIED",
+    "ordinaryFormalSelection": "NOT_ADMITTED",
+    "productionPublication": "NOT_PERFORMED",
+    "horizonSuccessRecovery": "UNVERIFIED",
+    "android": "UNVERIFIED",
+    "ios": "UNVERIFIED"
+  },
+  "files": [
+    {
+      "path": "tmp/h3-isolated-input/prepare.mts",
+      "bytes": 4618,
+      "sha256": "0b72fd9533f2f6675c860f7c5174eda4f26af5d624434001bd1ecafa24354cae"
+    },
+    {
+      "path": "tmp/h3-isolated-input/adapter.mts",
+      "bytes": 12627,
+      "sha256": "5b09173645842cf6ee67094274e14c2e52efd608b5fdf3319c479414a9fd016f"
+    },
+    {
+      "path": "tmp/h3-isolated-input/verify.mts",
+      "bytes": 8647,
+      "sha256": "934cacde6f02df9226857831473311bd48a12699df2767144a5de73c26d822ea"
+    },
+    {
+      "path": "tmp/h3-isolated-input/tsconfig.json",
+      "bytes": 127,
+      "sha256": "40b42d756f6a6a6da6a4b6cf9e030e05b38bcd3783509ef91171ffe2c72dde9c"
+    },
+    {
+      "path": "tmp/h3-isolated-input/prepared.json",
+      "bytes": 4190,
+      "sha256": "fe51cc50b654c093e2fa6f0eda7e530a5b10dce574df5bb06449b698486e5e87"
+    },
+    {
+      "path": "tmp/h3-isolated-input/contract-check.json",
+      "bytes": 1873,
+      "sha256": "820de4a6b44d4d262852e470fdf577c63c5ea4a147f99b41e2717ad5457206f4"
+    },
+    {
+      "path": "tmp/h3-isolated-input/jpeg-decode-check.json",
+      "bytes": 512,
+      "sha256": "7fd7592acad0a5170eaebea9a1b3066f11e6c54d882d16c3e57a349a6d6acc7d"
+    },
+    {
+      "path": "tmp/h3-isolated-input/high-island-east-dam-minibus-20250502.metadata-stripped.jpg",
+      "bytes": 3038007,
+      "sha256": "cc96b87d972a558bf7543fd1263cb7001cc81af83e3d75e1a507fb0a0e987a39"
+    }
+  ]
+}

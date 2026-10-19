@@ -1,0 +1,497 @@
+{
+  "schemaVersion": "starward-r17-a-correlation-analysis-v1",
+  "status": "GEN25_REUSED_REQUEST_BOUNDARY_MISSING_NEW_EXTENSION_SOFTWARE_READY",
+  "source": {
+    "file": "probe-metrics/baseline-r17-1-kld3md55q3.json",
+    "bytes": 40383,
+    "compactBytes": 27329,
+    "sha256": "31046ac272dfc30e662672f5651727e3017b0c98a85f2d1b605c5edccf73dcf1"
+  },
+  "binding": {
+    "mode": "normal",
+    "buildGeneration": 25,
+    "buildSourceSha256": "10236f0e034ae96d9e31ed5e081a837a53f4cdd128e3f9ac34da6d588f151a4c",
+    "windowId": 1
+  },
+  "clock": {
+    "source": "Date.now",
+    "unit": "ms",
+    "kind": "wall-elapsed",
+    "monotonic": false,
+    "availability": "available",
+    "nominalResolutionMs": 1,
+    "effectiveResolutionMs": null,
+    "reads": 17271,
+    "invalidReads": 0,
+    "backwardReads": 0
+  },
+  "window": {
+    "startDelayMs": 1000,
+    "durationLimitMs": 45000,
+    "elapsedMs": 14006,
+    "elapsedStatus": "valid",
+    "reason": "manual"
+  },
+  "controls": {
+    "recordingStartRelativeMs": 1012,
+    "sealRelativeMs": 15018,
+    "events": {
+      "actualPlay": {
+        "calls": 1,
+        "firstRelativeMs": 2,
+        "lastRelativeMs": 2,
+        "lastResult": true
+      },
+      "export": {
+        "calls": 1,
+        "firstRelativeMs": 15018,
+        "lastRelativeMs": 15018,
+        "lastResult": null
+      },
+      "pauseAttempt": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "pauseSuccess": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "terminalExport": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      }
+    }
+  },
+  "linkage": {
+    "capacity": 2048,
+    "identityMapCapacity": 256,
+    "linkLimit": 32,
+    "intentsCreated": 511,
+    "firstAcceptedIntents": 460,
+    "duplicateIntentPresents": 18,
+    "supersededBeforeFirstAccepted": 508,
+    "firstAcceptedAfterSuperseded": 458,
+    "expiredUnacceptedIntents": 0,
+    "unknownIntentLookups": 0,
+    "stateIdentityRotations": 1,
+    "preparationsStarted": 464,
+    "preparationsFinished": 464,
+    "expiredUnconsumedPreparations": 0,
+    "expiredIncompletePreparations": 0,
+    "requests": 608,
+    "requestsWithUnknownPreparation": 1,
+    "requestsWithUnknownIntent": 1,
+    "linkageMismatches": 0,
+    "frameIdentityRotations": 2,
+    "inheritedFrames": 0,
+    "duplicateFramePresents": 0,
+    "unknownAcceptedFrames": 2,
+    "syntheticPublications": 0,
+    "prepareFinishUnknown": 0,
+    "prepareFinishDuplicate": 0,
+    "latencyUnknownIntents": 0,
+    "unacceptedIntents": 51,
+    "supersededUnacceptedIntents": 50,
+    "consumedPreparations": 460,
+    "unconsumedPreparations": 4,
+    "incompletePreparations": 0,
+    "costs": {
+      "consumed": {
+        "knownSubtotalMs": 251,
+        "validCalls": 227,
+        "unknownCalls": 233,
+        "unknown": {
+          "belowResolution": 233,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      },
+      "unconsumed": {
+        "knownSubtotalMs": 3,
+        "validCalls": 3,
+        "unknownCalls": 1,
+        "unknown": {
+          "belowResolution": 1,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      },
+      "expiredUnconsumed": {
+        "knownSubtotalMs": 0,
+        "validCalls": 0,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      }
+    },
+    "knownResourceRevisions": 0,
+    "retainedIntents": 511,
+    "retainedPreparations": 464,
+    "linkSampleTruncated": true,
+    "latency": {
+      "intentToFirstAcceptedMs": {
+        "observedCalls": 460,
+        "validCalls": 460,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 26933,
+        "minMs": 30,
+        "maxMs": 150,
+        "keptSamples": 460,
+        "p50Ms": 59,
+        "p95Ms": 68,
+        "overflow": false
+      },
+      "unsupersededIntentToFirstAcceptedMs": {
+        "observedCalls": 2,
+        "validCalls": 2,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 60,
+        "minMs": 30,
+        "maxMs": 30,
+        "keptSamples": 2,
+        "p50Ms": 30,
+        "p95Ms": 30,
+        "overflow": false
+      },
+      "supersededIntentToFirstAcceptedMs": {
+        "observedCalls": 458,
+        "validCalls": 458,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 26873,
+        "minMs": 33,
+        "maxMs": 150,
+        "keptSamples": 458,
+        "p50Ms": 59,
+        "p95Ms": 68,
+        "overflow": false
+      }
+    }
+  },
+  "stageElapsed": {
+    "presentation": {
+      "observedCalls": 464,
+      "validCalls": 226,
+      "unknownCalls": 238,
+      "unknown": {
+        "belowResolution": 238,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 250,
+      "minMs": 1,
+      "maxMs": 4,
+      "keptSamples": 226,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "base": {
+      "observedCalls": 2944,
+      "validCalls": 39,
+      "unknownCalls": 2905,
+      "unknown": {
+        "belowResolution": 2905,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 48,
+      "minMs": 1,
+      "maxMs": 4,
+      "keptSamples": 39,
+      "p50Ms": 1,
+      "p95Ms": 3,
+      "overflow": false
+    },
+    "selection": {
+      "observedCalls": 464,
+      "validCalls": 78,
+      "unknownCalls": 386,
+      "unknown": {
+        "belowResolution": 386,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 80,
+      "minMs": 1,
+      "maxMs": 3,
+      "keptSamples": 78,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "supplement": {
+      "observedCalls": 464,
+      "validCalls": 22,
+      "unknownCalls": 442,
+      "unknown": {
+        "belowResolution": 442,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 26,
+      "minMs": 1,
+      "maxMs": 4,
+      "keptSamples": 22,
+      "p50Ms": 1,
+      "p95Ms": 2,
+      "overflow": false
+    },
+    "constellations": {
+      "observedCalls": 464,
+      "validCalls": 464,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1249,
+      "minMs": 1,
+      "maxMs": 7,
+      "keptSamples": 464,
+      "p50Ms": 2,
+      "p95Ms": 5,
+      "overflow": false
+    },
+    "draw": {
+      "observedCalls": 480,
+      "validCalls": 480,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 4926,
+      "minMs": 4,
+      "maxMs": 45,
+      "keptSamples": 480,
+      "p50Ms": 10,
+      "p95Ms": 13,
+      "overflow": false
+    },
+    "nativePaintOwner": {
+      "observedCalls": 480,
+      "validCalls": 480,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 4950,
+      "minMs": 4,
+      "maxMs": 45,
+      "keptSamples": 480,
+      "p50Ms": 10,
+      "p95Ms": 13,
+      "overflow": false
+    },
+    "displayCopy": {
+      "observedCalls": 480,
+      "validCalls": 46,
+      "unknownCalls": 434,
+      "unknown": {
+        "belowResolution": 434,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 46,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 46,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "publishAccepted": {
+      "observedCalls": 480,
+      "validCalls": 49,
+      "unknownCalls": 431,
+      "unknown": {
+        "belowResolution": 431,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 49,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 49,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    }
+  },
+  "selectedLinks": {
+    "selection": "original first 16 and last 16 preparations; not a random sample",
+    "exported": 32,
+    "consumedAndAccepted": 30,
+    "intentToPreparation": {
+      "sampledLinks": 30,
+      "validCalls": 30,
+      "unknown": {
+        "missingEndpoint": 0,
+        "belowResolution": 0,
+        "invalidOrder": 0
+      },
+      "knownSubtotalMs": 269,
+      "minMs": 1,
+      "maxMs": 13,
+      "p50Ms": 9,
+      "p95Ms": 13
+    },
+    "preparationToPaint": {
+      "sampledLinks": 30,
+      "validCalls": 30,
+      "unknown": {
+        "missingEndpoint": 0,
+        "belowResolution": 0,
+        "invalidOrder": 0
+      },
+      "knownSubtotalMs": 1168,
+      "minMs": 25,
+      "maxMs": 47,
+      "p50Ms": 40,
+      "p95Ms": 47
+    },
+    "paintToFirstAccepted": {
+      "sampledLinks": 30,
+      "validCalls": 30,
+      "unknown": {
+        "missingEndpoint": 0,
+        "belowResolution": 0,
+        "invalidOrder": 0
+      },
+      "knownSubtotalMs": 311,
+      "minMs": 6,
+      "maxMs": 14,
+      "p50Ms": 10,
+      "p95Ms": 13
+    }
+  },
+  "page": {
+    "captures": 2,
+    "first": {
+      "relativeMs": 1,
+      "values": {
+        "available": 1,
+        "submitted": 0,
+        "completed": 0,
+        "failed": 0,
+        "failedBeforeCallback": 0,
+        "callbackMissing": 0,
+        "pending": 0,
+        "inheritedPending": 0,
+        "maxPending": 0,
+        "duplicateCallback": 0,
+        "keyCountTotal": 0,
+        "maxKeyCount": 0,
+        "keyCountFailures": 0,
+        "sampledCalls": 0,
+        "sampledBytes": 0,
+        "maxSampledBytes": 0,
+        "serializationFailures": 0,
+        "bufferDataCalls": 0,
+        "totalTypedUploadBytes": 0,
+        "maxTypedUploadBytes": 0,
+        "latencyTotalMs": 0,
+        "latencyMaxMs": 0,
+        "enableDebug": false
+      }
+    },
+    "last": {
+      "relativeMs": 15018,
+      "values": {
+        "available": 1,
+        "submitted": 496,
+        "completed": 495,
+        "failed": 0,
+        "failedBeforeCallback": 0,
+        "callbackMissing": 0,
+        "pending": 1,
+        "inheritedPending": 0,
+        "maxPending": 2,
+        "duplicateCallback": 0,
+        "keyCountTotal": 4411,
+        "maxKeyCount": 10,
+        "keyCountFailures": 0,
+        "sampledCalls": 16,
+        "sampledBytes": 18830,
+        "maxSampledBytes": 1266,
+        "serializationFailures": 0,
+        "bufferDataCalls": 1018,
+        "totalTypedUploadBytes": 8228844,
+        "maxTypedUploadBytes": 11448,
+        "latencyTotalMs": 14229,
+        "latencyMaxMs": 62,
+        "enableDebug": false
+      }
+    }
+  },
+  "nextObservation": {
+    "required": "first request boundary between finished presentation preparation and first paint, with Page counter positions",
+    "producer": "optional starward-r17-a-correlation-v1 in normal v3 receipt",
+    "candidateBuilt": false,
+    "phoneRun": false,
+    "keeps": "normal math/memo/accepted-state/publication/renderer/copy/caption/resource owners and original product Pause",
+    "limitation": "Page counter positions establish temporal overlap only, not payload identity, React render time, callback elapsed CPU or physical presentation"
+  },
+  "acceptance": {
+    "A": "UNVERIFIED",
+    "B": "UNVERIFIED"
+  }
+}

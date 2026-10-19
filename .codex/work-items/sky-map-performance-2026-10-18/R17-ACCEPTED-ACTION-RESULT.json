@@ -1,0 +1,716 @@
+{
+  "schemaVersion": "starward-r17-accepted-action-target-result-v1",
+  "status": "VALID_DIRECT_FULL_STATE_NONEMPTY_GROWTH_PERSISTS",
+  "generation": 23,
+  "mode": "accepted-action-direct",
+  "bundleSha256": "25f4742bc30f46765a286788fb10db6e81439cc7940ca6ff676738f5736d389f",
+  "buildSourceSha256": "da7bbb913bfc115316f4525c77e8dcf2ba36edb896e3161f9c62578ef32a117e",
+  "sourceHead": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+  "productionSourceChanged": false,
+  "adopted": false,
+  "phoneBundleBytesVerified": false,
+  "diagnosticLabelVisuallyVerified": true,
+  "operatorBound": true,
+  "scenario": {
+    "fov": 45,
+    "normalProductPlay": true,
+    "actualPlayObserved": true,
+    "guardedOriginalPause": true,
+    "pauseAttemptCount": 1,
+    "pauseCallbackResult": true,
+    "pauseSuccessCount": 1,
+    "visiblePausedElapsedSeconds": 20,
+    "previewCancelled": true,
+    "committedTimeRestoredVisually": true,
+    "apply": false,
+    "pick": false,
+    "sources": false,
+    "forceGc": false,
+    "accountRestart": false,
+    "pairingOrVpnChanged": false,
+    "frozenSyntheticNotProductAcceptance": true
+  },
+  "receipt": {
+    "metrics": "candidate-r17-1-nwfjxxiocs.json",
+    "terminal": "candidate-r17-1-nwfjxxiocs-terminal.json",
+    "strictV2Validated": true,
+    "terminalMatchesSealedMetrics": true,
+    "binding": {
+      "mode": "accepted-action-direct",
+      "buildGeneration": 23,
+      "buildSourceSha256": "da7bbb913bfc115316f4525c77e8dcf2ba36edb896e3161f9c62578ef32a117e",
+      "windowId": 1
+    },
+    "window": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 13996,
+      "reason": "manual"
+    },
+    "viewport": {
+      "widthMin": 384,
+      "widthMax": 384,
+      "heightMin": 796.800048828125,
+      "heightMax": 796.800048828125,
+      "fovMin": 45,
+      "fovMax": 45
+    },
+    "counters": {
+      "timeIntentPublications": 541,
+      "preparedRequests": 624,
+      "paintAttempts": 519,
+      "nativeCallbacks": 519,
+      "acceptedCopies": 0,
+      "sceneFinishes": 519,
+      "glDrawSubmissions": 0,
+      "bscSubmittedStars": 94458,
+      "saoSubmittedStars": 70584,
+      "acceptedBscObjects": 0,
+      "acceptedSaoObjects": 0,
+      "failedFrames": 0,
+      "invalidations": 0
+    },
+    "scene": {
+      "baseRowsMin": 8404,
+      "baseRowsMax": 8404,
+      "saoRowsMin": 666,
+      "saoRowsMax": 666,
+      "selectedTilesMin": 16,
+      "selectedTilesMax": 16,
+      "catalogVersions": [
+        "bsc5p-bright-stars.v3"
+      ],
+      "saoPublicationHashes": [
+        "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+      ],
+      "modelAlgorithms": [],
+      "modes": [
+        "DAY"
+      ]
+    },
+    "cpu": {
+      "presentation": {
+        "calls": 514,
+        "totalMs": 241,
+        "minMs": 0,
+        "maxMs": 13,
+        "keptSamples": 514,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "base": {
+        "calls": 3199,
+        "totalMs": 60,
+        "minMs": 0,
+        "maxMs": 6,
+        "keptSamples": 2048,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "overflow": true
+      },
+      "selection": {
+        "calls": 514,
+        "totalMs": 85,
+        "minMs": 0,
+        "maxMs": 1,
+        "keptSamples": 514,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "supplement": {
+        "calls": 514,
+        "totalMs": 17,
+        "minMs": 0,
+        "maxMs": 4,
+        "keptSamples": 514,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "overflow": false
+      },
+      "constellations": {
+        "calls": 514,
+        "totalMs": 1377,
+        "minMs": 1,
+        "maxMs": 38,
+        "keptSamples": 514,
+        "p50Ms": 2,
+        "p95Ms": 6,
+        "overflow": false
+      },
+      "draw": {
+        "calls": 519,
+        "totalMs": 3951,
+        "minMs": 2,
+        "maxMs": 39,
+        "keptSamples": 519,
+        "p50Ms": 7,
+        "p95Ms": 11,
+        "overflow": false
+      },
+      "nativePaintOwner": {
+        "calls": 519,
+        "totalMs": 3995,
+        "minMs": 2,
+        "maxMs": 39,
+        "keptSamples": 519,
+        "p50Ms": 7,
+        "p95Ms": 11,
+        "overflow": false
+      },
+      "displayCopy": {
+        "calls": 0,
+        "totalMs": 0,
+        "minMs": 0,
+        "maxMs": 0,
+        "keptSamples": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "overflow": false
+      },
+      "publishAccepted": {
+        "calls": 519,
+        "totalMs": 51,
+        "minMs": 0,
+        "maxMs": 3,
+        "keptSamples": 519,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "overflow": false
+      }
+    },
+    "observations": {
+      "tm": {
+        "captures": 2,
+        "first": {
+          "relativeMs": null,
+          "values": {
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "nativeGlyphCalls": 0,
+            "lifetimeHits": 119,
+            "lifetimeMisses": 1,
+            "lifetimeEvictions": 0,
+            "lifetimeNativeGlyphCalls": 6,
+            "entries": 1,
+            "capacity": 256,
+            "observationResets": 1,
+            "retired": false,
+            "available": true
+          }
+        },
+        "last": {
+          "relativeMs": null,
+          "values": {
+            "hits": 106,
+            "misses": 0,
+            "evictions": 0,
+            "nativeGlyphCalls": 0,
+            "lifetimeHits": 225,
+            "lifetimeMisses": 1,
+            "lifetimeEvictions": 0,
+            "lifetimeNativeGlyphCalls": 6,
+            "entries": 1,
+            "capacity": 256,
+            "observationResets": 1,
+            "retired": false,
+            "available": true
+          }
+        }
+      },
+      "page": {
+        "captures": 2,
+        "first": {
+          "relativeMs": null,
+          "values": {
+            "available": 1,
+            "submitted": 0,
+            "completed": 0,
+            "failed": 0,
+            "failedBeforeCallback": 0,
+            "callbackMissing": 0,
+            "pending": 0,
+            "inheritedPending": 0,
+            "maxPending": 0,
+            "duplicateCallback": 0,
+            "keyCountTotal": 0,
+            "maxKeyCount": 0,
+            "keyCountFailures": 0,
+            "sampledCalls": 0,
+            "sampledBytes": 0,
+            "maxSampledBytes": 0,
+            "serializationFailures": 0,
+            "bufferDataCalls": 0,
+            "totalTypedUploadBytes": 0,
+            "maxTypedUploadBytes": 0,
+            "latencyTotalMs": 0,
+            "latencyMaxMs": 0,
+            "enableDebug": false
+          }
+        },
+        "last": {
+          "relativeMs": null,
+          "values": {
+            "available": 1,
+            "submitted": 562,
+            "completed": 562,
+            "failed": 0,
+            "failedBeforeCallback": 0,
+            "callbackMissing": 0,
+            "pending": 0,
+            "inheritedPending": 0,
+            "maxPending": 2,
+            "duplicateCallback": 0,
+            "keyCountTotal": 4948,
+            "maxKeyCount": 10,
+            "keyCountFailures": 0,
+            "sampledCalls": 16,
+            "sampledBytes": 17957,
+            "maxSampledBytes": 1255,
+            "serializationFailures": 0,
+            "bufferDataCalls": 0,
+            "totalTypedUploadBytes": 0,
+            "maxTypedUploadBytes": 0,
+            "latencyTotalMs": 14461,
+            "latencyMaxMs": 69,
+            "enableDebug": false
+          }
+        }
+      },
+      "scene": {
+        "captures": 2,
+        "first": {
+          "relativeMs": null,
+          "values": {
+            "nativeCopies": 1,
+            "readyNativeCopies": 1,
+            "syntheticBegins": 123,
+            "syntheticFinishes": 123,
+            "syntheticPublications": 123,
+            "discs": 28982,
+            "segments": 3936,
+            "images": 778,
+            "readiness": 8,
+            "frozen": true,
+            "retired": false
+          }
+        },
+        "last": {
+          "relativeMs": null,
+          "values": {
+            "nativeCopies": 1,
+            "readyNativeCopies": 1,
+            "syntheticBegins": 674,
+            "syntheticFinishes": 674,
+            "syntheticPublications": 674,
+            "discs": 204200,
+            "segments": 21568,
+            "images": 5737,
+            "readiness": 8,
+            "frozen": true,
+            "retired": false
+          }
+        }
+      }
+    },
+    "linkage": {
+      "capacity": 2048,
+      "identityMapCapacity": 256,
+      "linkLimit": 32,
+      "intentsCreated": 541,
+      "firstAcceptedIntents": 0,
+      "duplicateIntentPresents": 0,
+      "supersededBeforeFirstAccepted": 540,
+      "firstAcceptedAfterSuperseded": 0,
+      "expiredUnacceptedIntents": 0,
+      "unknownIntentLookups": 1,
+      "stateIdentityRotations": 2,
+      "preparationsStarted": 514,
+      "preparationsFinished": 514,
+      "expiredUnconsumedPreparations": 0,
+      "expiredUnconsumedCpuMs": 0,
+      "expiredIncompletePreparations": 0,
+      "requests": 624,
+      "requestsWithUnknownPreparation": 1,
+      "requestsWithUnknownIntent": 2,
+      "linkageMismatches": 0,
+      "frameIdentityRotations": 2,
+      "inheritedFrames": 0,
+      "duplicateFramePresents": 0,
+      "unknownAcceptedFrames": 0,
+      "syntheticPublications": 519,
+      "prepareFinishUnknown": 0,
+      "prepareFinishDuplicate": 0,
+      "latencyUnknownIntents": 0,
+      "unacceptedIntents": 541,
+      "supersededUnacceptedIntents": 540,
+      "consumedPreparations": 496,
+      "unconsumedPreparations": 18,
+      "incompletePreparations": 0,
+      "consumedCpuMs": 0,
+      "unconsumedCpuMs": 0,
+      "preparationsWithUnknownCpu": 514,
+      "knownResourceRevisions": 0,
+      "retainedIntents": 541,
+      "retainedPreparations": 514,
+      "linkSampleTruncated": true,
+      "latency": {
+        "intentToFirstAcceptedMs": {
+          "calls": 0,
+          "totalMs": 0,
+          "minMs": 0,
+          "maxMs": 0,
+          "keptSamples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "overflow": false
+        },
+        "unsupersededIntentToFirstAcceptedMs": {
+          "calls": 0,
+          "totalMs": 0,
+          "minMs": 0,
+          "maxMs": 0,
+          "keptSamples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "overflow": false
+        },
+        "supersededIntentToFirstAcceptedMs": {
+          "calls": 0,
+          "totalMs": 0,
+          "minMs": 0,
+          "maxMs": 0,
+          "keptSamples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "overflow": false
+        }
+      }
+    },
+    "metricsControls": {
+      "monotonicClock": false,
+      "recordingStartRelativeMs": null,
+      "sealRelativeMs": null,
+      "events": {
+        "actualPlay": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": true
+        },
+        "export": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "pauseAttempt": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "pauseSuccess": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "terminalExport": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        }
+      }
+    },
+    "terminalControls": {
+      "monotonicClock": false,
+      "sealRelativeMs": null,
+      "events": {
+        "actualPlay": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": true
+        },
+        "export": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "pauseAttempt": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": true
+        },
+        "pauseSuccess": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": true
+        },
+        "terminalExport": {
+          "calls": 1,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        }
+      }
+    },
+    "terminalMetricsSeal": {
+      "relativeMs": null,
+      "recordingStartRelativeMs": null,
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 13996,
+      "reason": "manual"
+    },
+    "linkSamplesRetainedExternally": 32
+  },
+  "memory": {
+    "clock": "host.performance.now",
+    "timing": "Each start/end brackets the sequential guarded sample. Whole watch includes ready, actual Play, successful original Pause and drain; this is not the 13996ms metrics window or a precise growth rate.",
+    "ready": [
+      {
+        "sampleStartElapsedMs": 0,
+        "sampleEndElapsedMs": 1677,
+        "totalPssKiB": 3122837,
+        "totalRssKiB": 1863660,
+        "totalSwapPssKiB": 1601720,
+        "unknownPssKiB": 658668,
+        "nativeHeapPssKiB": 245172,
+        "graphicsSummaryKiB": 125864
+      }
+    ],
+    "watch": [
+      {
+        "sampleStartElapsedMs": 0,
+        "sampleEndElapsedMs": 1746,
+        "totalPssKiB": 3047297,
+        "totalRssKiB": 1788188,
+        "totalSwapPssKiB": 1601652,
+        "unknownPssKiB": 658456,
+        "nativeHeapPssKiB": 239076,
+        "graphicsSummaryKiB": 125864
+      },
+      {
+        "sampleStartElapsedMs": 3752,
+        "sampleEndElapsedMs": 5362,
+        "totalPssKiB": 3045677,
+        "totalRssKiB": 1786568,
+        "totalSwapPssKiB": 1601652,
+        "unknownPssKiB": 658472,
+        "nativeHeapPssKiB": 239160,
+        "graphicsSummaryKiB": 125864
+      },
+      {
+        "sampleStartElapsedMs": 7364,
+        "sampleEndElapsedMs": 9180,
+        "totalPssKiB": 3045609,
+        "totalRssKiB": 1786500,
+        "totalSwapPssKiB": 1601652,
+        "unknownPssKiB": 658472,
+        "nativeHeapPssKiB": 239148,
+        "graphicsSummaryKiB": 125864
+      },
+      {
+        "sampleStartElapsedMs": 11185,
+        "sampleEndElapsedMs": 12885,
+        "totalPssKiB": 3045641,
+        "totalRssKiB": 1786532,
+        "totalSwapPssKiB": 1601652,
+        "unknownPssKiB": 658480,
+        "nativeHeapPssKiB": 239144,
+        "graphicsSummaryKiB": 125864
+      },
+      {
+        "sampleStartElapsedMs": 14894,
+        "sampleEndElapsedMs": 16988,
+        "totalPssKiB": 3045371,
+        "totalRssKiB": 1786532,
+        "totalSwapPssKiB": 1601652,
+        "unknownPssKiB": 658488,
+        "nativeHeapPssKiB": 239148,
+        "graphicsSummaryKiB": 125864
+      },
+      {
+        "sampleStartElapsedMs": 18994,
+        "sampleEndElapsedMs": 20705,
+        "totalPssKiB": 3210109,
+        "totalRssKiB": 1951696,
+        "totalSwapPssKiB": 1600980,
+        "unknownPssKiB": 812744,
+        "nativeHeapPssKiB": 249656,
+        "graphicsSummaryKiB": 124980
+      },
+      {
+        "sampleStartElapsedMs": 22708,
+        "sampleEndElapsedMs": 24389,
+        "totalPssKiB": 3352960,
+        "totalRssKiB": 2097628,
+        "totalSwapPssKiB": 1600952,
+        "unknownPssKiB": 939092,
+        "nativeHeapPssKiB": 269448,
+        "graphicsSummaryKiB": 124836
+      },
+      {
+        "sampleStartElapsedMs": 26390,
+        "sampleEndElapsedMs": 28146,
+        "totalPssKiB": 3495617,
+        "totalRssKiB": 2237412,
+        "totalSwapPssKiB": 1600772,
+        "unknownPssKiB": 1073620,
+        "nativeHeapPssKiB": 274808,
+        "graphicsSummaryKiB": 124700
+      },
+      {
+        "sampleStartElapsedMs": 30154,
+        "sampleEndElapsedMs": 31796,
+        "totalPssKiB": 4603981,
+        "totalRssKiB": 3345780,
+        "totalSwapPssKiB": 1600768,
+        "unknownPssKiB": 2170120,
+        "nativeHeapPssKiB": 286752,
+        "graphicsSummaryKiB": 124700
+      },
+      {
+        "sampleStartElapsedMs": 33806,
+        "sampleEndElapsedMs": 35735,
+        "totalPssKiB": 3826765,
+        "totalRssKiB": 2568568,
+        "totalSwapPssKiB": 1600768,
+        "unknownPssKiB": 1379680,
+        "nativeHeapPssKiB": 298196,
+        "graphicsSummaryKiB": 124700
+      },
+      {
+        "sampleStartElapsedMs": 37749,
+        "sampleEndElapsedMs": 39893,
+        "totalPssKiB": 3829589,
+        "totalRssKiB": 2571432,
+        "totalSwapPssKiB": 1600764,
+        "unknownPssKiB": 1381884,
+        "nativeHeapPssKiB": 296600,
+        "graphicsSummaryKiB": 126792
+      },
+      {
+        "sampleStartElapsedMs": 41903,
+        "sampleEndElapsedMs": 43884,
+        "totalPssKiB": 3824001,
+        "totalRssKiB": 2565780,
+        "totalSwapPssKiB": 1600764,
+        "unknownPssKiB": 1380152,
+        "nativeHeapPssKiB": 296540,
+        "graphicsSummaryKiB": 125168
+      },
+      {
+        "sampleStartElapsedMs": 45889,
+        "sampleEndElapsedMs": 48316,
+        "totalPssKiB": 3823409,
+        "totalRssKiB": 2565188,
+        "totalSwapPssKiB": 1600764,
+        "unknownPssKiB": 1380008,
+        "nativeHeapPssKiB": 296528,
+        "graphicsSummaryKiB": 125168
+      }
+    ],
+    "pausedDrain": [
+      {
+        "sampleStartElapsedMs": 0,
+        "sampleEndElapsedMs": 2143,
+        "totalPssKiB": 3826085,
+        "totalRssKiB": 2567864,
+        "totalSwapPssKiB": 1600764,
+        "unknownPssKiB": 1380044,
+        "nativeHeapPssKiB": 296528,
+        "graphicsSummaryKiB": 125168
+      }
+    ],
+    "watchFirstToLastKiB": {
+      "totalPss": 776112,
+      "totalRss": 777000,
+      "totalSwapPss": -888,
+      "unknown": 721552
+    },
+    "peakPssKiB": 4603981
+  },
+  "evidence": [
+    {
+      "folder": "native-play-copy-trial",
+      "name": "accepted-action-direct-ready-1792346063578.ndjson",
+      "bytes": 646,
+      "sha256": "5e1cce54cc8572fa0277af56c05b714bb96dca8553b3e320c8de539131f465b3"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "accepted-action-direct-play-1792346082395.ndjson",
+      "bytes": 8477,
+      "sha256": "4f1a55b0add10b1eb3dbb461d143d87fade5eed00df2ccb4f71857bc1c409188"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "accepted-action-direct-paused-drain-1792346171747.ndjson",
+      "bytes": 648,
+      "sha256": "2ffc31c5767049dfcfa98f3dc1ee452c5f3721b7d6d19e61a8b8fb14b4d0debd"
+    },
+    {
+      "folder": "probe-metrics",
+      "name": "candidate-r17-1-nwfjxxiocs.json",
+      "bytes": 34148,
+      "sha256": "a05516c7a5e898bf73eeb5456985a003542ce68c404fcd9107f58987e8f6cfe9"
+    },
+    {
+      "folder": "probe-metrics",
+      "name": "candidate-r17-1-nwfjxxiocs-terminal.json",
+      "bytes": 1321,
+      "sha256": "6ab3850665b4fa477370c9004b3456611e76eda760e9c83540f6f6b52a5a5ff4"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen23-visible-direct-diagnostic-identity.png",
+      "bytes": 275763,
+      "sha256": "51c449352df1b6d263b213fa14acd442906cd8d2d9fcb638f790cba034245d93"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen23-normal-playing-043006.png",
+      "bytes": 233009,
+      "sha256": "b1f73e89bf5f1e6342bb72bff567338a8aee222f58a446a8eca67bc83afdee2f"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen23-normal-paused-043020.png",
+      "bytes": 231563,
+      "sha256": "e877bb341ad36e58d4ee120c36e3f40f074837b466aa8bc59fe8094bccbc69b6"
+    },
+    {
+      "folder": "native-play-copy-trial",
+      "name": "gen23-preview-cancelled-to-committed.png",
+      "bytes": 224128,
+      "sha256": "4d74c118ac1c196e82cc228c98dcde8b34d7c879df20028ae3f5f0757fa223f0"
+    }
+  ],
+  "conclusion": {
+    "acceptedUpdaterClosureNecessaryForObservedGrowth": false,
+    "wholeReactPublicationExcluded": false,
+    "fullNormalPlaybackFixed": false,
+    "allocatorIdentified": false,
+    "interactionLatencyEstablished": false,
+    "preparationCostKnown": false,
+    "structuralSchedulingChangeJustified": false,
+    "next": "Choose one evidenced remaining allocation/resource-lifetime boundary; preserve complete state, Scene, accepted consumers and normal product requirements. Do not repeat closure/copy/finish or failed heavy snapshots."
+  },
+  "limits": [
+    "Warm foreground process carries earlier allocation and about 1.6GiB swap; no fresh-process comparison or quantitative benefit against gen22.",
+    "New v2 linkage identities/consumption are valid but global monotonic clock was unavailable. All 514 new preparation CPU spans and control relative times are unknown, not zero cost.",
+    "496 of 514 preparation identities were consumed by metrics seal; counts alone do not establish avoidable CPU or authorize moving preparation.",
+    "The 51ms publishAccepted CPU span excludes asynchronous React reconciliation and native Page delivery; the Page counters show no accumulating callback backlog, not no allocation.",
+    "Synthetic acceptance and frozen output do not establish input-to-real-accepted latency, pixel correctness, picking, Sources or normal-path sustainability.",
+    "PSS/RSS/Unknown identify only the verified foreground Appbrand process, not a JS/native/GPU allocator."
+  ]
+}

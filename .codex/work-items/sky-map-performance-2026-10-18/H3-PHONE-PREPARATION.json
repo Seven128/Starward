@@ -1,0 +1,338 @@
+{
+  "schema": "starward-h3-phone-preparation-v1",
+  "preparedAt": "2026-10-19",
+  "status": "PHONE_BUILD_AND_HTTP_READY_PREVIEW_OUTCOME_UNKNOWN",
+  "acceptanceBoundary": "MAP_POINT_COMPONENT_ONLY_NOT_FORMAL_NOT_PUBLISHED_NOT_PHONE_NOT_FULL_H3",
+  "reviewOwner": "H3-COMPONENT-FIXTURE-INDEPENDENT-REVIEW.md",
+  "inputOwner": "H3-SAME-SITE-ISOLATED-INPUT.md",
+  "entry": {
+    "originFile": "absolute external JSON with only apiOrigin; maximum 2048 bytes; not read in this subtask",
+    "prepare": "node tools/run-node.cjs --import tsx .codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/prepare.mts --phone-revision --api-origin-file <absolute-file>",
+    "build": "node tools/run-node.cjs .codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/build.mjs --phone-revision --api-origin-file <same-absolute-file>",
+    "outputRoot": "tmp/h3-component-fixture/phone-revision",
+    "route": "pages/h3-component/index",
+    "overwrite": "REFUSED",
+    "generatedJsEdits": false,
+    "actualOriginPrepared": true,
+    "actualPhoneRevisionCreated": true
+  },
+  "transport": {
+    "factory": "tmp/h3-component-fixture/phone-binding.mts:createH3PhoneBinding",
+    "originReader": "tmp/h3-component-fixture/phone-target.mjs:readPhoneApiOriginFile",
+    "photoPath": "/__development_h3_input/media/east-dam-minibus-20250502.jpg",
+    "photoMethods": [
+      "GET",
+      "HEAD"
+    ],
+    "photoQuery": "FORBIDDEN",
+    "credentials": "authorization/cookie/operator/reauth/idempotency headers rejected",
+    "horizonOwner": "original API client /v2/terrain/horizon same GCJ02 station, toFixed(7), GET",
+    "horizonIntercepted": false,
+    "successHorizonManufactured": false,
+    "originAdmission": "NON_LOOPBACK_CONFIGURATION_ONLY_NOT_PHYSICAL_ROUTE_OR_REACHABILITY",
+    "realAdapterOriginPolicy": "UNCHANGED_LOCAL_HTTP",
+    "rootMustMountSameOriginPhotoAndRealTerrain": true
+  },
+  "software": {
+    "checks": {
+      "originAdmission": true,
+      "originFileAndFixedTargets": true,
+      "reviewedSamePhotoSameStationAndRealRecoveryOwner": true,
+      "exactPhotoOnlyNoCredentialsAndNoTerrainInterception": true,
+      "closedBindingRefusesReads": true,
+      "originalSealedSourceBundleAndChecksPreserved": true
+    },
+    "dummyOriginClass": "RFC5737_DOCUMENTATION_ADDRESS_NEVER_CONTACTED",
+    "networkRequests": 0,
+    "listenersOpened": 0,
+    "originalBundleSha256": "a282341a408821832d65284ab651e0431113092cce59f5b3e5754cc8f9ed2e66",
+    "originalSourceFilesChecked": 1560
+  },
+  "dummyValidationBuild": {
+    "schema": "starward-h3-component-fixture-build-v1",
+    "status": "BUILT_NOT_ACTIVATED",
+    "sourceFiles": 1560,
+    "sourceBytes": 9914688,
+    "sourceCopyUnchangedDuringBuild": true,
+    "sourceOverlayCount": 16,
+    "unchangedRealComponentOwners": [
+      "src/pages/map/spot-panel.tsx",
+      "src/components/spot-image-viewer.tsx",
+      "src/components/spot-media-gallery-position.ts",
+      "src/pages/map/use-panel-return-position.ts",
+      "src/components/provenance.tsx",
+      "src/components/source-attribution.tsx",
+      "src/pages/map/spot-terrain-overview.tsx",
+      "src/pages/map/spot-terrain-horizon.tsx",
+      "src/hooks/use-resource-query.ts",
+      "src/services/terrain-horizon-response.ts",
+      "src/utils/spot-media.ts"
+    ],
+    "frontendGenericFixtureMode": false,
+    "componentInputBoundary": "MAP_POINT_COMPONENT_ONLY_NOT_PUBLISHED",
+    "project": ".codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/phone-validation/source/apps/wechat-miniapp",
+    "route": "pages/h3-component/index",
+    "bundleSha256": "0d4738a6cf54e2549b79e544b2b94eae4699867d0c87af927675b98b18594ead",
+    "fileCount": 341,
+    "totalBytes": 4979216,
+    "packages": {
+      "main": {
+        "bytes": 2030836,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041398,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598331,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1308651,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 66316,
+    "media": {
+      "delivery": "same-origin inactive H3 handler; no JPEG embedded in package",
+      "bytes": 3038007,
+      "sha256": "cc96b87d972a558bf7543fd1263cb7001cc81af83e3d75e1a507fb0a0e987a39"
+    },
+    "originClass": "NON_LOOPBACK_CONFIGURATION_ONLY_NOT_REACHABILITY",
+    "phoneBinding": {
+      "mode": "phone-validation",
+      "originSha256": "0921ae56567765e8e2912998baaea67af56d7e5ef01634ed28777274938b5bb1",
+      "compiledOriginFiles": 2,
+      "completeCurrentProductionSourceCopy": true,
+      "generatedFilesEdited": false,
+      "oldSealedArtifactsReplaced": false
+    },
+    "namespaceIsolation": true,
+    "readOnlyRecoveryTransport": true,
+    "listenersOpened": 0,
+    "existingServicesCalled": false,
+    "devtoolsTouched": false,
+    "phoneTouched": false,
+    "normalFormalBusinessConsumer": "NOT_ADMITTED",
+    "visualAcceptance": "UNVERIFIED",
+    "recoverySuccess": "UNVERIFIED"
+  },
+  "typecheck": {
+    "schema": "starward-h3-phone-preparation-typecheck-v1",
+    "status": "PASSED",
+    "observedExitCode": 0,
+    "typescript": "5.9.3",
+    "scope": "fixture entry and complete imported dependency graph",
+    "command": "node tools/run-node.cjs apps/wechat-miniapp/node_modules/typescript/lib/tsc.js --noEmit --pretty false --project .codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/phone-validation/source/apps/wechat-miniapp/tsconfig.component.json",
+    "sourceManifestSha256": "316a403e948b76a147368956a4d874bfde2b3e2d9ffba775a182b39b8c137192",
+    "nativeEvidence": "UNVERIFIED"
+  },
+  "originalEvidence": {
+    "sealedSourceBundleAndReceiptsPreserved": true,
+    "historicalPrepareAndBuildHashes": "read exact archived versions in tmp/h3-component-fixture/phone-owner-before; active owner script paths now extended",
+    "originalBuildReceiptNotRewritten": true,
+    "originalBehaviorReceiptNotRewritten": true,
+    "originalTypecheckReceiptNotRewritten": true
+  },
+  "protectedBoundaries": {
+    "productionSourceEdited": false,
+    "formalCatalogEdited": false,
+    "databaseOrAccountAccess": false,
+    "listenersOpened": 0,
+    "existingApisCalled": false,
+    "devtoolsDeviceFeedbackOrFirewallTouched": false,
+    "R17ServicesOrCandidateTouched": false,
+    "N05And8791AndDeliveredR6AndPairingAndVpnTouched": false,
+    "planHandoffIndexGoalEdited": false,
+    "privateOriginalPhotoOrActualOriginConfigRead": false
+  },
+  "unverified": [
+    "actual physical origin and phone reachability/TLS/domain configuration",
+    "Android WEAPP actual mounting and native Map composition/persistence",
+    "target photo native download/decode",
+    "actual gallery/document/source return position",
+    "real same-site horizon successful response and redraw",
+    "FORMAL_SPOT publication and ordinary business consumer",
+    "iOS and full H3"
+  ],
+  "files": [
+    {
+      "path": "tmp/h3-component-fixture/prepare.mts",
+      "bytes": 2812,
+      "sha256": "6de4dbf964552355f2efeb9f56eb14b97bae593fcf9c03baebcb64a51045cc9a"
+    },
+    {
+      "path": "tmp/h3-component-fixture/build.mjs",
+      "bytes": 11977,
+      "sha256": "70b67996e12b2e4d54e805c4dcead2178405afee382628e6e07a8e6217ba1b6d"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-target.mjs",
+      "bytes": 4125,
+      "sha256": "c319f7941a67c3bf5f8490ffc2b73154df80e7b77d0498a82b65d0576b334a07"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-binding.mts",
+      "bytes": 2483,
+      "sha256": "4e9dfc3c5f1b53bc32ae09db4d32120cbde55b01827a05d40e723c42daec9b7c"
+    },
+    {
+      "path": "tmp/h3-component-fixture/verify-phone-preparation.mts",
+      "bytes": 7947,
+      "sha256": "f636a3671cf13c384b76f8411c411aae139d849e4183c794e400ea60ef603e8e"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-software-receipt.json",
+      "bytes": 2078,
+      "sha256": "c7552fd0879ffae6839a8f2220df4d1608789f9d6dc885a305eb15c388f42572"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-owner-before/prepare.mts",
+      "bytes": 1947,
+      "sha256": "62491bbf931baa23c19399fce69490b2df557331bed28690f89b6944f6c1001f"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-owner-before/build.mjs",
+      "bytes": 10546,
+      "sha256": "615a82857f5ff7e808e937d9aad465e0a72f0ea3dbbb7eb64fc1a4fe326d981c"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-validation/build-receipt.json",
+      "bytes": 2352,
+      "sha256": "f305be2875c9407cb245173f5a6da091c6c41e319f87df88ad92a31bfa7eb8d5"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-validation/typecheck-receipt.json",
+      "bytes": 609,
+      "sha256": "9a4ebf9e65f7f25e7d8f64a9961ca0e8434067196e04d0da219f482b6bb8a08c"
+    },
+    {
+      "path": "tmp/h3-component-fixture/phone-validation/source-snapshot.json",
+      "bytes": 307928,
+      "sha256": "316a403e948b76a147368956a4d874bfde2b3e2d9ffba775a182b39b8c137192"
+    }
+  ],
+  "actualPhoneRevisionCreated": true,
+  "rootPhoneRevision": {
+    "schema": "starward-h3-component-fixture-build-v1",
+    "status": "BUILT_NOT_ACTIVATED",
+    "sourceFiles": 1560,
+    "sourceBytes": 9914688,
+    "sourceCopyUnchangedDuringBuild": true,
+    "sourceOverlayCount": 16,
+    "unchangedRealComponentOwners": [
+      "src/pages/map/spot-panel.tsx",
+      "src/components/spot-image-viewer.tsx",
+      "src/components/spot-media-gallery-position.ts",
+      "src/pages/map/use-panel-return-position.ts",
+      "src/components/provenance.tsx",
+      "src/components/source-attribution.tsx",
+      "src/pages/map/spot-terrain-overview.tsx",
+      "src/pages/map/spot-terrain-horizon.tsx",
+      "src/hooks/use-resource-query.ts",
+      "src/services/terrain-horizon-response.ts",
+      "src/utils/spot-media.ts"
+    ],
+    "frontendGenericFixtureMode": false,
+    "componentInputBoundary": "MAP_POINT_COMPONENT_ONLY_NOT_PUBLISHED",
+    "project": ".codex/work-items/sky-map-performance-2026-10-18/tmp/h3-component-fixture/phone-revision/source/apps/wechat-miniapp",
+    "route": "pages/h3-component/index",
+    "bundleSha256": "1ee545f004155d693e0d7384240da558b1de20a4a22cb67c300d2f9368d77941",
+    "fileCount": 341,
+    "totalBytes": 4979225,
+    "packages": {
+      "main": {
+        "bytes": 2030844,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1041398,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 598331,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1308652,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 66308,
+    "media": {
+      "delivery": "same-origin inactive H3 handler; no JPEG embedded in package",
+      "bytes": 3038007,
+      "sha256": "cc96b87d972a558bf7543fd1263cb7001cc81af83e3d75e1a507fb0a0e987a39"
+    },
+    "originClass": "NON_LOOPBACK_CONFIGURATION_ONLY_NOT_REACHABILITY",
+    "phoneBinding": {
+      "mode": "phone-revision",
+      "originSha256": "3b3d8a49ba867c009f2d2d289aeebfd0cf91c781e06f138ff10ee5dc89dabd77",
+      "compiledOriginFiles": 2,
+      "completeCurrentProductionSourceCopy": true,
+      "generatedFilesEdited": false,
+      "oldSealedArtifactsReplaced": false
+    },
+    "namespaceIsolation": true,
+    "readOnlyRecoveryTransport": true,
+    "listenersOpened": 0,
+    "existingServicesCalled": false,
+    "devtoolsTouched": false,
+    "phoneTouched": false,
+    "normalFormalBusinessConsumer": "NOT_ADMITTED",
+    "visualAcceptance": "UNVERIFIED",
+    "recoverySuccess": "UNVERIFIED",
+    "typecheck": {
+      "command": "TypeScript5.9.3 --noEmit tsconfig.component.json",
+      "exitCode": 0
+    },
+    "independentBoundaryReview": "DEVICE-H3-BOUNDARY-REVIEW.md",
+    "terrainPreflight": "H3-PHONE-TERRAIN-PREFLIGHT.json",
+    "photoHandlerActivated": true,
+    "deviceVerified": false
+  },
+  "rootRuntime": {
+    "bridgeSession": 45300,
+    "apiSession": 94448,
+    "photoHandlerActivated": true,
+    "mediaReadiness": "H3-PHONE-MEDIA-READINESS.json",
+    "terrainReadiness": "H3-PHONE-TERRAIN-PREFLIGHT.json",
+    "currentContextOwner": "HANDOFF.md; old MemoryCache Context was lost on API restart and the public lane subsequently rehydrated",
+    "phoneDelivered": false,
+    "legacy8791Touched": false,
+    "accountCreated": false,
+    "reminderWorker": false,
+    "currentStateOwner": "HANDOFF.md"
+  },
+  "currentPreview": {
+    "generation": 26,
+    "selected": true,
+    "officialCallMade": true,
+    "officialTerminalOutcome": "UNKNOWN",
+    "originalTaskIdRecoverable": false,
+    "deviceSessionBound": false,
+    "phoneDelivered": "UNVERIFIED",
+    "owner": "HANDOFF.md",
+    "boundaryReview": "H3-PREVIEW-BOUNDARY-REVIEW.md",
+    "reissueOrBindAllowed": false
+  },
+  "sourcePreservation": {
+    "status": "HASH_READ_BACK_ORIGINALS_PRESERVED",
+    "archiveRoot": "E:/Dev/Starward-data/verification/sky-map-20261018/h3-gen26-pre-delivery/h3-source-preservation-20261019",
+    "manifestFile": "manifest.private.json",
+    "manifestSha256": "cb9b5ac33dfe909d75517cc79b22c3f070b0a39b5bd667a30c4188f42d1ddc62",
+    "files": 1937,
+    "bytes": 18989409,
+    "sourceSnapshotFiles": 1560,
+    "overlays": 16,
+    "bundleSha256": "1ee545f004155d693e0d7384240da558b1de20a4a22cb67c300d2f9368d77941",
+    "bundleFiles": 341,
+    "bundleBytes": 4979225,
+    "scope": "root H3 helpers and receipts, isolated adapter and prepared photo, exact phone-revision input sources and compiled bundle; no node_modules or sessions",
+    "gitIncludesPrivateArchive": false,
+    "cleanCloneAloneReproduces": false,
+    "officialPreviewOutcome": "UNKNOWN",
+    "productAcceptance": "UNVERIFIED"
+  }
+}

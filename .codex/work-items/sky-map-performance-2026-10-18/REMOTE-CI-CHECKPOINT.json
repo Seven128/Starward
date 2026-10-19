@@ -279,11 +279,77 @@
       "headSha": "581a5a9b5f44b8047afc2410108ffae0337c37d0",
       "status": "completed",
       "conclusion": "success"
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39128679090,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39128679090",
+      "headSha": "124217e166ee5ee7688b29e2ef37086b30ae1fa4",
+      "event": "workflow_dispatch",
+      "createdAt": "2026-10-18T12:46:17Z",
+      "completedAt": "2026-10-18T13:00:31Z",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Context structure",
+      "id": 39128711873,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39128711873",
+      "headSha": "124217e166ee5ee7688b29e2ef37086b30ae1fa4",
+      "event": "workflow_dispatch",
+      "createdAt": "2026-10-18T12:46:45Z",
+      "completedAt": "2026-10-18T12:47:11Z",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39134890734,
+      "conclusion": "success",
+      "createdAt": "2026-10-18T14:11:43Z",
+      "event": "workflow_dispatch",
+      "headSha": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+      "status": "completed",
+      "updatedAt": "2026-10-18T14:23:21Z",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39134890734"
+    },
+    {
+      "workflow": "Context structure",
+      "id": 39135210409,
+      "conclusion": "success",
+      "createdAt": "2026-10-18T14:15:54Z",
+      "event": "workflow_dispatch",
+      "headSha": "944a1d6c9ffed6ede39fa9e6c7b56ff2594d57d2",
+      "status": "completed",
+      "updatedAt": "2026-10-18T14:16:17Z",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39135210409"
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39185535928,
+      "conclusion": "success",
+      "createdAt": "2026-10-19T01:28:49Z",
+      "event": "workflow_dispatch",
+      "headSha": "16e0c0456b8c5bd6d87dd8e1aa088d961df03d5a",
+      "status": "completed",
+      "updatedAt": "2026-10-19T01:37:35Z",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39185535928"
+    },
+    {
+      "workflow": "Context structure",
+      "id": 39185539969,
+      "conclusion": "success",
+      "createdAt": "2026-10-19T01:28:52Z",
+      "event": "workflow_dispatch",
+      "headSha": "16e0c0456b8c5bd6d87dd8e1aa088d961df03d5a",
+      "status": "completed",
+      "updatedAt": "2026-10-19T01:29:17Z",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39185539969"
     }
   ],
-  "remaining": "Current combined Product CI39095632949 passed at9e5c75ef; later commits change task evidence only. Context remains unchanged since its passed d8339c48 check. No CI/tool action is pending and no staging deployment occurred. Required original-data, native/recipient outcomes and independent review remain incomplete; main synchronization/final cleanup depend on them.",
-  "productCheckedHeadSha": "9e5c75ef204c2206e658c5154dafaec9e7424374",
-  "contextCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
+  "remaining": "Exact16e0c045 Product39185535928 and Context39185539969 succeeded. No deployment qualified from these non-main manual runs. Uncommitted Skill/Context/task/device-test changes have separate local evidence and are not covered by these remote runs. Sky A/B, terrain target observation, H1-H8, main-only identity and main integration remain; preserve the CD guard.",
+  "productCheckedHeadSha": "16e0c0456b8c5bd6d87dd8e1aa088d961df03d5a",
+  "contextCheckedHeadSha": "16e0c0456b8c5bd6d87dd8e1aa088d961df03d5a",
   "postCheckDelta": {
     "scope": "Map attribution wrappers follow the existing shared visible-credit rule; no source content or style changes",
     "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
@@ -322,14 +388,32 @@
     "coveredByProductRunId": 39095632949
   },
   "contextUnchangedSinceCheckedHead": false,
-  "latestImplementationHead": "3b0d8916e66a9e7c37ec94503b8d18b4e8e2a01a",
-  "latestLocallyCheckedHead": "3b0d8916e66a9e7c37ec94503b8d18b4e8e2a01a",
+  "latestImplementationHead": "c5ecfd2ed26758920aa30f0e80f6b96fffc0d700",
+  "latestLocallyCheckedHead": "f7de41ed576f9ad65d40cc29c0658a5564d8317a",
   "latestChangeVerification": {
-    "scope": "Independent static nightlight API and current Map consumer",
-    "remoteFullCi": "not rerun for this module; earlier full runs retain their original heads",
-    "local": "API14pass2skip, MiniProgram19pass, both typechecks, SDK, Context and ordinary isolated build passed",
-    "independentReview": "Earlier7627d9ad reviewed; this later module not yet independently reviewed",
-    "phone": "Generation9/old backend preserved; new module not installed"
+    "scope": "Sky time-ruler native layout/window restoration, strict official preview result preservation, and warm-entry test-fixture repair committed through16e0c045",
+    "remoteFullCi": "Exact16e0c045 Product39185535928 and Context39185539969 both succeeded; release-code checks, backend packages, nondeployable WEAPP bundle, isolated infrastructure and OCI construction completed",
+    "local": "Current worktree Mini Program2649 pass/1 publication-environment skip/0 fail; workflow175/175; UI source probes4/4. The worktree also includes uncommitted changes not covered by these remote runs",
+    "independentReview": "SKY-RULER-NATIVE-CADENCE-REVIEW, A1-AND-PREVIEW-FIX-INDEPENDENT-REVIEW, and CURRENT-DELIVERY-VERIFICATION; fixed findings retain their original scope",
+    "phone": "Repaired native layout/A1 r3 not delivered or accepted; gen26 official outcome UNKNOWN. Current healthy terrain metadata AVAILABLE does not establish file-ready or native coverage",
+    "pendingWorktree": "Device capture repair committedc5ecfd2e; method1e98623d; device/ruler Contextf7de41ed. Task evidence archive is separate. Latest remote Product/Context remain bound to16e0c045, not these newer commits.",
+    "context": "Local context:validate passed after method and Context commits; manifest paths and declared controlling sources only.",
+    "currentMethodWhitespaceDelta": "After independent review, only one extra EOF blank line removed; reviewed SHA3e81d52e... remains historical; current304b859ac1ccf014822c6c62ea6c49e3f9667350e90ca4a8f77d5809ab316b06."
   },
-  "latestCheckedImplementation": "581a5a9b5f44b8047afc2410108ffae0337c37d0"
+  "latestCheckedImplementation": "c5ecfd2ed26758920aa30f0e80f6b96fffc0d700",
+  "latestDeliveryHeadBeforeEvidenceArchive": "f7de41ed576f9ad65d40cc29c0658a5564d8317a",
+  "productSourceTreeUnchangedSinceProductRun": true,
+  "taskArchiveVerification": {
+    "stagedFiles": 149,
+    "jsonParsed": 41,
+    "unexpectedPrivateOrBinaryPaths": 0,
+    "syntaxAndPrivacyReview": "REMAINING-DELIVERY-AUDIT.md; unchanged scripts reused, not rerun as product operations",
+    "whitespace": "Default diff --check reports only three historical Markdown EOF blank lines; preserved original evidence bytes. Check excluding blank-at-eof passes.",
+    "historicalEofOnly": [
+      "PERFORMANCE-RESEARCH-RECONCILIATION.md",
+      "R17-V2-INDEPENDENT-REVIEW.md",
+      "WEB-GPT-PRO-SKY-PERFORMANCE-RESEARCH-PROMPT.md"
+    ],
+    "productAcceptance": "UNVERIFIED"
+  }
 }

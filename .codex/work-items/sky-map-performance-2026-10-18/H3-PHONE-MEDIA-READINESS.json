@@ -1,0 +1,95 @@
+{
+  "scope": "H3_MOUNTED_EXACT_MEDIA_HTTP_NOT_PHONE",
+  "status": "MOUNTED_HTTP_VERIFIED_PHONE_UNVERIFIED",
+  "firstAttempt": {
+    "photoGetAndHeadPassed": true,
+    "expectedQueryStatus": 400,
+    "actualQueryStatus": 405,
+    "reason": "Original reviewed adapter rejects query with method-not-allowed; no product status change required"
+  },
+  "checks": [
+    {
+      "case": "health",
+      "status": 200,
+      "bodyBytes": 245,
+      "contentLength": null,
+      "contentType": "application/json",
+      "elapsedMs": 44
+    },
+    {
+      "case": "photo",
+      "status": 200,
+      "bodyBytes": 3038007,
+      "contentLength": "3038007",
+      "contentType": "image/jpeg",
+      "elapsedMs": 21
+    },
+    {
+      "case": "photo-head",
+      "status": 200,
+      "bodyBytes": 0,
+      "contentLength": "3038007",
+      "contentType": "image/jpeg",
+      "elapsedMs": 4
+    },
+    {
+      "case": "photo-query",
+      "status": 405,
+      "bodyBytes": 0,
+      "contentLength": null,
+      "contentType": "application/json; charset=utf-8",
+      "elapsedMs": 3
+    },
+    {
+      "case": "photo-write",
+      "status": 405,
+      "bodyBytes": 0,
+      "contentLength": null,
+      "contentType": null,
+      "elapsedMs": 2
+    },
+    {
+      "case": "photo-admin-header",
+      "status": 400,
+      "bodyBytes": 0,
+      "contentLength": null,
+      "contentType": null,
+      "elapsedMs": 1
+    },
+    {
+      "case": "photo-auth-header",
+      "status": 400,
+      "bodyBytes": 0,
+      "contentLength": null,
+      "contentType": null,
+      "elapsedMs": 1
+    },
+    {
+      "case": "wrong-photo",
+      "status": 403,
+      "bodyBytes": 0,
+      "contentLength": null,
+      "contentType": null,
+      "elapsedMs": 1
+    },
+    {
+      "case": "account",
+      "status": 403,
+      "bodyBytes": 0,
+      "contentLength": null,
+      "contentType": null,
+      "elapsedMs": 1
+    }
+  ],
+  "photoBytes": 3038007,
+  "photoSha256": "cc96b87d972a558bf7543fd1263cb7001cc81af83e3d75e1a507fb0a0e987a39",
+  "existingR17ContextStill200": true,
+  "bridgeOnlyRestarted": true,
+  "upstreamContextCachePreserved": true,
+  "legacy8791Touched": false,
+  "accountCreated": false,
+  "reminderWorker": false,
+  "phoneVerified": false,
+  "bridgeSession": 17528,
+  "sourceSha256": "73e13c36fb33c69ef91353bcbf3cbe8f8a8dbc27360e08d466e700573b8e3ab5"
+}

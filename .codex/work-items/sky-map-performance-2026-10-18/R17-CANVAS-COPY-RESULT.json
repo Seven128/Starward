@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "starward-r17-canvas-copy-target-result-v1",
+  "status": "FAILED_GROWTH_AND_MINIAPP_EXIT",
+  "evidenceMode": "development_feedback",
+  "generation": 17,
+  "bundleSha256": "1d63353782af185908cf6e5ddaf86f98ca7747528e29ad78f2ba8e0d3e82d056",
+  "buildOwner": "R17-CANVAS-COPY-TRIAL.json",
+  "productionSourceChanged": false,
+  "officialAutoPreviewCompleted": true,
+  "operatorBound": true,
+  "visibleDiagnosticLabel": "R17 candidate/canvas-copy",
+  "phoneBundleBytesVerified": false,
+  "runtimeAppIdVerified": false,
+  "scenario": {
+    "preparedFovDeg": 10.8,
+    "playbackRate": 1,
+    "committedPublicStartingTimeRestored": true,
+    "contextApplyDuringTrial": false,
+    "lastVisibleProductElapsedSeconds": 56,
+    "plannedObservationSeconds": 120,
+    "completedObservationSeconds": 66.528,
+    "earlyFailure": true,
+    "productPauseAttempt": "GUARD_REJECTED_MINIAPP_NOT_FOREGROUND_NO_INPUT_SENT"
+  },
+  "memory": {
+    "sourceSha256": "a9aacdd2470c7c6e759ce492ffc004e7c227159f17b5573e6df3aa54f023bc9f",
+    "unit": "KiB",
+    "samples": [
+      {
+        "elapsedMs": 1832,
+        "state": "miniapp_foreground",
+        "processes": [
+          {
+            "slot": 0,
+            "totalPssKiB": 1021898,
+            "totalRssKiB": 1324680,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 106847,
+            "dalvikHeapPssKiB": 28807,
+            "glMtrackPssKiB": 8552,
+            "eglMtrackPssKiB": 89132,
+            "graphicsSummaryKiB": 97684
+          },
+          {
+            "slot": 1,
+            "totalPssKiB": 218980,
+            "totalRssKiB": 238312,
+            "totalSwapPssKiB": 147881,
+            "nativeHeapPssKiB": 12226,
+            "dalvikHeapPssKiB": 16880,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "graphicsSummaryKiB": 1024
+          }
+        ]
+      },
+      {
+        "elapsedMs": 23982,
+        "state": "miniapp_foreground",
+        "processes": [
+          {
+            "slot": 0,
+            "totalPssKiB": 1898755,
+            "totalRssKiB": 2202224,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 137215,
+            "dalvikHeapPssKiB": 37563,
+            "glMtrackPssKiB": 8416,
+            "eglMtrackPssKiB": 89132,
+            "graphicsSummaryKiB": 97548
+          },
+          {
+            "slot": 1,
+            "totalPssKiB": 217796,
+            "totalRssKiB": 237156,
+            "totalSwapPssKiB": 147853,
+            "nativeHeapPssKiB": 12234,
+            "dalvikHeapPssKiB": 15728,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "graphicsSummaryKiB": 1024
+          }
+        ]
+      },
+      {
+        "elapsedMs": 46251,
+        "state": "miniapp_foreground",
+        "processes": [
+          {
+            "slot": 0,
+            "totalPssKiB": 2233229,
+            "totalRssKiB": 2536100,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 153023,
+            "dalvikHeapPssKiB": 34787,
+            "glMtrackPssKiB": 8416,
+            "eglMtrackPssKiB": 89132,
+            "graphicsSummaryKiB": 97548
+          },
+          {
+            "slot": 1,
+            "totalPssKiB": 217172,
+            "totalRssKiB": 236588,
+            "totalSwapPssKiB": 147797,
+            "nativeHeapPssKiB": 11766,
+            "dalvikHeapPssKiB": 15608,
+            "glMtrackPssKiB": 1024,
+            "eglMtrackPssKiB": null,
+            "graphicsSummaryKiB": 1024
+          }
+        ]
+      },
+      {
+        "elapsedMs": 66528,
+        "state": "miniapp_not_foreground",
+        "processes": []
+      }
+    ],
+    "foregroundProcessAssociation": "UNKNOWN_IN_THIS_FIRST_HELPER_VERSION",
+    "observations": "One sorted Appbrand slot grew by 1,211,331 KiB PSS between first and third samples; its GL/EGL mtrack did not grow. Other Appbrand processes are not excluded.",
+    "allocatorAttribution": "NOT_ESTABLISHED",
+    "rawProviderDumpsRetained": false
+  },
+  "exit": {
+    "historyOwner": "copy-play-exit-summary-validated.json",
+    "latestObservedReason": 2,
+    "latestObservedStatus": 6,
+    "exactForegroundProcessAssociation": false,
+    "interpretation": "Newest scoped Appbrand entry is SIGNALED/status6; temporal association supports an abort but this helper does not bind it to the foreground Activity process."
+  },
+  "exportedProbeMetrics": false,
+  "mediaOwner": "E:/Dev/Starward-data/verification/sky-map-20261018/native-play-copy-trial",
+  "media": [
+    {
+      "filename": "copy-play-early.png",
+      "bytes": 374801,
+      "sha256": "c87cc7ae5f018c707e4ddc06348431a285df69eb1e2fa94c515b2f1ba0466735"
+    },
+    {
+      "filename": "copy-play-middle.png",
+      "bytes": 376628,
+      "sha256": "c479dcd85d913188bebea3aa4ec915641ea3821ecb6544b8ee77cc22d53d085c"
+    },
+    {
+      "filename": "generation17-screen.png",
+      "bytes": 376628,
+      "sha256": "c479dcd85d913188bebea3aa4ec915641ea3821ecb6544b8ee77cc22d53d085c"
+    }
+  ],
+  "decision": "REJECT_COPY_AS_THE_REPAIR; keep original paired bundles and production source unchanged; next isolated diagnostic suppresses only native fullframe copies while retaining complete GL work and synthetic state publication.",
+  "acceptance": {
+    "playback": false,
+    "memoryImprovement": false,
+    "fullPixelEquivalence": false,
+    "overallR17": false
+  },
+  "limits": [
+    "PSS and Android heap summaries do not identify JS, V8 or a specific native allocator.",
+    "A sample remaining in the Mini Program and normal-looking pixels do not establish continuous target acceptance.",
+    "The automatic 45-second probe stop did not pause product playback.",
+    "The trial is not a replacement for the original baseline/candidate camera/time comparison."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "scope": "H3_TASK_COMPONENT_NOT_FORMAL_ACCEPTANCE",
+  "status": "SELECTED_COMPLETE_BUNDLE_PHONE_UNVERIFIED",
+  "expectedGeneration": 26,
+  "bundleSha256": "1ee545f004155d693e0d7384240da558b1de20a4a22cb67c300d2f9368d77941",
+  "files": 341,
+  "bytes": 4979225,
+  "normalGen25Archived": true,
+  "sameAppId": true,
+  "sourceConfigSha256": "adac08515c11fcebee8960db24974dc69f49df47c0ee5f10e97f67350f6d41fe",
+  "generatedJsEdited": false
+}

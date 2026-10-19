@@ -1,0 +1,12 @@
+{
+  "scope": "TASK_ONLY_SELECTION_NOT_PHONE_BINDING",
+  "selectedAt": "2026-10-18T21:49:15.960Z",
+  "generationExpected": 25,
+  "probeVersion": 3,
+  "bundleSha256": "d4ed31dfe62d4d0268eb3d415d932d0f958615ba6a9ac98e474edc7a13432819",
+  "buildSourceSha256": "10236f0e034ae96d9e31ed5e081a837a53f4cdd128e3f9ac34da6d588f151a4c",
+  "previousGeneration": 24,
+  "previousDeviceEvidenceArchived": true,
+  "sourceConfigUnchanged": true,
+  "phoneDelivered": false
+}
