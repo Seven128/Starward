@@ -26,6 +26,8 @@
 
 时间尺松手/选择刻度仅将同一预览吸附到真实供给刻度，不提交公共Context；取消预览、外点关闭、隐藏和披露替换仍能恢复已提交时刻。跨报告窗口由只读geometry供给补齐，等待/失败保有效已绘天空并标出实际已绘时刻，不能用所选数字或模型已到达冒称画面更新。显式Apply保原Context锁、失败/迟到防护及确认后刷新连续性；接口/共享几何责任见[runtime-and-domain](../../../../architecture/runtime-and-domain.md#cloud-sky-reference-display)。
 
+Sky曲尺的`orientation-ruler-layout`只拥有原生布局投影：同批axis、相邻tick中心和实际scroll offset共同决定程序定位与拖动换算，不能由rpx公式推定原生间距。`useSkyOverlayLayoutReady`沿surface自身过渡结束准入，open阶段本身不代表缩放完成；退出保留内容仍按live active撤销测量资格。resize持拖保留原投影至该次最终提交后再重测，旧窗口/隐藏/卸载读回不得发布；同一供给刻度内的正常Play不逐帧查询布局。它不拥有时间事务，也不将Map的独立尺几何迁入Sky。更换供给窗口时跟随实际active时刻，缺少committed tick不等于取消预览；显式取消仍由页面恢复原窗口与已提交瞬间。测量失败的名义fallback不代表原生对齐已验证，目标结果留在任务证据。
+
 进入与返回边界（2026-10-18）：Map将完整应用内画面渐黑后，以`Taro.redirectTo`进入Sky并真正卸载Map；返回先将Sky整页渐黑，再以`switchTab`重建Map并反向揭开黑场。两端共用`navigation/page-blackout-transition.ts`的有限220ms转场，不全局拦截其他路由、不声称遮盖系统栏。原生Back先由已有披露owner关闭当前任务，再走相同返回责任，缺失Context也保留返回。重复点击不重复派发，隐藏/卸载退休未发动作；原生导航已发出后无法取消，超时只解除UI遮罩/锁，迟到成功仍能恢复Map，失败只退休自己的请求票据。资源采用、源码或软件检查不替代目标合成与正常速度动效验收。
 
 完整应用内黑场包含浮动通知和原生custom Tab；Tab由自身cover责任渐黑/渐显，不靠页内z-index跨原生边界，也不通过隐藏Tab改变布局。新建页面的静态底色接续黑场，正常内容仍沿主题。两方向共用动效偏好：账号明确减弱或系统已确认reduce时减弱，尚未读回系统设置不等于要求省略返回渐显；原生渲染确认后才开始兜底计时。
