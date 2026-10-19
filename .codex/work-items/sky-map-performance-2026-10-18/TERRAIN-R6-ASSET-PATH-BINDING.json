@@ -1,0 +1,169 @@
+{
+  "schema": "starward-terrain-r6-asset-path-binding-v1",
+  "reviewedAt": "2026-10-19",
+  "scope": "READ_ONLY_FILE_EVIDENCE_NOT_TARGET_ACCEPTANCE",
+  "repositoryHeadRead": "c6bb28bc55b8b3e2ed2e32090f05512e233c4253",
+  "repositoryHeadEstablishesRunningApiVersion": false,
+  "result": "UNIQUE_CACHE_CANDIDATE__PHONE_RESPONSE_ASSOCIATION_UNKNOWN",
+  "method": "Existing performance-investigation method and adopted overlay PLAN; no repeated scheme research",
+  "receiptBindings": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r6-terrain-wait-20261019",
+    "taskReceiptFile": "official-exact-key-read-file.private.json",
+    "taskReceiptSha256": "653ab774ff9303ba3faee07796f6b577b6924b03c28351baa5f70fb133e2d242",
+    "bridgeFile": "bridge-health-after-gesture.private.json",
+    "bridgeSha256": "7e3fcc39bd9c927af6c7b98d57f79ccccbb3900cb3047894e0af8ce487b7b825",
+    "buildSourceSha256": "95d1e91d1c68ee154de1251bd41c32852938e0bfcab13feda7e144741ce0c7c9",
+    "metadataPhoneWallElapsedMs": 2248,
+    "fileAcquireToReadyPhoneWallElapsedMs": 98,
+    "fileReadyToNativeAckPhoneWallElapsedMs": 34,
+    "clockToVideoPtsCalibration": "UNKNOWN"
+  },
+  "cache": {
+    "directory": "C:/Users/777/AppData/Local/Temp/starward-terrain-2c7c2a814c8c-glo30-cn-v1",
+    "selection": "TerrainService default directory computed from current repository CWD; launcher injects no directory override",
+    "runningProcessCwdOrEnvironmentReadBackByThisReview": false,
+    "filesRead": 24,
+    "pngs": 8,
+    "proofs": 16,
+    "bytes": 1011435,
+    "redactedContentManifestSha256": "aea7d4216ca252a1fb6e2a01dad88a82507d56e0838000f31347e862d3ed5bf4",
+    "manifestAlgorithm": "Sort raw filenames; records {fileIdSha256,kind,bytes,sha256}; compact JSON SHA-256. kind PNG/IMAGE_PROOF/REQUEST_PROOF.",
+    "separateRawArchiveCreated": false,
+    "preservation": "Existing external regenerable cache, not a durable frozen archive; root can archive the bounded 24-file set before cleanup/prune"
+  },
+  "candidate": {
+    "distinct314570ByteProductsInSelectedCache": 1,
+    "requestAndImageProofsByteEqual": true,
+    "schemaVersion": "starward-terrain-publication-v4",
+    "imageSha256": "4ba6d68aa59958c2017957929a6fcc72715896a702026b4f055bcd7046478340",
+    "imageBytes": 314570,
+    "width": 512,
+    "height": 512,
+    "proofSha256": "89fafe5c5c2cc00120bfd38127e65daa56170308b18cd0b32ef7669f08cfd9b9",
+    "proofBytes": 10163,
+    "requestKeySha256": "ca6355e6ca781cf0206eaf245d6bbfcfb1249a729723c51b2c580c0d32cd1f68",
+    "derivedAt": "2026-10-19T07:03:47.633Z",
+    "zoom": 12,
+    "columns": 2,
+    "rows": 2,
+    "sourceSetSha256": "3485dd5abe00e2d6b5125b0fe1ca9eecd9869600588cdc2e526933b99fd5f83b",
+    "sourceObjects": 15,
+    "sourceIssues": 0,
+    "validPixelPercent": 100,
+    "realHttpRequestBoundsAvailable": false,
+    "realHttpResponseIdentityAvailable": false,
+    "actualPhoneResponseAssociation": "UNKNOWN_STRONGLY_CORRELATED_CANDIDATE_ONLY",
+    "fileNameAndCoordinatesRedacted": true
+  },
+  "publishedInventory": {
+    "directory": "E:/Dev/Starward-data/publications/terrain-hotspots-20261018",
+    "sha256": "f8903922eb14702d5de6325c903fac296bbc69d94019c9d7844ee03ac71ea774",
+    "activeAssets": 13,
+    "retainedAssets": 0,
+    "candidateExactWindowKeyHits": 0,
+    "candidateCellsActivePublished": 2,
+    "candidateCellsNotActivePublished": 2
+  },
+  "cells": [
+    {
+      "index": 0,
+      "owner": "PUBLISHED_INVENTORY",
+      "imageSha256": "304d5257e7dcc1990259adb05fbc83e48f2e9622574db4079ba27090e134790f",
+      "imageBytes": 78054,
+      "proofSha256": "ab3d6affcb5566ab82cc498a2d75b46ec0efe2f9a33d6780a29450a17806c176",
+      "requestKeySha256": "0015034a0d356d410e9dabdc4c14017e587deb55bbb8e41006a7f44a7089843b",
+      "derivedAt": "2026-10-18T10:56:04.706Z",
+      "sourceObjects": 4
+    },
+    {
+      "index": 1,
+      "owner": "PUBLISHED_INVENTORY",
+      "imageSha256": "1e09bd5d96b77cd180ac72b92de7ff640ce6bfa051ecee78eae8f6944991a7cf",
+      "imageBytes": 79361,
+      "proofSha256": "9973f3b85463c054692965fe238eb66c9c8ba38bedcfc65e3f80267b5976cb10",
+      "requestKeySha256": "6d7cdd3b4a79d5d46ee22b564e44bdd0eac0c8b7729360467d4bef8ec643f8b2",
+      "derivedAt": "2026-10-18T10:56:05.753Z",
+      "sourceObjects": 4
+    },
+    {
+      "index": 2,
+      "owner": "EARLIER_DERIVED_CACHE_NOT_PUBLISHED",
+      "imageSha256": "850ce27d2f8cc7d08dcfecf0508b3aba98b5ddb05dbe60e47a5fe12c252da17d",
+      "imageBytes": 78389,
+      "proofSha256": "d0a3777469434c873683480d5ef8fbcb347c8853cb7a76ba1c27d09992cd3c5c",
+      "requestKeySha256": "c8345e9dc54199d1872671c554cd73bf14b81db8ec2ecaec05810b90ecc0472e",
+      "derivedAt": "2026-10-19T00:06:03.950Z",
+      "sourceObjects": 9
+    },
+    {
+      "index": 3,
+      "owner": "DERIVED_CACHE_NOT_PUBLISHED",
+      "imageSha256": "e9d4ca4e209d7bc0685256b4f97c536577a0e650a91c82362cc70af889815784",
+      "imageBytes": 79342,
+      "proofSha256": "d00569c2096c5a594a27d794bec6a68f7b8fc30239136783db76a314828a8303",
+      "requestKeySha256": "0cb0bf27eb66ee631533aa14a4cbb0f038269bbc9ec6b3dc0ca0f7ea04338bee",
+      "derivedAt": "2026-10-19T07:03:47.589Z",
+      "sourceObjects": 9
+    }
+  ],
+  "existingOwnerReadOnlyValidation": {
+    "result": "PASS",
+    "functions": ["validateTerrainPublication", "validateTerrainAsset", "terrainSourceSetHash", "terrainWindowRequest", "normalizeTerrainRequest", "terrainRequestKey", "terrainWindowViewport"],
+    "windowAndAllFourCellImageHashesAndLengths": true,
+    "windowAndCellSourceSetHashes": true,
+    "cellPublicationIdsAndDeclaredGridCells": true,
+    "windowSourceObjectsEqualCellUnion": true,
+    "normalizedKeyAndKeyFromOwnBoundsAgree": true,
+    "validationDerivedFromRealHttpRequest": false
+  },
+  "earlierWindowRelationship": {
+    "imageSha256": "7e66b5677221f647f042e064bd696300c959801419430da4f523329bc29320d8",
+    "imageBytes": 156363,
+    "derivedAt": "2026-10-19T00:06:03.988Z",
+    "columns": 1,
+    "rows": 2,
+    "sameZoomAndWesternXAndY": true,
+    "sharedLeftColumnCells": [0, 2],
+    "newCellSourceObjects": 9,
+    "newCellSourcesWithSameIdentityAndBytesInEarlierWindowProof": 6,
+    "newCellOtherSourceIdentities": 3,
+    "sameSourceIdentityDifferentBytes": 0,
+    "doesProofOverlapEstablishDecodedSourceCacheHits": false,
+    "doesProofEstablishOnlyThreeNetworkReads": false
+  },
+  "associationEvidence": {
+    "bridgeMetadataImageBytes": 314570,
+    "bridgeMetadataElapsedMs": 2195,
+    "bridgeMetadataHostFinishedAt": "2026-10-19T07:03:47.641Z",
+    "bridgeAssetResponseBytes": 314570,
+    "bridgeAssetElapsedMs": 37,
+    "bridgeAssetHostFinishedAt": "2026-10-19T07:03:47.747Z",
+    "uniqueLengthAndMatchingDerivationTimeAndOldLeftColumn": "STRONG_CIRCUMSTANTIAL_ASSOCIATION_NOT_UNIQUE_HTTP_BINDING",
+    "bridgeOrTaskReceiptContainsImageSha256OrPublicationIdOrBounds": false,
+    "existingExactNetworkOrTelemetryReceiptLocatedInTwoTaskRootsByBoundedFilenameSearch": false
+  },
+  "unknown": [
+    "Actual phone response image identity and request rectangle",
+    "Running process CWD and exact original cache/memory state",
+    "Source reads/cache hits/shared joins and slot waits for the new cell",
+    "Projection/sourceRead/sample/shade/encode/cache-write contribution to metadata wait",
+    "File-ready/native-ack relation to first physical useful coverage"
+  ],
+  "nextObservation": [
+    "Preserve the bounded 24-file cache before normal prune/cleanup; no large source read needed.",
+    "If an already available original official target Network record survives, read only the actual matching response identity and request rectangle. Do not reopen the closed r6 project or replay the action for this read.",
+    "Otherwise, at the next already necessary representative action, carry only final image SHA and normalized request-key SHA through the existing anonymous boundary; keep coordinates and payload private.",
+    "After exact identity association, use existing terrain_raster_derived for cell e9d4ca4e..., terrain_metadata_read/terrain_asset_read for window 4ba6d68a..., through the current authorized telemetry owner. No legacy8791 auth, bridge relaxation, or service restart solely for telemetry.",
+    "If actual missing-cell sourceReadWall dominates, use the existing finite publisher declarations; if the sources already hit and composition/write dominates, measure that owner. Validate the actual phone gap after any repair."
+  ],
+  "operations": {
+    "deviceAdbIdeOrHttp": false,
+    "serviceRestartOrAccountStorageRead": false,
+    "sourcePlanHandoffOrOtherOwnerEdited": false,
+    "assetRegeneratedOrLargeSourceRehashed": false,
+    "commitOrPush": false,
+    "backgroundProcessLeft": false,
+    "blocksPrefetchWorkersOrLargerCacheAdopted": false,
+    "retainedGoalObligationsClosed": false
+  }
+}

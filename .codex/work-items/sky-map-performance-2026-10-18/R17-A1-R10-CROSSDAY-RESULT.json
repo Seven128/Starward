@@ -1,0 +1,522 @@
+{
+  "schemaVersion": "starward-r17-a1-r10-crossday-phone-result-v1",
+  "reviewDate": "2026-10-19",
+  "reviewer": "/root/review_r10_crossday_phone",
+  "mode": "development_feedback",
+  "delivery": "official_ordinary_preview",
+  "acceptance": false,
+  "verdict": "TARGETED_CROSSDAY_PENDING_CONTINUITY_AND_CANCEL_OBSERVED_DEVELOPMENT_FEEDBACK_ONLY",
+  "productResult": "On this necessary ordinary-preview path, changing 19-day 10:00 to 18-day 10:00 retained the accepted daytime Sky while updating. The old r8 committed 04:30 night fallback was not observed. Cancel returned to 19-day 04:30 night; its non-atomic intermediate fields are retained below.",
+  "candidate": {
+    "productionHead": "69401c097572799234e6b97478a4a1ddfe06c810",
+    "sourceSha256": "e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e",
+    "bundleSha256": "077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094",
+    "fileCount": 337,
+    "totalBytes": 5003601,
+    "feedbackGeneration": 1,
+    "reviewRevision": 10,
+    "buildGeneration": 27,
+    "uniqueR10LabelActuallyViewedBeforeAndAfterBinding": true,
+    "currentLocalFeedbackAndSessionHashBindingReadBack": true,
+    "mutableSessionJsonFrozen": false,
+    "runtimeAppIdReadback": false,
+    "wholePhoneBundleByteReadback": false,
+    "remoteProfilerOrDesktopAttachment": "Root owner records ordinary preview without desktop remote/profiler; sampled phone frames have no remote-debug overlay. Reviewer did not operate or inspect desktop runtime."
+  },
+  "invocation": {
+    "officialPreview": {
+      "owner": "root",
+      "execSession": 67914,
+      "rootReportedResult": "explicit success",
+      "reviewerReinvoked": false
+    },
+    "guardedInputAndRecordingOwner": "root",
+    "reviewerDeviceOrIdeOrServiceOperations": false,
+    "actionSequence": [
+      "initial 19-day 04:30 panel",
+      "continuous ruler to 19-day 10:00",
+      "previous-day down to 18-day 10:00",
+      "cancel preview to original 19-day 04:30"
+    ]
+  },
+  "evidence": {
+    "videos": [
+      {
+        "key": "ruler-swipe",
+        "file": "recording-1792411899305.mp4",
+        "bytes": 932411,
+        "sha256": "74334f4f277a4e96bbab88a10ddb5b175e1dec54ef5fd915c029130381156486",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "durationSeconds": 5.337689,
+        "decodedFrames": 129,
+        "lastPtsSeconds": 5.321256,
+        "maxEncodedPtsGapSeconds": 2.5107,
+        "noTrim": true,
+        "noPtsReset": true,
+        "noFrameDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": 0
+          },
+          {
+            "index": 10,
+            "ptsSeconds": 3.341333
+          },
+          {
+            "index": 20,
+            "ptsSeconds": 3.516456
+          },
+          {
+            "index": 29,
+            "ptsSeconds": 3.666044
+          },
+          {
+            "index": 30,
+            "ptsSeconds": 3.682789
+          },
+          {
+            "index": 35,
+            "ptsSeconds": 3.767456
+          },
+          {
+            "index": 36,
+            "ptsSeconds": 3.784356
+          },
+          {
+            "index": 37,
+            "ptsSeconds": 3.800511
+          },
+          {
+            "index": 50,
+            "ptsSeconds": 4.018178
+          },
+          {
+            "index": 75,
+            "ptsSeconds": 4.431111
+          },
+          {
+            "index": 100,
+            "ptsSeconds": 4.846589
+          },
+          {
+            "index": 128,
+            "ptsSeconds": 5.321256
+          }
+        ],
+        "terminalPng": {
+          "file": "screen-36d7f974-7b62-43f3-93d7-e0be551ec8c3.png",
+          "sha256": "a672ab4d48f9bdad622c4c461850770e12162e8111cc94ecf903e4f07a2a05dc",
+          "bytes": 370072,
+          "sidecarMatches": true,
+          "actuallyViewed": true
+        }
+      },
+      {
+        "key": "previous-day",
+        "file": "recording-1792411937260.mp4",
+        "bytes": 219439,
+        "sha256": "9d90dbf1ebf9a64317bb14a04b2f42d608e53cce3cf120ba90f33141630155f3",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "durationSeconds": 8.5557,
+        "decodedFrames": 49,
+        "lastPtsSeconds": 8.538667,
+        "maxEncodedPtsGapSeconds": 2.947355,
+        "noTrim": true,
+        "noPtsReset": true,
+        "noFrameDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": 0
+          },
+          {
+            "index": 1,
+            "ptsSeconds": 2.257056
+          },
+          {
+            "index": 3,
+            "ptsSeconds": 3.236378
+          },
+          {
+            "index": 5,
+            "ptsSeconds": 3.269267
+          },
+          {
+            "index": 6,
+            "ptsSeconds": 3.286622
+          },
+          {
+            "index": 7,
+            "ptsSeconds": 3.303578
+          },
+          {
+            "index": 8,
+            "ptsSeconds": 3.320311
+          },
+          {
+            "index": 9,
+            "ptsSeconds": 3.336667
+          },
+          {
+            "index": 10,
+            "ptsSeconds": 3.352411
+          },
+          {
+            "index": 11,
+            "ptsSeconds": 3.369111
+          },
+          {
+            "index": 12,
+            "ptsSeconds": 3.387189
+          },
+          {
+            "index": 13,
+            "ptsSeconds": 3.403867
+          },
+          {
+            "index": 14,
+            "ptsSeconds": 3.419611
+          },
+          {
+            "index": 15,
+            "ptsSeconds": 3.437344
+          },
+          {
+            "index": 16,
+            "ptsSeconds": 3.454344
+          },
+          {
+            "index": 17,
+            "ptsSeconds": 3.518233
+          },
+          {
+            "index": 18,
+            "ptsSeconds": 3.931656
+          },
+          {
+            "index": 20,
+            "ptsSeconds": 5.0507
+          },
+          {
+            "index": 24,
+            "ptsSeconds": 5.119944
+          },
+          {
+            "index": 30,
+            "ptsSeconds": 5.217489
+          },
+          {
+            "index": 40,
+            "ptsSeconds": 8.404067
+          },
+          {
+            "index": 48,
+            "ptsSeconds": 8.538667
+          }
+        ],
+        "terminalPng": {
+          "file": "screen-417d7342-f546-4a36-93aa-c244620a3474.png",
+          "sha256": "cfc7c8712656ac405e386cb312ed94572d25db7e8a8cbd9bc71179a955079801",
+          "bytes": 372933,
+          "sidecarMatches": true,
+          "actuallyViewed": true
+        }
+      },
+      {
+        "key": "cancel-preview",
+        "file": "recording-1792411966283.mp4",
+        "bytes": 317513,
+        "sha256": "ca98722db51a762c69e32590614aaff2bbc4db8dda62f6ee0f1be33d5d71c313",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "durationSeconds": 6.041733,
+        "decodedFrames": 91,
+        "lastPtsSeconds": 5.986244,
+        "maxEncodedPtsGapSeconds": 3.169733,
+        "noTrim": true,
+        "noPtsReset": true,
+        "noFrameDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": 0
+          },
+          {
+            "index": 3,
+            "ptsSeconds": 3.198778
+          },
+          {
+            "index": 5,
+            "ptsSeconds": 3.231378
+          },
+          {
+            "index": 6,
+            "ptsSeconds": 3.2478
+          },
+          {
+            "index": 7,
+            "ptsSeconds": 3.264911
+          },
+          {
+            "index": 8,
+            "ptsSeconds": 3.281244
+          },
+          {
+            "index": 10,
+            "ptsSeconds": 3.314444
+          },
+          {
+            "index": 20,
+            "ptsSeconds": 3.542278
+          },
+          {
+            "index": 40,
+            "ptsSeconds": 4.497333
+          },
+          {
+            "index": 60,
+            "ptsSeconds": 5.091611
+          },
+          {
+            "index": 80,
+            "ptsSeconds": 5.650056
+          },
+          {
+            "index": 90,
+            "ptsSeconds": 5.986244
+          }
+        ],
+        "terminalPng": {
+          "file": "screen-1c1d7bce-8141-4fc0-a32a-0e2f4e195b3d.png",
+          "sha256": "4e309382c82c09b26691059dd6cda591327eb26ba90c3a73f083ce94e65c89f0",
+          "bytes": 675684,
+          "sidecarMatches": true,
+          "actuallyViewed": true
+        }
+      }
+    ],
+    "totalDecodedFrames": 269,
+    "totalEncodedSamplesActuallyViewed": 46,
+    "independentPngsActuallyViewed": 6,
+    "allSixPngSidecarsShaBytesSizeAndMiniappScopeValidated": true,
+    "allEncodedFramesBrightnessAnalyzed": true,
+    "brightness": {
+      "purpose": "Locate any gross daytime-to-committed-night reversion in this specific transition; supplementary to actual date/time/status/scene pixel review",
+      "method": "Same fixed unobstructed upper-Sky crop for every decoded original frame; mean RGB channels combined using 0.2126R + 0.7152G + 0.0722B, range 0..255, no gamma inversion",
+      "previousDay": {
+        "frames": 49,
+        "min": 111.09806835001247,
+        "max": 114.47692952519017,
+        "interpretation": "No captured frame has the old gross daytime-to-night fallback"
+      },
+      "initialSwipe": {
+        "min": 36.80946617018955,
+        "max": 114.25200776328094
+      },
+      "cancel": {
+        "min": 36.332387306709066,
+        "max": 114.42603899800473
+      },
+      "physicalPhotometryClaim": false
+    }
+  },
+  "observed": {
+    "rulerSwipe": {
+      "start": "2026-10-19 04:30:00 night",
+      "sampleRequested": [
+        "04:33:37",
+        "04:55:35",
+        "05:46:24",
+        "06:02:43",
+        "07:03:35",
+        "08:39:35",
+        "09:50:29"
+      ],
+      "last": {
+        "index": 128,
+        "pts": 5.321256,
+        "date": "2026-10-19",
+        "time": "10:00:00 preview",
+        "sky": "day"
+      },
+      "retainedAcceptedTimeDuringUpdateObserved": true
+    },
+    "previousDay": {
+      "before": {
+        "index": 6,
+        "pts": 3.286622,
+        "date": "2026-10-19",
+        "time": "10:00:00 preview",
+        "sky": "day"
+      },
+      "updating": {
+        "first": {
+          "index": 7,
+          "pts": 3.303578
+        },
+        "lastObserved": {
+          "index": 16,
+          "pts": 3.454344
+        },
+        "date": "2026-10-18",
+        "time": "10:00:00 updating",
+        "sky": "day"
+      },
+      "preview": {
+        "index": 17,
+        "pts": 3.518233,
+        "date": "2026-10-18",
+        "time": "10:00:00 preview",
+        "ruler": "temporary positioning/retry message"
+      },
+      "rulerRecoveredBy": {
+        "index": 18,
+        "pts": 3.931656
+      },
+      "last": {
+        "index": 48,
+        "pts": 8.538667,
+        "date": "2026-10-18",
+        "time": "10:00:00 preview",
+        "sky": "day"
+      },
+      "oldCommitted0430NightFallbackObserved": false
+    },
+    "cancel": {
+      "start": {
+        "index": 0,
+        "pts": 0,
+        "date": "2026-10-18",
+        "time": "10:00:00 preview",
+        "sky": "day"
+      },
+      "firstNight": {
+        "index": 6,
+        "pts": 3.2478,
+        "fields": "old requested 18-day 10:00 remain"
+      },
+      "transientFields": {
+        "indices": [
+          7,
+          8
+        ],
+        "pts": [
+          3.264911,
+          3.281244
+        ],
+        "date": "2026-10-18",
+        "time": "10:00:00 updating",
+        "sky": "night"
+      },
+      "committedFieldsBy": {
+        "index": 10,
+        "pts": 3.314444,
+        "date": "2026-10-19",
+        "time": "04:30:00",
+        "previewAndCancelRemoved": true
+      },
+      "rulerRecoveredBy": {
+        "index": 40,
+        "pts": 4.497333
+      },
+      "last": {
+        "index": 90,
+        "pts": 5.986244,
+        "date": "2026-10-19",
+        "time": "04:30:00",
+        "sky": "night"
+      }
+    }
+  },
+  "verified": [
+    "Visible r10 label plus current source/app/local feedback-session identity chain",
+    "Real ruler moved from 19-day 04:30 through changing requested and accepted times to nonempty 19-day 10:00 daytime Sky",
+    "Previous-day pending state displayed 18-day requested date with 10:00:00 updating while retaining nonempty daytime Sky, then converged to 18-day 10:00 preview",
+    "No 04:30 committed night fallback in the 49 encoded previous-day frames and selected actual pixel review",
+    "Cancel visibly restored 19-day 04:30 night Sky, removed preview/cancel state and recovered the matching ruler",
+    "All 22 relied-on immutable original/source report copies reverified against their source hashes"
+  ],
+  "unverified": [
+    "Physical every-frame equivalence, physical FPS or calibrated input-to-photon latency",
+    "Atomic agreement of all WXML fields/native pixels during cancellation; actual transient older fields are explicitly observed",
+    "Full across-day service-key identity/content and all 24-hour or future-day supply",
+    "Apply, durable persistence, final ordinary production bundle and settled-candidate acceptance",
+    "Full A, sustained B, memory owner/leak verdict, terrain performance/correctness, iOS and remaining Goal"
+  ],
+  "invalidated": [
+    "Do not use endpoint-only screenshots to claim this transition was observed continuously",
+    "Do not call current mutable session.json an exact historical freeze",
+    "Do not promote a source-bound local candidate and visible r10 label to whole-phone-bundle or runtime-AppID readback",
+    "Do not interpret encoded frame gaps or video duration as application FPS or UI freeze duration"
+  ],
+  "sourceEvidenceReused": [
+    {
+      "file": "R17-NORMAL-R10-BUILD-REVIEW.json",
+      "sha256": "0f0653ceb141f754d1dcd39e1280f74f18c238a4a8b8c94dc902258836e00b7e",
+      "scope": "Independent complete source/app/budget/map-file binding; no repeated build qualification"
+    },
+    {
+      "file": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "sha256": "06b72aaa9a542368d47c3dbd28ae2660398abd9a41eda691db18ca83eff736f2",
+      "scope": "30 r10 fixture checks and task-only integration ownership; not rerun"
+    },
+    {
+      "file": "SKY-TIME-PENDING-CONTINUITY-REVIEW.json",
+      "sha256": "363000f0cf5f08a42520f001b0c9f49d37398ed4d798e70c3bcf299398d8e19b",
+      "scope": "133 related tests plus TypeScript 5.9.3 and production selection ownership; not rerun"
+    },
+    {
+      "file": "R17-A1-R8-TIME-INTERACTION-RESULT.json",
+      "sha256": "ddf1d2dacba993b6f8a8b865c40d9614e59f923cc4a4a9402e7d6c0738087287",
+      "scope": "Existing independently reviewed failed previous-day transition retained; old raw video not recaptured or re-reviewed"
+    }
+  ],
+  "archives": {
+    "owner": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r10-crossday-review",
+    "immutable": {
+      "manifest": "manifest.private.json",
+      "files": 22,
+      "bytes": 4952648,
+      "sha256": "ffda39c4ac2dad7bb38b727bcf99d03f24177d3b79cb9f4a3924ef031c3b3f70",
+      "copiedOriginalsPreserved": true,
+      "readBeforeCopyAfterAndReportReadback": true,
+      "wholeSessionFrozen": false
+    },
+    "derived": {
+      "manifest": "derived-manifest.private.json",
+      "files": 287,
+      "bytes": 97971463,
+      "sha256": "8f14d9fbc7bcdd15f82a610ab1bdeb8e9c532d48e146ab82bb0b0ee76bebf0c2",
+      "scope": "All decoded original PTS frames, finite statistics, actually viewed contact samples, current local binding observation and review tools existing when sealed; later repository report-writer script is not included"
+    },
+    "observationsSha256": "a662859d35fca1957f0830d91dce00ff7ec1d506a9c28aeafee30345d863d083"
+  },
+  "interpretation": {
+    "priorFailure": "r8 previous-day samples 9–18 / PTS 3.291889–3.458744 showed 04:30 updating plus night Sky before returning to 10:00; preserved by its owner",
+    "currentChangedBehavior": "r10 previous-day samples 7–16 / PTS 3.303578–3.454344 retain 10:00 updating and daytime Sky; sample 17 /3.518233 is 10:00 preview, sample 18 /3.931656 has matching ruler",
+    "cancellationLimit": "Night Sky changes at sample 6/3.247800 before all requested fields settle. Samples 7–8/3.264911–3.281244 retain old 18-day 10:00 updating fields. By sample 10/3.314444 the fields are 19-day 04:30 with preview/cancel removed; matching ruler is seen by sample40/4.497333. This is not evidence of atomic cross-layer publication.",
+    "noRerunForSameQuestionNeeded": true,
+    "nextDecision": "Retain targeted phone confirmation of the committed-night fallback repair. Continue the already required ordinary sustained-use B and terrain/other product obligations; do not open another profiler or repeat this crossday sample solely for reassurance."
+  },
+  "cleanup": {
+    "agentReadOnlyOutsideOwnReportsAndExternalEvidence": true,
+    "deviceInput": false,
+    "ideOrAdb": false,
+    "services": false,
+    "gitMutation": false,
+    "productionOrTaskScriptMutation": false,
+    "processesLeftRunning": false,
+    "rawOriginalsRetainedExternally": true,
+    "phoneSessionRemainsWithRoot": true,
+    "protected8791N05R6Gen26PairingVpnUntouched": true
+  }
+}

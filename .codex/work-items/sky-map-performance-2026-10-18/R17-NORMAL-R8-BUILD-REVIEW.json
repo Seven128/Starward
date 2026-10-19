@@ -1,0 +1,255 @@
+{
+  "schema": "starward-r17-normal-r8-build-review-v1",
+  "createdAt": "2026-10-19T08:54:06.709Z",
+  "reviewer": "qualify_r8_stable_surface_build",
+  "status": "OFFLINE_BUILD_BINDING_AND_FINITE_TASK_DIFF_REVIEW_PASSED_TARGET_UNVERIFIED",
+  "scope": "Current r8 source/bundle/map readback and finite r7-to-r8 builder difference only. No repeat plan review, device/IDE/service/feedback/preview/build operation or coordinator owner mutation.",
+  "findings": [],
+  "materialOpenP1P2": 0,
+  "identities": {
+    "productionBaseHead": "c6bb28bc55b8b3e2ed2e32090f05512e233c4253",
+    "buildSourceSha256": "3362e2d0595b7871835b0232eb43f2ac233c5a5aa012f609c5eb40e04df4bcb0",
+    "bundleSha256": "a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e",
+    "fileCount": 337,
+    "totalBytes": 4996606,
+    "manifestSha256": "c888e807494165c375c4d1c0379c39b72a790dcfea1936bfb05bb63abe629722",
+    "builderSha256": "64cca7ce9dc4547c1d08740f5ad3c381713a2c2c1149e96d6fd08b337f7a8ffa",
+    "markerSha256": "bde0d77c5221fcee38578d00bd1a6e8bf8671ff11b37c92707f4d2e1d4e2d1b0",
+    "sourceMapsReport": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r8/source-map-bindings.json",
+    "sourceMapsReportSha256": "e69113388f4e7162dca438ca37d09c1a86032621cde1ac02bb6e1767ccc97025",
+    "sourceMapsReportBytes": 60278,
+    "sourceSnapshotSha256": "8cbeeafe93363a6ba24983ea3b7a87705c303c4f4dc3227b7d1041bb39aab23a",
+    "reviewedProductionInputs": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "bytes": 246579,
+        "sha256": "dbd27bcda233639776b9737223b0ee69078d25cca5b1951bb066a887f025f9d4"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss",
+        "bytes": 71458,
+        "sha256": "3fc2efb06c9af2b0a5c493e89dfbd1af02b5da69f367e382555e6ce4294f611d"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+        "bytes": 40055,
+        "sha256": "b1f9488f1a07560b9ea53793d3f1d0cda12bd8a6538c155e89d76ac318f50b4b"
+      }
+    ]
+  },
+  "inputs": {
+    "stableSurfaceIndependentReview": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.json",
+    "stableSurfaceIndependentReviewSha256": "a3b46683aa0a5b1c1095fc52116167dce97f395dcafdae26afaf61c6da6ca06a",
+    "priorBuildReview": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-BUILD-REVIEW.json",
+    "priorBuildReviewSha256": "f065b923b7a7fec59f8f735812bffb88da620a9049609cdae6fa13e57afcae47",
+    "priorMaps": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/source-map-bindings.json",
+    "priorMapsSha256": "127036c4b2f1be50df11e33735d13ddf0da4e324227489797d4df3b3a6bcf9cb",
+    "r7OwnerArchive": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r7-owner-before-r8-20261019/manifest.private.json",
+    "r7OwnerArchiveSha256": "ecf8b6bb3de5c68645d997609671acc6df31549892b1023fbd0c8e9cbe83f06b",
+    "r7OwnerFiles": 5,
+    "r7OwnerBytes": 596711,
+    "allArchivedHashesMatched": true
+  },
+  "builderReview": {
+    "changedLines": [
+      {
+        "line": 18,
+        "before": "const reviewRevision = revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;",
+        "after": "const reviewRevision = revisionArgs.includes('--review-r8') ? 8 : revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;"
+      },
+      {
+        "line": 20,
+        "before": "if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||",
+        "after": "if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||"
+      },
+      {
+        "line": 21,
+        "before": "    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)",
+        "after": "    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)"
+      }
+    ],
+    "finiteArgumentChecks": [
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r8"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 8,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r7"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 7,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r6"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 6,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r5"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 5,
+          "rulerEntry": true,
+          "nativeAdmission": false,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--review-r8"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r9"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r8",
+          "--review-r7"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r8",
+          "--review-r8"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      }
+    ],
+    "noOtherBuilderByteChangesAfterLFNormalization": true,
+    "existingNativeAdmissionAtLeast6Preserved": true,
+    "noNewProtocolObserverRuntimeOrFramework": true
+  },
+  "templates": {
+    "total": 25,
+    "changedFromR7": [],
+    "allCurrentHashesMatchManifestAndFrozenR7": true
+  },
+  "mapQualification": {
+    "reusedPairs": 22,
+    "freshPairs": 9,
+    "sourceMaps": 31,
+    "mapBytes": 7279403,
+    "segments": 367653,
+    "exactKeySources": 32,
+    "unchangedNormalResponsibilities": 15,
+    "pureTransformedOutputs": 6,
+    "bothBundleJavascriptCopiesChecked": 80,
+    "oldEvidenceNotRelabeledAsCurrent": true
+  },
+  "staticPackages": {
+    "main": {
+      "bytes": 1993648,
+      "source_map_bytes": 0
+    },
+    "content": {
+      "bytes": 1041372,
+      "source_map_bytes": 0
+    },
+    "spot": {
+      "bytes": 598321,
+      "source_map_bytes": 0
+    },
+    "sky": {
+      "bytes": 1363265,
+      "source_map_bytes": 0
+    },
+    "mainHeadroomBytes": 103504
+  },
+  "sourceChecks": {
+    "currentProductionReadback": 1573,
+    "materializedReadback": 1583,
+    "templateReadback": 25,
+    "bindingInputDigestMatches": true,
+    "threeSourceReviewInputsExact": true,
+    "rootBuildAndInspectEvidenceReused": true,
+    "independentFocused42AndTS59SourceReviewReusedByExactHash": true,
+    "productionTestsOrBuildRerun": false
+  },
+  "preservationReadback": {
+    "r7LocalManifestAndMapReportExactToExternalArchive": true,
+    "r7BundleCopies": [
+      {
+        "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r7",
+        "sha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+        "fileCount": 337,
+        "totalBytes": 4995907
+      },
+      {
+        "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/project/weapp",
+        "sha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+        "fileCount": 337,
+        "totalBytes": 4995907
+      }
+    ],
+    "frozenR7SourcesOrBundlesModified": false
+  },
+  "metadataNote": {
+    "generatedHistoricalPointer": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r8-20261019/archive-bindings.json",
+    "generatedHistoricalPointerExists": false,
+    "actualArchiveVerifiedAbove": true,
+    "ownerCorrection": "Root owns correcting current preparation metadata; this reviewer did not mutate preparation, frozen manifest, source or candidate identity."
+  },
+  "limitations": [
+    "Exact Taro-generated JS bytes and external maps qualify offline attribution only. A real profile needs capture-specific current script/VM binding. WeChat repacking or wrappers are not mapped by assumption.",
+    "Coordinates: generated/original lines one-based in this report, columns zero-based UTF-16. Map/source readback is not native ruler alignment, composition or hit-testing evidence.",
+    "r7 native entry remains FAILED_NATIVE_ENTRY_POSITION_COHERENCE. Current r8 native alignment, guard retirement, recovery non-overlap/retry and affected cross-day/cancel/regrab remain UNVERIFIED.",
+    "Static package bytes are not official preview/upload size or delivery. No device, IDE, ADB, service, feedback, session, account, preview or build was operated.",
+    "Observation protocol/software checks were reused through exact template and owner hashes. Root-owned full build/inspect and prior independent source tests were not rerun.",
+    "A input acceptance, B allocation/normal Play/paused drain/exit, Terrain software-vs-physical readiness and the full Goal retain their evidence owners. No allocation or memory conclusion is supplied."
+  ],
+  "actions": {
+    "onlyNewMapBindingAndIndependentReviewReportsWritten": true,
+    "productionSourceOrTestsChanged": false,
+    "builderChanged": false,
+    "candidateChanged": false,
+    "preparationChanged": false,
+    "planOrHandoffChanged": false,
+    "build": false,
+    "device": false,
+    "ide": false,
+    "service": false,
+    "feedback": false,
+    "preview": false,
+    "gitCommit": false
+  }
+}

@@ -41,9 +41,11 @@ export function transformTerrainWaitSources(input) {
       }
     },`, 'metadata');
     } else if (file.endsWith('/use-raster-image.ts')) {
+      source = once(source, 'void read.promise.then(({ path }) => {',
+        'void read.promise.then(({ path, bytes, sha256 }) => {', 'admitted_file_facts');
       source = once(source, 'if (!controller.signal.aborted) setImageState({ url: imageKey, path, error: null });',
         `if (!controller.signal.aborted) {
-        if (imageUrl.startsWith("/v2/terrain/assets/")) terrainWait.fileReady(imageKey, path);
+        if (imageUrl.startsWith("/v2/terrain/assets/")) terrainWait.fileReady(imageKey, path, { bytes, ...(sha256 ? { sha256 } : {}) });
         setImageState({ url: imageKey, path, error: null });
       }`, 'validated_file_ready');
     } else if (file.endsWith('/raster-image-resources.ts')) {

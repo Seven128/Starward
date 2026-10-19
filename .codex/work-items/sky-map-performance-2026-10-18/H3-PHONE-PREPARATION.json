@@ -333,6 +333,17 @@
     "gitIncludesPrivateArchive": false,
     "cleanCloneAloneReproduces": false,
     "officialPreviewOutcome": "UNKNOWN",
-    "productAcceptance": "UNVERIFIED"
+    "productAcceptance": "UNVERIFIED",
+    "originalPhotoSupplement": {
+      "archiveRoot": "E:/Dev/Starward-data/verification/sky-map-20261018/h3-gen26-pre-delivery/h3-photo-input-completion-20261019",
+      "manifestFile": "manifest.private.json",
+      "manifestSha256": "4000b37c69b6ecc99bc457a8c7d0d070faf9782926e9300eceb790466e3ef0fa",
+      "files": 3,
+      "bytes": 3057739,
+      "sourceAndCopyAndSourceAfterMatched": true,
+      "baseManifestUnchanged": true,
+      "restoreLayout": "Restore h3-photo-input as the sibling of base archive h3-isolated-input and h3-component-fixture in a fresh private directory",
+      "scope": "Original JPEG plus original product-input-candidate and public-source-readback JSON; no regeneration, service, account or phone operation"
+    }
   }
 }

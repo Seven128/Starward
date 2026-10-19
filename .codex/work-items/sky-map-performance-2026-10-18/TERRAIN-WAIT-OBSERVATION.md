@@ -1,6 +1,12 @@
 # 地形残余等待：最小观察接入
 
-2026-10-19。沿最新 PLAN 的待决问题准备；初始实现不操作现场，后续已合入同一完整正常 A1 候选，构建身份由R17-NORMAL-A1-PREPARATION拥有，未送达手机。以下方法与初始软件结果保留；root 后续既有正常实例的窄 HTTP 观察见文末，不将它当新 observer 已在手机运行。
+2026-10-19。沿最新 PLAN 的待决问题执行；observer已随r6/r8正常A1候选实际使用，结果由相应证据owner拥有。下面初始方法和历史恢复记录保留其范围；当前候选及下一动作只由HANDOFF拥有，不从本文历史“未送达”描述恢复旧输入。
+
+## r10：只补实际已准入文件身份
+
+[r8实际动作](TERRAIN-R8-IDENTITY-ACTION-RESULT.md)已有ready-before-gap，但旧snapshot只保匿名asset/file编号，未序列化其到SHA的映射，seal时refs清空；恢复读取旧key也不能重建身份。[当前窄决策](TERRAIN-RESIDUAL-NEXT-DECISION.md)因此停止追旧连接，保旧r6/r8未知字段。
+
+r10沿原`useRasterImage`的`read.promise`返回值，把已准入`RasterImageFile.bytes/sha256`透传到同一`file_ready`行的`fileBytes/fileSha256`。不是metadata的expected值；不新增stat、hash、读文件、请求、路由或逐帧采集。正整数bytes及64位hex摘要才导出，缺失或无效为null；不导出URL、路径、坐标或额外对象字段。原80行/64匿名身份/15秒/单次own-key及native_ack非可见的语义不变。此扩展的7项观察检查、实际资源/adapter检查及端到端失败反例由[R10独审](R17-NORMAL-R10-INTEGRATION-REVIEW.md)记录，完整候选与手机结果另按实际建立，不能回填旧样本。
 
 ## 已确认的真实责任与缺口
 

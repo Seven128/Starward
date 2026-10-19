@@ -1,0 +1,224 @@
+{
+  "schemaVersion": "starward-r17-normal-r6-independent-review-v1",
+  "createdAt": "2026-10-19T06:29:46.819Z",
+  "reviewer": "review_r6_normal_observation",
+  "outcome": "PASS_SOFTWARE_REVIEW_NOT_RUNTIME_ACCEPTANCE",
+  "knownP1P2": [],
+  "codeChangedByReviewer": false,
+  "sourceHeadAtReview": "526d00ec2b9333951f7b63f1ab40081e22d9584f",
+  "inputReceipt": {
+    "path": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-r6-codechecks-20261019/verification.json",
+    "bytes": 7052,
+    "sha256": "ae3a7c50a1c9599f9752ffb7d199f142831f07bf14226dec01105aa8c3a1a5d1",
+    "productionHeadAtPreparation": "fb99d0ddd7d45e7d77b96b6d3d48051714718380"
+  },
+  "scope": {
+    "finiteRevision": "--review-r6 --observe-a1",
+    "files": [
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs",
+        "bytes": 45301,
+        "sha256": "6c386af2f14d83f337dc3f80fa95648ba975c5eb316dcda16a09e954e069c8d3"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-instrumentation.mjs",
+        "bytes": 16548,
+        "sha256": "e37c636de4a72d3ed95ecfbb1e6834fed49affbd8cd68c8287f7046037cbbb55"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-protocol.mjs",
+        "bytes": 7089,
+        "sha256": "708e2b2f224a44aea83c6414d3076bb79a33e1e3672668000db75215b5c189da"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-v2-instrumentation.mjs",
+        "bytes": 15745,
+        "sha256": "3c395a68c092676ecf30cd46085412ea9a61958c30a2cd536bc04ca8a556ac85"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-instrumentation.mjs",
+        "bytes": 8407,
+        "sha256": "0c16fd345afa11a5c88a553da3f7ec5ba46e0da2ad8d7dcfc83258f857917b39"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-protocol.mjs",
+        "bytes": 4951,
+        "sha256": "4f48172576d0080e572cc95a67a86566ea96ee87cea87eaac5565ba91400325a"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+        "bytes": 24883,
+        "sha256": "33e364684488093738b39c728892bbfe7ba0b7fd7fd6753996f79ddbbc228e54"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-collector.mjs",
+        "bytes": 2141,
+        "sha256": "28d156d5c25c73bc561761ae6fbdffc2e6a015ef7744e2db6f8ec001276124d9"
+      }
+    ],
+    "productionReadOnlyBindings": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "bytes": 244989,
+        "sha256": "5daa33fe6139821a94ced24397a2798f1267e045797c787153497dd99ece6799",
+        "normalizedLfSha256": "d4cd87283e34a54648afbae0db738ee6bea66f52b324fb4ab8a3fc624348ea39"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/orientation-ruler-layout.ts",
+        "bytes": 3792,
+        "sha256": "c77be39c294f7b8af504aba4de179902053b433a3c7af2f18017cc621baba490",
+        "normalizedLfSha256": "c77be39c294f7b8af504aba4de179902053b433a3c7af2f18017cc621baba490"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/components/ruler-scroll-position.ts",
+        "bytes": 3245,
+        "sha256": "1c1d714f3d8f8b4c7fc55003986050ca69141f94356e22126d09427c58266a56",
+        "normalizedLfSha256": "1c1d714f3d8f8b4c7fc55003986050ca69141f94356e22126d09427c58266a56"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+        "bytes": 31989,
+        "sha256": "833a43c57f0f3db14477afb644512617dfcfca7cc727ce500f399c9ba3ec01c5",
+        "normalizedLfSha256": "833a43c57f0f3db14477afb644512617dfcfca7cc727ce500f399c9ba3ec01c5"
+      }
+    ],
+    "frozenR5Bindings": [
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r5/manifest.json",
+        "bytes": 455180,
+        "sha256": "615f5058d3d3667822783acb5cbaa9b7f8cf049e1110e009950b01cd9dfabdfc"
+      },
+      {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r5/source-map-bindings.json",
+        "bytes": 44018,
+        "sha256": "69786607ce90ae157c779fba589d49af54a3fa99cbda1bc3e24b16240868eb1b"
+      }
+    ]
+  },
+  "independentChecks": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node tools/run-node.cjs --test .codex/work-items/sky-map-performance-2026-10-18/tmp/review-r6-observation-independent.mjs",
+    "toolChunk": "2c3d00",
+    "cases": [
+      "raw-script-production-frozen-bindings",
+      "r5-runtime-controls-byte-identity",
+      "actual-time-owner-A-B-A-latest-first-acceptance",
+      "equal-tick-and-rollback-unknown-correlation",
+      "old-context-cleanup-vs-new-observation",
+      "native-offset-retry-cross-window",
+      "layout-retry-cross-window-original-projection",
+      "mixed-schema-immutable-collector-and-capacity"
+    ],
+    "fixture": {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/tmp/review-r6-observation-independent.mjs",
+      "bytes": 16608,
+      "sha256": "c4d47a8565a14bae8fb57ed6b85bae78856d0f0f12bdf509623826d0ff9880ed"
+    },
+    "log": {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/tmp/review-r6-observation-independent.log",
+      "bytes": 1153,
+      "sha256": "47f4ea83df0e6b252b423d33d4baf3e6870ca7a5f9373e8e34e738949444bb61"
+    },
+    "initialFixtureFailure": {
+      "meaning": "review-fixture-runId-suffix-too-long-existing-validator-correctly-rejected-400",
+      "codeFix": false,
+      "log": {
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/tmp/review-r6-observation-independent-attempt1.log",
+        "bytes": 1920,
+        "sha256": "c06474d15d52cbb35ddf788db19a8ee03620b7d69b55e0b39ff1c3698b4d7a93"
+      }
+    }
+  },
+  "reusedChecks": {
+    "meaning": "reused-exact-source-input-evidence-not-rerun-by-reviewer",
+    "currentSource": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "strictDiagnostics": 0,
+      "coverage": [
+        "actual legal six-field/ruler onPreview",
+        "no arm timer",
+        "first accepted unsuperseded intent",
+        "15s exact cached retry",
+        "hide/unmount/Context retirement",
+        "same native callback receiver/options and late-window rejection",
+        "current native request/readback/admission with queued A-B-A replacement",
+        "bounded 2048 preparation/8 correlation linkage and 32KiB",
+        "unknown/backwards wall clock",
+        "strict schemas",
+        "existing complete normal Play15s/Pause20s fixture"
+      ]
+    },
+    "compatibility": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0,
+      "toolChunk": "83a9e2",
+      "files": [
+        "r17-phone-probe-v3.test.mjs",
+        "r17-a-correlation.test.mjs",
+        "r17-phone-probe-collector.test.mjs"
+      ],
+      "sameRoute": true,
+      "maxBytes": 32768,
+      "maxFiles": 32,
+      "exactIdempotency": true
+    }
+  },
+  "frozenR5ByteIdentity": {
+    "independentlyRegenerated": true,
+    "runtimeSha256": "cf239bb89ad90548705691fe8ac864ee591fe76d0d2ef80ae0c3d7c256679ecb",
+    "controlsSha256": "cfbb13d10fcc8af3ea11189f83f0182f8eaa751eecc50edb1fdd5324ce94cd67"
+  },
+  "diffCheck": {
+    "exitCode": 0,
+    "toolChunk": "e73f44",
+    "scope": "8-reviewed-script-paths",
+    "lineEndingWarningsOnly": true
+  },
+  "runtimeActions": {
+    "device": false,
+    "ide": false,
+    "adb": false,
+    "feedbackSession": false,
+    "services": false,
+    "preview": false,
+    "productBuild": false,
+    "commit": false
+  },
+  "limitations": [
+    "Only source and controlled asynchronous fixtures; not native physical presentation or input latency.",
+    "No r6 full candidate, official preview/budget or live collector capability was established by this review.",
+    "A latest-input runtime sample, B surviving allocations/paused drain/sustainable full path, Terrain and all other Goal obligations remain.",
+    "The observer has start/clock/status overhead and cannot establish physical FPS, CPU time, churn or native allocation ownership."
+  ],
+  "cleanup": {
+    "completed": false,
+    "commandExecuted": false,
+    "cleanupExecuted": false,
+    "followingTestRerunExecuted": false,
+    "rejectionBoundary": "exec_command-CreateProcess-before-shell-start",
+    "automaticApprovalText": "rejected: blocked by policy",
+    "moreSpecificReasonAvailable": false,
+    "rejectedDeletionStatement": "Remove-Item -LiteralPath $resolved -Recurse -Force",
+    "reason": "automatic-approval-review-rejected-recursive-generated-fixture-cleanup-blocked-by-policy",
+    "equivalentDeletionAttempted": false,
+    "meaning": "controlled-VM-synthetic-metrics-and-capacity-fixtures-virtual-endpoint-all-a-source-binding-no-private-phone-data",
+    "blocksReview": false,
+    "humanInterventionRequiredNow": false,
+    "harnessRestoredToLast8PassSource": true,
+    "retainedDirectories": [
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r6-independent-collector-Eh6eO3",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r6-independent-collector-fiiHh2",
+      ".codex/work-items/sky-map-performance-2026-10-18/tmp/r6-independent-collector-x4U1x1"
+    ]
+  },
+  "narrative": {
+    "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R6-OBSERVATION-REVIEW.md",
+    "bytes": 7940,
+    "sha256": "3249ab83c72708502ed9fc309ec08bef78970ea0ea476b5654893ed70f9a7b54"
+  }
+}

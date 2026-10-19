@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "starward.task.terrain-http-identity-preparation.v1",
+  "date": "2026-10-19",
+  "status": "TASK_RECEIPT_PREPARED__RUNTIME_UNVERIFIED",
+  "headRead": "3818b44009d53d4b27cb16a95904c42ed3723af7",
+  "r6PhoneResponseAssociation": "UNKNOWN",
+  "servicesStartedOrRestarted": false,
+  "httpRequestsIssued": false,
+  "deviceIdeBuildPreviewAccountOperations": false,
+  "productionChanges": false,
+  "receiptVersion": "starward.task.terrain-http-identity.v1",
+  "ring": { "owner": "publicRequestBoundaries", "maxRows": 32, "window": "bridge_response_finish_only", "abortedRequestsMayBeAbsent": true },
+  "metadata": {
+    "diagnosticMaxBytes": 65536,
+    "originalResponseUnchanged": true,
+    "requestKeyHashAlgorithm": "sha256(UTF8(terrainRequestKey(normalizeTerrainRequest(input.viewportBounds ? terrainWindowViewport(input) : input))))",
+    "requestParsing": "Current controller's finite query shape and validateTerrainRequest; duplicate key parameters explicitly UNKNOWN",
+    "assetPathHashAlgorithm": "sha256(UTF8('/v2/terrain/assets/' + decodeURIComponent(immutableFilename)))",
+    "imageSha256Meaning": "Declared hash from this actual metadata response; never inferred from candidate cache",
+    "notRetained": ["url", "query", "coordinates", "radius", "headers", "body", "rawKey", "publicationId"]
+  },
+  "asset": {
+    "hashAlgorithm": "sha256(actual response stream bytes)",
+    "mechanism": "Transform in original pipeline; chunk pass-through; no whole-body buffer",
+    "completeState": "COMPLETE_RESPONSE",
+    "minimumBindingChecks": ["GET", "HTTP 200", "COMPLETE_RESPONSE", "same assetPathSha256", "responseBodySha256 equals metadata imageSha256", "responseBodyBytes equals metadata imageBytes"],
+    "notProofOf": ["phone receipt", "native installation", "first useful visible coverage", "full resource on partial HTTP response", "source I/O or CPU cost"]
+  },
+  "files": [
+    { "path": "scripts/r17-terrain-identity-receipt.mjs", "bytes": 5731, "sha256": "57c48c85d65ecacda36dc620b87c866ff56bd4c709d235f9034467899628ae1d" },
+    { "path": "scripts/r17-terrain-identity-receipt.test.mjs", "bytes": 6908, "sha256": "785698bb4feb7f78ca08224887d528d100848e2b3480accbe8fad5316adf6a2b" },
+    { "path": "tmp/r17-normal-phone-bridge.mjs", "bytes": 8404, "sha256": "0e13eb90a30628fd8756aea8a7462d86923bbe645d6f899052276bdfc6b2d073" },
+    { "path": "TERRAIN-HTTP-IDENTITY-BRIDGE.patch", "bytes": 5544, "sha256": "69328dc9b0ee62fc9bd794a2672d9614af10cba80e14d6d98d8bfce865d074d1" }
+  ],
+  "bridgeBeforeSha256": "ecbe111113ede6df21e2f1e41b1cd98ebfc534df5eb21dd8df760e8d72e6732d",
+  "productionKeyOwner": { "path": "workers/miniapp-api/src/terrain-request.ts", "sha256": "70b6d071a086ba167fc3b10701abc4c6b3e8462cee2f150cad82c01fff7ca96a" },
+  "checks": { "focusedTests": { "passed": 6, "failed": 0 }, "bridgeNodeCheckExit": 0, "runtimeAndDevice": "UNVERIFIED" },
+  "collectorCapacityReadOnly": {
+    "owner": "scripts/r17-phone-probe-collector.mjs:createR17PhoneProbeCollector(directory)",
+    "sourceSha256": "28d156d5c25c73bc561761ae6fbdffc2e6a015ef7744e2db6f8ec001276124d9",
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/probe-metrics",
+    "observedJsonFiles": 31,
+    "maxJsonFiles": 32,
+    "absoluteDirectoryConstructorArgumentExists": true,
+    "cliOrEnvironmentRotationArgumentExists": false,
+    "crossDirectoryIdempotencyExists": false,
+    "oldDirectoryModified": false,
+    "collectorModified": false,
+    "rotationExecuted": false
+  },
+  "nextCondition": "Root's next necessary bridge preparation/rotation; confirm existing health terrainIdentityReceiptVersion before next already-required representative terrain action",
+  "remaining": ["Actual runtime activation", "Same-request target receipt and proof association", "Phone file/native/visible timing correlation", "Protected existing telemetry for measured I/O/CPU split if still required", "All retained terrain/light/cloud/iOS/resource/Goal obligations"]
+}

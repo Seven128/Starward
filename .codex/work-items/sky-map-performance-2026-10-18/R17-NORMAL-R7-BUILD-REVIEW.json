@@ -1,0 +1,388 @@
+{
+  "schema": "starward-r17-normal-r7-build-review-v1",
+  "createdAt": "2026-10-19T07:36:19.418Z",
+  "reviewer": "qualify_r7_build_and_maps",
+  "status": "OFFLINE_BUILD_BINDING_AND_FINITE_TASK_DIFF_REVIEW_PASSED_TARGET_UNVERIFIED",
+  "scope": "Current r7 source/bundle/map readback and r6-to-r7 builder/marker differences only. No plan review, device, IDE, service, feedback, preview, build, source mutation or coordinator owner mutation.",
+  "findings": [],
+  "materialOpenP1P2": 0,
+  "identities": {
+    "productionHead": "404d84df3c6003dbfa535864d5764e0f3c46c430",
+    "buildSourceSha256": "528b3d8a99ca4c87958e10b01ac7af7040b031e5270e601e61bcf2b3949cf755",
+    "bundleSha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+    "fileCount": 337,
+    "totalBytes": 4995907,
+    "manifestSha256": "85efe32838adaac778496f43fc2876a3df8c0f873c9b94fa70647dde6ccbf3c3",
+    "builderSha256": "a00bd827e901d17911d8179d87457d99f2c076110e91ef8df42b56b7f0156e72",
+    "markerSha256": "bde0d77c5221fcee38578d00bd1a6e8bf8671ff11b37c92707f4d2e1d4e2d1b0",
+    "sourceMapsReport": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/source-map-bindings.json",
+    "sourceMapsReportSha256": "127036c4b2f1be50df11e33735d13ddf0da4e324227489797d4df3b3a6bcf9cb",
+    "sourceMapsReportBytes": 60897,
+    "reviewedProductionRulerSha256": "ecb5e51f83a49b3d9fb9c94062f33d9b32bee1d1be6392aea6f095cc0bbd327a",
+    "reviewedProductionRegressionSha256": "f1295f75a55a2ed8f272594ae0327f8015bbf470846982d2ff883d766117b6d1"
+  },
+  "inputs": {
+    "revealIndependentReview": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-REVIEW.md",
+    "revealIndependentReviewSha256": "a5ec903736a315b11de3e4b0e64062af9038a1e3959d0ce0d601189848511c56",
+    "observationIndependentReview": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R6-OBSERVATION-REVIEW.md",
+    "observationIndependentReviewSha256": "3249ab83c72708502ed9fc309ec08bef78970ea0ea476b5654893ed70f9a7b54",
+    "priorMaps": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r6/source-map-bindings.json",
+    "priorMapsSha256": "c478b21f1d3cb31f6eb84c39c2a53ece4b608ae2bfd707acdf3ee2ffaafbd410",
+    "r6TerrainObservation": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-WAIT-RESULT.md",
+    "r6TerrainObservationSha256": "331824deea83c2b990a4ab0a3606112939b175a620a37c03d9df8c3ae9072597",
+    "r6OwnerArchive": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r6-owner-before-r7-20261019/manifest.private.json",
+    "r6OwnerArchiveSha256": "1cee01d2132a5212d393557e8f95d8ef3cb2ecca12be34b178b2b22c578ee044",
+    "r6OwnerFiles": 5,
+    "r6OwnerBytes": 595445,
+    "allArchivedHashesMatched": true
+  },
+  "builderReview": {
+    "changedLines": [
+      {
+        "line": 18,
+        "before": "const reviewRevision = revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;",
+        "after": "const reviewRevision = revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;"
+      },
+      {
+        "line": 19,
+        "before": "const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision === 6;",
+        "after": "const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6;"
+      },
+      {
+        "line": 20,
+        "before": "if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||",
+        "after": "if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||"
+      },
+      {
+        "line": 21,
+        "before": "    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)",
+        "after": "    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)"
+      }
+    ],
+    "finiteArgumentChecks": [
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r7"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 7,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r6"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 6,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r5"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 5,
+          "rulerEntry": true,
+          "nativeAdmission": false,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r4"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 4,
+          "rulerEntry": false,
+          "nativeAdmission": false,
+          "observationA1": true
+        }
+      },
+      {
+        "args": [
+          "--review-r7"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r8"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r7",
+          "--review-r6"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r7",
+          "--review-r7"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      }
+    ],
+    "noOtherBuilderByteChangesAfterLFNormalization": true,
+    "finiteR7UsesExistingNativeAdmissionV2AndManualInput": true,
+    "noNewProtocolObserverRuntimeOrFramework": true
+  },
+  "markerReview": {
+    "beforeSha256": "bf379bdcebd9642eed247f68efca4cccaa9603b2bd718340c1248860ac0bf284",
+    "afterSha256": "bde0d77c5221fcee38578d00bd1a6e8bf8671ff11b37c92707f4d2e1d4e2d1b0",
+    "soleChange": "zIndex: 9999 -> 10050",
+    "pointerEvents": "none",
+    "geometrySubscriptionWriterClockStorageKeyLifecycleUnchanged": true,
+    "noProductNotificationChange": true,
+    "sameParentSiblingPlacementAsFloatingNotificationHost": true,
+    "compiledMarker": [
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r7/pages/map/index.js",
+        "sha256": "34fcafec4a449a292ca8a21bde7be2cadb64e7b5beeb7bc278195fea8deb06d0",
+        "currentInlineZIndex": 10050,
+        "compiledOccurrences": 1,
+        "pointerEvents": "none"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/project/weapp/pages/map/index.js",
+        "sha256": "34fcafec4a449a292ca8a21bde7be2cadb64e7b5beeb7bc278195fea8deb06d0",
+        "currentInlineZIndex": 10050,
+        "compiledOccurrences": 1,
+        "pointerEvents": "none"
+      }
+    ],
+    "compiledNotifications": [
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r7/app-origin.wxss",
+        "sha256": "cb23e9230cbf5a0a4b6e5b11e6eb38a0923339d753b919282910c56d8f032b64",
+        "selector": ".notification-host",
+        "zIndex": 10040,
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r7/project/weapp/app-origin.wxss",
+        "sha256": "cb23e9230cbf5a0a4b6e5b11e6eb38a0923339d753b919282910c56d8f032b64",
+        "selector": ".notification-host",
+        "zIndex": 10040,
+        "unchangedFromR6": true
+      }
+    ],
+    "unchangedNotificationFiles": [
+      {
+        "file": "apps/wechat-miniapp/src/components/notification.tsx",
+        "sha256": "721fb2032c1ccd6f24405fd5089dfff1be9f2ec65ae84cf3dc158b0372cc6297",
+        "byteIdenticalCurrentProductionR6R7": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/components/notification.scss",
+        "sha256": "d22a6d2b9d38ab39b26d6bb712103bc9c3f237d9510c69b253b2e2d0d2e96f3f",
+        "byteIdenticalCurrentProductionR6R7": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/components/notification-visibility.ts",
+        "sha256": "bf7d1af9b4b9573de02bba03f95d3aff3770946163a09cf4015c1b6920d59ca6",
+        "byteIdenticalCurrentProductionR6R7": true
+      }
+    ],
+    "interpretation": "Static compiled layering is now above the existing notification host while the marker does not receive input. Actual target readability/native composition remains for the next necessary representative action; this review does not prove visible readiness or terrain completion."
+  },
+  "templates": {
+    "total": 25,
+    "changedOnly": [
+      "terrain-wait-marker.tsx"
+    ],
+    "unchangedObservationFiles": [
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3-runtime.ts",
+        "sha256": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3-protocol.mjs",
+        "sha256": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3.test.mjs",
+        "sha256": "0e03345870e11795021c1ba73d5ffbc0e6c437de5b502f634aff92598177fae4",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v2-protocol.mjs",
+        "sha256": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-protocol.mjs",
+        "sha256": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-accepted-action-controls.tsx",
+        "sha256": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-page-bridge-observer.ts",
+        "sha256": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-observations.ts",
+        "sha256": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs",
+        "sha256": "3d0725030a3c7882cecf928478d337ca787dd8656e41c21f5dd19c5f2d280f72",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation-runtime.ts",
+        "sha256": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation-instrumentation.mjs",
+        "sha256": "e3c557d31562d296bca04b8ddda10ecc25a17cba434393845c3e1e9213e801e2",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation-protocol.mjs",
+        "sha256": "a4a2deb3f5b544c9e2ed0db5e6b2161a430eb50ac969fd88eb6dce18cc61bbf7",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation.test.mjs",
+        "sha256": "55067d0aece5164790a31892febd17e517686ca75057677b8cde24520fd65003",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/inject-terrain-wait-observer.mjs",
+        "sha256": "a632676119d79a57404d206b0953ac4012b46a986b2df6648ceefbb5673b04a3",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.ts",
+        "sha256": "31a171e7266b9d822b5d0086487c08ba486b614edae50ce3b2efb089261682b0",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.test.mjs",
+        "sha256": "5d70ae67ad7edffeeb7a4ea8a62a5017367e2b3c2af50f2fa1233b552ee9ef58",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-runtime.ts",
+        "sha256": "fd013577e125120d7323e49e77898e6d39fec5f55c7059cc1b8da3aa77fcfc3f",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-instrumentation.mjs",
+        "sha256": "e37c636de4a72d3ed95ecfbb1e6834fed49affbd8cd68c8287f7046037cbbb55",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-protocol.mjs",
+        "sha256": "708e2b2f224a44aea83c6414d3076bb79a33e1e3672668000db75215b5c189da",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry.test.mjs",
+        "sha256": "1b01d358e4d043e478acfde143cfa1a364ac8a1925d62e19723e2ee192628d74",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-ruler-entry-v2-instrumentation.mjs",
+        "sha256": "3c395a68c092676ecf30cd46085412ea9a61958c30a2cd536bc04ca8a556ac85",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-instrumentation.mjs",
+        "sha256": "0c16fd345afa11a5c88a553da3f7ec5ba46e0da2ad8d7dcfc83258f857917b39",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-protocol.mjs",
+        "sha256": "4f48172576d0080e572cc95a67a86566ea96ee87cea87eaac5565ba91400325a",
+        "unchangedFromR6": true
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+        "sha256": "33e364684488093738b39c728892bbfe7ba0b7fd7fd6753996f79ddbbc228e54",
+        "unchangedFromR6": true
+      }
+    ]
+  },
+  "mapQualification": {
+    "reusedPairs": 22,
+    "freshPairs": 9,
+    "sourceMaps": 31,
+    "mapBytes": 7278368,
+    "segments": 367594,
+    "exactKeySources": 32,
+    "unchangedNormalResponsibilities": 15,
+    "pureTransformedOutputs": 6,
+    "bothBundleJavascriptCopiesChecked": 80,
+    "oldEvidenceNotRelabeledAsCurrent": true
+  },
+  "verificationPolicy": {
+    "existingR6ObservationAndProtocolReviewReusedByExactSourceHashes": true,
+    "r7PureTransformMaterializationIndependentlyReadBack": true,
+    "fullProductionSuiteNotRerun": true,
+    "productBuildNotRerun": true,
+    "mirrorTestForZIndexNotAdded": true,
+    "independentArgumentChecksRunInMemory": true
+  },
+  "metadataNote": "The generic local historicalA1OwnerArchive path emitted by the builder is absent. The real external 5-file archive above was verified. Root owns correcting current preparation metadata; frozen manifests, source and candidate identity were not changed for this pointer.",
+  "limitations": [
+    "This is offline file qualification. It does not establish official compiled package size, preview, current delivery, nonempty Sky or a real profile.",
+    "r7 native reveal, first-visible selected-tick alignment, stable tail and affected cross-day/cancel/re-grab/lifecycle behavior remain target-owned. The current independent source review explicitly retains the native gap.",
+    "Source map line/column coordinates bind exact Taro bytes only; WeChat-repacked runtime scripts require capture-specific script binding and cannot be directly mapped by assumption.",
+    "A input association, B surviving-allocation/normal Play/paused drain/exit, Terrain readiness versus actual coverage and all other Goal obligations retain their existing owners.",
+    "The existing Terrain marker is asynchronous; software ready/ack is not physical presentation and its static z-index does not calibrate phone clocks to video PTS."
+  ],
+  "preservationReadback": {
+    "r6LocalManifestAndMapReportExactToExternalArchive": true,
+    "r6MarkerExactToFrozenManifest": true,
+    "r6BundleCopies": [
+      {
+        "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r6/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r6",
+        "sha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+        "fileCount": 337,
+        "totalBytes": 4995513
+      },
+      {
+        "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r6/project/weapp",
+        "sha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+        "fileCount": 337,
+        "totalBytes": 4995513
+      }
+    ],
+    "r7IndependentProductionRegressionInputMatchesReview": true,
+    "frozenR6SourcesOrBundlesModified": false
+  }
+}

@@ -94,11 +94,15 @@ export function createTerrainWaitObserver(options: {
     downloadReturned(imageKey: string, statusCode: number) {
       if (active) append("download_returned", { asset: opaque("asset", imageKey), ok: statusCode >= 200 && statusCode < 300 });
     },
-    fileReady(imageKey: string, imagePath: string) {
+    fileReady(imageKey: string, imagePath: string, admitted?: { bytes?: number; sha256?: string }) {
       if (!active) return;
       const asset = opaque("asset", imageKey), file = opaque("path", imagePath);
       if (asset !== null && file !== null) pathAssets.set(file, asset);
-      append("file_ready", { asset, file });
+      const bytes = admitted?.bytes;
+      const fileBytes = typeof bytes === "number" && Number.isSafeInteger(bytes) && bytes > 0 ? bytes : null;
+      const fileSha256 = typeof admitted?.sha256 === "string" && /^[a-f0-9]{64}$/iu.test(admitted.sha256)
+        ? admitted.sha256.toLowerCase() : null;
+      append("file_ready", { asset, file, fileBytes, fileSha256 });
     },
     nativeResult(mapId: string, imagePath: string | null, ok: boolean, current: boolean, phase: string) {
       if (!active) return;

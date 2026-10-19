@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "starward-task-r10-integration-independent-review-v1",
+  "date": "2026-10-19",
+  "reviewer": "/root/review_r10_probe_integration",
+  "independentOfAuthors": true,
+  "status": "PASS_TASK_INTEGRATION_OFFLINE_COMPLETE_BUILD_AND_DEVICE_NOT_REVIEWED",
+  "findings": [],
+  "severityCounts": { "P1": 0, "P2": 0 },
+  "scope": [
+    "Finite r10 task integration with already reviewed pending-continuity production source",
+    "Actual-preparation token attribution at requested memo and actual request",
+    "Admitted terrain RasterImageFile bytes/SHA scalar pass-through and privacy filtering",
+    "Historical Sky helper equivalence, finite flags, and unchanged bounded observation windows"
+  ],
+  "taskBindings": {
+    "scripts/build-r17-normal-baseline-v3.mjs": "9f742e3d5e1877075c93e35d6bc43a03e147776b3007125d878613b63c3d7893",
+    "scripts/r17-normal-baseline-v3-fixture.mjs": "a153f4dceb4def34b6d2b276dcf6408a27b88fbcac10eda688728ea89cb7302e",
+    "scripts/terrain-wait-observer.ts": "2478e9e6d2dcec608cb0720c30867f5fe1731a68f5ab3b3388952ef82d0c9b3b",
+    "scripts/inject-terrain-wait-observer.mjs": "c19c1b2eeba4523a7eecc35fb9cc65e75df34347b140816b984fba42cb642835",
+    "scripts/terrain-wait-observer.test.mjs": "8f8d2ec9fc4c054871f4ec8409537b6ea0c0b2eb009f93085375520c576425c8",
+    "scripts/r17-normal-observations.ts": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a"
+  },
+  "productionBindings": {
+    "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "5a92132429f8c907bab16f0a4a509c6b3c9c7505543031610191fb3bcb8fd3e1",
+    "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts": "4f939acad956032080661328ab29ecf3b6074baf1dbb87e07397270b9c1d1390",
+    "apps/wechat-miniapp/src/hooks/use-raster-image.ts": "4ea85720104ad8ca98f8df04f2c05d2c67b10361ca5e1a52582fb4d9f369cde0",
+    "apps/wechat-miniapp/src/hooks/use-terrain-overlay.ts": "c86396df706bb8d9df6b537edaffec51a682b3e8acdd524ab2c66c5a6a611465",
+    "apps/wechat-miniapp/src/services/raster-image-resources.ts": "2ae75bcb7233097f5d17783de3c692a848aeee26a3c409b28ec3330da4a5457e",
+    "apps/wechat-miniapp/src/services/raster-file-adapter.ts": "d7ef3c4ab15267fdc39907e5226a3f9b1c73a12b7ef994e38b1279e2035f56e3",
+    "apps/wechat-miniapp/src/services/map-raster-files.ts": "d3ad99cc48e9a569efe1c9cd32a9a4bc361678448584360c89c17744f70e00d9"
+  },
+  "reviewedReports": {
+    "R17-NORMAL-R10-BUILDER-INTEGRATION.md": "0366838cccf716861f7e8c5c732b0f3e955e50944fddcc0ec187b0936486137d",
+    "R17-NORMAL-R10-BUILDER-INTEGRATION.json": "572d6795d77779ef1223d7dba7df8a49eaf3db447e9403b6c894057ff79d0b71",
+    "SKY-TIME-PENDING-CONTINUITY-REVIEW.json": "363000f0cf5f08a42520f001b0c9f49d37398ed4d798e70c3bcf299398d8e19b"
+  },
+  "frozenArchive": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r9-before-r10-20261019",
+    "ownerManifest": { "file": "owner-manifest.private.json", "sha256": "163ddd56ee02177da1554506f00bd10bc80bf94023deee2d818d8baf00f0f6f9", "contentsMatched": 6 },
+    "terrainManifest": { "file": "terrain-v1-owner/manifest.private.json", "sha256": "80bfdda997c147b30e708ac1d22d7dba635a8e64b20639ec81b6ff30c8755609", "contentsMatched": 3 },
+    "runtimeArchiveNotInspectedOrClaimed": true
+  },
+  "checkedSemantics": {
+    "requestedMemoDependencies": ["rawReportData", "requestedAt", "timeModel", "timeGeometrySources"],
+    "selectionAndAcceptedScopeByteIdentical": true,
+    "actualNullPreparationCountsAsAttemptNotSuccess": true,
+    "currentPreparationRefOnlyNoHistory": true,
+    "oldDrawAndAcceptedOrCommittedFallbackDoNotConsumeNewPreparation": true,
+    "sameTimeMemoKeepsOriginalPreparationIntent": true,
+    "newSupplyCancelEmptyForeignBindingAndThrownPreparationChecked": true,
+    "requestFieldsAndDrawDependenciesUnchanged": true,
+    "normalProductAcceptedSetterResourceDemandAndConsumersUnchangedByProbe": true,
+    "terrainFactsFromActualResolvedRasterImageFile": true,
+    "statBeforeAdapterResolveAndIntegrityChecksBeforeReaderResolve": true,
+    "hashRequestedOnlyWhenExpectedSha256Exists": true,
+    "expectedSha256ComparedBeforeHookGetsFile": true,
+    "noExpectedShaDoesNotRelabelDefaultDigestAsSha256": true,
+    "missingInvalidShaAndMissingInvalidBytesAreNull": true,
+    "noAdditionalHashStatFileReadRequestOrRetry": true,
+    "noRawUrlPathCoordinateIdentityOrExtraPayloadExport": true,
+    "unchangedTerrainBounds": { "eventCount": 80, "identityCount": 64, "observationDeadlineMs": 15000, "storageKey": "starward.task.terrain-wait.v1" },
+    "unchangedNormalWindows": { "metricsExportMs": 15000, "guardedSameRunPauseMs": 60000, "recorderDeadlineMs": 45000, "minimumPausedDrainMs": 30000, "lateRelativeStamp": "null under unchanged 60000ms range" }
+  },
+  "executedChecks": {
+    "inMemoryR10Fixture": { "typescript": "5.9.3", "inputFiles": 1583, "passed": 30, "total": 30, "exitCode": 0, "preparedSourcesOnlyInMemory": true },
+    "terrainAndActualFileOwners": {
+      "command": "node tools/run-node.cjs --import tsx --test --test-reporter=spec .codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.test.mjs apps/wechat-miniapp/src/services/raster-file-adapter.test.ts apps/wechat-miniapp/src/services/raster-image-resources.test.ts",
+      "terrainPassed": 7, "adapterAndResourcePassed": 10, "passed": 17, "total": 17, "exitCode": 0
+    },
+    "actualTransformedHookPlusUnchangedAdapterAndResourceOwner": {
+      "mode": "in-memory VM with real transformed hook and unchanged production owners, controlled platform callbacks; no filesystem/native calls",
+      "passed": 5, "total": 5, "exitCode": 0,
+      "cases": ["matching actual digest passes measured bytes/SHA", "wrong actual digest yields no file_ready", "wrong actual size yields no file_ready", "no expected SHA ignores default non-SHA256 digest and exports null", "native stat failure yields no file_ready"],
+      "alsoChecked": ["no file_ready before stat settles", "failed files remain disposal-owned", "no private raw identity exported"]
+    },
+    "finiteArgv": { "passed": 12, "total": 12, "exitCode": 0, "r10RequiresObserveA1": true, "duplicateUnknownAndMixedRevisionRejected": true },
+    "legacySkyHelperOutputs": {
+      "revisions": [2, 3, 4, 5, 6, 7, 8, 9], "passed": 24, "total": 24, "exitCode": 0,
+      "byteIdenticalFunctions": ["one", "wrapCalls", "controls", "normalSurface"],
+      "pageInput": "complete canonical string-replacement boundary input from frozen old function",
+      "controlsInput": "actual current r17-accepted-action-controls.tsx template",
+      "surfaceInput": "actual current production sky-canvas-surface.ts",
+      "limitation": "Author historical full raw-page output comparison reused in its original scope; reviewer did not restore raw historical production files or run Git. Helper equivalence does not imply historical complete bundle reproducibility using current changed terrain templates."
+    },
+    "harnessFailure": { "initial": "deepStrictEqual rejected structurally identical objects from separate VM realms due to prototype identity", "repair": "compare source strings and numeric fields across realms", "productOrProbeChange": false, "repairedCheckPassed": true },
+    "reusedChecks": { "productionRelatedTests": 133, "productionIndependentTypecheckVersion": "5.9.3", "authorInMemoryStrictOverlayFiles": 1583, "repeatProductionReview": false }
+  },
+  "limitations": [
+    "Independent source and software-observer integration review only. Root-owned complete build and actual emitted candidate have not been inspected by this reviewer.",
+    "No native pixels, phone clocks, real SHA capability on this candidate, actual response adoption or first effective visible coverage is established by these VM tests.",
+    "file_ready is successful existing file-owner admission, not native installation or visibility. Non-null SHA from this path was actually obtained and matched under the existing expected-SHA contract; absent SHA supports actual byte-count claims only.",
+    "No full A/B, ordinary-preview sustained stability, Apply/persistence, terrain performance gain or remaining Goal obligation is closed by this report."
+  ],
+  "operations": { "productionOrScriptsChanged": false, "createdFiles": ["R17-NORMAL-R10-INTEGRATION-REVIEW.md", "R17-NORMAL-R10-INTEGRATION-REVIEW.json"], "prepareBuildInspectMainCalled": false, "candidateCreated": false, "deviceIdeFeedbackServiceAccountStoragePairingVpnTouched": false, "gitReadOrWrite": false, "coordinatorDocsChanged": false }
+}

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "starward-task-independent-source-review-v1",
+  "date": "2026-10-19",
+  "reviewer": "review_stable_ruler_surface",
+  "baseCommit": "c6bb28bc55b8b3e2ed2e32090f05512e233c4253",
+  "status": "SOURCE_REVIEW_PASSED_NATIVE_UNVERIFIED",
+  "scope": "Stable native OrientationTimeRuler surface, fixed admission controls and recovery layout",
+  "findings": [],
+  "p1Count": 0,
+  "p2Count": 0,
+  "productionOrTestEditsByReviewer": false,
+  "reviewedFiles": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 246579,
+      "sha256": "dbd27bcda233639776b9737223b0ee69078d25cca5b1951bb066a887f025f9d4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss",
+      "bytes": 71458,
+      "sha256": "3fc2efb06c9af2b0a5c493e89dfbd1af02b5da69f367e382555e6ce4294f611d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+      "bytes": 40055,
+      "sha256": "b1f9488f1a07560b9ea53793d3f1d0cda12bd8a6538c155e89d76ac318f50b4b"
+    }
+  ],
+  "sourceInvariants": {
+    "scrollViewOwnAdmissionStyleAbsent": true,
+    "nonemptyRulerDirectSiblingSlotsRetained": true,
+    "recoveryButtonRetainedInsideFixedGuard": true,
+    "cancelSoftButtonNativeButtonAndTextRetained": true,
+    "guardRetiresItsOwnHitTestingOnAdmission": true,
+    "recoveryHandlerRechecksVisibleLockedAndLayoutQualification": true,
+    "inactiveCancelHiddenDisabledAndHandlerGuarded": true,
+    "recoveryStartsBelowCurrentLabelLine": true,
+    "minimumRecoveryTargetPx": 44,
+    "exactRowKeysAndEmptyBranchPreserved": true,
+    "freshEndpointGeometryAndActualOffsetAdmissionPreserved": true,
+    "singleNativePositionWriterPreserved": true,
+    "sameRowPlayNoPerFrameGeometryQuery": true,
+    "fixedWaitOrPollAdded": false,
+    "newDiagnosticQueryAdded": false,
+    "allAncestorsAlwaysStableClaim": false,
+    "nativeInstancePreservationClaim": false
+  },
+  "actualTaroSourceRead": {
+    "version": "4.2.1",
+    "paths": [
+      "apps/wechat-miniapp/node_modules/@tarojs/react/dist/react.esm.js",
+      "node_modules/@tarojs/runtime/dist/runtime.esm.js",
+      "node_modules/@tarojs/runtime/dist/dom/style.js",
+      "node_modules/@tarojs/shared/dist/components.js"
+    ],
+    "boundaries": [
+      "Equal style values are excluded from React prop payload; changed style updates that element st",
+      "removeChild invokes updateChildNodes on its direct parent; the resulting cn hydrate can replace nested queued updates",
+      "catchMove remains a constant true prop on the fixed guard; only its own presentation and hit style changes",
+      "Current-state and tick-label conditional children are nested below their own owners, not direct siblings of the ScrollView",
+      "Cross-window row replacement intentionally changes track children and still requires current rows/native update admission"
+    ],
+    "nativeSetDataTraceCollected": false
+  },
+  "adoptedReference": {
+    "node": "5385664345158066168",
+    "path": ".codex/work-items/main-integration-2026-10-17/tmp/stitch-5385664345158066168.html",
+    "sha256": "4c6cfc021e5f3c02db4036eab437fe64d25f57c8adbd49864a755ce598345c79",
+    "sourceInspected": true,
+    "centerScaleFrom": 0.76,
+    "centerScaleTo": 1,
+    "durationMs": 180,
+    "rulerHeightPx": 76,
+    "originalAdoptedPngAvailable": false,
+    "substituteGenerated": false,
+    "fullVisualConformanceClaim": false
+  },
+  "frozenPriorImagesActuallyViewed": [
+    "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r7-entry-motion-trace-archive-20261019/frames/000515380.png",
+    "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r7-entry-motion-trace-archive-20261019/bound/screen-8335fb95-b6be-4f49-8d0a-41d6e7fce8d7.png"
+  ],
+  "checks": {
+    "independentFocused": {
+      "command": "node tools/run-node.cjs --import tsx --test apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts apps/wechat-miniapp/src/features/sky/orientation-time-ruler.test.ts apps/wechat-miniapp/src/features/sky/orientation-ruler-layout.test.ts apps/wechat-miniapp/src/features/sky/sky-time-ruler-settlement.test.ts apps/wechat-miniapp/src/components/ruler-scroll-position.test.ts",
+      "exitCode": 0,
+      "tests": 42,
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6405.5256,
+      "modelsPhysicalNativeReset": false,
+      "claimsWeappHitTestingOrCompositorPass": false
+    },
+    "diffCheck": {
+      "exitCode": 0,
+      "onlyWarning": "existing CRLF to Git LF normalization notice"
+    },
+    "authorTypeScriptEvidenceReused": {
+      "version": "5.9.3",
+      "exitCode": 0,
+      "reason": "Same three file bytes independently verified; reviewer made no production or test change"
+    },
+    "authorBeforeAfterRegressionReused": true,
+    "additionalTestsAdded": false,
+    "fullSuiteRepeated": false
+  },
+  "nativeAcceptance": {
+    "status": "NOT_RUN",
+    "firstVisibleAndTerminalAlignment": "UNVERIFIED",
+    "transparentGuardActualHitTestingRetirement": "UNVERIFIED",
+    "recoveryTextActualNonoverlapAndRetry": "UNVERIFIED",
+    "affectedCrossDayCancelAndRegrab": "UNVERIFIED",
+    "r7PriorFailureStatus": "FAILED_NATIVE_ENTRY_POSITION_COHERENCE",
+    "currentDirtySourceChangesFrozenR7": false,
+    "platformInternalTrigger": "UNKNOWN"
+  },
+  "actions": {
+    "deviceOrAdb": false,
+    "ide": false,
+    "services": false,
+    "feedbackOrSessionMutation": false,
+    "buildOrPreview": false,
+    "productionOrTestsChanged": false,
+    "coordinatorDocsChanged": false,
+    "gitCommit": false,
+    "branchOrWorktreeChanged": false,
+    "onlyReviewReportsWritten": true
+  },
+  "remainingScope": "Complete build and targeted native feedback belong to root. This review does not complete A, B, Terrain, H1-H8 or the full Goal, and does not infer WeChat remount or visibility as a proven unique trigger."
+}

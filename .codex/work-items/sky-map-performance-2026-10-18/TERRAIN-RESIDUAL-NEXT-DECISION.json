@@ -1,0 +1,119 @@
+{
+  "schema": "starward-terrain-residual-next-decision-v1",
+  "reviewedAt": "2026-10-19",
+  "scope": "READ_ONLY_SOURCE_AND_EXISTING_EVIDENCE__NOT_DEVICE_ACCEPTANCE",
+  "sourceHeadObserved": "69401c097572799234e6b97478a4a1ddfe06c810",
+  "result": "REQUEST_WAIT_PROVEN__POST_READY_ORDER_PROVEN__TWO_SECOND_NATIVE_CAUSE_UNPROVEN",
+  "productionOptimizationChosen": false,
+  "runtimeBoundaryFromRoot": {
+    "r9DebugEnded": true,
+    "r8OldConnectionInputsRetired": true,
+    "independentlyProbedByThisAgent": false,
+    "retryOldConnectionRecommended": false
+  },
+  "oldReceiptCapability": {
+    "key": "starward.task.terrain-wait.v1",
+    "r8RuntimeSha256": "442d90ee28502b8dcd2ae6726a4e01b8424089ab9b06be286ae94a94d3dc0cec",
+    "r8RuntimeMatchesCurrentTemplateExceptBindings": true,
+    "sourceSha256Means": "build source identity, not image identity",
+    "persisted": ["anonymous event rows", "attempt", "cache state", "current/cleanup", "clock/overflow"],
+    "notPersisted": ["refs", "pathAssets", "image SHA", "image bytes", "URL", "local file path"],
+    "refsClearedBeforePersist": true,
+    "oldKeyCouldRecoverA5ToImageSha256": false,
+    "oldR8Identity": "UNKNOWN_NOT_RECOVERABLE_FROM_THIS_RECEIPT",
+    "oldR6ActualResponseIdentity": "UNKNOWN_NOT_BACKFILLED"
+  },
+  "existingEvidence": {
+    "r6": {
+      "owner": "TERRAIN-METADATA-WAIT-OWNER.md",
+      "receiptSha256": "653ab774ff9303ba3faee07796f6b577b6924b03c28351baa5f70fb133e2d242",
+      "receiptActuallyParsedThisReview": true,
+      "sourceSha256": "95d1e91d1c68ee154de1251bd41c32852938e0bfcab13feda7e144741ce0c7c9",
+      "eventCount": 7,
+      "overflow": false,
+      "invalidClockReads": 0,
+      "backwardClockReads": 0,
+      "clock": "same phone Date.now wall-elapsed, not validated monotonic or CPU",
+      "metadata": {"startRelativeMs": 1735, "returnedRelativeMs": 3983, "elapsedMs": 2248, "attempt": 1, "request": 4, "asset": 5},
+      "file": {"acquireRelativeMs": 3998, "readyRelativeMs": 4096, "elapsedMs": 98, "asset": 5, "file": 6, "cache": "miss"},
+      "native": {"ackRelativeMs": 4130, "readyToAckMs": 34, "asset": 5, "file": 6, "current": true, "cleanup": false},
+      "actualImageSha256": null,
+      "physicalPresentationFromReceipt": false,
+      "longSoftwareMetadataWaitProven": true
+    },
+    "r8": {
+      "owner": "TERRAIN-R8-IDENTITY-ACTION-RESULT.md",
+      "applicationSha256": "a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e",
+      "sourceSha256": "3362e2d0595b7871835b0232eb43f2ac233c5a5aa012f609c5eb40e04df4bcb0",
+      "httpMetadataElapsedMs": 11,
+      "httpAssetElapsedMs": 184,
+      "httpBytes": 314570,
+      "httpDeclaredAndStreamImageSha256": "4ba6d68aa59958c2017957929a6fcc72715896a702026b4f055bcd7046478340",
+      "normalizedRequestKeySha256": "ca6355e6ca781cf0206eaf245d6bbfcfb1249a729723c51b2c580c0d32cd1f68",
+      "httpIdentityMatchesExistingProof": true,
+      "phoneOpaqueA5ToImageSha256": "UNKNOWN",
+      "fileReadyMarkerVisibleBeforeGap": true,
+      "lastGapPtsSeconds": 5.774189,
+      "firstCoveragePtsSeconds": 5.790578,
+      "firstCoverageFrameIndex": 346,
+      "firstCapturedAckFrameIndex": 348,
+      "layoutCondition": "medium panel closed during action; full native map exposed",
+      "phoneHostPtsCalibration": "UNKNOWN",
+      "twoSecondNativeCauseProven": false,
+      "coldVersusWarmImprovementProven": false
+    }
+  },
+  "sourceAssessment": {
+    "gestureEndPublishesCameraBeforeContextDebounce": true,
+    "contextDebounceMs": 250,
+    "contextDebounceGatesStaticTerrain": false,
+    "actionToRequestContains1400MsGesture": true,
+    "sharedFileIntegrityAdmissionPrecedesReady": true,
+    "oldNativeTargetRetainedUntilReplacement": true,
+    "coordinator": "two serialized reserved slots; new add acknowledged before old removal; identical target may report reuse",
+    "provenTwoSecondNativeTimerOrQueueBug": false,
+    "metadataPossibleOwners": ["fixed publication/cache read", "missing cell source/derivation", "window composition/encode", "serialized cache write/prune"],
+    "costSplitProven": false
+  },
+  "nextObservation": {
+    "trigger": "next already-required current-candidate continuous pan/zoom/cross-coverage action",
+    "clearCaches": false,
+    "retryOldAction": false,
+    "requireFullStageInstrumentation": false,
+    "reuse": ["current candidate binding", "existing 80-row receipt", "existing readable marker", "bridge product identity", "existing proof/cell and service measurement owners"],
+    "minimalNewAssociationIfNeeded": "at file_ready, export actual sha256/bytes already returned by RasterImageFile; optional expected SHA at metadata; bounded event scalars only",
+    "additionalHashOrFileReadRequired": false,
+    "readback": "root reads only that current action's exact own key before refresh",
+    "branches": [
+      {"when": "long metadata, fast post-ready coverage", "then": "follow request/final-product owner; bind SHA to proof/cells and use existing attributable derived/metadata measurements before choosing I/O or CPU repair"},
+      {"when": "short metadata, long acquire-to-ready", "then": "use existing file cache/download-returned/ready boundaries; investigate only the unresolved file side"},
+      {"when": "same new valid asset ready visibly precedes a sustained material gap", "then": "add only needed current-generation install queue/actual add boundary; current adjacent encoded frames do not establish this"},
+      {"when": "warm boundaries short and useful coverage timely", "then": "advance required continuity/detail/revisit/resource verification; retain separate unprepared/first-use and real weather obligations"}
+    ],
+    "telemetryAuthorization": "use current principal if already available; no8791 borrowing, no bridge permission change, no service restart solely for telemetry; at next necessary service preparation narrow-export existing measurement fields if required"
+  },
+  "identityGapEffect": {
+    "blocksExactImageOrCellCostAttribution": true,
+    "blocksExistingStageOrderConclusion": false,
+    "blocksAllFurtherGoalWork": false
+  },
+  "notChosen": ["blocks", "prefetch", "worker", "unbounded cache", "native coordinator change", "continuous disable variants"],
+  "remaining": ["same-condition actual visible-wait improvement", "complete native registration and continuous gestures", "required terrain detail", "annual nightlight and dynamic cloud", "iOS", "resource recovery", "full Goal"],
+  "sourceBindings": [
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.ts", "sha256": "31a171e7266b9d822b5d0086487c08ba486b614edae50ce3b2efb089261682b0"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/inject-terrain-wait-observer.mjs", "sha256": "a632676119d79a57404d206b0953ac4012b46a986b2df6648ceefbb5673b04a3"},
+    {"path": "apps/wechat-miniapp/src/hooks/use-terrain-overlay.ts", "sha256": "c86396df706bb8d9df6b537edaffec51a682b3e8acdd524ab2c66c5a6a611465"},
+    {"path": "apps/wechat-miniapp/src/hooks/use-raster-image.ts", "sha256": "4ea85720104ad8ca98f8df04f2c05d2c67b10361ca5e1a52582fb4d9f369cde0"},
+    {"path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts", "sha256": "ff0378630f642aad46635573735a278d5f841a43f67fdbfd91ca58224f60da92"},
+    {"path": "apps/wechat-miniapp/src/pages/map/map-ground-overlay.ts", "sha256": "425328b2f4e09a79eba79d27377ec92388b5504b67c7db15d0419c826c464f3b"},
+    {"path": "apps/wechat-miniapp/src/pages/map/use-native-map-region.ts", "sha256": "522f31ff44cb6f7e73384a4f2141658031f84a0386c67818ea25ec240b6b76db"},
+    {"path": "workers/miniapp-api/src/terrain-service.ts", "sha256": "f6751be073ac068407067185a7903e62121ff51d7e43bc05ce3d33ab05889370"}
+  ],
+  "operations": {
+    "deviceIdeHttpServiceFeedbackBuild": false,
+    "productionOrScriptEdits": false,
+    "onlyWritten": ["TERRAIN-RESIDUAL-NEXT-DECISION.md", "TERRAIN-RESIDUAL-NEXT-DECISION.json"],
+    "backgroundProcessLeft": false,
+    "gitMutation": false
+  }
+}

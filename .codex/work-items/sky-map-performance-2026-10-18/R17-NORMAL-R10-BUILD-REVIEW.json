@@ -1,0 +1,604 @@
+{
+  "schemaVersion": "starward-r17-normal-r10-complete-build-independent-review-v1",
+  "createdAt": "2026-10-19T12:01:22.762Z",
+  "reviewer": "/root/review_r10_complete_build",
+  "independentOfBuildAndIntegrationAuthors": true,
+  "status": "PASS_OFFLINE_COMPLETE_BUILD_BINDING_ORDINARY_PHONE_PREVIEW_UNVERIFIED",
+  "findings": [],
+  "severityCounts": {
+    "P1": 0,
+    "P2": 0
+  },
+  "scope": "Read-only complete r10 source/build/budget/external-map identity review. Existing production and task-integration behavior reviews reused by exact current hash; no repeated profiling or map coordinate decoding.",
+  "identities": {
+    "productionHead": "69401c097572799234e6b97478a4a1ddfe06c810",
+    "buildSourceSha256": "e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e",
+    "bundleSha256": "077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094",
+    "fileCount": 337,
+    "totalBytes": 5003601,
+    "manifestSha256": "29993ae0f17a471b855620e8f96244238a5fb4d25fdca104b3f30a8e2c949d7b",
+    "sourceSnapshotSha256": "78bd9961b45dcb489c6ceb20d519e361f9f9090f925c990ba0ccfe20ab9cfbf7",
+    "builderSha256": "9f742e3d5e1877075c93e35d6bc43a03e147776b3007125d878613b63c3d7893"
+  },
+  "sourceReadback": {
+    "declaredGraphComplete": true,
+    "currentProductionFiles": 1573,
+    "materializedFiles": 1583,
+    "templateFiles": 25,
+    "allHashesExact": true,
+    "bindingInputDigestExact": true,
+    "diagnosticFilesAbsentFromProductionGraph": true,
+    "sourceOrCandidateWrites": false,
+    "productionTaskProbeSymbolsAbsent": {
+      "checkedFiles": 1573,
+      "symbols": [
+        "r17Probe",
+        "r17TimePreparation",
+        "terrainWaitObserver",
+        "__R17_BUILD_SOURCE_BINDING__",
+        "starward.task.terrain-wait.v1"
+      ],
+      "hits": 0
+    }
+  },
+  "reusedEvidence": {
+    "productionContinuity": {
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/SKY-TIME-PENDING-CONTINUITY-REVIEW.json",
+      "sha256": "363000f0cf5f08a42520f001b0c9f49d37398ed4d798e70c3bcf299398d8e19b",
+      "verdict": "PASS_SOURCE_REVIEW_TARGET_CONFIRMATION_PENDING",
+      "verification": {
+        "relatedTests": {
+          "cwd": "apps/wechat-miniapp",
+          "command": "node ../../tools/run-node.cjs --import tsx --test --test-reporter=dot src/features/sky/use-sky-time-geometry.test.ts src/features/sky/sky-time-commit-continuity.test.ts src/features/sky/sky-location-preview.test.ts src/features/sky/sky-page-action-ownership.test.ts src/features/sky/sky-resource-eligibility.test.ts src/features/sky/sky-dome-integration.test.ts src/features/sky/sky-canvas-time.test.ts src/features/sky/orientation-time-ruler.test.ts src/features/sky/sky-observation-time.test.ts src/features/sky/sky-time-preview-status.test.ts src/features/sky/sky-render-invalidation.test.ts src/features/sky/sky-deep-auxiliary-page.test.ts",
+          "independentlyRerun": true,
+          "exitCode": 0,
+          "files": 12,
+          "tests": 133,
+          "passed": 133,
+          "failed": 0
+        },
+        "typecheck": {
+          "command": "node tools/run-node.cjs apps/wechat-miniapp/node_modules/typescript/lib/tsc.js --noEmit -p apps/wechat-miniapp/tsconfig.json",
+          "typescript": "5.9.3",
+          "independentlyRerun": true,
+          "exitCode": 0
+        },
+        "actualPageSameSceneCheck": {
+          "method": "In-memory TypeScript AST extraction of the current page sameScene expression with existing shared fixture dependencies; no source edit or persisted test added",
+          "assertions": 5,
+          "passed": 5,
+          "cases": [
+            "same input and scope accepted",
+            "changed input rejected",
+            "changed scope rejected",
+            "changed frameAt rejected",
+            "changed native generation rejected"
+          ],
+          "exitCode": 0,
+          "nativePixelsClaim": false
+        },
+        "diffCheck": {
+          "scope": "six reviewed production and fixture files",
+          "exitCode": 0,
+          "warning": "existing spot-sky-page.tsx CRLF normalization notice only"
+        },
+        "counterexample": {
+          "authorBeforeFixRecordReviewed": true,
+          "reviewerRepeatedSourceMutation": false,
+          "currentBehaviorAssertionPassed": true
+        },
+        "evidenceLimit": "Software selection, resource/draw meaning and accepted-scope boundary only; no physical output, latency, current complete candidate, full A/B or Apply/persistence acceptance."
+      }
+    },
+    "taskIntegration": {
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "sha256": "06b72aaa9a542368d47c3dbd28ae2660398abd9a41eda691db18ca83eff736f2",
+      "status": "PASS_TASK_INTEGRATION_OFFLINE_COMPLETE_BUILD_AND_DEVICE_NOT_REVIEWED",
+      "r10Fixture": {
+        "typescript": "5.9.3",
+        "inputFiles": 1583,
+        "passed": 30,
+        "total": 30,
+        "exitCode": 0,
+        "preparedSourcesOnlyInMemory": true
+      },
+      "terrainAndActualFileOwners": {
+        "command": "node tools/run-node.cjs --import tsx --test --test-reporter=spec .codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.test.mjs apps/wechat-miniapp/src/services/raster-file-adapter.test.ts apps/wechat-miniapp/src/services/raster-image-resources.test.ts",
+        "terrainPassed": 7,
+        "adapterAndResourcePassed": 10,
+        "passed": 17,
+        "total": 17,
+        "exitCode": 0
+      },
+      "actualFileHookEndToEnd": {
+        "mode": "in-memory VM with real transformed hook and unchanged production owners, controlled platform callbacks; no filesystem/native calls",
+        "passed": 5,
+        "total": 5,
+        "exitCode": 0,
+        "cases": [
+          "matching actual digest passes measured bytes/SHA",
+          "wrong actual digest yields no file_ready",
+          "wrong actual size yields no file_ready",
+          "no expected SHA ignores default non-SHA256 digest and exports null",
+          "native stat failure yields no file_ready"
+        ],
+        "alsoChecked": [
+          "no file_ready before stat settles",
+          "failed files remain disposal-owned",
+          "no private raw identity exported"
+        ]
+      }
+    },
+    "rootBuildChecks": {
+      "count": 30,
+      "allPassed": true,
+      "deltaTypecheck": {
+        "productionDiagnostics": 0,
+        "currentDiagnostics": 0,
+        "addedDiagnostics": [],
+        "noAddedDiagnostics": true,
+        "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+      },
+      "independentlyReexecuted": false
+    }
+  },
+  "bundleCopies": [
+    {
+      "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r10/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r10",
+      "sha256": "077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094",
+      "fileCount": 337,
+      "totalBytes": 5003601,
+      "javascriptFiles": 40,
+      "sourceMapFiles": 0,
+      "packages": {
+        "main": {
+          "bytes": 1993952,
+          "source_map_bytes": 0
+        },
+        "content": {
+          "bytes": 1041372,
+          "source_map_bytes": 0
+        },
+        "spot": {
+          "bytes": 598323,
+          "source_map_bytes": 0
+        },
+        "sky": {
+          "bytes": 1369954,
+          "source_map_bytes": 0
+        }
+      },
+      "mainHeadroomBytes": 103200
+    },
+    {
+      "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r10/project/weapp",
+      "sha256": "077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094",
+      "fileCount": 337,
+      "totalBytes": 5003601,
+      "javascriptFiles": 40,
+      "sourceMapFiles": 0,
+      "packages": {
+        "main": {
+          "bytes": 1993952,
+          "source_map_bytes": 0
+        },
+        "content": {
+          "bytes": 1041372,
+          "source_map_bytes": 0
+        },
+        "spot": {
+          "bytes": 598323,
+          "source_map_bytes": 0
+        },
+        "sky": {
+          "bytes": 1369954,
+          "source_map_bytes": 0
+        }
+      },
+      "mainHeadroomBytes": 103200
+    }
+  ],
+  "externalSourceMaps": {
+    "count": 31,
+    "totalBytes": 7305672,
+    "allFileHashesAndLengthsExact": true,
+    "allMapMetadataAndCurrentJavaScriptNamesBound": true,
+    "noMapFilesOrSourceMappingURLsShipped": true,
+    "generatedCoordinatesDecoded": false,
+    "records": [
+      {
+        "mapFile": "app.js.map",
+        "mapSha256": "287dd3da7290129b1ca2b21d79a8a40d2e3db4c86aa96d16b8961fa273ea3a00",
+        "mapBytes": 249158,
+        "javascriptFile": "app.js",
+        "javascriptSha256": "4d272472d1fbf0db7347ca1a82401d78ff558cb9528462c2b87ad5d93fd1d95e",
+        "declaredFileMatches": true,
+        "sourceCount": 8,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "common.js.map",
+        "mapSha256": "c88ba1e78f0b909cf02d81a7864aa84632eb77b2cf81ba7915bb1e1323e591bb",
+        "mapBytes": 1454308,
+        "javascriptFile": "common.js",
+        "javascriptSha256": "93f1e80376b1701a578bcea293bd92d4467323e1f3d62df402b28f5adbbad6b0",
+        "declaredFileMatches": true,
+        "sourceCount": 180,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/achievement/index.js.map",
+        "mapSha256": "0470d8f769e2c4321919a9437307f3130ee352a645f08af5509e4f8a5b5c0816",
+        "mapBytes": 18862,
+        "javascriptFile": "content/achievement/index.js",
+        "javascriptSha256": "ac139b97038436dd7d98559819849835a5ebc31827b6ac25cd2c30a0d6be19ed",
+        "declaredFileMatches": true,
+        "sourceCount": 3,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/article/detail/index.js.map",
+        "mapSha256": "4923c1736440717d9586458fe1b9f75a2aeefc0b8bebdbc93c6436f0b04daa41",
+        "mapBytes": 28819,
+        "javascriptFile": "content/article/detail/index.js",
+        "javascriptSha256": "ee7b7459e713525b3edd9a4316e41273e93c94b2c937805b91be1d5e921aa520",
+        "declaredFileMatches": true,
+        "sourceCount": 3,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/contribution/index.js.map",
+        "mapSha256": "580b05bc16d62804cf1755fd30eef0d7b176636322c726fafe5f9a7a266e5b83",
+        "mapBytes": 52555,
+        "javascriptFile": "content/contribution/index.js",
+        "javascriptSha256": "1d7e78357e15fbc3964cb92f1be772d64acba92c47cb34fd5042a9ebc406e59c",
+        "declaredFileMatches": true,
+        "sourceCount": 6,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/event/detail/index.js.map",
+        "mapSha256": "4c75edc671f2affa337f6c8ef6958dcc4e7ace84a50efcf53abee26b045e3e17",
+        "mapBytes": 1698,
+        "javascriptFile": "content/event/detail/index.js",
+        "javascriptSha256": "c56ceb6d21d3e5ecf6191181611806dfdb5ef6c7103b173c32d8a2083ec278e2",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/event/list/index.js.map",
+        "mapSha256": "aa68df0c12c6293c565a4a608a7b84709556c3db76d60fd382bb5a3b08569f3e",
+        "mapBytes": 1646,
+        "javascriptFile": "content/event/list/index.js",
+        "javascriptSha256": "074d339c7a0d93f4f3bdf3ad8574f686345892e0eae32605899a3858f1c7bc4c",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/plan/detail/index.js.map",
+        "mapSha256": "1199dc97a5ac1560100bc01414a2023932ebec6afa5ffc0214ad31cb124e892d",
+        "mapBytes": 1679,
+        "javascriptFile": "content/plan/detail/index.js",
+        "javascriptSha256": "65232d1e119211b4b0963e16251638817415b9a9cf581295d6ccbfadc0f8c2ba",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/plan/edit/index.js.map",
+        "mapSha256": "e680c5583790378be67e5de694c0a7030af96a9d81d3f3ca77e3c22d604b28ca",
+        "mapBytes": 1835,
+        "javascriptFile": "content/plan/edit/index.js",
+        "javascriptSha256": "ac463cbcfd8ce718628240fb0319f50575c00311b115ee8113cbf97f930df1a2",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/plan/list/index.js.map",
+        "mapSha256": "766c6f139a342ddc204791a5ed5c25c490cf82a7b15e32121ccd1f3c3e522dee",
+        "mapBytes": 22549,
+        "javascriptFile": "content/plan/list/index.js",
+        "javascriptSha256": "973c1d1417fadf924b235ad88ed2a47f9e4f16e6d92d63505569140ed7cd7358",
+        "declaredFileMatches": true,
+        "sourceCount": 3,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/settings/index.js.map",
+        "mapSha256": "8d4c8ce689ca8b57aa35e61f762508223d113ddef6147a44d38cf37c67c59988",
+        "mapBytes": 111904,
+        "javascriptFile": "content/settings/index.js",
+        "javascriptSha256": "0ebe086c90b6311c66974dd314581412b12a816806fc2d20b2be6f396bdee4f5",
+        "declaredFileMatches": true,
+        "sourceCount": 11,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/share/index.js.map",
+        "mapSha256": "dd3a171c975ef055be97c7edaa81103092d0bb14b4dc9e1e4f9c15ca108ab5e8",
+        "mapBytes": 108909,
+        "javascriptFile": "content/share/index.js",
+        "javascriptSha256": "ccd45929da686fd7eb37c1b155c45aac141e8cc3e9d9cfbbfba7c831d82b1adb",
+        "declaredFileMatches": true,
+        "sourceCount": 12,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/spot-feedback/index.js.map",
+        "mapSha256": "533949191910fc1bd588b397e59904608c281bc62bfe3969733b22abfb905f5e",
+        "mapBytes": 111301,
+        "javascriptFile": "content/spot-feedback/index.js",
+        "javascriptSha256": "f87b26900747bfb5b6321fa2921399d50236afd34e93524a70c548d14bf5893f",
+        "declaredFileMatches": true,
+        "sourceCount": 7,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "content/sub-vendors.js.map",
+        "mapSha256": "eee531b90ca59dcf46b6301f14f40fe886c5a0cd586f7768cf8fa34142ce09c2",
+        "mapBytes": 317033,
+        "javascriptFile": "content/sub-vendors.js",
+        "javascriptSha256": "0e4834351c53c1b774e0d16790b4ad6be7fe93ab4277c60f1d4f8d67eb6c1073",
+        "declaredFileMatches": true,
+        "sourceCount": 24,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "custom-tab-bar/index.js.map",
+        "mapSha256": "aee294a9a3d25ae061910f210ffed48542987ed6481dcf04e228bb13d38e255b",
+        "mapBytes": 15615,
+        "javascriptFile": "custom-tab-bar/index.js",
+        "javascriptSha256": "e18105270ea323dbea3b342778a47f1665f60e2b6a16554a3738f1c4ad1e8954",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "pages/auth/index.js.map",
+        "mapSha256": "fb7cbd2f9617e7a071b8954d56a9f33ddad86e8ee9d607c79c3d2444e3065ed1",
+        "mapBytes": 20742,
+        "javascriptFile": "pages/auth/index.js",
+        "javascriptSha256": "2d207ac94ac45b56f075a310ce09faf1f1769bae7d6e30edb9507a464022ae6c",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "pages/map/index.js.map",
+        "mapSha256": "a8217b0dde3d38e52a5c8a1227e789cd336093d13692d4b036046b75f44c588c",
+        "mapBytes": 782849,
+        "javascriptFile": "pages/map/index.js",
+        "javascriptSha256": "057d0ef32ed6447ba621d41662c9652b09d23519811f24e5ccb26dc237dd5ce8",
+        "declaredFileMatches": true,
+        "sourceCount": 62,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "pages/my/index.js.map",
+        "mapSha256": "20218c41a9b435a33a12ba722a4ccb5b5f1602feae5988e96071a7be5b111808",
+        "mapBytes": 70165,
+        "javascriptFile": "pages/my/index.js",
+        "javascriptSha256": "0961ece99aa511090630fbc71afe3dd899097fc9df4b799f4a0c0da4747ced94",
+        "declaredFileMatches": true,
+        "sourceCount": 7,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "runtime.js.map",
+        "mapSha256": "45bc8aa2c3a7d97aff85a535d42efb6b3479a3be0d2327d6306fbd32d922de10",
+        "mapBytes": 10680,
+        "javascriptFile": "runtime.js",
+        "javascriptSha256": "5d6cb0805bd8d69019c18e81707671324ee7e436e0d2787fdb706cb093340c32",
+        "declaredFileMatches": true,
+        "sourceCount": 10,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "sky/detail/index.js.map",
+        "mapSha256": "64479561dc406dd8b4911ea63d74fc3ce848a924e0fa33f49c83c8f0f9d87cdd",
+        "mapBytes": 2637782,
+        "javascriptFile": "sky/detail/index.js",
+        "javascriptSha256": "fb74507775dd2838b79b3701e8d6866d75d8106c5b50cb3a1501875f91154acd",
+        "declaredFileMatches": true,
+        "sourceCount": 170,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "sky/sources/index.js.map",
+        "mapSha256": "f3aace4efd8c197ac02dbf3caeb34ce907719905b690f03f2bee21d0d58aa2b2",
+        "mapBytes": 34572,
+        "javascriptFile": "sky/sources/index.js",
+        "javascriptSha256": "251f40aa14884a1cd47a03a261a4018f3c719c92ebcdd9bf12960350d2700ccb",
+        "declaredFileMatches": true,
+        "sourceCount": 6,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "sky/sub-vendors.js.map",
+        "mapSha256": "6de4d68d826af3c91f79c642737f5b6c3c0655e868c7fadbc9694d9fe69a7197",
+        "mapBytes": 356477,
+        "javascriptFile": "sky/sub-vendors.js",
+        "javascriptSha256": "9911620dbde6278a38959b17e210cd74623e5d874e1250fa903a3b19a09d05fa",
+        "declaredFileMatches": true,
+        "sourceCount": 48,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/data-source/index.js.map",
+        "mapSha256": "17213000f168644ff122197bce328d966997ff50cc8f25b24b8c94f7d6083f6d",
+        "mapBytes": 16857,
+        "javascriptFile": "spot/data-source/index.js",
+        "javascriptSha256": "02c0719328a001ebd68e5ec12332c9d201877db836be12f002b31c98b28a0150",
+        "declaredFileMatches": true,
+        "sourceCount": 3,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/field/index.js.map",
+        "mapSha256": "2f7cc637020713dccfb04809685de042d3acb1773ad01f21757706d656b09cee",
+        "mapBytes": 1624,
+        "javascriptFile": "spot/field/index.js",
+        "javascriptSha256": "4bf728fed3a5d3f2fd589602d0f136ab5d6103d9e2d273849c652e9abe24428d",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/guides/index.js.map",
+        "mapSha256": "d10fa7b4780c601b91f2cb07ed2a17603ebce3bdd8601de3aa9913a54b1d679f",
+        "mapBytes": 1632,
+        "javascriptFile": "spot/guides/index.js",
+        "javascriptSha256": "1a7f4198213e83c01c2b0f1e8021f05c6757fbe503eba9813c45d4efd214dbbb",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/native/packaged-icon/index.js.map",
+        "mapSha256": "a6d3f93df29b8ec539cbf81ed8a27937dba12d5f5890e31d0f49f8ad075b5c4f",
+        "mapBytes": 1195,
+        "javascriptFile": "spot/native/packaged-icon/index.js",
+        "javascriptSha256": "b6ed1425f28b2e390628d0c42a36f34db256c77f0486415a5f7de58bdf85ec4d",
+        "declaredFileMatches": true,
+        "sourceCount": 1,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/plan/index.js.map",
+        "mapSha256": "50a507ad8d51a774a1835057f7f302f4f6f67cf53e6c0085a19fa6c710fe025b",
+        "mapBytes": 7764,
+        "javascriptFile": "spot/plan/index.js",
+        "javascriptSha256": "1ae0cf9f6fe7705c98aefb0322d17ba38a5ce59529cdd892024f23d786d03744",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/search/index.js.map",
+        "mapSha256": "ec1218681509e968543bf1e8084ae46b8eefbaf7b61b7c16d3a7534fd4509111",
+        "mapBytes": 92837,
+        "javascriptFile": "spot/search/index.js",
+        "javascriptSha256": "f8cfdbce1000cf0ca05eb15eab61ebb447a4781e8068f96eeb030803a96aba32",
+        "declaredFileMatches": true,
+        "sourceCount": 6,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "spot/sub-vendors.js.map",
+        "mapSha256": "185af472d92e633af0ad9d6304e8250d02b4fc174de32b7866381af86230aabc",
+        "mapBytes": 50568,
+        "javascriptFile": "spot/sub-vendors.js",
+        "javascriptSha256": "99da4f51c317e9ad8c86bbbe219972bb825ed72403e3071199d812257bed4959",
+        "declaredFileMatches": true,
+        "sourceCount": 2,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "taro.js.map",
+        "mapSha256": "300d9487bb4e8d3765de0ed4f4d2d3131f45a9b7fe980fe96531151dbef71d42",
+        "mapBytes": 450871,
+        "javascriptFile": "taro.js",
+        "javascriptSha256": "73e99b12b18c0bac3ab1127ada2be5fc8de90361ae836f2739a477d51d25b05b",
+        "declaredFileMatches": true,
+        "sourceCount": 84,
+        "mappingCoordinatesDecoded": false
+      },
+      {
+        "mapFile": "vendors.js.map",
+        "mapSha256": "424430d7f55b732540e27cc80a386b768f66fad39dc11aa1e2d1b10f88b8f78a",
+        "mapBytes": 271186,
+        "javascriptFile": "vendors.js",
+        "javascriptSha256": "ff772d6c63b0d7445a53bf2bd88df3d4d6085e8971c4c360daae7072247d419a",
+        "declaredFileMatches": true,
+        "sourceCount": 79,
+        "mappingCoordinatesDecoded": false
+      }
+    ]
+  },
+  "compiledCriticalSources": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "preparedSha256": "0f13795bafe0cab38d5634d3c61224ba313d1429b6c6609c57d3bfb6c6b6b984",
+      "currentProductionSha256": "5a92132429f8c907bab16f0a4a509c6b3c9c7505543031610191fb3bcb8fd3e1",
+      "mapFiles": [
+        "sky/detail/index.js.map"
+      ],
+      "sourceContentByteExact": true
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "preparedSha256": "07933aca13c3ae11c7c4bab8b4c90f3f062754f90ce49c9732faadd025469b4c",
+      "currentProductionSha256": "4f939acad956032080661328ab29ecf3b6074baf1dbb87e07397270b9c1d1390",
+      "mapFiles": [
+        "sky/detail/index.js.map"
+      ],
+      "sourceContentByteExact": true
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts",
+      "preparedSha256": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a",
+      "currentProductionSha256": null,
+      "mapFiles": [
+        "sky/detail/index.js.map"
+      ],
+      "sourceContentByteExact": true
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "preparedSha256": "56fa6493598894e354fc26b36d298352f854664a1f89fe521e69b6914ae84ac3",
+      "currentProductionSha256": null,
+      "mapFiles": [
+        "sky/detail/index.js.map"
+      ],
+      "sourceContentByteExact": true
+    },
+    {
+      "file": "apps/wechat-miniapp/src/hooks/use-raster-image.ts",
+      "preparedSha256": "63ebe6b2837c0ca661dd7716dd11c7efb063b7b22fc0b82a10bf8685fb246aa8",
+      "currentProductionSha256": "4ea85720104ad8ca98f8df04f2c05d2c67b10361ca5e1a52582fb4d9f369cde0",
+      "mapFiles": [
+        "pages/map/index.js.map"
+      ],
+      "sourceContentByteExact": true
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/terrain-wait-observer.ts",
+      "preparedSha256": "185ae8baad2e2c79d652a71230f734c76a425df739aabbdb8217fc9c545b08be",
+      "currentProductionSha256": null,
+      "mapFiles": [
+        "pages/map/index.js.map"
+      ],
+      "sourceContentByteExact": true
+    }
+  ],
+  "compiledMarkers": {
+    "currentR10LabelAndBuildSourcePresent": true,
+    "pendingContinuityScopeAndPreparationCallsPresent": true,
+    "normalRetirementReceiptPresent": true,
+    "terrainActualFileBytesAndShaFieldsPresent": true
+  },
+  "limitations": [
+    "Offline source/build binding establishes the inspected candidate, not delivery, runtime AppID, native composition, physical presentation or final acceptance.",
+    "SourceContent is exact to the materialized sources and generated JS/map files are bound by hash. No mapping-coordinate correctness or new captured-profile attribution is claimed. No new profile requires such decoding in this ordinary-preview step.",
+    "Existing 30 task checks, 133 production-related tests and type checks retain their original software-test scope; no fixtures are relabeled as phone evidence.",
+    "Static main headroom 103200 bytes and package checks do not establish official preview/upload package accounting.",
+    "Source-bound 15-second metrics, 60-second same-run normal Pause, minimum paused drain and retirement receipts keep their existing scope. Physical ordinary-preview A/B, sustained stability, terrain native adoption and the full Goal remain open."
+  ],
+  "actions": {
+    "build": false,
+    "prepare": false,
+    "inspect": false,
+    "device": false,
+    "ide": false,
+    "service": false,
+    "feedback": false,
+    "preview": false,
+    "gitWrites": false,
+    "sourceWrites": false,
+    "candidateWrites": false,
+    "onlyOwnReviewReportsWritten": true
+  }
+}

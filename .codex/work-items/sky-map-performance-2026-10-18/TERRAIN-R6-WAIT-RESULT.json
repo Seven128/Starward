@@ -1,0 +1,106 @@
+{
+  "schema": "starward-terrain-wait-independent-review-v1",
+  "reviewedAt": "2026-10-19",
+  "scope": "DEVELOPMENT_FEEDBACK_ONLY_NOT_ACCEPTANCE",
+  "result": "VISIBLE_NEW_COVERAGE_GAP_CONFIRMED__WAIT_SIDE_UNKNOWN",
+  "binding": {
+    "candidate": "normal A1 r6",
+    "applicationSha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+    "buildSourceSha256": "95d1e91d1c68ee154de1251bd41c32852938e0bfcab13feda7e144741ce0c7c9",
+    "officialPreviewAndVisibleLabel": "root current evidence; no duplicate device operation",
+    "sessionAlias": "wSzRgg",
+    "injectedSourceFilesMatched": 8,
+    "wholePhoneBundleBytesProven": false,
+    "runtimeAppIdProvenByThisReview": false
+  },
+  "archive": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r6-terrain-wait-20261019",
+    "rawManifest": "archive-manifest.private.json",
+    "rawManifestSha256": "8abd9ab52221761a63874276f8720ef7117731ca52a1a22f5fc40856e16f3f2a",
+    "rawFiles": 23,
+    "rawBytes": 5108470,
+    "derivedManifest": "derived-manifest.private.json",
+    "derivedManifestSha256": "385303a398c6d7d20f10678792b63b1f0c76c7179e46c94366068168e7ee6573",
+    "derivedFiles": 36,
+    "derivedBytes": 34995038,
+    "additionalTransportSourceBinding": "transport-source-binding.private.json",
+    "transportSourceSha256": "ecbe111113ede6df21e2f1e41b1cd98ebfc534df5eb21dd8df760e8d72e6732d"
+  },
+  "video": {
+    "file": "recording-1792393438335.mp4",
+    "sha256": "1cc96e41de65e1c5a179a0986a4cf04d2f1de54c65e31f3a86d77ad946a128e6",
+    "bytes": 2066992,
+    "width": 1080,
+    "height": 2376,
+    "encodedFrames": 268,
+    "containerDurationSeconds": 16.013711,
+    "timeBase": "1/90000",
+    "firstTwoPtsSeconds": [0, 3.4596],
+    "lastEncodedFramePtsSeconds": 14.391378,
+    "reviewPngs": 28,
+    "distinctReviewedEncodedFrames": 25,
+    "physicalFps": null,
+    "ptsToPhoneOrHostClockCalibration": "UNKNOWN"
+  },
+  "actualAction": {
+    "kind": "one guarded 1400ms horizontal swipe and bounded recording",
+    "rootReportedInputNormalized": { "from": [0.78, 0.31], "to": [0.12, 0.31] },
+    "inputIsForEvidenceOnlyNotReusableCoordinates": true,
+    "preexistingTerrainVisible": true,
+    "terrainLayerChecked": true,
+    "cloudLayerSelected": true,
+    "cloudData": "selected date unavailable",
+    "annualLightSelected": false,
+    "cacheReset": false
+  },
+  "visual": {
+    "oldUsefulCoverageRetained": "observed in reviewed frames",
+    "newAreaGap": "right side beyond sharp vertical edge of old terrain; base map remained visible",
+    "clearGapObservedAtPtsSeconds": [4.495322, 4.987222, 5.003911, 6.012011, 7.006533, 7.601267, 7.621067, 7.636556],
+    "lastGapFrame": { "index": 242, "pts": 687290, "ptsSeconds": 7.636556, "file": "frames-boundary/frame-009.png" },
+    "adjacentFirstNewCoverageFrame": { "index": 243, "pts": 688743, "ptsSeconds": 7.6527, "file": "frames-boundary/frame-010.png" },
+    "newCoveragePtsIntervalSeconds": { "lowerExclusive": 7.636556, "upperInclusive": 7.6527 },
+    "reviewedGapSamplesSpanSeconds": 3.141234,
+    "exactContinuousBlankDurationSeconds": null,
+    "exactPhysicalInputToPresentationSeconds": null,
+    "firstReadableActionMarker": { "index": 2, "ptsSeconds": 3.489067, "label": "TW 1 action A1 0ms", "isPhysicalInputClock": false },
+    "readableFinalMarkerBy": { "index": 254, "ptsSeconds": 9.015556, "label": "TW 7 native_ack A5 4130ms", "newCoverageAlreadyVisible": true },
+    "readyMarkerBeforeVisibleGap": "UNKNOWN_NOTIFICATION_OCCLUSION",
+    "quality100LabelProvesPresentation": false,
+    "fullRequiredDetailAndRegistrationAccepted": false
+  },
+  "bridge": {
+    "metadata": { "status": 200, "elapsedMs": 2195, "hostFinishedAt": "2026-10-19T07:03:47.641Z", "envelopeState": "PARTIAL", "terrainState": "AVAILABLE", "imageBytes": 314570 },
+    "asset": { "status": 200, "elapsedMs": 37, "hostFinishedAt": "2026-10-19T07:03:47.747Z", "responseBytes": 314570 },
+    "elapsedMeaning": "host performance.now: bridge request handler to ServerResponse.finish; not phone receipt or physical presentation",
+    "exactRequestAssetAssociation": "UNKNOWN_ANONYMOUS_RING",
+    "requestWindowLevelPublicationAssociation": "UNKNOWN_FOR_THIS_SAMPLE",
+    "crossClockSubtractionValid": false
+  },
+  "unknown": [
+    "exact task-only phone Storage receipt has not been legally exported",
+    "metadata attempt, file_acquire cache, intermediate file_ready and native current/cleanup fields",
+    "complete observer clock/overflow validation",
+    "cold source versus prepared final-product selection",
+    "JS file, OS filesystem and CDN cache condition",
+    "first useful new coverage relation to metadata_returned/file_ready/native_ack",
+    "full required detail, precise native registration, continuous gestures and resource return"
+  ],
+  "decision": {
+    "requestSideOrPostFileReadySide": "UNKNOWN",
+    "productionOptimizationChosen": false,
+    "doNotInfer": ["2195ms is whole phone wait", "4130-2195-37 is client cost", "native_ack is visible completion", "quality100 label is rendered coverage", "missing intermediate marker is missing work"],
+    "nextObservation": [
+      "If the same official phone runtime read boundary recovers, export only starward.task.terrain-wait.v1; do not resend an input just to export it.",
+      "If correlation remains unknown, at the next already necessary coherent candidate batch repair only diagnostic marker occlusion, then one representative action under explicit cache conditions; no production repair selected from current evidence.",
+      "Use an actually working target Network/time relation if readable marker order still cannot distinguish the sides; do not repeatedly record unchanged uncertainty."
+    ]
+  },
+  "operations": {
+    "deviceOrIdeOperations": false,
+    "serviceOrStorageOperations": false,
+    "buildOrProductionSourceChanges": false,
+    "planOrHandoffEdits": false,
+    "backgroundProcessesLeft": false
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "starward.task.terrain-http-identity-review.v1",
+  "date": "2026-10-19",
+  "reviewer": "independent-subagent-review_terrain_receipt_boundary",
+  "status": "NO_P1_P2__TASK_RECEIPT_PREPARED__RUNTIME_UNVERIFIED",
+  "findings": [],
+  "p1Count": 0,
+  "p2Count": 0,
+  "reviewedReceiptVersion": "starward.task.terrain-http-identity.v1",
+  "reviewedFiles": [
+    { "path": "TERRAIN-HTTP-IDENTITY-RECEIPT.md", "bytes": 9142, "sha256": "e14f34cf462835ee905088e0f6d9bb19b5a1c583f28c9aa0596cd066c8ddc49c" },
+    { "path": "TERRAIN-HTTP-IDENTITY-RECEIPT.json", "bytes": 3971, "sha256": "2b707350331b4f5536576563d2a1e7c2f2319180c81f4793b98a4251e244e2b0" },
+    { "path": "TERRAIN-HTTP-IDENTITY-BRIDGE.patch", "bytes": 5544, "sha256": "69328dc9b0ee62fc9bd794a2672d9614af10cba80e14d6d98d8bfce865d074d1" },
+    { "path": "scripts/r17-terrain-identity-receipt.mjs", "bytes": 5731, "sha256": "57c48c85d65ecacda36dc620b87c866ff56bd4c709d235f9034467899628ae1d" },
+    { "path": "scripts/r17-terrain-identity-receipt.test.mjs", "bytes": 6908, "sha256": "785698bb4feb7f78ca08224887d528d100848e2b3480accbe8fad5316adf6a2b" },
+    { "path": "tmp/r17-normal-phone-bridge.mjs", "bytes": 8404, "sha256": "0e13eb90a30628fd8756aea8a7462d86923bbe645d6f899052276bdfc6b2d073" }
+  ],
+  "bridgeBefore": { "scope": "frozen-r6-transport-source", "bytes": 8382, "sha256": "ecbe111113ede6df21e2f1e41b1cd98ebfc534df5eb21dd8df760e8d72e6732d" },
+  "productionOwners": [
+    { "path": "workers/miniapp-api/src/terrain-request.ts", "sha256": "70b6d071a086ba167fc3b10701abc4c6b3e8462cee2f150cad82c01fff7ca96a" },
+    { "path": "workers/miniapp-api/src/controller.ts", "sha256": "c6e6a7bfdd7d8a8f9f7375a89adfb376612ccc57b2556775ca898705e00c05fe" },
+    { "path": "workers/miniapp-api/src/terrain-service.ts", "sha256": "f6751be073ac068407067185a7903e62121ff51d7e43bc05ce3d33ab05889370" },
+    { "path": "workers/miniapp-api/src/miniapp-service.ts", "sha256": "c1907caf5ad0e0e6a781b2fd2309f99c0742d3fac584833b50a77a75c8e023e7" }
+  ],
+  "reviewedBoundaries": [
+    "controller query parsing and production validation/normalization/key order",
+    "metadata declaration versus cache inference",
+    "same-stream asset SHA, backpressure and pipeline error/cancellation behavior",
+    "64KiB diagnostic clone cap and non-awaited tee cancel promise",
+    "per-handler facts and out-of-order completion",
+    "unchanged route/auth/method/header/H3/collector policies",
+    "privacy allowlist and fixed error/state vocabulary",
+    "response completion versus phone receipt/adoption/presentation"
+  ],
+  "checks": {
+    "focusedExistingTests": { "passed": 6, "failed": 0, "command": "node tools/run-node.cjs --import tsx --test .codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.test.mjs" },
+    "bridgeNodeCheckExit": 0,
+    "supplementalPureFixture": {
+      "question": "Does over-limit clone processing resolve before the original response consumer starts?",
+      "bodyBytes": 65537,
+      "result": "OVER_LIMIT returned; original body then read all 65537 bytes",
+      "passed": true,
+      "serverStarted": false,
+      "persistentTestFileAdded": false
+    }
+  },
+  "nonblockingLimits": [
+    "64KiB is a diagnostic payload cap, not a total process-memory bound; tee/chunk/JSON temporaries remain",
+    "metadata forwarding still waits for diagnostic reading and includes observer cost",
+    "SPOT bundled publication may not share a dynamic normalized request key; proof mismatch remains UNKNOWN",
+    "finish-only ring may omit cancelled requests and overflow after 32 rows",
+    "shared asset matches do not identify which metadata call triggered the download",
+    "COMPLETE_RESPONSE requires GET/200/path/imageSHA/bytes checks and does not prove phone adoption",
+    "review covers only the listed bridge version, not subsequent root collector/rotation edits"
+  ],
+  "changesMade": ["TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.md", "TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json"],
+  "helperTestBridgeOrProductionChanged": false,
+  "coordinatorDocumentsChanged": false,
+  "httpDeviceAdbIdeServiceFeedbackBuildPreviewGitOperations": false,
+  "runtimeActivation": "UNVERIFIED",
+  "phoneAdoptionPresentation": "UNVERIFIED",
+  "oldR6ResponseAssociation": "UNKNOWN",
+  "remainingGoalObligationsRetained": true
+}

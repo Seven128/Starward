@@ -1,0 +1,69 @@
+{
+  "schema": "starward-r4-ruler-independent-output-result-v1",
+  "date": "2026-10-19",
+  "scope": "development_feedback_only",
+  "candidate": {
+    "applicationSha256": "f5a7c85e78d0fe0aa8a07dd29bcccd76c97326699f12ac7a07837fca5440ebb8",
+    "buildSourceSha256": "d613ace6f658eb0eb086558333e3e0473b74123cf54ab0013f7695bdec316a70",
+    "buildGeneration": 27,
+    "feedbackGeneration": 1,
+    "deliveryBinding": "Root supplied official preview success and visible unique-label binding; reviewer did not inspect or mutate session state"
+  },
+  "verdict": "FAILED_NATIVE_ENTRY_COHERENCE",
+  "cases": {
+    "firstEntry": "failed_wrong_window_then_bidirectional_tick_drift",
+    "19To18": "observed_coherent_in_2fps_and_10fps_sampled_scope",
+    "18To17": "observed_coherent_in_2fps_and_10fps_sampled_scope",
+    "cancelTo19": "observed_coherent_in_sampled_scope_and_direct_last_encoded_frame"
+  },
+  "entry": {
+    "firstVisiblePanelSourceFrame": 10,
+    "firstVisiblePanelPtsSeconds": 4.447133,
+    "firstVisibleFields": "2026-10-19 04:30:00",
+    "wrongRulerLabels": ["14:00", "16:00", "18:00", "20:00", "22:00"],
+    "axisCenterRawPx": 540,
+    "tickExamples": [
+      {"sourcePtsSeconds": 4.604133, "selected0430TickCenterRawPx": 655},
+      {"sourcePtsSeconds": 4.655767, "selected0430TickCenterRawPx": 537.5, "meaning": "brief axis crossing, not stable alignment"},
+      {"sourcePtsSeconds": 4.706511, "selected0430TickCenterRawPx": 502.5},
+      {"sourcePtsSeconds": 5.023089, "selected0430TickCenterRawPx": 521.5},
+      {"sourcePtsSeconds": 5.039422, "selected0430TickCenterRawPx": 561.5},
+      {"sourcePtsSeconds": 5.206578, "selected0430TickCenterRawPx": 576.5},
+      {"sourcePtsSeconds": 5.2312, "selected0430TickCenterRawPx": 539.5, "meaning": "last encoded frame; separate endpoint PNG corroborates eventual alignment"}
+    ],
+    "cause": "not established by pixels"
+  },
+  "endpoints": {
+    "dates": ["2026-10-19", "2026-10-18", "2026-10-17", "2026-10-19"],
+    "clock": "04:30:00",
+    "axisColoredBBoxRawPx": [539, 2051, 541, 2097],
+    "selected0430TickCentersRawPx": [539.5, 540, 540, 540],
+    "meaning": "approximate encoded-raster centers; preview text-group center is not the tick position"
+  },
+  "archive": {
+    "path": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r4-ruler-motion-archive-20261019",
+    "originalFiles": 24,
+    "originalBytes": 8260538,
+    "originalAndCopySha256ReadbackEqual": true,
+    "sidecarsMatchArchivedPng": 10,
+    "manifestSha256": "b2be2b094a956abd1932b95c0a2b8d7273fd56c98007d3603d031fd851a9d6bd",
+    "samplesManifestSha256": "cd67a7b63497c485384e6b6576ef25d3ba3832fe36af46908c51847fc24b08db",
+    "pixelMeasurementsSha256": "1f00b21bd6e1d8e56e5a689b6074b01c67405788f06def6e88921af427e9a9d2",
+    "reviewJsonSha256": "ac3aa9d4a4663631696c07909ca6c0d64e0042faff8c75a99c05695f325d2c51",
+    "reviewMarkdownSha256": "c4985057e4f83220b27707a28cc69f11483a99b0da1d6b1b9e193b60700b6a1b",
+    "actuallyViewedImages": 32,
+    "originalsAndOlderBatchesRetained": true
+  },
+  "unverified": [
+    "touch, drag, regrab, resize and lifecycle combinations",
+    "native transitionend and same-batch geometry events",
+    "physical FPS and precise transition duration",
+    "every physically presented frame and full design conformance",
+    "A input-to-first-accepted association",
+    "B normal Play allocation, paused drain and exit",
+    "terrain file/native completion and all other Goal obligations"
+  ],
+  "sessionAccessOrRuntimeMutation": false,
+  "gen26OutcomeChanged": false,
+  "settledCandidateAcceptance": false
+}

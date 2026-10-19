@@ -1,0 +1,935 @@
+{
+  "schemaVersion": "starward-r17-a1-r7-entry-review-v1",
+  "createdAt": "2026-10-19T07:59:22.307Z",
+  "reviewer": "review_r7_entry_native_result",
+  "evidenceMode": "development_feedback_only",
+  "verdict": "FAILED_NATIVE_ENTRY_POSITION_COHERENCE",
+  "candidate": {
+    "appSha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+    "buildSourceSha256": "528b3d8a99ca4c87958e10b01ac7af7040b031e5270e601e61bcf2b3949cf755",
+    "bundleFiles": 337,
+    "bundleBytes": 4995907,
+    "buildGeneration": 27,
+    "feedbackGeneration": 1,
+    "reviewRevision": 7,
+    "labelActuallyViewed": "R17 正常Sky关联 A1 r7",
+    "officialSuccessReceiptFrozen": true,
+    "feedbackRun": "RSqzvS",
+    "preparedSnapshot": "generation-000001-VZiklD/project",
+    "boundSession": "Y554SA",
+    "retiredPrebinding": "z9opaW",
+    "runtimeAppIdReadback": false,
+    "fullPhoneBundleReadback": false
+  },
+  "decision": "A fresh post-reveal hidden-by-props native animated:false move and a current real offset admission occurred. Position coherence was lost after the next ticksVisible declaration, with a native scroll event reporting zero and first visible ticks/final pixels showing noon while fields still show 04:30. Platform-internal trigger remains unknown.",
+  "video": {
+    "source": "bound/recording-1792395938901.mp4",
+    "codec": "h264",
+    "width": 1080,
+    "height": 2376,
+    "frames": 25,
+    "timeBase": "1/90000 seconds",
+    "containerDurationSeconds": 13.321,
+    "lastFramePtsSeconds": 9.960156,
+    "indexConvention": "zero-based",
+    "requestedRecordSeconds": 15,
+    "decodedAllFramesWithoutTrimOrPtsReset": true,
+    "ffmpegVersion": "9.0.2-essentials_build-www.gyan.dev",
+    "decodeArguments": [
+      "-copyts",
+      "-map",
+      "0:v:0",
+      "-fps_mode",
+      "passthrough",
+      "-enc_time_base",
+      "1:90000",
+      "-frame_pts",
+      "1"
+    ],
+    "framePts": [
+      {
+        "index": 0,
+        "pts": 0,
+        "seconds": "0.000000"
+      },
+      {
+        "index": 1,
+        "pts": 352455,
+        "seconds": "3.916167"
+      },
+      {
+        "index": 2,
+        "pts": 443588,
+        "seconds": "4.928756"
+      },
+      {
+        "index": 3,
+        "pts": 457507,
+        "seconds": "5.083411"
+      },
+      {
+        "index": 4,
+        "pts": 470333,
+        "seconds": "5.225922"
+      },
+      {
+        "index": 5,
+        "pts": 503158,
+        "seconds": "5.590644"
+      },
+      {
+        "index": 6,
+        "pts": 505621,
+        "seconds": "5.618011"
+      },
+      {
+        "index": 7,
+        "pts": 514009,
+        "seconds": "5.711211"
+      },
+      {
+        "index": 8,
+        "pts": 515380,
+        "seconds": "5.726444"
+      },
+      {
+        "index": 9,
+        "pts": 516732,
+        "seconds": "5.741467"
+      },
+      {
+        "index": 10,
+        "pts": 518339,
+        "seconds": "5.759322"
+      },
+      {
+        "index": 11,
+        "pts": 519816,
+        "seconds": "5.775733"
+      },
+      {
+        "index": 12,
+        "pts": 521354,
+        "seconds": "5.792822"
+      },
+      {
+        "index": 13,
+        "pts": 522664,
+        "seconds": "5.807378"
+      },
+      {
+        "index": 14,
+        "pts": 524348,
+        "seconds": "5.826089"
+      },
+      {
+        "index": 15,
+        "pts": 525756,
+        "seconds": "5.841733"
+      },
+      {
+        "index": 16,
+        "pts": 527288,
+        "seconds": "5.858756"
+      },
+      {
+        "index": 17,
+        "pts": 528820,
+        "seconds": "5.875778"
+      },
+      {
+        "index": 18,
+        "pts": 530312,
+        "seconds": "5.892356"
+      },
+      {
+        "index": 19,
+        "pts": 531785,
+        "seconds": "5.908722"
+      },
+      {
+        "index": 20,
+        "pts": 534947,
+        "seconds": "5.943856"
+      },
+      {
+        "index": 21,
+        "pts": 583725,
+        "seconds": "6.485833"
+      },
+      {
+        "index": 22,
+        "pts": 591585,
+        "seconds": "6.573167"
+      },
+      {
+        "index": 23,
+        "pts": 593938,
+        "seconds": "6.599311"
+      },
+      {
+        "index": 24,
+        "pts": 896414,
+        "seconds": "9.960156"
+      }
+    ],
+    "firstFaintFieldSample": {
+      "index": 7,
+      "ptsSeconds": "5.711211"
+    },
+    "firstClearlyReadablePanelSample": {
+      "index": 8,
+      "ptsSeconds": "5.726444",
+      "date": "2026-10-19",
+      "time": "04:30:00",
+      "ticksVisibleInPixels": false
+    },
+    "recoverySamples": {
+      "firstIndex": 8,
+      "lastIndex": 20,
+      "lastPtsSeconds": "5.943856",
+      "axisOrTicksVisible": false,
+      "currentTimeAndPositionStateTextOverlap": true,
+      "sourceVerifiedPositionStateCopy": "时间尺定位中，重试"
+    },
+    "firstClearlyVisibleTicks": {
+      "index": 21,
+      "ptsSeconds": "6.485833",
+      "currentTime": "04:30:00",
+      "actualUnderAxisLabel": "12:00",
+      "rightLabels": [
+        "14:00",
+        "16:00"
+      ],
+      "correctSelected0430TickVisible": false
+    },
+    "tail": {
+      "indices": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "allWrongNoonWindow": true,
+      "lastGapSeconds": 3.360844,
+      "continuousPhysicalStabilityClaim": false,
+      "laterAnimatedCorrectionSeen": false
+    },
+    "terminal": {
+      "file": "bound/screen-8335fb95-b6be-4f49-8d0a-41d6e7fce8d7.png",
+      "capturedAt": "2026-10-19T07:45:38.901Z",
+      "fieldsTime": "04:30:00",
+      "underAxisLabel": "12:00",
+      "stillWrong": true
+    },
+    "timingLimits": [
+      "Encoded frames/mean frame rate are not physical FPS",
+      "Filename/capturedAt is not recording start",
+      "No calibration anchor between video PTS and phone Date.now; no cross-clock latency computed"
+    ]
+  },
+  "protocol": {
+    "strictActualDispatcherPass": true,
+    "schemaVersion": "starward-r17-phone-probe-v3",
+    "caseKey": "wide-time",
+    "metricsPrettyBytes": 33694,
+    "compactBodyBytes": 15846,
+    "bodyBudgetBytes": 32768,
+    "rulerSchema": "starward-r17-ruler-entry-v2",
+    "observed": 98,
+    "retained": 98,
+    "dropped": 0,
+    "overflow": false,
+    "exportOmitted": 0,
+    "rejectedWindowEvents": 0,
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 115,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "window": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 14011,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "sealRelativeMs": 15011,
+    "playCalls": 0,
+    "pauseCalls": 0,
+    "terminalExportCalls": 0,
+    "clockMeaning": "Phone wall-elapsed milliseconds relative to ring start; not monotonic guarantee or physical presentation"
+  },
+  "identity": {
+    "owners": [
+      1
+    ],
+    "rowsVersions": [
+      1
+    ],
+    "rowCounts": [
+      48
+    ],
+    "activeIndices": [
+      33
+    ],
+    "committedIndices": [
+      33
+    ],
+    "timeRanges": [
+      "1792296000000:1792380600000"
+    ]
+  },
+  "decisiveEvents": [
+    {
+      "seq": 22,
+      "code": 24,
+      "relativeMs": 87,
+      "wallMs": 1792395925198,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "props",
+      "owner": 1,
+      "rowsVersion": 1,
+      "rowCount": 48,
+      "activeIndex": 33,
+      "committedIndex": 33,
+      "selectionReady": 1,
+      "layoutReady": 1,
+      "preparing": 1,
+      "alignedRowsCurrent": 0,
+      "alignmentRequired": 1,
+      "ticksVisible": 0,
+      "positionFailed": 0,
+      "reducedMotion": 0,
+      "firstRowAt": 1792296000000,
+      "lastRowAt": 1792380600000
+    },
+    {
+      "seq": 25,
+      "code": 9,
+      "relativeMs": 343,
+      "wallMs": 1792395925454,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "measureResult",
+      "owner": 1,
+      "queryId": 2,
+      "rowsVersion": 1,
+      "current": 1,
+      "axisLeft": 191.5,
+      "axisWidth": 1,
+      "firstLeft": 184,
+      "firstWidth": 17,
+      "secondLeft": 201,
+      "secondWidth": 17,
+      "scrollLeft": 0
+    },
+    {
+      "seq": 26,
+      "code": 10,
+      "relativeMs": 344,
+      "wallMs": 1792395925455,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "projection",
+      "owner": 1,
+      "expectedRevision": 5,
+      "revision": 5,
+      "stepPx": 17,
+      "zeroOffsetPx": 0.5
+    },
+    {
+      "seq": 29,
+      "code": 25,
+      "relativeMs": 345,
+      "wallMs": 1792395925456,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "positionTarget",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 6,
+      "index": 33,
+      "left": 561.5,
+      "verify": 1,
+      "measured": 1,
+      "nativeRowsCurrent": 0
+    },
+    {
+      "seq": 34,
+      "code": 17,
+      "relativeMs": 470,
+      "wallMs": 1792395925581,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "nativeScrollToRequested",
+      "owner": 1,
+      "revision": 7,
+      "left": 561.5,
+      "animated": 0
+    },
+    {
+      "seq": 40,
+      "code": 32,
+      "relativeMs": 620,
+      "wallMs": 1792395925731,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "nativeOffsetReadReturned",
+      "owner": 1,
+      "expectedRevision": 7,
+      "revision": 7,
+      "current": 1,
+      "left": 561.4222412109375
+    },
+    {
+      "seq": 43,
+      "code": 27,
+      "relativeMs": 622,
+      "wallMs": 1792395925733,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "alignmentAdmitted",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 6,
+      "index": 33,
+      "left": 561.4222412109375
+    },
+    {
+      "seq": 46,
+      "code": 24,
+      "relativeMs": 659,
+      "wallMs": 1792395925770,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "props",
+      "owner": 1,
+      "rowsVersion": 1,
+      "rowCount": 48,
+      "activeIndex": 33,
+      "committedIndex": 33,
+      "selectionReady": 1,
+      "layoutReady": 1,
+      "preparing": 1,
+      "alignedRowsCurrent": 1,
+      "alignmentRequired": 0,
+      "ticksVisible": 1,
+      "positionFailed": 0,
+      "reducedMotion": 0,
+      "firstRowAt": 1792296000000,
+      "lastRowAt": 1792380600000
+    },
+    {
+      "seq": 55,
+      "code": 24,
+      "relativeMs": 682,
+      "wallMs": 1792395925793,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "props",
+      "owner": 1,
+      "rowsVersion": 1,
+      "rowCount": 48,
+      "activeIndex": 33,
+      "committedIndex": 33,
+      "selectionReady": 1,
+      "layoutReady": 0,
+      "preparing": 0,
+      "alignedRowsCurrent": 1,
+      "alignmentRequired": 1,
+      "ticksVisible": 0,
+      "positionFailed": 0,
+      "reducedMotion": 0,
+      "firstRowAt": 1792296000000,
+      "lastRowAt": 1792380600000
+    },
+    {
+      "seq": 57,
+      "code": 19,
+      "relativeMs": 720,
+      "wallMs": 1792395925831,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "onScrollBeforeGuard",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 8,
+      "scrollLeft": 0,
+      "disabled": 0,
+      "dragging": 0
+    },
+    {
+      "seq": 58,
+      "code": 5,
+      "relativeMs": 796,
+      "wallMs": 1792395925907,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "motionPhase",
+      "phase": 2,
+      "active": 1,
+      "present": 1,
+      "ready": 0,
+      "reducedMotion": 0
+    },
+    {
+      "seq": 59,
+      "code": 6,
+      "relativeMs": 1009,
+      "wallMs": 1792395926120,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "motionFinish",
+      "phase": 2,
+      "active": 1,
+      "ready": 0
+    },
+    {
+      "seq": 60,
+      "code": 6,
+      "relativeMs": 1010,
+      "wallMs": 1792395926121,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "motionFinish",
+      "phase": 2,
+      "active": 1,
+      "ready": 0
+    },
+    {
+      "seq": 71,
+      "code": 24,
+      "relativeMs": 1032,
+      "wallMs": 1792395926143,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "props",
+      "owner": 1,
+      "rowsVersion": 1,
+      "rowCount": 48,
+      "activeIndex": 33,
+      "committedIndex": 33,
+      "selectionReady": 1,
+      "layoutReady": 1,
+      "preparing": 0,
+      "alignedRowsCurrent": 1,
+      "alignmentRequired": 1,
+      "ticksVisible": 0,
+      "positionFailed": 0,
+      "reducedMotion": 0,
+      "firstRowAt": 1792296000000,
+      "lastRowAt": 1792380600000
+    },
+    {
+      "seq": 74,
+      "code": 9,
+      "relativeMs": 1257,
+      "wallMs": 1792395926368,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "measureResult",
+      "owner": 1,
+      "queryId": 3,
+      "rowsVersion": 1,
+      "current": 1,
+      "axisLeft": 191.5,
+      "axisWidth": 1,
+      "firstLeft": 184,
+      "firstWidth": 17,
+      "secondLeft": 201,
+      "secondWidth": 17,
+      "scrollLeft": 0
+    },
+    {
+      "seq": 75,
+      "code": 10,
+      "relativeMs": 1257,
+      "wallMs": 1792395926368,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "projection",
+      "owner": 1,
+      "expectedRevision": 12,
+      "revision": 12,
+      "stepPx": 17,
+      "zeroOffsetPx": 0.5
+    },
+    {
+      "seq": 78,
+      "code": 25,
+      "relativeMs": 1259,
+      "wallMs": 1792395926370,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "positionTarget",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 11,
+      "index": 33,
+      "left": 561.5,
+      "verify": 1,
+      "measured": 1,
+      "nativeRowsCurrent": 0
+    },
+    {
+      "seq": 84,
+      "code": 17,
+      "relativeMs": 1401,
+      "wallMs": 1792395926512,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "nativeScrollToRequested",
+      "owner": 1,
+      "revision": 13,
+      "left": 561.5,
+      "animated": 0
+    },
+    {
+      "seq": 90,
+      "code": 32,
+      "relativeMs": 1527,
+      "wallMs": 1792395926638,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "nativeOffsetReadReturned",
+      "owner": 1,
+      "expectedRevision": 13,
+      "revision": 13,
+      "current": 1,
+      "left": 561.4222412109375
+    },
+    {
+      "seq": 91,
+      "code": 30,
+      "relativeMs": 1527,
+      "wallMs": 1792395926638,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "pendingReadReturned",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 11,
+      "current": 1,
+      "left": 561.4222412109375
+    },
+    {
+      "seq": 92,
+      "code": 26,
+      "relativeMs": 1527,
+      "wallMs": 1792395926638,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "positionObservedBeforeGuard",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 11,
+      "pendingRevision": 11,
+      "pendingIndex": 33,
+      "rowsCurrent": 1,
+      "nativeRowsCurrent": 1,
+      "visible": 1,
+      "selectionReady": 1,
+      "interactionAllowed": 1,
+      "dragging": 0,
+      "left": 561.4222412109375,
+      "finished": 0
+    },
+    {
+      "seq": 93,
+      "code": 27,
+      "relativeMs": 1527,
+      "wallMs": 1792395926638,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "alignmentAdmitted",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 11,
+      "index": 33,
+      "left": 561.4222412109375
+    },
+    {
+      "seq": 94,
+      "code": 24,
+      "relativeMs": 1554,
+      "wallMs": 1792395926665,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "props",
+      "owner": 1,
+      "rowsVersion": 1,
+      "rowCount": 48,
+      "activeIndex": 33,
+      "committedIndex": 33,
+      "selectionReady": 1,
+      "layoutReady": 1,
+      "preparing": 0,
+      "alignedRowsCurrent": 1,
+      "alignmentRequired": 0,
+      "ticksVisible": 1,
+      "positionFailed": 0,
+      "reducedMotion": 0,
+      "firstRowAt": 1792296000000,
+      "lastRowAt": 1792380600000
+    },
+    {
+      "seq": 95,
+      "code": 32,
+      "relativeMs": 1596,
+      "wallMs": 1792395926707,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "nativeOffsetReadReturned",
+      "owner": 1,
+      "expectedRevision": 13,
+      "revision": 13,
+      "current": 1,
+      "left": 561.4222412109375
+    },
+    {
+      "seq": 96,
+      "code": 26,
+      "relativeMs": 1596,
+      "wallMs": 1792395926707,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "positionObservedBeforeGuard",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 11,
+      "pendingRevision": null,
+      "pendingIndex": null,
+      "rowsCurrent": 0,
+      "nativeRowsCurrent": 0,
+      "visible": 1,
+      "selectionReady": 1,
+      "interactionAllowed": 1,
+      "dragging": 0,
+      "left": 561.4222412109375,
+      "finished": 0
+    },
+    {
+      "seq": 97,
+      "code": 19,
+      "relativeMs": 1597,
+      "wallMs": 1792395926708,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "onScrollBeforeGuard",
+      "owner": 1,
+      "rowsVersion": 1,
+      "revision": 11,
+      "scrollLeft": 0,
+      "disabled": 0,
+      "dragging": 0
+    },
+    {
+      "seq": 98,
+      "code": 23,
+      "relativeMs": 15011,
+      "wallMs": 1792395940122,
+      "epoch": 0,
+      "windowId": 1,
+      "event": "stop",
+      "reason": 0
+    }
+  ],
+  "findings": [
+    {
+      "id": "r7-native-entry-position-coherence",
+      "status": "failed",
+      "evidence": [
+        "fresh endpoint geometry at 1257 ms",
+        "real native animated:false request at 1401 ms",
+        "current offset/admission 561.4222412109375 at 1527 ms",
+        "ticksVisible props at 1554 ms",
+        "current offset read still 561.4222412109375 at 1596 ms with pending null",
+        "native scroll event offset zero at 1597 ms",
+        "first visible tick frame 21 noon window",
+        "same wrong tail samples and independent terminal PNG"
+      ],
+      "limits": [
+        "ticksVisible=0/1 are declared React props, not a native computed-style readback",
+        "No post-1597 public offset query was recorded; do not transfer r6 second-query fact to r7",
+        "seq96 rowsCurrent/nativeRowsCurrent=0 compares absent pending rows; it is not proof of a row/native node replacement",
+        "No inferred video-to-Date.now alignment"
+      ]
+    },
+    {
+      "id": "r7-position-state-current-time-overlap",
+      "status": "observed-visible-defect",
+      "sampleIndices": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "scope": "temporary visible no-tick recovery state",
+      "evidence": "Actual recovery Button text overlaps current 04:30:00; source places current label and absolute inset-zero position-state Button in same ruler area"
+    }
+  ],
+  "sourceAssociation": {
+    "mapReportSha256": "127036c4b2f1be50df11e33735d13ddf0da4e324227489797d4df3b3a6bcf9cb",
+    "skyMapSha256": "9bd47b6199f5995cd3c911da6a16c3936f29cf796e6e61590b6547459c010f33",
+    "skyJavascriptSha256": "25a659943f6dab0d348dcf10667e45443d414e6c48f3f95c0e34427f5aea3d4a",
+    "sourceContentsExact": [
+      {
+        "file": "spot-sky-page.tsx",
+        "mapSource": "webpack://@starward/wechat-miniapp/._src_features_sky_spot-sky-page.tsx",
+        "bytes": 250196,
+        "sha256": "daa66cfda05adf3c493841e9589f431a7c92cc0927bd3409c54444dc04628f8a",
+        "byteExact": true
+      },
+      {
+        "file": "orientation-ruler-layout.ts",
+        "mapSource": "webpack://@starward/wechat-miniapp/._src_features_sky_orientation-ruler-layout.ts",
+        "bytes": 4587,
+        "sha256": "003dec020883ac1a8465e3793f4aed6229eeff91ebcb408dbc8e1166e457041d",
+        "byteExact": true
+      },
+      {
+        "file": "r17-ruler-scroll-position.ts",
+        "mapSource": "webpack://@starward/wechat-miniapp/._src_features_sky_r17-ruler-scroll-position.ts",
+        "bytes": 4666,
+        "sha256": "7d4302fbed650d3971a4e44fd45537e1f221e02066458b26e53ef3ebfb6e6cba",
+        "byteExact": true
+      },
+      {
+        "file": "r17-ruler-entry-runtime.ts",
+        "mapSource": "webpack://@starward/wechat-miniapp/._src_features_sky_r17-ruler-entry-runtime.ts",
+        "bytes": 3616,
+        "sha256": "b772b6374f6b561bfa245fbeac805bd5fc71011603dfbced7bdeea1bcc4238f0",
+        "byteExact": true
+      },
+      {
+        "file": "sky-overlay-motion.tsx",
+        "mapSource": "webpack://@starward/wechat-miniapp/._src_features_sky_sky-overlay-motion.tsx",
+        "bytes": 6119,
+        "sha256": "250c0d08ac0db4932ba6a3e90038f53573d43370462c244ce502c6fd638ea2e7",
+        "byteExact": true
+      },
+      {
+        "file": "r17-phone-probe-controls.tsx",
+        "mapSource": "webpack://@starward/wechat-miniapp/._src_features_sky_r17-phone-probe-controls.tsx",
+        "bytes": 13588,
+        "sha256": "dbf440d496854dc29cb28be89b4babf6b487b4e9da6224140c173f25d3a112c3",
+        "byteExact": true
+      }
+    ],
+    "rawSourceFilesFrozen": 12,
+    "currentNativeAndLayoutOwnersInspected": true,
+    "postAdmissionFeedbackBoundary": "observePosition clears pending after admission. Idle onScroll reads only a current matching pending target and does not revoke or re-read a later zero event without pending.",
+    "weChatRepackCoordinatesInterchangeable": false
+  },
+  "adoptedReference": {
+    "node": "5385664345158066168",
+    "sha256": "4c6cfc021e5f3c02db4036eab437fe64d25f57c8adbd49864a755ce598345c79",
+    "frozen": "adopted/stitch-5385664345158066168.html",
+    "sourceSemanticsInspected": [
+      "six fields",
+      "bounded current time",
+      "repeat owner cleanup",
+      "explicit apply/cancel",
+      "center .76 to 1 scale/fade final override 180ms"
+    ],
+    "originalAdoptedPngAvailable": false,
+    "substituteGenerated": false,
+    "fullVisualConformanceClaim": false
+  },
+  "minimumNextObservation": {
+    "question": "Which actually installed native/render update fails to preserve the current offset between post-reveal admission and first visible ticks?",
+    "use": "Current same-candidate valid ordinary phone debug route",
+    "read": "Actual installed ScrollView/track and relevant ancestor identity/structure, visible style, rects and scroll offset around this visibility update",
+    "limits": "If public channel cannot supply the necessary identity/style, retain that capability gap. Use only a single-variable native primitive control that can distinguish the remaining explanations; do not use another hook-model adjacent fix, fixed waiting, repeated unchanged ring, or CPU profile as substitute."
+  },
+  "unknown": [
+    "specific visibility/transform/node-change/platform reset trigger",
+    "native node identity through the update",
+    "actual native computed-style/readback and composition commit",
+    "physical presentation times",
+    "all non-entry obligations remain with their own evidence owner"
+  ],
+  "archive": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r7-entry-motion-trace-archive-20261019",
+    "groups": {
+      "manifest.private.json": {
+        "files": 21,
+        "bytes": 2751933,
+        "manifestBytes": 8473,
+        "sha256": "043d00a70d47cc5b328930f2712bb04caa958259db1c089cbdc9d8f876dae0a0",
+        "allCopiesReadback": true
+      },
+      "source-manifest.private.json": {
+        "files": 12,
+        "bytes": 3628104,
+        "manifestBytes": 5631,
+        "sha256": "e62c49771c2225787efc3d20e410fd6bf479a0e61bf520e60da332769110e85e",
+        "allCopiesReadback": true
+      },
+      "protocol-manifest.private.json": {
+        "files": 9,
+        "bytes": 86796,
+        "manifestBytes": 3924,
+        "sha256": "2be14473b0847b6c72d3a7eb7e9eb7b114881b0bd1d7428c0c028af40219e222",
+        "allCopiesReadback": true
+      },
+      "references-manifest.private.json": {
+        "files": 4,
+        "bytes": 187731,
+        "manifestBytes": 1528,
+        "sha256": "e856c7bce3450f8a6b9acb5a6681c7cab4c357bf76c1922aabaf917678abb672",
+        "allCopiesReadback": true
+      },
+      "samples-manifest.private.json": {
+        "files": 39,
+        "bytes": 10843186,
+        "manifestBytes": 6504,
+        "sha256": "e4f6ae138e7dc43a5f2db56883eada9d66297634abab957430a63a23ac4d1599",
+        "allCopiesReadback": true
+      },
+      "review-tools-manifest.private.json": {
+        "files": 5,
+        "bytes": 16475,
+        "manifestBytes": 1072,
+        "sha256": "9b5c0556a6eaaf3051e87c1585c9557a20045af77cc511f9cd1841ad13c5286b",
+        "allCopiesReadback": true
+      }
+    },
+    "sourceSidecarsExact": 3,
+    "originalsPreserved": true,
+    "allFrozenCopiesReadbackBeforeReport": true
+  },
+  "actions": {
+    "filesOnly": true,
+    "productionCodeChanged": false,
+    "deviceOrAdb": false,
+    "ide": false,
+    "service": false,
+    "feedbackOrSessionMutation": false,
+    "buildOrPreview": false,
+    "gitCommit": false,
+    "coordinatorDocsChanged": false,
+    "scenePlanRereview": false,
+    "dependencyInstalled": false
+  },
+  "toolingNote": "Default Python had no PIL; reused bundled Python/Pillow after load_workspace_dependencies. No package downloaded. FFmpeg only warned about non-video zero-duration data streams.",
+  "remainingScope": "This sample does not certify r7 cross-day/cancel, drag/inertia/regrab, required hide/resize, Android/iOS generality, final candidate or full Goal. It does not change the separate A/B/Terrain owners or prior evidence scope."
+}

@@ -1,6 +1,6 @@
 # Starward 收口任务索引
 
-当前阶段：用户已在接手对话明确继续完整Goal，Goal按[完整正文](GOAL-OBJECTIVE.md)创建并active、无token预算。沿最新方案持续实施，原对话的paused与实施前停点只保历史意义。唯一方案见[PLAN](PLAN.md)，候选、在途操作、阻塞及后续动作只由[HANDOFF](HANDOFF.md)拥有。不要从旧记录推断当前设备、预览或服务状态。
+2026-10-19已收到本接手对话的明确继续指令，完整正文Goal已创建为active、无预算、未完成；优先推进无需手机的工作。r10跨日pending白昼连续性及取消终态真机独审复用；普通Play/内存离线解读后仍保完整B缺口。当前源码、任务成果交付、main/真实天气及设备状态以[HANDOFF](HANDOFF.md)为准，不由本索引重复拥有。原gen26仍UNKNOWN，手机依赖保持未验。唯一方案见[PLAN](PLAN.md)，可复制提示词见[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)。
 
 [Sky研究与实际基线](SKY-INTERACTION-RESEARCH.md)、[包含SAO的CPU样本](SKY-TIME-CPU-BASELINE.json)、[向量局部试验](SKY-VECTOR-RESEARCH.json)、[拖动边界](SKY-DRAG-BASELINE.json)、[几何窗口](SKY-TIME-WINDOW-PROBE.json)保留结论和限制。生产合批与独审见[R17审查](R17-INDEPENDENT-REVIEW.md)、[恒星集成](SKY-STELLAR-INTEGRATION.md)、[地景修复](R17-LANDSCAPE-REPAIR.md)、[稳定地形请求](OVERLAY-STABLE-WINDOW.md)；当前手机generation和剩余证据见HANDOFF。
 
@@ -36,7 +36,7 @@
 
 23. [恢复数据后的约4km地形实际服务样本](RESTORED-TERRAIN-SAMPLE.json)：粗档固定包不含所请求z12细档，首次3.926s、重复6ms；属于后续叠层性能责任，不能把恢复/API通过当真机优化已验收。
 
-24. [交接与恢复提示词](NEXT-CHAT-PROMPT.md)：供用户在新对话明确要求执行的接手文本；本接手对话已收到明确继续指令，完整Goal active、无预算。原实施前停止边界已解除，单纯读取文件仍不自行激活工作。当前事实仍只见HANDOFF。
+24. [交接与恢复提示词](NEXT-CHAT-PROMPT.md)：供用户在新对话明确要求执行的接手文本；本接手对话已收到明确继续指令，完整Goal无预算；实际工具状态见HANDOFF。原实施前停止边界已解除，单纯读取文件仍不自行激活工作。当前事实仍只见HANDOFF。
 
 25. [R17当前测试与夹具修复](R17-CURRENT-TESTS.md)、[同条件手机诊断构建](R17-PHONE-PROBE.md)、[有限地形细档发布](TERRAIN-HOTSPOT-PRODUCTS.md)、[Map静态分发适配](MAP-STATIC-ADAPTER.md)。本地检查、真实HTTP读回和目标手机结果保持各自证据范围。
 
@@ -52,7 +52,7 @@
 
 31. [Page/GL观察包](R17-PAGE-BRIDGE-OBSERVATION.md)、[generation20实际结果](R17-PAGE-BRIDGE-RESULT.md)：开启debug时Page回调未见积压，关闭debug后仍增长/退出；真实计量、窗口差异、失败暂停与视频未审范围分别保留。
 
-32. [当前真机分配/CPU采集路线](TARGET-HEAP-OBSERVATION-ROUTE.md)、[实际采集资格](PERFORMANCE-TOOL-QUALIFICATION.json)、[历史初始堆与第二次导出限制](R17-TARGET-HEAP-DIAGNOSIS.md)：已有有效Map分配/CPU样本，仍无heap差分或Sky根因。原始profile只在Git外，当前方法优化范围见HANDOFF。
+32. [当前真机分配/CPU采集路线](TARGET-HEAP-OBSERVATION-ROUTE.md)、[实际采集资格](PERFORMANCE-TOOL-QUALIFICATION.json)、[历史初始堆与第二次导出限制](R17-TARGET-HEAP-DIAGNOSIS.md)：历史有效Map分配/CPU资格保留；后续正常Sky有效allocation及双级映射见51，仍无heap差分/retainer或已证Sky泄漏根因。原始profile只在Git外，当前方法范围见HANDOFF。
 
 33. [H3同点照片隔离输入](H3-SAME-SITE-ISOLATED-INPUT.md)：真实拍摄字段/安全副本/同源adapter已备，实际Context owner拒绝不充分资料冒充FORMAL_SPOT；尚未激活或完成手机/正常发布链验收。
 
@@ -80,10 +80,39 @@
 
 45. [跨日预览手机证据](CROSS-DAY-PHONE-OBSERVATION.md)、[窗口恢复修复](SKY-RULER-WINDOW-RESTORE.md)及[独审](SKY-RULER-WINDOW-RESTORE-REVIEW.md)、[原生刻度换算](SKY-RULER-NATIVE-CADENCE.md)及[独审](SKY-RULER-NATIVE-CADENCE-REVIEW.md)：保原手机失败与修后目标缺口；离线组件/SDK/完整候选分别绑定，当前状态由HANDOFF拥有。
 
-46. [A1运行接入](R17-A1-RUNTIME-INTEGRATION.md)、[当前共享验证与提交范围](CURRENT-DELIVERY-VERIFICATION.md)：r2桌面实测、r3首次失败边界、本地完整检查与已修旧夹具分别记录；工具准备、源码提交和远端CI都不替代手机验收。
+46. [A1运行接入](R17-A1-RUNTIME-INTEGRATION.md)、[当前共享验证与提交范围](CURRENT-DELIVERY-VERIFICATION.md)：r10当前普通预览交付/绑定及尚未验证的新行为，r9历史实际播放/退休和2.0调试执行层、r8限域原生结果、r7有效采集/映射/退出分别记录；HEAD69401c09及两CI已通过，各批次软件/CI只保其范围。
 
 47. [剩余仓库交付核对](REMAINING-DELIVERY-AUDIT.md)：方法当前全文的局部独审、四组交付与隐私/引用范围；该文记录核对时快照，不拥有当前Git或设备状态。H3必要源材料后续保全见[既有准备owner](H3-PHONE-PREPARATION.md#清理前的源材料保全)，不借归档重发gen26。
 
+48. [r3正常Play关联及有限解释](R17-A1-R3-PLAY-RESULT.md)、[跨日/取消修复责任](SKY-RULER-CROSSDAY-FOLLOWUP.md)、[r4手机刻度独立输出复核](R17-A1-R4-RULER-RESULT.md)：这些记录形成时A缺latest输入、B缺有效Sky allocation；后续r6单输入及r7分配见49/51，旧缺口不再作为当前指令。r4跨日/取消有限改善、首次入场FAILED和四张终态不能覆盖过程的结论仍保留。
+
+49. [r6实际入场失败](R17-A1-R6-ENTRY-RESULT.md)、[r6最新单输入accepted](R17-A1-R6-MANUAL-RESULT.md)、[reveal修复独审](SKY-RULER-REVEAL-NATIVE-ADMISSION-REVIEW.md)、[r7完整候选核验](R17-NORMAL-R7-BUILD-REVIEW.md)与[r7再次原生失败](R17-A1-R7-ENTRY-RESULT.md)：r6单输入59ms软件accepted可复用，完整A仍欠；[native显示边界](NATIVE-RULER-VISIBILITY-BOUNDARY.md)与[r7后续公开passive读数](R17-A1-R7-PASSIVE-NATIVE-RESULT.md)分别保机制未知和实际offset错窗的范围。
+
+50. [r6地形真实缺口](TERRAIN-R6-WAIT-RESULT.md)、[同窗请求责任](TERRAIN-METADATA-WAIT-OWNER.md)、[有限缓存候选绑定](TERRAIN-R6-ASSET-PATH-BINDING.md)：metadata2248ms/file98ms/native34ms与唯一缓存候选不完成实际手机imageSHA关联；24文件已由root另归档，关联仍UNKNOWN，未选分块/预取/worker或称已优化。
+
+51. [r7正常Play](R17-A1-R7-PLAY-RESULT.md)、[有效allocation及双级runtime映射](R17-NORMAL-R7-ALLOCATION-RESULT.md)、[真实Cancel/Map退出](R17-A1-R7-EXIT-RESULT.md)：正常非空负载、存活采样来源和真实退出已成立，无需重复CPU/分配资格；r7缺失字段/停止时刻不由r9倒填，后续surface退休边界见54。total churn/引用保留及完整B仍未验，gen24继续暂停。
+
+52. [稳定native表面源码修复](SKY-RULER-STABLE-NATIVE-SURFACE.md)、[独审](SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.md)、[r8完整构建独审](R17-NORMAL-R8-BUILD-REVIEW.md)、[r8实际入场](R17-A1-R8-ENTRY-RESULT.md)及[连续输入/时间交互](R17-A1-R8-TIME-INTERACTION-RESULT.md)：捕获可见刻度/提示通过，49intents中9latest firstAccepted24–70ms、末30ms；保全部superseded与跨日pending实际跳变，不扩大为完整A/B。
+
+53. [地形匿名身份收据](TERRAIN-HTTP-IDENTITY-RECEIPT.md)、[独审](TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.md)与[r8实际动作](TERRAIN-R8-IDENTITY-ACTION-RESULT.md)：实际桥metadata/asset SHA和proof绑定成立，file_ready可读后仍有gap；旧r6及手机A5→SHA缺口不由新桥事实倒推。暖缓存不冒充优化收益。
+
+54. [r9有限退休观察](R17-NORMAL-R9-RETIREMENT-OBSERVATION.md)、[源码/fixture独审](R17-NORMAL-R9-RETIREMENT-REVIEW.md)、[完整构建独审](R17-NORMAL-R9-BUILD-REVIEW.md)及[实际60秒Play/退出独审](R17-A1-R9-PLAY-EXIT-RESULT.md)：60.015s same-run正常Pause、至少31s暂停尾段、真实Cancel/Map及同surface退休已观察；实际尺寸1×1、selection移除，context扩展不可用。15s metrics、存活采样和进程PSS保各自范围，不关闭完整B。r9输入/debug已退休；425件运行档案与可变session元数据限制见当前运行接入，不用新绑定倒填历史字节。
+
+55. [跨日等待连续性修复](SKY-TIME-PENDING-CONTINUITY-FIX.md)、[独审](SKY-TIME-PENDING-CONTINUITY-REVIEW.md)：目标供给未到时保当前有效accepted呈现，draw及资源共用输入，取消和失效不复活旧帧；133/133、TS5.9.3及独审通过，已提交/push为69401c09且进入r10。[r10真实过渡独审](R17-A1-R10-CROSSDAY-RESULT.md)已确认更新中保持白昼、取消回原时刻，保留取消字段短暂先后变化；完整A/Apply仍未完成。
+
+56. [r10普通预览部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)：第一轮正常Play/Pause、两个错位watch及第二次同watch的前台结束边界；用户携手机离开后，先离线审冻结原件，不能推断OOM或关闭B。全部r10原件/完整构建已保全，当前输入暂不可用。
+
+57. [无需手机的交付与H4下一动作](DELIVERY-NEXT-ACTIONS-20261019.md)：已核main快进条件、CD真实副作用、既有环境能力与identity/runtime分支；执行前核最新远端，按release owner继续，不绕guard或借fixture补真实天气。
+
+58. [性能阶段成果与数据可信度](PERFORMANCE-STATUS.md)：安装实现与r9当时的Android无DOM runtime、真实动作支持其2.0手机逻辑目标；LAN→WAN只改变传输，不为旧r7补造执行字段，也不声称普通预览r10已建立remote。解释已解决/已定位/未回答与下一决策，方法回到现有开发skill。
+
+59. [r10任务接入](R17-NORMAL-R10-BUILDER-INTEGRATION.md)、[接入/地形实际文件身份独审](R17-NORMAL-R10-INTEGRATION-REVIEW.md)、[完整构建独审](R17-NORMAL-R10-BUILD-REVIEW.md)及[当前候选准备/绑定](R17-NORMAL-A1-PREPARATION.md)：app077d3aeb…/337文件/5,003,601B、sourcee7e558d2…；r10 30/30、地形owner17/17与5条hook端到端路径、完整1,583输入/双app及外置maps字节绑定通过，不等于手机行为验收。[地形残余等待决策](TERRAIN-RESIDUAL-NEXT-DECISION.md)已排除追旧key补SHA；r10仅随既有file_ready导出实际文件SHA/bytes，下一必要连续动作仍待验证。
+
+60. [r10普通播放离线独审](R17-A1-R10-ORDINARY-OFFLINE-REVIEW.md)、[结构化核对](R17-A1-R10-ORDINARY-OFFLINE-REVIEW.json)：20份原件、12抽取帧及6PNG与严格协议核验；第二段约15秒仍播放，第二terminal与精确跨时钟锚点缺失。保完整B未验，不归因OOM或恢复相邻disable。
+
+61. [当前交付独立审查](DELIVERY-OFFLINE-INDEPENDENT-REVIEW-20261019.md)：当前task及方法字节复用既有审查，隐私/结构/本地链接核对，历史快照与当前状态分开；后续实际交付仍由HANDOFF和CURRENT拥有。
+
+62. [H3/H6离线准备与补保](H3-H6-OFFLINE-READINESS-20261019.md)：三件H3原始照片输入补保与同级恢复路径；PLAN/N05及真实接收对象的资格边界，不改gen26 UNKNOWN或代替微信接收。归档定位沿[H3准备owner](H3-PHONE-PREPARATION.md#清理前的源材料保全)。
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
-恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。新对话的明确继续指令解除本次暂停，之后核源码/候选/在途状态和受影响的服务/窗口入口；历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。
+恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。本接手对话的明确继续指令已解除原暂停；恢复核源码/候选/在途状态和受影响的服务/窗口入口，历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。

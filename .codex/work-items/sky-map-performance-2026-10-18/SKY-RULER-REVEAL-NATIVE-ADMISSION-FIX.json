@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "starward-task-source-fix-v1",
+  "date": "2026-10-19",
+  "author": "fix_r6_native_entry_admission",
+  "scope": "OrientationTimeRuler reveal geometry admission",
+  "status": "SOURCE_CHECKS_PASSED_NATIVE_UNVERIFIED_INDEPENDENT_REVIEW_PENDING",
+  "baseCommit": "526d00ec2b9333951f7b63f1ab40081e22d9584f",
+  "frozenCandidate": {
+    "revision": "A1 r6",
+    "appSha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+    "buildSourceSha256": "95d1e91d1c68ee154de1251bd41c32852938e0bfcab13feda7e144741ce0c7c9",
+    "state": "FAILED_FIRST_VISIBLE_NATIVE_POSITION_COHERENCE",
+    "rawEvents": 74,
+    "rawEventsDropped": 0,
+    "videoClockCorrelation": "UNKNOWN"
+  },
+  "countercheck": {
+    "oldProductionNormalizedLfSha256": "d4cd87283e34a54648afbae0db738ee6bea66f52b324fb4ab8a3fc624348ea39",
+    "oldBusinessFailures": 3,
+    "currentPasses": 3,
+    "independentReview": false,
+    "script": { "path": "tmp/r6-reveal-admission-countercheck.mts", "bytes": 2981, "sha256": "f29705d3e93a56f104681abcf82ba882008d1985a64501a01db0c14b5f04f637" },
+    "beforeLog": { "path": "tmp/r6-reveal-admission-before.log", "bytes": 741, "sha256": "96c52d32b604c85bc94cfefe8648d57a3524231c3941400a203034934657dbb6" },
+    "afterLog": { "path": "tmp/r6-reveal-admission-after.log", "bytes": 429, "sha256": "f8d292db0fdfa5d45617d05452d5ebe613d6c080846ba22ca20641407fa648c6" }
+  },
+  "checks": {
+    "window": { "passed": 22, "failed": 0, "skipped": 0 },
+    "relatedConsumers": { "passed": 80, "failed": 0, "skipped": 0,
+      "log": { "path": "tmp/r6-reveal-admission-related-tests.log", "bytes": 8297, "sha256": "0c43525fb959dac6b69569660550e3e002bf7408444a437cc66f47cc7d85f589" } },
+    "typescriptStrict": { "exitCode": 0, "diagnostics": 0,
+      "log": { "path": "tmp/r6-reveal-admission-strict.log", "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" } },
+    "affectedDiffCheckExitCode": 0,
+    "build": "NOT_RUN",
+    "preview": "NOT_RUN",
+    "physicalDevice": "NOT_RUN"
+  },
+  "changedProductionAndTests": [
+    { "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx", "bytes": 245712, "sha256": "500743d7992dd5a01cf0470e870611f3323afb7a4e1e72dee653e8e378f5aed4" },
+    { "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts", "bytes": 36439, "sha256": "f0b9eeefcee1e34b02aaf3a92569677fa0ff513e90a187d121f28cf952b896bd" }
+  ],
+  "remaining": ["independent source review", "complete candidate build", "first visible native tick and stable tail", "affected native interaction recovery", "A", "B", "Terrain", "all other full Goal obligations"]
+}

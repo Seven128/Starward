@@ -1,0 +1,1136 @@
+{
+  "schemaVersion": "starward-r17-r6-manual-result-v1",
+  "reviewedAt": "2026-10-19T07:04:45.798Z",
+  "reviewer": "review_r6_manual_input_a",
+  "scope": "file-only independent actual receipt review; bounded A evidence, not full product acceptance",
+  "result": "VALID_SINGLE_LATEST_UNSUPERSEDED_SOFTWARE_ACCEPTED_SAMPLE",
+  "decision": {
+    "latestIntentGapFilledForThisSingleInput": true,
+    "productionSchedulingRewriteJustified": false,
+    "unconsumedPreparationCostJustifiesAdmissionRewrite": false,
+    "repeatSameManualSampleForReassurance": false,
+    "AComplete": false,
+    "BComplete": false,
+    "next": "Keep current product owners; use existing plan for remaining actual native motion, high-frequency/whole-product A, B allocation/drain/exit and terrain obligations. Reuse prior valid normal CPU and r3 Play evidence rather than rerunning an answered tool route."
+  },
+  "archive": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r6-manual-association-archive-20261019",
+    "inputFiles": 46,
+    "inputBytes": 3953540,
+    "manifestFile": "archive-manifest.private.json",
+    "manifestSha256": "46e1dcff1cf0d03f67ad0ca5e8b8b3754ca6f268ca45935857aaca5bd4cf794d",
+    "allFrozenFilesReadbackEqual": true,
+    "originalsUnchangedAtFreezeReadback": true,
+    "extraCompiledFingerprintRecords": 2,
+    "exclusiveCreate": true
+  },
+  "rawMetrics": {
+    "key": "raw/baseline-r17-2-td7a16w44u.json",
+    "bytes": 18080,
+    "sha256": "fd9e14901db2ea5951ef2274992be7d3eea16c6acfe7bba323050cf3374da9ce",
+    "strictCurrentDispatcherValid": true,
+    "dispatcher": {
+      "key": "templates/r17-normal-input-protocol.mjs",
+      "bytes": 4951,
+      "sha256": "4f48172576d0080e572cc95a67a86566ea96ee87cea87eaac5565ba91400325a"
+    }
+  },
+  "candidate": {
+    "appSha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+    "buildSourceSha256": "95d1e91d1c68ee154de1251bd41c32852938e0bfcab13feda7e144741ce0c7c9",
+    "reviewRevision": 6,
+    "buildGeneration": 27,
+    "feedbackGeneration": 1,
+    "windowId": 2,
+    "sourceSnapshotSha256": "0b6e4e68b240f1debf3b2117698146c4e85d0cb87f69bf85f503e59095913bb5",
+    "sourceManifest": {
+      "key": "owners/manifest.json",
+      "bytes": 456455,
+      "sha256": "7cfce8dc67c154430619ff6a45f9dbbf440e588d1e03f74d5252d7185dee145e"
+    },
+    "preparationOwner": {
+      "key": "owners/R17-NORMAL-A1-PREPARATION.json",
+      "bytes": 29981,
+      "sha256": "79ff13b872039361031b807dc37aa5c5f08f270c478b792d65f9c3bec066be48"
+    },
+    "productionHead": "526d00ec2b9333951f7b63f1ab40081e22d9584f",
+    "localAndPreparedBundleFileReadback": [
+      {
+        "name": "localProject",
+        "sha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+        "fileCount": 337,
+        "totalBytes": 4995513
+      },
+      {
+        "name": "preparedPhoneProject",
+        "sha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+        "fileCount": 337,
+        "totalBytes": 4995513
+      }
+    ],
+    "officialBusinessResult": {
+      "schema": "starward-miniapp-official-preview-result-v1",
+      "tool": "auto_preview",
+      "status": "success",
+      "success": true,
+      "taskId": null,
+      "taskType": null
+    },
+    "officialTransport": "RETURNED",
+    "phoneLabelVisuallyVerified": true,
+    "visibleLabel": "R17 正常Sky关联 A1 r6",
+    "feedbackAndSessionBindingMatch": true,
+    "evidenceMeaning": "development_feedback_only",
+    "runtimeAppIdVerified": false,
+    "phoneBundleBytesVerified": false
+  },
+  "action": {
+    "caseKey": "manual-input",
+    "runId": "r17-2-td7a16w44u",
+    "schemaVersion": "starward-r17-phone-probe-v3-manual-input",
+    "manualInput": {
+      "schemaVersion": "starward-r17-manual-input-v1",
+      "trigger": 1,
+      "boundary": "legal-onPreview-before-preview-intent"
+    },
+    "actualInput": "one legal six-field minute-up, committed 2026-10-19 04:30:00 -> preview 04:31:00 (UTC+8)",
+    "play": false,
+    "apply": false,
+    "cancelAfterMetrics": "root explicitly reported actual cancel; independently viewed matching 04:30:00 frame with preview/cancel text absent",
+    "cancelIncludedInMetrics": false
+  },
+  "clock": {
+    "source": "Date.now",
+    "unit": "ms",
+    "kind": "wall-elapsed",
+    "monotonic": false,
+    "availability": "available",
+    "nominalResolutionMs": 1,
+    "effectiveResolutionMs": null,
+    "reads": 193,
+    "invalidReads": 0,
+    "backwardReads": 0
+  },
+  "window": {
+    "startDelayMs": 0,
+    "durationLimitMs": 45000,
+    "elapsedMs": 15003,
+    "elapsedStatus": "valid",
+    "reason": "manual"
+  },
+  "controls": {
+    "recordingStartRelativeMs": 0,
+    "sealRelativeMs": 15004,
+    "events": {
+      "actualPlay": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "export": {
+        "calls": 1,
+        "firstRelativeMs": 15003,
+        "lastRelativeMs": 15003,
+        "lastResult": null
+      },
+      "pauseAttempt": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "pauseSuccess": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      },
+      "terminalExport": {
+        "calls": 0,
+        "firstRelativeMs": null,
+        "lastRelativeMs": null,
+        "lastResult": null
+      }
+    }
+  },
+  "timeline": [
+    {
+      "event": "legalOnPreviewRecorderStart",
+      "relativeMs": 0
+    },
+    {
+      "event": "actualIntent",
+      "relativeMs": 2
+    },
+    {
+      "event": "preparationStart",
+      "relativeMs": 7
+    },
+    {
+      "event": "preparationFinish",
+      "relativeMs": 18
+    },
+    {
+      "event": "firstRequest",
+      "relativeMs": 37
+    },
+    {
+      "event": "firstPaintAttempt",
+      "relativeMs": 40
+    },
+    {
+      "event": "firstSoftwareAccepted",
+      "relativeMs": 61
+    },
+    {
+      "event": "exportRequested",
+      "relativeMs": 15003
+    },
+    {
+      "event": "metricsSealed",
+      "relativeMs": 15004
+    }
+  ],
+  "linkedSinglePath": {
+    "legalOnPreviewRecorderToFirstSoftwareAcceptedMs": 61,
+    "intentToFirstSoftwareAcceptedMs": 59,
+    "intentToPreparationStartMs": 5,
+    "preparationElapsedMs": 11,
+    "preparationElapsedStatus": "valid",
+    "preparationFinishToFirstRequestMs": {
+      "observedCalls": 1,
+      "validCalls": 1,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 19,
+      "minMs": 19,
+      "maxMs": 19,
+      "p50Ms": 19,
+      "p95Ms": 19
+    },
+    "firstRequestToFirstPaintAttemptMs": {
+      "observedCalls": 1,
+      "validCalls": 1,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 3,
+      "minMs": 3,
+      "maxMs": 3,
+      "p50Ms": 3,
+      "p95Ms": 3
+    },
+    "firstPaintAttemptToFirstSoftwareAcceptedMs": 21,
+    "meaning": "one linked Date.now elapsed path; not CPU or physical presentation; do not add independent stage summaries"
+  },
+  "counters": {
+    "timeIntentPublications": 1,
+    "preparedRequests": 8,
+    "paintAttempts": 7,
+    "nativeCallbacks": 7,
+    "acceptedCopies": 7,
+    "sceneFinishes": 7,
+    "glDrawSubmissions": 84,
+    "bscSubmittedStars": 1283,
+    "saoSubmittedStars": 945,
+    "acceptedBscObjects": 1283,
+    "acceptedSaoObjects": 714,
+    "failedFrames": 0,
+    "invalidations": 0
+  },
+  "scene": {
+    "baseRowsMin": 8404,
+    "baseRowsMax": 8404,
+    "saoRowsMin": 666,
+    "saoRowsMax": 666,
+    "selectedTilesMin": 16,
+    "selectedTilesMax": 16,
+    "catalogVersions": [
+      "bsc5p-bright-stars.v3"
+    ],
+    "saoPublicationHashes": [
+      "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+    ],
+    "modelAlgorithms": [],
+    "modes": [
+      "DAY"
+    ]
+  },
+  "viewport": {
+    "widthMin": 384,
+    "widthMax": 384,
+    "heightMin": 796.800048828125,
+    "heightMax": 796.800048828125,
+    "fovMin": 45,
+    "fovMax": 45
+  },
+  "linkage": {
+    "capacity": 2048,
+    "identityMapCapacity": 256,
+    "linkLimit": 32,
+    "intentsCreated": 1,
+    "firstAcceptedIntents": 1,
+    "duplicateIntentPresents": 6,
+    "supersededBeforeFirstAccepted": 0,
+    "firstAcceptedAfterSuperseded": 0,
+    "expiredUnacceptedIntents": 0,
+    "unknownIntentLookups": 0,
+    "stateIdentityRotations": 0,
+    "preparationsStarted": 1,
+    "preparationsFinished": 1,
+    "expiredUnconsumedPreparations": 0,
+    "expiredIncompletePreparations": 0,
+    "requests": 8,
+    "requestsWithUnknownPreparation": 0,
+    "requestsWithUnknownIntent": 0,
+    "linkageMismatches": 0,
+    "frameIdentityRotations": 0,
+    "inheritedFrames": 0,
+    "duplicateFramePresents": 0,
+    "unknownAcceptedFrames": 0,
+    "syntheticPublications": 0,
+    "prepareFinishUnknown": 0,
+    "prepareFinishDuplicate": 0,
+    "latencyUnknownIntents": 0,
+    "unacceptedIntents": 0,
+    "supersededUnacceptedIntents": 0,
+    "consumedPreparations": 1,
+    "unconsumedPreparations": 0,
+    "incompletePreparations": 0,
+    "costs": {
+      "consumed": {
+        "knownSubtotalMs": 11,
+        "validCalls": 1,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      },
+      "unconsumed": {
+        "knownSubtotalMs": 0,
+        "validCalls": 0,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      },
+      "expiredUnconsumed": {
+        "knownSubtotalMs": 0,
+        "validCalls": 0,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      }
+    },
+    "knownResourceRevisions": 0,
+    "retainedIntents": 1,
+    "retainedPreparations": 1,
+    "linkSampleTruncated": false,
+    "latency": {
+      "intentToFirstAcceptedMs": {
+        "observedCalls": 1,
+        "validCalls": 1,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 59,
+        "minMs": 59,
+        "maxMs": 59,
+        "keptSamples": 1,
+        "p50Ms": 59,
+        "p95Ms": 59,
+        "overflow": false
+      },
+      "unsupersededIntentToFirstAcceptedMs": {
+        "observedCalls": 1,
+        "validCalls": 1,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 59,
+        "minMs": 59,
+        "maxMs": 59,
+        "keptSamples": 1,
+        "p50Ms": 59,
+        "p95Ms": 59,
+        "overflow": false
+      },
+      "supersededIntentToFirstAcceptedMs": {
+        "observedCalls": 0,
+        "validCalls": 0,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 0,
+        "minMs": null,
+        "maxMs": null,
+        "keptSamples": 0,
+        "p50Ms": null,
+        "p95Ms": null,
+        "overflow": false
+      }
+    },
+    "links": [
+      {
+        "prepareToken": 1,
+        "intentSequence": 1,
+        "scopeGeneration": 1,
+        "kind": "presentation",
+        "resourceRevision": null,
+        "startedRelativeMs": 7,
+        "finishedRelativeMs": 18,
+        "elapsedMs": 11,
+        "elapsedStatus": "valid",
+        "completed": true,
+        "requests": 8,
+        "paintAttempts": 7,
+        "firstConsumedRelativeMs": 40,
+        "consumed": true,
+        "firstAcceptedRelativeMs": 61,
+        "firstAcceptedObserved": true,
+        "syntheticPublications": 0,
+        "duplicatePresents": 6,
+        "intentRelativeMs": 2,
+        "intentFirstAcceptedRelativeMs": 61,
+        "intentFirstAcceptedObserved": true,
+        "intentSuperseded": false
+      }
+    ]
+  },
+  "aCorrelation": {
+    "schemaVersion": "starward-r17-a-correlation-v1",
+    "coverage": "retained-preparations",
+    "linkLimit": 8,
+    "retainedPreparations": 1,
+    "linkSampleTruncated": false,
+    "preparationToRequest": {
+      "observedCalls": 1,
+      "validCalls": 1,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 19,
+      "minMs": 19,
+      "maxMs": 19,
+      "p50Ms": 19,
+      "p95Ms": 19
+    },
+    "requestToPaint": {
+      "observedCalls": 1,
+      "validCalls": 1,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 3,
+      "minMs": 3,
+      "maxMs": 3,
+      "p50Ms": 3,
+      "p95Ms": 3
+    },
+    "links": [
+      {
+        "prepareToken": 1,
+        "firstRequestRelativeMs": 37,
+        "firstRequestObserved": true,
+        "firstPaintObserved": true,
+        "pageAtPreparationFinish": [
+          0,
+          0,
+          0
+        ],
+        "pageAtRequest": [
+          0,
+          0,
+          0
+        ],
+        "pageAtPaint": [
+          0,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "stageElapsed": {
+    "presentation": {
+      "observedCalls": 1,
+      "validCalls": 1,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 10,
+      "minMs": 10,
+      "maxMs": 10,
+      "keptSamples": 1,
+      "p50Ms": 10,
+      "p95Ms": 10,
+      "overflow": false
+    },
+    "base": {
+      "observedCalls": 41,
+      "validCalls": 2,
+      "unknownCalls": 39,
+      "unknown": {
+        "belowResolution": 39,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 2,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 2,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "selection": {
+      "observedCalls": 2,
+      "validCalls": 0,
+      "unknownCalls": 2,
+      "unknown": {
+        "belowResolution": 2,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 0,
+      "minMs": null,
+      "maxMs": null,
+      "keptSamples": 0,
+      "p50Ms": null,
+      "p95Ms": null,
+      "overflow": false
+    },
+    "supplement": {
+      "observedCalls": 2,
+      "validCalls": 1,
+      "unknownCalls": 1,
+      "unknown": {
+        "belowResolution": 1,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 1,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "constellations": {
+      "observedCalls": 1,
+      "validCalls": 1,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 6,
+      "minMs": 6,
+      "maxMs": 6,
+      "keptSamples": 1,
+      "p50Ms": 6,
+      "p95Ms": 6,
+      "overflow": false
+    },
+    "draw": {
+      "observedCalls": 7,
+      "validCalls": 7,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 75,
+      "minMs": 7,
+      "maxMs": 21,
+      "keptSamples": 7,
+      "p50Ms": 8,
+      "p95Ms": 21,
+      "overflow": false
+    },
+    "nativePaintOwner": {
+      "observedCalls": 7,
+      "validCalls": 7,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 75,
+      "minMs": 7,
+      "maxMs": 21,
+      "keptSamples": 7,
+      "p50Ms": 8,
+      "p95Ms": 21,
+      "overflow": false
+    },
+    "displayCopy": {
+      "observedCalls": 7,
+      "validCalls": 1,
+      "unknownCalls": 6,
+      "unknown": {
+        "belowResolution": 6,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1,
+      "minMs": 1,
+      "maxMs": 1,
+      "keptSamples": 1,
+      "p50Ms": 1,
+      "p95Ms": 1,
+      "overflow": false
+    },
+    "publishAccepted": {
+      "observedCalls": 7,
+      "validCalls": 0,
+      "unknownCalls": 7,
+      "unknown": {
+        "belowResolution": 7,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 0,
+      "minMs": null,
+      "maxMs": null,
+      "keptSamples": 0,
+      "p50Ms": null,
+      "p95Ms": null,
+      "overflow": false
+    }
+  },
+  "timing": {
+    "nativeCallbackMs": {
+      "observedCalls": 7,
+      "validCalls": 7,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 73,
+      "minMs": 6,
+      "maxMs": 21,
+      "keptSamples": 7,
+      "p50Ms": 7,
+      "p95Ms": 21,
+      "overflow": false
+    },
+    "acceptedGapMs": {
+      "observedCalls": 6,
+      "validCalls": 6,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 152,
+      "minMs": 18,
+      "maxMs": 30,
+      "keptSamples": 6,
+      "p50Ms": 26,
+      "p95Ms": 30,
+      "overflow": false
+    },
+    "intentToAcceptedWallMs": {
+      "observedCalls": 7,
+      "validCalls": 7,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 938,
+      "minMs": 59,
+      "maxMs": 211,
+      "keptSamples": 7,
+      "p50Ms": 138,
+      "p95Ms": 211,
+      "overflow": false
+    }
+  },
+  "time": {
+    "intent": {
+      "events": 1,
+      "distinct": 1,
+      "firstRelativeMs": 0,
+      "lastRelativeMs": 0,
+      "minRelativeMs": 0,
+      "maxRelativeMs": 0,
+      "overflow": false
+    },
+    "prepared": {
+      "events": 8,
+      "distinct": 1,
+      "firstRelativeMs": 0,
+      "lastRelativeMs": 0,
+      "minRelativeMs": 0,
+      "maxRelativeMs": 0,
+      "overflow": false
+    },
+    "painted": {
+      "events": 7,
+      "distinct": 1,
+      "firstRelativeMs": 0,
+      "lastRelativeMs": 0,
+      "minRelativeMs": 0,
+      "maxRelativeMs": 0,
+      "overflow": false
+    },
+    "accepted": {
+      "events": 7,
+      "distinct": 1,
+      "firstRelativeMs": 0,
+      "lastRelativeMs": 0,
+      "minRelativeMs": 0,
+      "maxRelativeMs": 0,
+      "overflow": false
+    },
+    "lastRequestedMinusAcceptedMs": 0,
+    "maximumRequestedMinusAcceptedMs": 0
+  },
+  "observations": {
+    "tm": {
+      "captures": 2,
+      "first": {
+        "relativeMs": 1,
+        "values": {
+          "hits": null,
+          "misses": null,
+          "evictions": null,
+          "nativeGlyphCalls": 0,
+          "lifetimeHits": null,
+          "lifetimeMisses": null,
+          "lifetimeEvictions": null,
+          "lifetimeNativeGlyphCalls": 0,
+          "entries": null,
+          "capacity": null,
+          "observationResets": 2,
+          "retired": false,
+          "available": true
+        }
+      },
+      "last": {
+        "relativeMs": 15003,
+        "values": {
+          "hits": null,
+          "misses": null,
+          "evictions": null,
+          "nativeGlyphCalls": 0,
+          "lifetimeHits": null,
+          "lifetimeMisses": null,
+          "lifetimeEvictions": null,
+          "lifetimeNativeGlyphCalls": 0,
+          "entries": null,
+          "capacity": null,
+          "observationResets": 2,
+          "retired": false,
+          "available": true
+        }
+      }
+    },
+    "page": {
+      "captures": 2,
+      "first": {
+        "relativeMs": 1,
+        "values": {
+          "available": 1,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "failedBeforeCallback": 0,
+          "callbackMissing": 0,
+          "pending": 0,
+          "inheritedPending": 0,
+          "maxPending": 0,
+          "duplicateCallback": 0,
+          "keyCountTotal": 0,
+          "maxKeyCount": 0,
+          "keyCountFailures": 0,
+          "sampledCalls": 0,
+          "sampledBytes": 0,
+          "maxSampledBytes": 0,
+          "serializationFailures": 0,
+          "bufferDataCalls": 0,
+          "totalTypedUploadBytes": 0,
+          "maxTypedUploadBytes": 0,
+          "latencyTotalMs": 0,
+          "latencyMaxMs": 0,
+          "enableDebug": false
+        }
+      },
+      "last": {
+        "relativeMs": 15003,
+        "values": {
+          "available": 1,
+          "submitted": 6,
+          "completed": 6,
+          "failed": 0,
+          "failedBeforeCallback": 0,
+          "callbackMissing": 0,
+          "pending": 0,
+          "inheritedPending": 0,
+          "maxPending": 2,
+          "duplicateCallback": 0,
+          "keyCountTotal": 63,
+          "maxKeyCount": 15,
+          "keyCountFailures": 0,
+          "sampledCalls": 6,
+          "sampledBytes": 12075,
+          "maxSampledBytes": 7843,
+          "serializationFailures": 0,
+          "bufferDataCalls": 14,
+          "totalTypedUploadBytes": 112464,
+          "maxTypedUploadBytes": 11484,
+          "latencyTotalMs": 140,
+          "latencyMaxMs": 32,
+          "enableDebug": false
+        }
+      }
+    },
+    "scene": {
+      "captures": 2,
+      "first": {
+        "relativeMs": 1,
+        "values": {
+          "nativeCopies": 0,
+          "readyNativeCopies": 0,
+          "syntheticBegins": 0,
+          "syntheticFinishes": 0,
+          "syntheticPublications": 0,
+          "discs": null,
+          "segments": null,
+          "images": null,
+          "readiness": null,
+          "frozen": false,
+          "retired": false
+        }
+      },
+      "last": {
+        "relativeMs": 15003,
+        "values": {
+          "nativeCopies": 7,
+          "readyNativeCopies": 7,
+          "syntheticBegins": 0,
+          "syntheticFinishes": 0,
+          "syntheticPublications": 0,
+          "discs": null,
+          "segments": null,
+          "images": null,
+          "readiness": null,
+          "frozen": false,
+          "retired": false
+        }
+      }
+    },
+    "memo": {
+      "captures": 0,
+      "first": null,
+      "last": null
+    }
+  },
+  "visuals": {
+    "pictures": [
+      {
+        "role": "label",
+        "key": "phone/screen-65d5b7f6-3100-434a-bd12-3ddd4be552c1.png",
+        "bytes": 594534,
+        "sha256": "caf8f471ae34e1744704e3b0e5f1305b7fa5bdf10e09f03f3a8796e7ecb45944",
+        "capturedAt": "2026-10-19T06:57:33.120Z",
+        "width": 1080,
+        "height": 2376,
+        "sidecar": {
+          "key": "phone/screen-65d5b7f6-3100-434a-bd12-3ddd4be552c1.png.json",
+          "bytes": 391,
+          "sha256": "33606558a566d8eb447126f14a666f533f433801ec57838620d18c22a4a4b158"
+        }
+      },
+      {
+        "role": "armedPanel",
+        "key": "phone/screen-d55804b1-b0d7-414d-8440-59af777365ba.png",
+        "bytes": 675695,
+        "sha256": "110b130cea5b84aaee83867c3e84fbe6115b5d1938558b1bc13a882649678830",
+        "capturedAt": "2026-10-19T06:57:54.342Z",
+        "width": 1080,
+        "height": 2376,
+        "sidecar": {
+          "key": "phone/screen-d55804b1-b0d7-414d-8440-59af777365ba.png.json",
+          "bytes": 391,
+          "sha256": "49c5b19ccfedae86666ac9a4c0f769fa47803361eadfc2b96e786396ec181441"
+        }
+      },
+      {
+        "role": "afterInput",
+        "key": "phone/screen-073dcc71-fadd-45ec-a91a-d848da9ef930.png",
+        "bytes": 684648,
+        "sha256": "1f37c00cae5c9b5d04633bd20fb3522b43ef883bb964fe34208842d08ba2ae25",
+        "capturedAt": "2026-10-19T06:58:26.424Z",
+        "width": 1080,
+        "height": 2376,
+        "sidecar": {
+          "key": "phone/screen-073dcc71-fadd-45ec-a91a-d848da9ef930.png.json",
+          "bytes": 391,
+          "sha256": "c82f8edc20223b10164b185c0dafc961076d3f97c9dda403776d08cbfaf0e78a"
+        }
+      },
+      {
+        "role": "afterCancel",
+        "key": "phone/screen-de346382-50ec-41fe-96c2-da945ddbae52.png",
+        "bytes": 676194,
+        "sha256": "f97f49e092362d49f6190c7af83e7f4a7366875fe463aca04eba0535c0bc800f",
+        "capturedAt": "2026-10-19T06:59:24.474Z",
+        "width": 1080,
+        "height": 2376,
+        "sidecar": {
+          "key": "phone/screen-de346382-50ec-41fe-96c2-da945ddbae52.png.json",
+          "bytes": 391,
+          "sha256": "702bf78fa373cd45d80690d1781b324c4250c5b74bd43bf2a94258118a7d7e06"
+        }
+      }
+    ],
+    "video": {
+      "key": "phone/recording-1792393106424.mp4",
+      "bytes": 203188,
+      "sha256": "f6e8a42a8d6bb803bc5669ffb1468165b89d2d1e39e721d8ff97aeb633933ffb"
+    },
+    "videoDecoded": false,
+    "encodedDurationAndFpsNotInterpreted": true,
+    "physicalTouchOrPresentationLatencyCalibrated": false,
+    "actualViewedFrames": "label; 19th 04:30:00 before; 19th 04:31:00 preview/cancel after input; 19th 04:30:00 with no preview/cancel after cancel. All retain nonempty sky. No motion or every-frame conformance verdict."
+  },
+  "sourceBindings": [
+    {
+      "key": "owners/R17-NORMAL-R6-OBSERVATION-REVIEW.md",
+      "bytes": 7940,
+      "sha256": "3249ab83c72708502ed9fc309ec08bef78970ea0ea476b5654893ed70f9a7b54"
+    },
+    {
+      "key": "owners/R17-NORMAL-R6-OBSERVATION-REVIEW.json",
+      "bytes": 9584,
+      "sha256": "b5ca2b87a5c2f3a080ef38c48041c4d2fd61553bbb395384dd0acddcf4a2cde1"
+    },
+    {
+      "key": "owners/source-map-bindings.json",
+      "bytes": 60366,
+      "sha256": "c478b21f1d3cb31f6eb84c39c2a53ece4b608ae2bfd707acdf3ee2ffaafbd410"
+    },
+    {
+      "key": "templates/r17-phone-probe-v3-runtime.ts",
+      "bytes": 37091,
+      "sha256": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018"
+    },
+    {
+      "key": "templates/r17-phone-probe-v3-protocol.mjs",
+      "bytes": 17210,
+      "sha256": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120"
+    },
+    {
+      "key": "templates/r17-phone-probe-v2-protocol.mjs",
+      "bytes": 12860,
+      "sha256": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127"
+    },
+    {
+      "key": "templates/r17-phone-probe-protocol.mjs",
+      "bytes": 4373,
+      "sha256": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9"
+    },
+    {
+      "key": "templates/r17-normal-input-instrumentation.mjs",
+      "bytes": 8407,
+      "sha256": "0c16fd345afa11a5c88a553da3f7ec5ba46e0da2ad8d7dcfc83258f857917b39"
+    },
+    {
+      "key": "templates/r17-normal-input-protocol.mjs",
+      "bytes": 4951,
+      "sha256": "4f48172576d0080e572cc95a67a86566ea96ee87cea87eaac5565ba91400325a"
+    },
+    {
+      "key": "templates/r17-ruler-entry-protocol.mjs",
+      "bytes": 7089,
+      "sha256": "708e2b2f224a44aea83c6414d3076bb79a33e1e3672668000db75215b5c189da"
+    },
+    {
+      "key": "templates/r17-a-correlation-runtime.ts",
+      "bytes": 6016,
+      "sha256": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613"
+    },
+    {
+      "key": "templates/r17-a-correlation-instrumentation.mjs",
+      "bytes": 6066,
+      "sha256": "e3c557d31562d296bca04b8ddda10ecc25a17cba434393845c3e1e9213e801e2"
+    },
+    {
+      "key": "templates/r17-a-correlation-protocol.mjs",
+      "bytes": 4404,
+      "sha256": "a4a2deb3f5b544c9e2ed0db5e6b2161a430eb50ac969fd88eb6dce18cc61bbf7"
+    },
+    {
+      "key": "templates/r17-page-bridge-observer.ts",
+      "bytes": 7617,
+      "sha256": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d"
+    },
+    {
+      "key": "templates/r17-normal-observations.ts",
+      "bytes": 1489,
+      "sha256": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386"
+    },
+    {
+      "key": "templates/r17-accepted-action-controls.tsx",
+      "bytes": 12104,
+      "sha256": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07"
+    },
+    {
+      "key": "diagnostic-source/r17-phone-probe-runtime.ts",
+      "bytes": 39818,
+      "sha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da"
+    },
+    {
+      "key": "diagnostic-source/r17-phone-probe-controls.tsx",
+      "bytes": 13588,
+      "sha256": "9a8c300036e8379868f8985ac978ce351360fe4094a01751a8063a6c83eade3e"
+    },
+    {
+      "key": "diagnostic-source/r17-page-bridge-observer.ts",
+      "bytes": 8037,
+      "sha256": "4d567364a8e54b9e84b821d64a5c41597035337bd63518b0586862c3ec2bfbb2"
+    },
+    {
+      "key": "diagnostic-source/r17-a-correlation-runtime.ts",
+      "bytes": 6016,
+      "sha256": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613"
+    },
+    {
+      "key": "diagnostic-source/r17-normal-observations.ts",
+      "bytes": 1489,
+      "sha256": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386"
+    },
+    {
+      "key": "diagnostic-source/spot-sky-page.tsx",
+      "bytes": 249250,
+      "sha256": "5c21422032dc1de5528114a86485a328b1a5948fd41b8649b11823042f96e48e"
+    },
+    {
+      "key": "diagnostic-source/sky-observation-time.ts",
+      "bytes": 4974,
+      "sha256": "3827678f343afa30d01e7f1414439ee91bd5c57287012df6c94a5e2a06b47b3b"
+    },
+    {
+      "key": "diagnostic-source/sky-time-presentation.ts",
+      "bytes": 8297,
+      "sha256": "ffe24eb0a7c232a42b5da846f68329b316a0128da1ced385dda54914b470b7fc"
+    },
+    {
+      "key": "diagnostic-source/sky-canvas-lifecycle.ts",
+      "bytes": 13578,
+      "sha256": "8b07a0ba2f25b8245290a32960130a8a3f2fba6af6fef1db1452abc6e853a1d5"
+    },
+    {
+      "key": "diagnostic-source/sky-canvas-surface.ts",
+      "bytes": 12494,
+      "sha256": "c52b7c341db755d0e37dc1f40ac2210cc8616663f1c2499f21b1da12c56793a2"
+    }
+  ],
+  "interpretation": {
+    "preparation": "One complete preparation, consumed by actual paint, 11ms known elapsed; none expired or unconsumed. Eight requests reuse it, seven paints/accepts do not imply seven preparations or wasted request difference.",
+    "page": "Actual Page observer available. First preparation finish/request/paint snapshots each [0,0,0]; later aggregate 6 submitted/6 completed, pending0/max2. These do not identify payloads, React render cost, components or the cause of the 19ms wait.",
+    "nativeText": "Returned native measureText counter 0 within observed scalar window, with no cache-specific fields. This does not establish no text/render work or a cache optimization result.",
+    "legacyLatency": "Legacy conditional intentToAccepted includes 7 accepts for same intent (59..211ms); six are duplicate presentations, not seven input latencies. Use the single 59ms first-accepted sample.",
+    "time": "time.*RelativeMs and requested-minus-accepted are astronomical instant differences, not wall latency. Their 0 does not mean zero input delay.",
+    "theme": "DAY is DisplayMode/theme, not solar light. Solar altitude/illumination was not exported; stays UNKNOWN. Positive actual stellar submissions establish nonempty work in this case.",
+    "relationToR3": "r3 Play remains valid with all first accepted superseded and no latest sample. This manual case has a different workload and loaded SAO/tile population; no gain, count-difference optimization or latency distribution comparison is inferred."
+  },
+  "limitations": [
+    "Exactly one manual input and one latest unsuperseded software accepted sample; not a latency population, physical touch-to-present measurement, response budget verdict or full A acceptance.",
+    "Legal onPreview starts after real input/platform delivery and guards. No calibration joins video PTS, host capturedAt, actual touch or physical present to Date.now.",
+    "Date.now is wall elapsed, nominal 1ms/effective unknown; this sample has no invalid/backward reads, not a proof of global monotonicity.",
+    "Some synchronous stage durations are below resolution; retained null/unknown, not zero CPU. Nested stages and independent p95/max/subtotals are not additive.",
+    "No CPU/heap/process/allocation/native/GPU retention, paused drain, sustained use or exit sample collected by this review; B remains open.",
+    "No solar-light qualification, narrow/dense/high-frequency gesture acceptance, whole-product target conformance or final iOS/Android acceptance supplied.",
+    "Cancel frame is after metrics seal; it cannot provide recorder latency or first-accepted trace for cancel, cross-day/window motion or persistence/Apply proof.",
+    "No phone, IDE, ADB, feedback, service, preview, build, production source, PLAN, HANDOFF or preparation owner was changed by this agent; no new human request or re-review was created."
+  ]
+}

@@ -15,10 +15,10 @@ import { terrainWaitSourceFiles, transformTerrainWaitSources } from './inject-te
 
 const here = path.dirname(fileURLToPath(import.meta.url)), work = path.resolve(here, '..'), root = path.resolve(here, '../../../..');
 const revisionArgs = process.argv.slice(3), observationA1 = revisionArgs.includes('--observe-a1');
-const reviewRevision = revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;
-const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6;
-if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
-    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)
+const reviewRevision = revisionArgs.includes('--review-r10') ? 10 : revisionArgs.includes('--review-r9') ? 9 : revisionArgs.includes('--review-r8') ? 8 : revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;
+const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6, retirementReceipt = reviewRevision >= 9;
+if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
+    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)
   throw Error('finite_normal_revision_required');
 const reviewSuffix = reviewRevision > 1 ? '-review-r' + reviewRevision : '';
 const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix;
@@ -33,6 +33,9 @@ const bundleRoot = path.join(sourceRoot, 'apps/wechat-miniapp/dist/weapp-check-'
 const scope = observationA1 ? 'TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : 'TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE';
 const sha = value => createHash('sha256').update(value).digest('hex');
 const relative = value => path.relative(root, value).replaceAll('\\', '/');
+const historicalOwnerArchive = reviewRevision === 10
+  ? 'E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r9-before-r10-20261019/owner-manifest.private.json'
+  : relative(path.join(work, `tmp/r17-normal-a1-owner-before-review-r${reviewRevision}-20261019/archive-bindings.json`));
 const readJson = file => fs.readFile(file, 'utf8').then(JSON.parse), run = promisify(execFile);
 const require = createRequire(import.meta.url), ts = require(path.join(root, 'apps/wechat-miniapp/node_modules/typescript'));
 const { fingerprintBundle, inspectReleaseBundleBudget } = await import(pathToFileURL(path.join(root, 'tools/miniapp/release-bundle-artifact.mjs')));
@@ -85,7 +88,7 @@ function wrapCalls(source, predicate, format, label) {
   return { source, count: edits.length };
 }
 async function templates() { return Object.fromEntries(await Promise.all(templateNames.map(async name => [name, await fs.readFile(path.join(here, name), 'utf8')]))); }
-export function controls(source, binding) {
+export function controls(source, binding, observeRetirement = retirementReceipt) {
   source = one(source, 'import { r17CpuPageOnlyStats } from "./r17-cpu-page-only";\nimport { r17CpuTextMetricsStats, r17ResetCpuTextMetricsObservation } from "./r17-cpu-text-metrics";\nimport { R17_ACCEPTED_ACTION_LABEL as label, R17_ACCEPTED_ACTION_MODE } from "./r17-accepted-action";',
     'import { r17NormalTextStats, r17NormalSceneStats, r17ResetNormalObservation } from "./r17-normal-observations";\nconst label = "' + normalLabel + '";\nconst R17_NORMAL_MODE = "normal";', 'normal_only_imports');
   source = source.replaceAll('R17_ACCEPTED_ACTION_MODE', 'R17_NORMAL_MODE').replaceAll('r17CpuTextMetricsStats', 'r17NormalTextStats')
@@ -103,9 +106,76 @@ export function controls(source, binding) {
     '  const playGeneration = ++productPlayGeneration;\n  if (!armedPlay || exporting || !runStartAt) return false;', 'observe_every_actual_play');
   source = one(source, '    const paused = pauseCurrentRun?.(runStartAt);',
     '    const paused = productPlayGeneration === playGeneration ? pauseCurrentRun?.(runStartAt) : false;', 'same_product_play_only');
+  if (observeRetirement) {
+    source = one(source, '// TASK ONLY. The normal guarded Play/Pause and original 15s/20s boundaries remain.',
+      '// TASK ONLY r9. Original 15s metrics; this finite trial uses the guarded 60s Pause.', 'finite_r9_trial_comment');
+    source = 'import { r17ConfigureNormalRetirementObservation, r17NormalPlayStartedReceipt, r17NormalPauseResultReceipt } from "./r17-normal-observations";\n' + source;
+    source = one(source, 'const cases = [',
+      'r17ConfigureNormalRetirementObservation({ buildGeneration: __R17_BUILD_GENERATION__, buildSourceSha256: "__R17_BUILD_SOURCE_BINDING__" },\n' +
+      '  (key, value) => Taro.setStorageSync(key, value));\nconst cases = [', 'one_source_bound_retirement_key');
+    source = one(source, '  r17Probe.control("actualPlay", true);',
+      '  r17Probe.control("actualPlay", true);\n  r17NormalPlayStartedReceipt(playGeneration);', 'single_normal_play_scalar_receipt');
+    source = one(source, '    r17Probe.controlResult("pauseAttempt", typeof paused === "boolean" ? paused : null);',
+      '    r17Probe.controlResult("pauseAttempt", typeof paused === "boolean" ? paused : null);\n    r17NormalPauseResultReceipt(playGeneration, paused);', 'single_guarded_pause_scalar_receipt');
+    source = one(source, '  }, 20000);', '  }, 60000);', 'finite_r9_same_run_sixty_second_trial');
+  }
   return source.replaceAll('__R17_BUILD_GENERATION__', String(buildGeneration)).replaceAll('__R17_BUILD_SOURCE_BINDING__', binding);
 }
-export function normalPage(source) {
+export function normalSurface(source, observeRetirement = retirementReceipt) {
+  source = 'import { r17NormalMeasuredText, r17NormalSurfaceReady, r17NormalSurfaceRetired } from "./r17-normal-observations";\n' + source;
+  const wrapped = wrapCalls(source, value => value === 'context.measureText' || value === 'context.measureText!', call => 'r17NormalMeasuredText('+call+')', 'actual_native_measure_text');
+  source = one(wrapped.source, '    disposed = true;', '    disposed = true;\n    r17NormalSurfaceRetired();', 'surface_retirement_observation');
+  source = one(source, '    return {\n      node: ownedNode, gl: ownedGl,', '    r17NormalSurfaceReady();\n    return {\n      node: ownedNode, gl: ownedGl,', 'surface_ready_observation');
+  if (observeRetirement) {
+    source = 'import { r17NormalSurfaceCreatedReceipt, r17NormalSurfaceReadyReceipt, r17NormalSurfaceRetirementStartedReceipt, r17NormalSurfaceRetirementFinishedReceipt } from "./r17-normal-observations";\n' + source;
+    source = one(source, '  const retire = () => {',
+      '  const r17SurfaceReceiptId = r17NormalSurfaceCreatedReceipt();\n' +
+      '  const r17ReadSurfaceFacts = () => {\n' +
+      '    const dimension = (read: () => unknown): number | null => { try { const value = read(); return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1e12 ? value : null; } catch { return null; } };\n' +
+      '    let contextLost: boolean | null = null;\n' +
+      '    try { const value = gl?.isContextLost(); if (typeof value === "boolean") contextLost = value; } catch {}\n' +
+      '    return { nodePresent: Boolean(node), displayPresent: Boolean(display), selectionDisplayPresent: Boolean(selectionDisplay),\n' +
+      '      nodeWidth: dimension(() => node?.width), nodeHeight: dimension(() => node?.height),\n' +
+      '      displayWidth: dimension(() => display.width), displayHeight: dimension(() => display.height),\n' +
+      '      selectionWidth: dimension(() => selectionDisplay?.width), selectionHeight: dimension(() => selectionDisplay?.height),\n' +
+      '      selectionLayerPresent: selectionLayer !== null, contextPresent: gl !== null, contextLost };\n' +
+      '  };\n  const retire = () => {', 'synchronous_boundary_reads_no_retained_native_probe');
+    source = one(source, '    r17NormalSurfaceRetired();\n    retireSelection();\n' +
+      '    // Each retirement step is independent; losing a native context must not\n' +
+      '    // leave the other backing store or a retained Sources surface alive.\n' +
+      '    try { gl?.getExtension("WEBGL_lose_context")?.loseContext(); } catch { /* already unavailable */ }\n' +
+      '    try { if (node) node.width = 0; } catch { /* native node retired */ }\n' +
+      '    try { if (node) node.height = 0; } catch { /* native node retired */ }\n' +
+      '    try { display.width = 0; } catch { /* native node retired */ }\n' +
+      '    try { display.height = 0; } catch { /* native node retired */ }',
+      '    r17NormalSurfaceRetired();\n' +
+      '    const observedSteps: Record<"selection" | "contextExtension" | "contextLoss" | "nodeWidth" | "nodeHeight" | "displayWidth" | "displayHeight",\n' +
+      '      "not-attempted" | "attempted" | "absent" | "unavailable" | "returned" | "threw"> = { selection: "not-attempted", contextExtension: "not-attempted", contextLoss: "not-attempted",\n' +
+      '      nodeWidth: "not-attempted", nodeHeight: "not-attempted", displayWidth: "not-attempted", displayHeight: "not-attempted" };\n' +
+      '    let returned = false;\n    r17NormalSurfaceRetirementStartedReceipt(r17SurfaceReceiptId);\n    try {\n' +
+      '      observedSteps.selection = "attempted";\n' +
+      '      try { retireSelection(); observedSteps.selection = "returned"; } catch (error) { observedSteps.selection = "threw"; throw error; }\n' +
+      '      // Same independent original calls, with explicit attempt/return facts.\n' +
+      '      try {\n        if (!gl) { observedSteps.contextExtension = observedSteps.contextLoss = "absent"; }\n' +
+      '        else {\n          observedSteps.contextExtension = "attempted";\n          let extension: WEBGL_lose_context | null;\n' +
+      '          try { extension = gl.getExtension("WEBGL_lose_context"); observedSteps.contextExtension = extension ? "returned" : "unavailable"; }\n' +
+      '          catch (error) { observedSteps.contextExtension = "threw"; throw error; }\n' +
+      '          if (extension) { observedSteps.contextLoss = "attempted"; try { extension.loseContext(); observedSteps.contextLoss = "returned"; } catch (error) { observedSteps.contextLoss = "threw"; throw error; } }\n' +
+      '          else observedSteps.contextLoss = "unavailable";\n        }\n      } catch { /* original independent failure policy */ }\n' +
+      '      try { if (node) { observedSteps.nodeWidth = "attempted"; node.width = 0; observedSteps.nodeWidth = "returned"; } else observedSteps.nodeWidth = "absent"; } catch { observedSteps.nodeWidth = "threw"; }\n' +
+      '      try { if (node) { observedSteps.nodeHeight = "attempted"; node.height = 0; observedSteps.nodeHeight = "returned"; } else observedSteps.nodeHeight = "absent"; } catch { observedSteps.nodeHeight = "threw"; }\n' +
+      '      try { observedSteps.displayWidth = "attempted"; display.width = 0; observedSteps.displayWidth = "returned"; } catch { observedSteps.displayWidth = "threw"; }\n' +
+      '      try { observedSteps.displayHeight = "attempted"; display.height = 0; observedSteps.displayHeight = "returned"; } catch { observedSteps.displayHeight = "threw"; }\n' +
+      '      returned = true;\n' +
+      '    } finally { r17NormalSurfaceRetirementFinishedReceipt(r17SurfaceReceiptId, r17ReadSurfaceFacts(), observedSteps, returned); }',
+      'post_teardown_dimensions_and_context_result');
+    source = one(source, '    r17NormalSurfaceReady();',
+      '    r17NormalSurfaceReady();\n    r17NormalSurfaceReadyReceipt(r17SurfaceReceiptId, r17ReadSurfaceFacts());', 'one_ready_fact_receipt');
+  }
+  return { source, measureTextCallSites: wrapped.count };
+}
+// Offline consumers may omit the finite shape; the build path always passes its explicit revision below.
+export function normalPage(source, requestedPreparation = source.includes('  const requestedTimePresentation = useMemo(() => presentSkyTime(')) {
   source = 'import { r17Probe } from "./r17-phone-probe-runtime";\n' +
     'import { R17PhoneProbeControls, useR17NormalLifecycle, useR17NormalStop, r17NormalProductPlayStarted } from "./r17-phone-probe-controls";\n' +
     'import { r17NormalCopyReturned } from "./r17-normal-observations";\n' + source;
@@ -119,7 +189,23 @@ export function normalPage(source) {
   source = one(source, '    failed: (error, frame) => {', '    failed: (error, frame) => {\n      r17Probe.count("failedFrames");', 'failures');
   source = one(source, '      return hipsTiles===frame.hipsTiles?frame:{...frame,hipsTiles};',
     '      if (hipsTiles===frame.hipsTiles) return frame;\n      const resolved = {...frame,hipsTiles};\n      r17Probe.inheritFrame(resolved, frame);\n      return resolved;', 'clone_identity');
-  source = one(source, '  const timePresentation = useMemo(() => presentSkyTime(rawReportData, requestedAt, timeModel, timeGeometrySources) ??\n' +
+  if (requestedPreparation) {
+    source = one(source, '  const requestedTimePresentation = useMemo(() => presentSkyTime(rawReportData, requestedAt, timeModel, timeGeometrySources),\n' +
+      '    [rawReportData, requestedAt, timeModel, timeGeometrySources]);',
+      '  const r17TimePreparation = useMemo(() => {\n' +
+      '    const intentSequence = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt\n' +
+      '      ? r17Probe.intentSequence(timeIntent) : null;\n    const token = r17Probe.prepareStarted(intentSequence, "presentation");\n' +
+      '    let completed = false;\n    try {\n' +
+      '      const presentation = presentSkyTime(rawReportData, requestedAt, timeModel, timeGeometrySources);\n' +
+      '      const requested = presentation?.row.at === requestedAt;\n      completed = true;\n' +
+      '      return { presentation, token: requested ? token : null, intentSequence: requested ? intentSequence : null };\n' +
+      '    } finally { r17Probe.prepareFinished(token, completed); }\n' +
+      '  }, [rawReportData, requestedAt, timeModel, timeGeometrySources]);\n' +
+      '  const requestedTimePresentation = r17TimePreparation.presentation;\n' +
+      '  // Read the current preparation even when the product retains its existing draw callback.\n' +
+      '  const r17TimePreparationRef = useRef(r17TimePreparation);\n' +
+      '  r17TimePreparationRef.current = r17TimePreparation;', 'requested_time_memo_r10');
+  } else source = one(source, '  const timePresentation = useMemo(() => presentSkyTime(rawReportData, requestedAt, timeModel, timeGeometrySources) ??\n' +
     '    presentSkyTime(rawReportData, committedAt), [rawReportData, requestedAt, committedAt, timeModel, timeGeometrySources]);',
     '  const r17TimePreparation = useMemo(() => {\n' +
     '    const intentSequence = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt\n' +
@@ -130,10 +216,15 @@ export function normalPage(source) {
     '    } finally { r17Probe.prepareFinished(token, completed); }\n' +
     '  }, [rawReportData, requestedAt, committedAt, timeModel, timeGeometrySources]);\n  const timePresentation = r17TimePreparation.presentation;', 'same_time_memo');
   source = one(source, '    canvasLifecycle.request({ nativeImageGeneration: canvasNodeRevision, orientationRevision: orientation.snapshot.presentationRevision,',
+    (requestedPreparation ? '    const r17RequestPreparation = r17TimePreparationRef.current;\n' +
+      '    const r17UsesRequestedPreparation = Boolean(canvasData && timePresentation === r17RequestPreparation.presentation);\n' : '') +
     '    const r17PreparedRequest: SkyCanvasFrame = { nativeImageGeneration: canvasNodeRevision, orientationRevision: orientation.snapshot.presentationRevision,', 'request_identity_start');
   source = one(source, '      sceneReady, owner, inspection: canvasFrameInfo.inspection },\n      !canvasData || (!selectedManualBasis && pose === null) || previousCanvasModeRef.current !== mode, continuation);',
     '      sceneReady, owner, inspection: canvasFrameInfo.inspection };\n' +
-    '    r17Probe.request(r17PreparedRequest, r17TimePreparation.token, r17TimePreparation.intentSequence);\n    canvasLifecycle.request(r17PreparedRequest,\n' +
+    (requestedPreparation ? '    r17Probe.request(r17PreparedRequest, r17UsesRequestedPreparation ? r17RequestPreparation.token : null,\n' +
+      '      r17UsesRequestedPreparation ? r17RequestPreparation.intentSequence : null);\n' :
+      '    r17Probe.request(r17PreparedRequest, r17TimePreparation.token, r17TimePreparation.intentSequence);\n') +
+    '    canvasLifecycle.request(r17PreparedRequest,\n' +
     '      !canvasData || (!selectedManualBasis && pose === null) || previousCanvasModeRef.current !== mode, continuation);', 'request_identity_end');
   source = one(source, '  const toggleSkyTimePlayback = () => {', '  useR17NormalStop(runStartAt => {\n' +
     '    const time = observationTime.snapshot();\n    if (!skyTimeIntentCurrent() || datePickerOpenRef.current || time.mode !== "PLAYING" || time.runStartAt !== runStartAt) return false;\n' +
@@ -142,7 +233,7 @@ export function normalPage(source) {
     '    setTimeIntent(observationTime.play(Date.now()));\n    r17NormalProductPlayStarted(observationTime.snapshot().runStartAt);', 'normal_guarded_product_play');
   return one(source, '  </SkyNavigationMenu>;', '    <R17PhoneProbeControls onPrepareFov={fov => { if (!skyDisplayCurrent()) return; stopBrowsingAnimation(); setVerticalFovDeg(fov); setSkyControlPanel(null); }} onStart={key => setSkyControlPanel(key.endsWith("-camera") ? null : "time")} />\n  </SkyNavigationMenu>;', 'task_only_menu');
 }
-async function preparedSources(normal, template, binding) {
+export async function preparedSources(normal, template, binding) {
   const output = {}, instrumentation = {};
   for (const file of Object.keys(normal)) output[file] = await fs.readFile(path.join(root, file));
   const edit = (name, transform) => { const file = feature + name, original = output[file]; const result = transform(original.toString('utf8').replaceAll('\r\n', '\n')); output[file] = result; instrumentation[file] = { beforeSha256: sha(original), afterSha256: sha(result) }; };
@@ -175,13 +266,15 @@ async function preparedSources(normal, template, binding) {
     return source;
   });
   edit('sky-canvas-surface.ts', source => {
-    source = 'import { r17NormalMeasuredText, r17NormalSurfaceReady, r17NormalSurfaceRetired } from "./r17-normal-observations";\n' + source;
-    const wrapped = wrapCalls(source, value => value === 'context.measureText' || value === 'context.measureText!', call => 'r17NormalMeasuredText('+call+')', 'actual_native_measure_text');
-    instrumentation['sky-canvas-surface.ts:measureTextCallSites'] = wrapped.count;
-    source = one(wrapped.source, '    disposed = true;', '    disposed = true;\n    r17NormalSurfaceRetired();', 'surface_retirement_observation');
-    return one(source, '    return {\n      node: ownedNode, gl: ownedGl,', '    r17NormalSurfaceReady();\n    return {\n      node: ownedNode, gl: ownedGl,', 'surface_ready_observation');
+    const observed = normalSurface(source);
+    instrumentation['sky-canvas-surface.ts:measureTextCallSites'] = observed.measureTextCallSites;
+    if (retirementReceipt) instrumentation.surfaceRetirement = { schemaVersion: 'starward-r17-normal-surface-retirement-v1',
+      ownKey: `starward.r17.normal-surface-retirement.v1.${binding}`, lastSurfaceOnly: true,
+      nativeObjectsRetained: false, perFrameSerialization: false, normalPlayTrialMs: 60000, metricsExportMs: 15000,
+      afterPauseDrainMinimumMs: 30000, drainOwner: 'root-existing-device-and-process-observation' };
+    return observed.source;
   });
-  edit('spot-sky-page.tsx', normalPage);
+  edit('spot-sky-page.tsx', source => normalPage(source, reviewRevision >= 10));
   // Hidden maps preserve exact emitted positions without shipping map payloads
   // or adding sourceMappingURL loads to the phone bundle.
   const configPath = 'apps/wechat-miniapp/config/index.ts';
@@ -220,6 +313,9 @@ async function preparedSources(normal, template, binding) {
       layout: output[feature + 'orientation-ruler-layout.ts'].toString('utf8').replaceAll('\r\n', '\n'),
       nativePosition: output['apps/wechat-miniapp/src/components/ruler-scroll-position.ts'].toString('utf8').replaceAll('\r\n', '\n') });
     if (nativeAdmission) observed = { ...observed, ...addR17NormalInput(observed) };
+    if (retirementReceipt) observed.controls = one(observed.controls,
+      '完整正常Sky；manual-input等实际时间输入，15秒导出；正常Play仍20秒同次暂停',
+      '完整正常Sky；manual-input等实际时间输入，15秒导出；正常Play按本次60秒同次暂停', 'finite_r9_trial_copy');
     const files = { 'r17-phone-probe-runtime.ts': observed.runtime, 'r17-phone-probe-controls.tsx': observed.controls,
       'spot-sky-page.tsx': observed.page, 'orientation-ruler-layout.ts': observed.layout,
       'r17-ruler-scroll-position.ts': observed.nativePosition, 'r17-ruler-entry-runtime.ts': nativeAdmission
@@ -264,7 +360,8 @@ async function verifyCurrent(manifest, template) {
   if (manifest.checks) return manifest.checks;
   const { verifyNormalBaselineV3Fixture } = await import(pathToFileURL(path.join(here, 'r17-normal-baseline-v3-fixture.mjs')));
   return verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot: root, feature, ts, buildGeneration,
-    protocolPath: path.join(here, protocolName), allowACorrelation: observationA1, allowRulerEntry: rulerEntry });
+    protocolPath: path.join(here, protocolName), allowACorrelation: observationA1, allowRulerEntry: rulerEntry,
+    retirementObservation: retirementReceipt, requestedPreparation: reviewRevision >= 10 });
 }
 async function deltaTypecheck() {
   const diagnostics = directory => {
@@ -337,6 +434,7 @@ async function main() {
       bridgePort, compiledBridgeOriginSha256: selectedOrigin.sha256,
       ...(observationA1 ? { observationRevision: 'observe-a1', terrainWaitAction: 'gesture', ...(rulerEntry ? { rulerEntry: nativeAdmission ? 'immediate-wide-time-v2' : 'immediate-wide-time-v1' } : {}),
         ...(nativeAdmission ? { manualInput: 'legal-onPreview-start-delay-0-v1' } : {}),
+        ...(retirementReceipt ? { surfaceRetirement: 'single-source-bound-ready-retire-v1', normalPlayTrialMs: 60000 } : {}),
         ...(reviewRevision > 1 ? { reviewRevision } : {}) } : {}) };
     const buildSourceSha256 = sha(JSON.stringify(bindingInput)), prepared = await preparedSources(productionSourceBindings, template, buildSourceSha256);
     const manifest = { scope, createdAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3, bridgePort,
@@ -386,7 +484,7 @@ async function main() {
   const evidence = { scope, status: observationA1 ? 'BUILD_READY_NORMAL_A1_UNACTIVATED_PHONE_UNVERIFIED' : 'BUILD_READY_NORMAL_BASELINE_V3_UNACTIVATED_PHONE_UNVERIFIED',
     ...(observationA1 ? { observationRevision: 'observe-a1', diagnosticLabel: normalLabel, terrainWaitAction: 'gesture', protocol: protocolName,
       ...(reviewRevision > 1 ? { reviewRevision,
-        historicalA1OwnerArchive: relative(path.join(work, `tmp/r17-normal-a1-owner-before-review-r${reviewRevision}-20261019/archive-bindings.json`)),
+        historicalA1OwnerArchive: historicalOwnerArchive,
         historicalA1Manifest: relative(path.join(work, reviewRevision >= 3 ? `tmp/r17-normal-a1-review-r${reviewRevision - 1}/manifest.json` : 'tmp/r17-normal-a1/manifest.json')) } : {}),
       historicalGen25OwnerArchive: relative(path.join(work, 'tmp/r17-normal-gen25-owner-before-a1-20261019/archive-bindings.json')) } : {}),
     preparedAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
@@ -399,7 +497,7 @@ async function main() {
       'v3 Date.now intervals are approximate wall elapsed, not thread CPU or physical presentation; unknown and sub-resolution coverage stay null.',
       'Page observer latency retains its legacy producer clock semantics and is not calibrated by probe v3; key count is not payload bytes; 16 bounded serialization samples add observer cost.',
       'Native measureText and returned-copy counters add numeric call-site overhead, no native method replacement/cache/history/context retention; unobserved scalar fields stay null.',
-      '15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.',
+      retirementReceipt ? '15s metrics retain their historical window; r9 and r10 use a 60s guarded same-run Pause. Pause relative timestamps beyond the existing 60s clock range stay null. Root owns at least 30s paused drain and source-bound own-key readback; no full-B or GPU-retention claim follows from this receipt.' : '15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.',
       'Hidden source maps are external diagnostic artifacts, absent from both phone bundle copies.',
       'Static budget/inspection and portable fixtures do not establish official upload size, current bridge admission, real nonempty Sky, target clock coverage, sustainable playback or R17 A/B acceptance.'] };
   await fs.writeFile(path.join(work, preparationName), JSON.stringify(evidence, null, 2) + '\n');

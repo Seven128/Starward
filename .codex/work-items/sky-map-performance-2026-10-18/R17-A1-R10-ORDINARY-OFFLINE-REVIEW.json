@@ -1,0 +1,606 @@
+{
+  "schemaVersion": "starward-r17-r10-ordinary-offline-review-v1",
+  "reviewDate": "2026-10-19",
+  "reviewer": "independent_offline_agent",
+  "verdict": "OFFLINE_INTERPRETATION_COMPLETE_B_UNVERIFIED",
+  "scope": "development_feedback_only",
+  "candidate": {
+    "appSha256": "077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094",
+    "buildSourceSha256": "e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e",
+    "files": 337,
+    "bytes": 5003601,
+    "runtimeAppIdVerified": false,
+    "phoneBundleReadback": false
+  },
+  "archiveManifestSha256": "5e5f746bcebcecb7588763a2a7e5ac8b33fa45d0524034a6ec2e95a7398f3b82",
+  "originalBindingCount": 20,
+  "allOriginalsBeforeAfterMatch": true,
+  "receiptValidation": {
+    "schema": "starward-r10-ordinary-receipt-validation-v1",
+    "buildManifestSha256": "29993ae0f17a471b855620e8f96244238a5fb4d25fdca104b3f30a8e2c949d7b",
+    "protocolBindings": [
+      {
+        "name": "r17-phone-probe-protocol.mjs",
+        "sha256": "52558cf12507b38426d49494b8856a90c361270a791a98876fcc665ecf477be9"
+      },
+      {
+        "name": "r17-phone-probe-v2-protocol.mjs",
+        "sha256": "9d596e05a51187dc5fb7e609b78e9dd6f4d09aa59120ecea364aadc714809127"
+      },
+      {
+        "name": "r17-phone-probe-v3-protocol.mjs",
+        "sha256": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120"
+      },
+      {
+        "name": "r17-a-correlation-protocol.mjs",
+        "sha256": "a4a2deb3f5b544c9e2ed0db5e6b2161a430eb50ac969fd88eb6dce18cc61bbf7"
+      },
+      {
+        "name": "r17-ruler-entry-protocol.mjs",
+        "sha256": "708e2b2f224a44aea83c6414d3076bb79a33e1e3672668000db75215b5c189da"
+      },
+      {
+        "name": "r17-normal-input-protocol.mjs",
+        "sha256": "4f48172576d0080e572cc95a67a86566ea96ee87cea87eaac5565ba91400325a"
+      }
+    ],
+    "checks": {
+      "firstMetrics": true,
+      "firstTerminal": true,
+      "firstTerminalMatches": true,
+      "secondMetrics": true,
+      "firstSourceMatches": true,
+      "secondSourceMatches": true
+    },
+    "node": "v24.16.0"
+  },
+  "videos": [
+    {
+      "key": "run1",
+      "relative": "feedback/starward-device-test-Klvb4h/recording-1792412648234.mp4",
+      "stream": {
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 2376,
+        "time_base": "1/90000",
+        "duration": "14.985700",
+        "nb_frames": "414"
+      },
+      "format": {
+        "duration": "14.985700"
+      },
+      "decodedFrames": 414,
+      "firstPtsSeconds": 0.0,
+      "lastPtsSeconds": 14.949689,
+      "maximumEncodedGapSeconds": 3.139067,
+      "selected": [
+        {
+          "index": 0,
+          "ptsSeconds": 0.0,
+          "relative": "run1/frame-001.png",
+          "bytes": 340799,
+          "sha256": "2b8ee5b5cce0c79c35c9cc744ecb581ce461d912a30dd88fdce2ba9447b080f2",
+          "actuallyViewed": true,
+          "observed": "04:30:00 Play"
+        },
+        {
+          "index": 1,
+          "ptsSeconds": 3.139067,
+          "relative": "run1/frame-002.png",
+          "bytes": 348686,
+          "sha256": "48d7ed7f37a2e3b5cc7cf5efab9d7e05bd1568e4d3f1a4377fd13e7923028b41",
+          "actuallyViewed": true,
+          "observed": "04:30:00 playing"
+        },
+        {
+          "index": 32,
+          "ptsSeconds": 3.9866,
+          "relative": "run1/frame-003.png",
+          "bytes": 404648,
+          "sha256": "a66c70a6d3327529ddf7a1d61e3b2ca49337ddfef4fb09c61b2710145e6e7f93",
+          "actuallyViewed": true,
+          "observed": "04:30:00 playing"
+        },
+        {
+          "index": 171,
+          "ptsSeconds": 8.009711,
+          "relative": "run1/frame-004.png",
+          "bytes": 400942,
+          "sha256": "16b5575100892ed5d3dc870658cbfe1e1ea0975729b3b339b567e003fdc1f81c",
+          "actuallyViewed": true,
+          "observed": "04:30:04 playing"
+        },
+        {
+          "index": 309,
+          "ptsSeconds": 11.984944,
+          "relative": "run1/frame-005.png",
+          "bytes": 400665,
+          "sha256": "24ca65c58d6045c6f169437d0d4d37a9394a99263d14a10fe2f0175d80a3c9bd",
+          "actuallyViewed": true,
+          "observed": "04:30:08 playing"
+        },
+        {
+          "index": 413,
+          "ptsSeconds": 14.949689,
+          "relative": "run1/frame-006.png",
+          "bytes": 398150,
+          "sha256": "b69d67d34d6c424ea9ee19c439b90d1d50b05548ba4e23ee143f72bb519350b1",
+          "actuallyViewed": true,
+          "observed": "04:30:11 playing"
+        }
+      ],
+      "noTrim": true,
+      "noPtsReset": true,
+      "noDuplicatedFrames": true
+    },
+    {
+      "key": "run2",
+      "relative": "feedback/starward-device-test-Klvb4h/recording-1792413111711.mp4",
+      "stream": {
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 2376,
+        "time_base": "1/90000",
+        "duration": "14.972356",
+        "nb_frames": "316"
+      },
+      "format": {
+        "duration": "14.972356"
+      },
+      "decodedFrames": 316,
+      "firstPtsSeconds": 0.0,
+      "lastPtsSeconds": 14.938956,
+      "maximumEncodedGapSeconds": 2.3157,
+      "selected": [
+        {
+          "index": 0,
+          "ptsSeconds": 0.0,
+          "relative": "run2/frame-001.png",
+          "bytes": 340180,
+          "sha256": "826a1c4db06cfefb0effb424a96dbf195e530e9e54c7a32c4120dd5e64517653",
+          "actuallyViewed": true,
+          "observed": "04:30:00 Play"
+        },
+        {
+          "index": 1,
+          "ptsSeconds": 2.3157,
+          "relative": "run2/frame-002.png",
+          "bytes": 343993,
+          "sha256": "55855dbc018e259647d117edadac67114d1845ae3c6738e6bd1491da1084e402",
+          "actuallyViewed": true,
+          "observed": "04:30:00 Play"
+        },
+        {
+          "index": 42,
+          "ptsSeconds": 3.991244,
+          "relative": "run2/frame-003.png",
+          "bytes": 396230,
+          "sha256": "55e20850464b6805921382c4cf2ec20ea9be9258f29cadf88d822165c8eeb6ec",
+          "actuallyViewed": true,
+          "observed": "04:30:00 playing"
+        },
+        {
+          "index": 162,
+          "ptsSeconds": 8.076689,
+          "relative": "run2/frame-004.png",
+          "bytes": 398335,
+          "sha256": "8e3448a6030305464e2f93d14000f98d9367411cc3e9d10c7d269725b0d8d63c",
+          "actuallyViewed": true,
+          "observed": "04:30:04 playing"
+        },
+        {
+          "index": 266,
+          "ptsSeconds": 11.952733,
+          "relative": "run2/frame-005.png",
+          "bytes": 398523,
+          "sha256": "b37c6f6080d766ba04ebeb344bb89a32b96269b8209cdf669a500b221b77c41e",
+          "actuallyViewed": true,
+          "observed": "04:30:08 playing"
+        },
+        {
+          "index": 315,
+          "ptsSeconds": 14.938956,
+          "relative": "run2/frame-006.png",
+          "bytes": 395686,
+          "sha256": "6bf9b7927215a9cbfba4514c1fdc8cc7f9b0bb68fdbdb3b81c6993d22195a79f",
+          "actuallyViewed": true,
+          "observed": "04:30:11 playing"
+        }
+      ],
+      "noTrim": true,
+      "noPtsReset": true,
+      "noDuplicatedFrames": true
+    }
+  ],
+  "originalPngsActuallyViewed": [
+    {
+      "relative": "feedback/starward-device-test-Klvb4h/screen-8fbab057-cefb-4bca-b562-e08bc666d2f7.png",
+      "capturedAt": "2026-10-19T12:22:50.836Z",
+      "actuallyViewed": true,
+      "observed": "04:30:00 Play; nonempty Sky"
+    },
+    {
+      "relative": "feedback/starward-device-test-Klvb4h/screen-602385c4-acd1-4d8d-86f1-9acb0007d1c2.png",
+      "capturedAt": "2026-10-19T12:24:08.234Z",
+      "actuallyViewed": true,
+      "observed": "04:30:13 playing; nonempty Sky"
+    },
+    {
+      "relative": "feedback/starward-device-test-Klvb4h/screen-4fd3cd56-a733-4401-92cc-df06606140a2.png",
+      "capturedAt": "2026-10-19T12:28:06.015Z",
+      "actuallyViewed": true,
+      "observed": "04:31:00 preview; Play button; nonempty Sky"
+    },
+    {
+      "relative": "feedback/starward-device-test-Klvb4h/screen-0e63d1f0-5e02-4156-a7df-4d62df0d8bb8.png",
+      "capturedAt": "2026-10-19T12:30:39.976Z",
+      "actuallyViewed": true,
+      "observed": "r10 label; run1 same-run Pause receipt exported"
+    },
+    {
+      "relative": "feedback/starward-device-test-Klvb4h/screen-0a311df5-f9f8-494b-b64d-b3b7eb6fb4b3.png",
+      "capturedAt": "2026-10-19T12:31:21.473Z",
+      "actuallyViewed": true,
+      "observed": "04:30:00 Play; nonempty Sky"
+    },
+    {
+      "relative": "feedback/starward-device-test-Klvb4h/screen-55a769ad-f0bd-45ac-9eb2-827d017867cb.png",
+      "capturedAt": "2026-10-19T12:31:51.711Z",
+      "actuallyViewed": true,
+      "observed": "04:30:12 playing; nonempty Sky"
+    }
+  ],
+  "viewing": {
+    "decodedFrames": 730,
+    "encodedFramesActuallyViewed": 12,
+    "originalPngsActuallyViewed": 6,
+    "allFramesVisuallyReviewed": false,
+    "physicalFpsClaim": false
+  },
+  "runs": [
+    {
+      "runId": "r17-1-594bozykj3",
+      "clock": {
+        "source": "Date.now",
+        "unit": "ms",
+        "kind": "wall-elapsed",
+        "monotonic": false,
+        "availability": "available",
+        "nominalResolutionMs": 1,
+        "effectiveResolutionMs": null,
+        "reads": 17445,
+        "invalidReads": 0,
+        "backwardReads": 0
+      },
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 14008,
+        "elapsedStatus": "valid",
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 500,
+        "preparedRequests": 583,
+        "paintAttempts": 474,
+        "nativeCallbacks": 474,
+        "acceptedCopies": 474,
+        "sceneFinishes": 474,
+        "glDrawSubmissions": 5688,
+        "bscSubmittedStars": 85997,
+        "saoSubmittedStars": 64386,
+        "acceptedBscObjects": 85997,
+        "acceptedSaoObjects": 48744,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 666,
+        "saoRowsMax": 666,
+        "selectedTilesMin": 16,
+        "selectedTilesMax": 16,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 45,
+        "fovMax": 45
+      },
+      "binding": {
+        "mode": "normal",
+        "buildGeneration": 27,
+        "buildSourceSha256": "e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e",
+        "windowId": 1
+      },
+      "controls": {
+        "recordingStartRelativeMs": 1018,
+        "sealRelativeMs": 15026,
+        "events": {
+          "actualPlay": {
+            "calls": 1,
+            "firstRelativeMs": 1,
+            "lastRelativeMs": 1,
+            "lastResult": true
+          },
+          "export": {
+            "calls": 1,
+            "firstRelativeMs": 15026,
+            "lastRelativeMs": 15026,
+            "lastResult": null
+          },
+          "pauseAttempt": {
+            "calls": 0,
+            "firstRelativeMs": null,
+            "lastRelativeMs": null,
+            "lastResult": null
+          },
+          "pauseSuccess": {
+            "calls": 0,
+            "firstRelativeMs": null,
+            "lastRelativeMs": null,
+            "lastResult": null
+          },
+          "terminalExport": {
+            "calls": 0,
+            "firstRelativeMs": null,
+            "lastRelativeMs": null,
+            "lastResult": null
+          }
+        }
+      }
+    },
+    {
+      "runId": "r17-2-dt880drq69",
+      "clock": {
+        "source": "Date.now",
+        "unit": "ms",
+        "kind": "wall-elapsed",
+        "monotonic": false,
+        "availability": "available",
+        "nominalResolutionMs": 1,
+        "effectiveResolutionMs": null,
+        "reads": 11622,
+        "invalidReads": 0,
+        "backwardReads": 0
+      },
+      "window": {
+        "startDelayMs": 1000,
+        "durationLimitMs": 45000,
+        "elapsedMs": 14768,
+        "elapsedStatus": "valid",
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 358,
+        "preparedRequests": 486,
+        "paintAttempts": 319,
+        "nativeCallbacks": 319,
+        "acceptedCopies": 319,
+        "sceneFinishes": 319,
+        "glDrawSubmissions": 3828,
+        "bscSubmittedStars": 57882,
+        "saoSubmittedStars": 43336,
+        "acceptedBscObjects": 57882,
+        "acceptedSaoObjects": 32809,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 666,
+        "saoRowsMax": 666,
+        "selectedTilesMin": 16,
+        "selectedTilesMax": 16,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 45,
+        "fovMax": 45
+      },
+      "binding": {
+        "mode": "normal",
+        "buildGeneration": 27,
+        "buildSourceSha256": "e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e",
+        "windowId": 2
+      },
+      "controls": {
+        "recordingStartRelativeMs": 1013,
+        "sealRelativeMs": 15781,
+        "events": {
+          "actualPlay": {
+            "calls": 1,
+            "firstRelativeMs": 2,
+            "lastRelativeMs": 2,
+            "lastResult": true
+          },
+          "export": {
+            "calls": 1,
+            "firstRelativeMs": 15781,
+            "lastRelativeMs": 15781,
+            "lastResult": null
+          },
+          "pauseAttempt": {
+            "calls": 0,
+            "firstRelativeMs": null,
+            "lastRelativeMs": null,
+            "lastResult": null
+          },
+          "pauseSuccess": {
+            "calls": 0,
+            "firstRelativeMs": null,
+            "lastRelativeMs": null,
+            "lastResult": null
+          },
+          "terminalExport": {
+            "calls": 0,
+            "firstRelativeMs": null,
+            "lastRelativeMs": null,
+            "lastResult": null
+          }
+        }
+      }
+    }
+  ],
+  "firstTerminal": {
+    "actualPlayCalls": 1,
+    "pauseAttemptCalls": 1,
+    "pauseSuccessCalls": 1,
+    "pauseResult": true,
+    "exactPauseRelativeMs": null,
+    "terminalMatches": true
+  },
+  "secondTerminalPresent": false,
+  "watches": [
+    {
+      "relative": "memory/r10-ordinary-60s-play-1792412164142.ndjson",
+      "rows": 13,
+      "validForegroundRows": 13,
+      "hostSpanMs": 120057,
+      "firstPssKiB": 1469753,
+      "peakPssKiB": 1473070,
+      "lastPssKiB": 1448909,
+      "withinWatchDeltaKiB": -20844
+    },
+    {
+      "relative": "memory/r10-ordinary-active-drain-1792412839186.ndjson",
+      "rows": 13,
+      "validForegroundRows": 13,
+      "hostSpanMs": 120569,
+      "firstPssKiB": 2673278,
+      "peakPssKiB": 2673278,
+      "lastPssKiB": 2654354,
+      "withinWatchDeltaKiB": -18924
+    },
+    {
+      "relative": "memory/r10-ordinary-matched-play-drain-1792413069343.ndjson",
+      "rows": 5,
+      "validForegroundRows": 4,
+      "hostSpanMs": 67018,
+      "firstPssKiB": 2621654,
+      "peakPssKiB": 2870073,
+      "lastPssKiB": 2870073,
+      "withinWatchDeltaKiB": 248419
+    }
+  ],
+  "matchedWatchSamples": [
+    {
+      "startElapsedMs": 0,
+      "endElapsedMs": 1689,
+      "state": "miniapp_foreground",
+      "pssKiB": 2621654
+    },
+    {
+      "startElapsedMs": 16698,
+      "endElapsedMs": 18436,
+      "state": "miniapp_foreground",
+      "pssKiB": 2614003
+    },
+    {
+      "startElapsedMs": 33445,
+      "endElapsedMs": 35182,
+      "state": "miniapp_foreground",
+      "pssKiB": 2759813
+    },
+    {
+      "startElapsedMs": 50187,
+      "endElapsedMs": 51817,
+      "state": "miniapp_foreground",
+      "pssKiB": 2870073
+    },
+    {
+      "startElapsedMs": 66820,
+      "endElapsedMs": 67018,
+      "state": "miniapp_not_foreground",
+      "pssKiB": null
+    }
+  ],
+  "clockAssociation": {
+    "watchClock": "host.performance.now",
+    "watchAbsoluteEpochPresent": false,
+    "watchRunIdPresent": false,
+    "videoClock": "encoded PTS",
+    "pngClock": "host capturedAt",
+    "metricsClock": "target Date.now wall-elapsed",
+    "exactCrossClockAlignmentEstablished": false,
+    "operationalSameRunAssociationReused": true,
+    "watchDurationIsPlayDuration": false,
+    "crossWatchPidIdentityEstablished": false
+  },
+  "decisions": [
+    "Second original video proves normal nonempty playback through the viewed segment; its final PNG remains playing at 04:30:12.",
+    "Same-watch foreground PSS changes by +248419 KiB between its first and last valid rows; no precise per-Play growth rate is claimed.",
+    "No new evidence selects a leaking allocator, erroneous retirement or unbounded cache owner for an offline repair.",
+    "Reuse r7 allocation/source mapping and r9 retirement evidence; do not repeat qualification or resume gen24/adjacent disable variants.",
+    "Continue independent Git/CI/service obligations while phone-dependent sustained tail and recovery remain unverified."
+  ],
+  "unverified": [
+    "Second-run actual Play completion/Pause/drain and the reason it is later not foreground.",
+    "Sustained ordinary-preview stability and matching Cancel/Map resource recovery.",
+    "Retaining roots and physical native/GPU memory retirement.",
+    "Complete Sky B and overall Goal acceptance."
+  ],
+  "invalidInferences": [
+    "miniapp_not_foreground means crash/OOM",
+    "Missing terminal means operation did not happen or normal Pause succeeded",
+    "67.018-second watch means 67.018-second playback",
+    "Cross-file slot0 establishes same PID",
+    "PSS minus r7 sampled surviving bytes establishes native leakage",
+    "Unknown identifies JS/native/GPU"
+  ],
+  "sourceEvidenceReused": [
+    "R17-NORMAL-R7-ALLOCATION-RESULT.md",
+    "R17-A1-R9-PLAY-EXIT-RESULT.md",
+    "R17-NORMAL-R9-RETIREMENT-OBSERVATION.md",
+    "R17-NORMAL-R9-RETIREMENT-REVIEW.md",
+    "R17-A1-R10-ORDINARY-PARTIAL.md"
+  ],
+  "privateArtifacts": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r10-ordinary-offline-review-20261019",
+    "bindingsFile": "review-input-bindings.private.json",
+    "bindingsSha256": "5983673eaa580a7c886fd36407745afc16a7d3b89d300f26aed511c6433286a7",
+    "receiptValidationFile": "receipt-validation.private.json",
+    "receiptValidationSha256": "188edec96cb3779ae70f9bb99c7d162496c02f0e92424db91ba5e8abcd55b422"
+  },
+  "cleanup": {
+    "deviceAdbIdeServiceGitOperations": false,
+    "productionOrPlanHandoffIndexChanges": false,
+    "deletedFiles": false,
+    "originalsUnmodified": true,
+    "protectedResourcesUntouched": [
+      "gen26 UNKNOWN",
+      "8791 account",
+      "N05 draft",
+      "delivered R6 reminder",
+      "pairing",
+      "VPN"
+    ]
+  }
+}

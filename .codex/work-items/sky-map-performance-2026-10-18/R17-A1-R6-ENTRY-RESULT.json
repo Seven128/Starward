@@ -1,0 +1,675 @@
+{
+  "schema": "starward-r6-entry-independent-output-review-v1",
+  "reviewedAtUtc": "2026-10-19T06:59:04.446Z",
+  "scope": "development_feedback_only",
+  "overallVerdict": "FAILED_NATIVE_ENTRY_POSITION_COHERENCE",
+  "candidate": {
+    "applicationSha256": "62ac5b330d8a735eadc43efc174e2e6f9b633ff7c543f38575e1fd38447e82b1",
+    "buildSourceSha256": "95d1e91d1c68ee154de1251bd41c32852938e0bfcab13feda7e144741ce0c7c9",
+    "files": 337,
+    "bytes": 4995513,
+    "buildGeneration": 27,
+    "feedbackGeneration": 1,
+    "uniqueVisibleLabel": "R17 正常Sky关联 A1 r6",
+    "sourceMapBindingsSha256": "c478b21f1d3cb31f6eb84c39c2a53ece4b608ae2bfd707acdf3ee2ffaafbd410",
+    "officialResultAndBindingAuthority": "root reports one terminal official business success and actual operator label binding; frozen screenshot/video visible label independently viewed; runtimeAppID and full phone bundle bytes not read back"
+  },
+  "archive": {
+    "path": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r6-entry-motion-trace-archive-20261019",
+    "rawFiles": 23,
+    "rawBytes": 5177478,
+    "rawManifestSha256": "ad497b1a59cdca0e40b46ec909bb0b8bcc73a4b250cf99f8a3a4c069ecd92fd3",
+    "materializedFiles": 12,
+    "materializedBytes": 3625187,
+    "materializedManifestSha256": "9c2147e32ea6ca94c80d7e9eaaf2d6132790afa252ec312f8a988425bdb42f59",
+    "exactMapSources": 6,
+    "mapAndJavascriptReadback": true,
+    "protocolDependencies": 6,
+    "newProtocolDependencyFiles": 4,
+    "newProtocolDependencyBytes": 38847,
+    "protocolManifestSha256": "83ec1cb71827f13d2d60360a425d5b3bc18e2613f600aa17ef89be7df479b106",
+    "frozenValidatorStrictPass": true,
+    "sidecars": 6,
+    "sidecarIntegritySha256": "090ad4d2ec7e6d25b1c919dfa0b23ab4c3027c8c4b3209f94d2c7936c1d82803",
+    "pixelMeasurementsSha256": "640646cea79ad4ec8b1191a8317798d10cae2d6dad688e73aeaa2cf796791196",
+    "derivedFiles": 97,
+    "derivedBytes": 34802892,
+    "samplesManifestSha256": "11bc93a0b9bf95c445f2eb2aa885b08e998fbe90050ec2f64521bbee84e0d96b",
+    "sourceBeforeAfterAndCopyAllMatchedAtFreeze": true,
+    "allFrozenArtifactsRechecked": true,
+    "originalsAndPriorBatchesPreserved": true,
+    "lateIncidentalCapture": "bound/screen-a98d687b-ccda-4d9b-a3b1-cf9c0c70d4db.png at 2026-10-19T06:52:00.820Z was present at freeze; archived only, not used as entry process or endpoint"
+  },
+  "video": {
+    "file": "recording-1792392518525.mp4",
+    "requestedSeconds": 15,
+    "containerDurationSeconds": 8.252611,
+    "encodedFrames": 40,
+    "firstPtsSeconds": 0,
+    "lastPtsSeconds": 6.654333,
+    "framesDirectlyDecoded": 40,
+    "timeBase": "1/90000",
+    "decoder": "Existing ffmpeg 9.0.2; fps_mode passthrough, enc_time_base 1:90000; one PNG per original frame, no trim/rebase. Initial40-PNG extraction had output timestamp-quantization warnings; explicit exact-timebase pass had no stderr and all40 PNG bytes were identical.",
+    "firstButtonPressedFrame": {
+      "frame": 1,
+      "ptsSeconds": 3.158022
+    },
+    "firstDiscerniblePanel": {
+      "frame": 5,
+      "ptsSeconds": 3.948589,
+      "date": 19,
+      "time": "04:30",
+      "alpha": "low"
+    },
+    "firstClearWrongTrack": {
+      "frame": 6,
+      "ptsSeconds": 3.963289,
+      "selectedText": "04:30:00",
+      "trackLabels": [
+        "12:00",
+        "14:00",
+        "16:00"
+      ],
+      "selectedTick": "offscreen right"
+    },
+    "dateAndSelectedTimeTextStayed": true,
+    "sampledLateTail": {
+      "frames": [
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "ptsSeconds": [
+        4.891078,
+        4.907356,
+        5.016467,
+        5.056044,
+        6.654333
+      ],
+      "selectedTickX": [
+        540,
+        540,
+        540,
+        540,
+        540
+      ],
+      "meaning": "Five encoded samples agree at center; sparse PTS including1.598289s gap and final-frame holding are not continuously captured 15s or physical presentation/FPS."
+    },
+    "videoPtsToPhoneDateNowCalibration": "UNKNOWN; filename and capturedAt are not recording-start anchors",
+    "physicalFps": "UNKNOWN"
+  },
+  "pixels": {
+    "coordinateSpace": "original1080x2376 raster",
+    "axisReferenceX": 540,
+    "axisEndpointBBox": [
+      539,
+      2051,
+      541,
+      2097
+    ],
+    "selectionRule": "Frames25-34: selected 04:30 index33 is the lowest-top long tick, crosschecked by 02:00 index28 + five 30-minute spacings and declared selected mark/curvature. Frames35-39 and endpoint: same selected tick under blue axis, whose top occludes its white top; use label cadence and identity continuity, not blind longest-mark classification. Earlier frames show 12:00 at axis and 14:00/16:00 on right; selected04:30 is outside the visible track.",
+    "firstVisibleVerdict": "FAILED: first visible native viewport is at start-row12:00 while selected text remains19日04:30; correct04:30 tick initially outside visible track",
+    "decisiveFrames": [
+      {
+        "frame": 25,
+        "ptsSeconds": 4.714856,
+        "selectedTickX": 993,
+        "selectedMinusAxisPx": 453
+      },
+      {
+        "frame": 29,
+        "ptsSeconds": 4.7805,
+        "selectedTickX": 689,
+        "selectedMinusAxisPx": 149
+      },
+      {
+        "frame": 33,
+        "ptsSeconds": 4.858022,
+        "selectedTickX": 559.5,
+        "selectedMinusAxisPx": 19.5
+      },
+      {
+        "frame": 34,
+        "ptsSeconds": 4.873667,
+        "selectedTickX": 549,
+        "selectedMinusAxisPx": 9
+      },
+      {
+        "frame": 35,
+        "ptsSeconds": 4.891078,
+        "selectedTickX": 540,
+        "selectedMinusAxisPx": 0
+      },
+      {
+        "frame": 39,
+        "ptsSeconds": 6.654333,
+        "selectedTickX": 540,
+        "selectedMinusAxisPx": 0
+      }
+    ],
+    "encodedCrossing": "No overshoot left of axis observed once true04:30 tick becomes visible; approaches from right993→540. This does not repair the earlier visible wrong viewport.",
+    "emptyRuler": "No separately visible empty-ruler state identified in encoded frames. Frames2-4 have no discernible panel during transparent preparation; not labeled a visible empty尺.",
+    "separateEndpoint": {
+      "file": "screen-2558a6a5-bae6-4fdd-a045-d22928d50b16.png",
+      "selectedTickX": 540,
+      "aligned": true
+    },
+    "measurementTolerance": "none introduced; approximate encoded raster centers only"
+  },
+  "trace": {
+    "protocol": "starward-r17-ruler-entry-v2",
+    "strictValidation": true,
+    "events": 74,
+    "dropped": 0,
+    "overflow": false,
+    "exportOmitted": 0,
+    "rejectedWindowEvents": 0,
+    "collection": "immediate-wide-time; not delayed with base Scene metrics",
+    "meaning": "requests-offsets-not-presentation",
+    "startDateNow": 1792392502983,
+    "phoneClock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 85,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "baseMetricWindow": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 14008,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "stopRelativeMs": 15014,
+    "rowsVersions": [
+      1
+    ],
+    "owners": [
+      1
+    ],
+    "rowCount": 48,
+    "activeAndCommittedIndex": 33,
+    "firstRowAt": 1792296000000,
+    "lastRowAt": 1792380600000,
+    "measurements": 2,
+    "nativeMoves": 2,
+    "gestureTakeoverInTrace": false,
+    "keyEvents": [
+      {
+        "sequence": 9,
+        "code": 24,
+        "event": "props",
+        "relativeMs": 55,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "rowCount": 48,
+        "activeIndex": 33,
+        "committedIndex": 33,
+        "selectionReady": 1,
+        "layoutReady": 0,
+        "preparing": 0,
+        "alignedRowsCurrent": 0,
+        "alignmentRequired": 1,
+        "ticksVisible": 0,
+        "positionFailed": 0,
+        "reducedMotion": 0,
+        "firstRowAt": 1792296000000,
+        "lastRowAt": 1792380600000
+      },
+      {
+        "sequence": 18,
+        "code": 24,
+        "event": "props",
+        "relativeMs": 77,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "rowCount": 48,
+        "activeIndex": 33,
+        "committedIndex": 33,
+        "selectionReady": 1,
+        "layoutReady": 1,
+        "preparing": 1,
+        "alignedRowsCurrent": 0,
+        "alignmentRequired": 1,
+        "ticksVisible": 0,
+        "positionFailed": 0,
+        "reducedMotion": 0,
+        "firstRowAt": 1792296000000,
+        "lastRowAt": 1792380600000
+      },
+      {
+        "sequence": 21,
+        "code": 9,
+        "event": "measureResult",
+        "relativeMs": 334,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "queryId": 2,
+        "rowsVersion": 1,
+        "current": 1,
+        "axisLeft": 191.5,
+        "axisWidth": 1,
+        "firstLeft": 184,
+        "firstWidth": 17,
+        "secondLeft": 201,
+        "secondWidth": 17,
+        "scrollLeft": 0
+      },
+      {
+        "sequence": 22,
+        "code": 10,
+        "event": "projection",
+        "relativeMs": 335,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "expectedRevision": 4,
+        "revision": 4,
+        "stepPx": 17,
+        "zeroOffsetPx": 0.5
+      },
+      {
+        "sequence": 25,
+        "code": 25,
+        "event": "positionTarget",
+        "relativeMs": 336,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 4,
+        "index": 33,
+        "left": 561.5,
+        "verify": 1,
+        "measured": 1,
+        "nativeRowsCurrent": 0
+      },
+      {
+        "sequence": 28,
+        "code": 15,
+        "event": "nativeMoveRequested",
+        "relativeMs": 336,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "revision": 5,
+        "left": 561.5,
+        "animated": 0
+      },
+      {
+        "sequence": 30,
+        "code": 17,
+        "event": "nativeScrollToRequested",
+        "relativeMs": 461,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "revision": 5,
+        "left": 561.5,
+        "animated": 0
+      },
+      {
+        "sequence": 33,
+        "code": 19,
+        "event": "onScrollBeforeGuard",
+        "relativeMs": 468,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 4,
+        "scrollLeft": 561.4222412109375,
+        "disabled": 0,
+        "dragging": 0
+      },
+      {
+        "sequence": 37,
+        "code": 26,
+        "event": "positionObservedBeforeGuard",
+        "relativeMs": 600,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 4,
+        "pendingRevision": 4,
+        "pendingIndex": 33,
+        "rowsCurrent": 1,
+        "nativeRowsCurrent": 1,
+        "visible": 1,
+        "selectionReady": 1,
+        "interactionAllowed": 1,
+        "dragging": 0,
+        "left": 561.4222412109375,
+        "finished": 0
+      },
+      {
+        "sequence": 38,
+        "code": 27,
+        "event": "alignmentAdmitted",
+        "relativeMs": 600,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 4,
+        "index": 33,
+        "left": 561.4222412109375
+      },
+      {
+        "sequence": 41,
+        "code": 24,
+        "event": "props",
+        "relativeMs": 627,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "rowCount": 48,
+        "activeIndex": 33,
+        "committedIndex": 33,
+        "selectionReady": 1,
+        "layoutReady": 1,
+        "preparing": 1,
+        "alignedRowsCurrent": 1,
+        "alignmentRequired": 0,
+        "ticksVisible": 1,
+        "positionFailed": 0,
+        "reducedMotion": 0,
+        "firstRowAt": 1792296000000,
+        "lastRowAt": 1792380600000
+      },
+      {
+        "sequence": 46,
+        "code": 24,
+        "event": "props",
+        "relativeMs": 642,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "rowCount": 48,
+        "activeIndex": 33,
+        "committedIndex": 33,
+        "selectionReady": 1,
+        "layoutReady": 0,
+        "preparing": 0,
+        "alignedRowsCurrent": 1,
+        "alignmentRequired": 0,
+        "ticksVisible": 1,
+        "positionFailed": 0,
+        "reducedMotion": 0,
+        "firstRowAt": 1792296000000,
+        "lastRowAt": 1792380600000
+      },
+      {
+        "sequence": 48,
+        "code": 19,
+        "event": "onScrollBeforeGuard",
+        "relativeMs": 662,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 4,
+        "scrollLeft": 0,
+        "disabled": 0,
+        "dragging": 0
+      },
+      {
+        "sequence": 59,
+        "code": 24,
+        "event": "props",
+        "relativeMs": 1005,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "rowCount": 48,
+        "activeIndex": 33,
+        "committedIndex": 33,
+        "selectionReady": 1,
+        "layoutReady": 1,
+        "preparing": 0,
+        "alignedRowsCurrent": 1,
+        "alignmentRequired": 0,
+        "ticksVisible": 1,
+        "positionFailed": 0,
+        "reducedMotion": 0,
+        "firstRowAt": 1792296000000,
+        "lastRowAt": 1792380600000
+      },
+      {
+        "sequence": 62,
+        "code": 9,
+        "event": "measureResult",
+        "relativeMs": 1269,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "queryId": 3,
+        "rowsVersion": 1,
+        "current": 1,
+        "axisLeft": 191.5,
+        "axisWidth": 1,
+        "firstLeft": 184,
+        "firstWidth": 17,
+        "secondLeft": 201,
+        "secondWidth": 17,
+        "scrollLeft": 0
+      },
+      {
+        "sequence": 63,
+        "code": 10,
+        "event": "projection",
+        "relativeMs": 1269,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "expectedRevision": 9,
+        "revision": 9,
+        "stepPx": 17,
+        "zeroOffsetPx": 0.5
+      },
+      {
+        "sequence": 66,
+        "code": 25,
+        "event": "positionTarget",
+        "relativeMs": 1270,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 6,
+        "index": 33,
+        "left": 561.5,
+        "verify": 0,
+        "measured": 1,
+        "nativeRowsCurrent": 1
+      },
+      {
+        "sequence": 69,
+        "code": 15,
+        "event": "nativeMoveRequested",
+        "relativeMs": 1271,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "revision": 8,
+        "left": 561.5,
+        "animated": 1
+      },
+      {
+        "sequence": 71,
+        "code": 17,
+        "event": "nativeScrollToRequested",
+        "relativeMs": 1410,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "revision": 8,
+        "left": 561.5,
+        "animated": 1
+      },
+      {
+        "sequence": 73,
+        "code": 19,
+        "event": "onScrollBeforeGuard",
+        "relativeMs": 1780,
+        "epoch": 0,
+        "windowId": 1,
+        "owner": 1,
+        "rowsVersion": 1,
+        "revision": 6,
+        "scrollLeft": 561.4222412109375,
+        "disabled": 0,
+        "dragging": 0
+      }
+    ],
+    "criticalOrder": [
+      {
+        "relativeMs": 334,
+        "event": "measureResult current",
+        "offset": 0,
+        "stepPx": 17,
+        "zeroOffsetPx": 0.5
+      },
+      {
+        "relativeMs": 336,
+        "event": "target index33",
+        "left": 561.5,
+        "verify": true,
+        "measured": true,
+        "nativeRowsCurrent": false
+      },
+      {
+        "relativeMs": 461,
+        "event": "nativeScrollTo",
+        "left": 561.5,
+        "animated": false
+      },
+      {
+        "relativeMs": 599,
+        "event": "current native offset read",
+        "left": 561.4222412109375
+      },
+      {
+        "relativeMs": 600,
+        "event": "alignmentAdmitted",
+        "left": 561.4222412109375,
+        "rowsCurrent": true,
+        "nativeRowsCurrent": true
+      },
+      {
+        "relativeMs": 627,
+        "event": "props",
+        "preparing": true,
+        "layoutReady": true,
+        "alignedRowsCurrent": true,
+        "alignmentRequired": false,
+        "ticksVisible": true
+      },
+      {
+        "relativeMs": 642,
+        "event": "props",
+        "preparing": false,
+        "layoutReady": false,
+        "alignedRowsCurrent": true,
+        "alignmentRequired": false,
+        "ticksVisible": true
+      },
+      {
+        "relativeMs": 662,
+        "event": "onScrollBeforeGuard",
+        "left": 0,
+        "dragging": false
+      },
+      {
+        "relativeMs": 1005,
+        "event": "props",
+        "preparing": false,
+        "layoutReady": true,
+        "alignedRowsCurrent": true,
+        "alignmentRequired": false,
+        "ticksVisible": true
+      },
+      {
+        "relativeMs": 1269,
+        "event": "second current measurement",
+        "left": 0,
+        "stepPx": 17,
+        "zeroOffsetPx": 0.5
+      },
+      {
+        "relativeMs": 1270,
+        "event": "second target index33",
+        "left": 561.5,
+        "verify": false,
+        "nativeRowsCurrent": true
+      },
+      {
+        "relativeMs": 1410,
+        "event": "second nativeScrollTo",
+        "left": 561.5,
+        "animated": true
+      },
+      {
+        "relativeMs": 1780,
+        "event": "onScrollBeforeGuard",
+        "left": 561.4222412109375,
+        "dragging": false
+      }
+    ]
+  },
+  "causalAssessment": {
+    "directlySupported": [
+      "First hidden-preparation positioning receives a current offset read and admits alignment, then same rows/index survive while native offset returns0 and ticks remain declared visible",
+      "Later current measurement independently reads0; a second visible animated native move corrects to the same561.5 target",
+      "The first useful pixel viewport is wrong and later traverses afternoon/midnight; endpoint-only pass is invalid"
+    ],
+    "inference": "The retained sequence is consistent with native scroll-position loss across preparation-to-reveal. It does not establish remount, platform reset, particular setter, or the physical presentation instant as the cause.",
+    "notEstablished": [
+      "native node identity/remount mechanism",
+      "PTS-to-Date.now millisecond alignment or native latency",
+      "continuous15s stability/physicalFPS",
+      "universal device or final-candidate conformance"
+    ],
+    "observerEffects": "Task-only bounded74 scalar recorder plus public offset reads can affect timing; no latency threshold inferred"
+  },
+  "nextDecision": {
+    "repeatUnchangedEntry": false,
+    "requiredOutcome": "Preserve actual installed selected position through preparation-to-visible reveal; if ownership becomes uncertain, do not expose the viewport at0 and then animate the correction. A later coherent repair needs first-visible correct04:30 tick and interruption/recovery behavior at the existing owner; no guessed offset, generic waiting timer or new profiler route is justified by this evidence."
+  },
+  "unverified": [
+    "r6 new crossday/cancel process",
+    "manual drag/regrab/resize/hide and row-window replacement combinations",
+    "A actual manual input to first useful accepted output",
+    "B normal Play allocation/paused drain/exit",
+    "Terrain file/native completion",
+    "runtimeAppID/full phone package-byte readback",
+    "full design conformance, Android/iOS generality, settled candidate and complete Goal"
+  ],
+  "boundaries": {
+    "deviceOperations": false,
+    "adbOperations": false,
+    "ideOperations": false,
+    "sessionOrFeedbackMutation": false,
+    "serviceOperations": false,
+    "productionOrScriptsModified": false,
+    "planHandoffPreparationModified": false,
+    "commit": false
+  }
+}

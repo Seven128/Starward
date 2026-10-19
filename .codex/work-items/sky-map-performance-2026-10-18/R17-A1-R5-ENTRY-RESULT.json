@@ -1,0 +1,226 @@
+{
+  "schema": "starward-r5-entry-independent-output-review-v1",
+  "reviewedAtUtc": "2026-10-19T05:46:12.083Z",
+  "scope": "development_feedback_only",
+  "overallVerdict": "FAILED_NATIVE_ENTRY_POSITION_COHERENCE",
+  "candidate": {
+    "applicationSha256": "9b50adb657a881b351b7a7bef62b94752e0a25c9f20440c38f439193aedbb674",
+    "buildSourceSha256": "40840ed278f7ccbda98723dd565cc512f98eba147b867afca2cb926c5a64eacf",
+    "files": 337,
+    "bytes": 4989501,
+    "buildGeneration": 27,
+    "feedbackGeneration": 1,
+    "uniqueVisibleLabel": "R17 正常Sky关联 A1 r5",
+    "officialResultAndBindingAuthority": "root reports terminal official success and operator label binding; static unique-label captures independently viewed; no full phone package-byte readback"
+  },
+  "archive": {
+    "path": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r5-entry-motion-trace-archive-20261019",
+    "rawFiles": 19,
+    "rawBytes": 4449935,
+    "rawManifestSha256": "a103e445a80c61357f3e126adf843b040e9d0bc4042ade69a5eb25d8307304e4",
+    "materializedFiles": 12,
+    "materializedBytes": 3590205,
+    "materializedManifestSha256": "fb73b5cbdb2748438a6346e2eb1d915a60461480f72ba80233ed0b007a370f8a",
+    "mapAndJavascriptReadback": true,
+    "exactMapSources": 6,
+    "sidecars": 5,
+    "sidecarIntegritySha256": "124bc034b146eb211a5c2f3405c05cede8567859e421a5ed658ff34998535ea7",
+    "pixelMeasurementsSha256": "9925817dae5a39de593243f44f3261f0bbdc288c7469f43731b56dc18715fc3d",
+    "samplesManifestSha256": "921685635a0f4dbd7a225b9857cec48add8fddfcd8b1db2f4d4a48bc8ecefcb0",
+    "sourceBeforeAfterAndCopyAllMatch": true,
+    "originalsAndPriorBatchesPreserved": true
+  },
+  "video": {
+    "file": "recording-1792388028664.mp4",
+    "requestedSeconds": 15,
+    "containerDurationSeconds": 4.046911,
+    "encodedFrames": 35,
+    "firstPtsSeconds": 0,
+    "lastPtsSeconds": 4.030611,
+    "framesDirectlyDecoded": 35,
+    "firstButtonPressedFrame": {
+      "frame": 2,
+      "ptsSeconds": 3.042111
+    },
+    "firstIdentifiableTimePanel": {
+      "frame": 4,
+      "ptsSeconds": 3.238033,
+      "date": 19,
+      "time": "04:30"
+    },
+    "timeAndDayStayed": true,
+    "stableTailCaptured": false,
+    "videoPtsToPhoneDateNowCalibration": "UNKNOWN; filename and terminal PNG capturedAt are not recording-start anchors",
+    "physicalFps": "UNKNOWN"
+  },
+  "pixels": {
+    "coordinateSpace": "original 1080x2376 raster",
+    "axisReferenceX": 540,
+    "axisEndpointBBox": [
+      539,
+      2051,
+      541,
+      2097
+    ],
+    "selectionRule": "Encoded frames: lowest top among nearby long ticks, independently checked by 02:00 label index28 + five 30-minute tick cadences to index33=04:30, local curvature, and selected-mark CSS. Separate endpoint: actual selected mark under blue axis; its top is occluded by that axis, so a blind longest-tick classifier is invalid there.",
+    "decisiveFrames": [
+      {
+        "frame": 10,
+        "ptsSeconds": 3.337689,
+        "selectedTickX": 502.5,
+        "selectedMinusAxisPx": -37.5
+      },
+      {
+        "frame": 15,
+        "ptsSeconds": 3.429044,
+        "selectedTickX": 503,
+        "selectedMinusAxisPx": -37
+      },
+      {
+        "frame": 21,
+        "ptsSeconds": 3.814889,
+        "selectedTickX": 520,
+        "selectedMinusAxisPx": -20
+      },
+      {
+        "frame": 22,
+        "ptsSeconds": 3.830644,
+        "selectedTickX": 559,
+        "selectedMinusAxisPx": 19
+      },
+      {
+        "frame": 28,
+        "ptsSeconds": 3.931333,
+        "selectedTickX": 572,
+        "selectedMinusAxisPx": 32
+      },
+      {
+        "frame": 34,
+        "ptsSeconds": 4.030611,
+        "selectedTickX": 577,
+        "selectedMinusAxisPx": 37
+      }
+    ],
+    "separateEndpoint": {
+      "file": "screen-2206b3ca-c838-4a8b-b0f0-8d243fe293b6.png",
+      "selectedTickX": 540,
+      "aligned": true
+    },
+    "observed": "No afternoon/wraparound window in this entry; selected04:30 mark starts left of center, moves right and crosses axis before video ends; later separatePNG is centered",
+    "measurementTolerance": "none introduced; approximate encoded raster centers only"
+  },
+  "trace": {
+    "protocol": "starward-r17-ruler-entry-v1",
+    "strictValidation": true,
+    "events": 42,
+    "dropped": 0,
+    "exportOmitted": 0,
+    "overflow": false,
+    "rejectedWindowEvents": 0,
+    "collection": "immediate-wide-time; independent of base1s-delay",
+    "meaning": "requests-offsets-not-presentation",
+    "baseMetricWindowElapsedMs": 14009,
+    "phoneClock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "invalidReads": 0,
+      "backwardReads": 0,
+      "notCalibratedToVideo": true
+    },
+    "startDateNow": 1792388013184,
+    "rowsVersions": [
+      1
+    ],
+    "owners": [
+      1
+    ],
+    "activeAndCommittedIndex": 33,
+    "rowCount": 48,
+    "selectionReady": 1,
+    "dragging": 0,
+    "nativeMoves": 1,
+    "measurements": 1,
+    "declarativeTargetUpdates": 1,
+    "initial": {
+      "relativeMs": 63,
+      "scrollLeft": 574.464,
+      "animated": false,
+      "actualOffsetReadback": 574.5777587890625
+    },
+    "motionFinishRelativeMs": [
+      418,
+      418
+    ],
+    "layoutReadyRelativeMs": 435,
+    "measure": {
+      "relativeMs": 679,
+      "current": true,
+      "axisLeft": 191.5,
+      "axisWidth": 1,
+      "firstLeft": -390.5777893066406,
+      "firstWidth": 17,
+      "secondLeft": -373.5777893066406,
+      "secondWidth": 17,
+      "scrollLeft": 574.5777587890625,
+      "projectionStepPx": 17,
+      "zeroOffsetPx": 0.499969482421875
+    },
+    "correction": {
+      "declarativeRelativeMs": 682,
+      "propRelativeMs": 687,
+      "propAnimated": true,
+      "left": 561.4999694824219,
+      "nativeRequestRelativeMs": 806,
+      "nativeAnimated": false,
+      "nativeReturnRelativeMs": 807,
+      "onScrollRelativeMs": 813,
+      "onScrollLeft": 561.4222412109375
+    },
+    "noEvidenceInRetainedTraceFor": [
+      "row-window replacement",
+      "selected-time/index change",
+      "gesture takeover",
+      "stale native node callback",
+      "multiple generations of nativeMove"
+    ]
+  },
+  "causalAssessment": {
+    "directlySupported": [
+      "nominal initial step17.408 differs from measured native17; initial projection differs from measured target",
+      "same initial-correction target goes through both animated declarative property and nonanimated native scrollTo"
+    ],
+    "supportedAsPossibilityNotProven": "two positioning writers can explain the residual crossing; pixels and current trace do not isolate that causal mechanism",
+    "notEstablished": [
+      "physical presentation completion from nextTick/query/onScroll/native return",
+      "native latency from video-phone timestamp subtraction",
+      "wrong measured projection from early opening-phase query in this run",
+      "all-frame or multi-device generality"
+    ],
+    "observerEffects": "task-only bounded42scalar recorder and one extra initial public offset query may affect timing; no latency budget is inferred"
+  },
+  "nextDecision": {
+    "repeatUnchangedTrace": false,
+    "minimumUsefulChange": "Converge entry/first-measure correction on one positioning owner, prevent the same automatic correction starting animated and nonanimated commands, and address first-visible nominal projection mismatch while preserving later real gesture/settlement behavior",
+    "verification": "After that coherent relevant change, targeted entry pixels must show first-visible correct selected tick, no crossing, and stable result; do not repeat CPU or add generic waiting timers to explain this ruler defect"
+  },
+  "unverified": [
+    "r5 new crossday/cancel process",
+    "manual drag/regrab/resize/hide and row replacement combinations",
+    "physical first presentation and precise transition duration",
+    "A manual input to first accepted output",
+    "B normal sustained Play surviving allocations, paused drain and exit",
+    "Terrain file readiness/native completion",
+    "full design conformance, Android/iOS generality, settled candidate and full Goal"
+  ],
+  "boundaries": {
+    "deviceOperations": false,
+    "adbOperations": false,
+    "ideOperations": false,
+    "sessionOrFeedbackMutation": false,
+    "serviceOperations": false,
+    "productionOrScriptsModified": false,
+    "planHandoffPreparationModified": false,
+    "commit": false
+  }
+}

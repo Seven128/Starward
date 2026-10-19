@@ -1,0 +1,67 @@
+diff --git a/E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r6-terrain-wait-20261019/transport-source/r17-normal-phone-bridge.mjs b/.codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-phone-bridge.mjs
+index dd678317..8d89bed7 100644
+--- a/E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r6-terrain-wait-20261019/transport-source/r17-normal-phone-bridge.mjs
++++ b/.codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-phone-bridge.mjs
+@@ -5,6 +5,7 @@ import path from 'node:path';
+ import { Readable, pipeline } from 'node:stream';
+ import { createR17PhoneProbeCollector } from '../scripts/r17-phone-probe-collector.mjs';
+ import { R17_PHONE_PROBE_ROUTE, R17_PHONE_PROBE_MAX_BYTES } from '../scripts/r17-phone-probe-v3-protocol.mjs';
++import { createTerrainIdentityReceiptOwner, TERRAIN_IDENTITY_RECEIPT_VERSION } from '../scripts/r17-terrain-identity-receipt.mjs';
+ const runtime = JSON.parse(fs.readFileSync('C:/Users/777/AppData/Local/Temp/starward-sky-phone-runtime-SWXIAP/runtime.json', 'utf8'));
+ const host = new URL(runtime.apiOrigin).hostname;
+ if (!/^\d+\.\d+\.\d+\.\d+$/.test(host) || host.startsWith('127.') || host === '0.0.0.0') throw Error('physical_lane_required');
+@@ -22,6 +23,7 @@ const collector = createR17PhoneProbeCollector('E:/Dev/Starward-data/verificatio
+ // Bounded, task-only HTTP boundary observations. Never retain URLs, queries,
+ // Context/spot identities, headers or bodies; this is not a painted-frame clock.
+ const publicRequestBoundaries = [];
++const terrainIdentityReceipts = createTerrainIdentityReceiptOwner();
+ const server = http.createServer(async (req, res) => {
+   const url = new URL(req.url ?? '/', upstream), controller = new AbortController();
+   let responseFacts = null;
+@@ -33,6 +35,8 @@ const server = http.createServer(async (req, res) => {
+     url.pathname === '/v2/map/scene' ? 'map-scene' :
+     url.pathname === '/v2/terrain/overlay' ? 'terrain-overlay' :
+     /^\/v2\/terrain\/assets\/[^/]+$/.test(url.pathname) ? 'terrain-asset' : null;
++  if (observedRoute === 'terrain-overlay' || observedRoute === 'terrain-asset')
++    responseFacts = terrainIdentityReceipts.start(url, req.method);
+   if (observedRoute) {
+     const started = performance.now();
+     res.once('finish', () => {
+@@ -70,7 +74,7 @@ const server = http.createServer(async (req, res) => {
+       res.writeHead(response.ok ? 200 : 503, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+       res.end(JSON.stringify({ scope: 'current-postgres-public-products-sample-weather', port: 8798, upstreamStatus: response.status, anonymousOnly: true,
+         legacyAccountRestored: false, accountRoutesAvailable: false, reminderWorker: false, collector: 'v1-v2-v3-a1-ruler-entry-v1', h3TaskMediaActive: h3Media !== null,
+-        publicRequestBoundaries })); return;
++        terrainIdentityReceiptVersion: TERRAIN_IDENTITY_RECEIPT_VERSION, publicRequestBoundaries })); return;
+     }
+     const publicPath = /^\/v2\/(?:capabilities$|places\/search$|observation-contexts(?:\/|$)|map\/|terrain\/|night-light\/|spots\/|sky\/|astronomical-events(?:\/|$)|celestial-objects(?:\/|$))/.test(url.pathname);
+     if (!publicPath) { res.writeHead(403).end(); return; }
+@@ -82,23 +86,17 @@ const server = http.createServer(async (req, res) => {
+     const response = await fetch(upstream + url.pathname + url.search, { method: req.method, headers, signal: controller.signal,
+       ...(contextWrite ? { body: req, duplex: 'half' } : {}) });
+     if (observedRoute === 'terrain-overlay' && response.ok) {
+-      try {
+-        const metadata = await response.clone().json();
+-        responseFacts = { envelopeState: metadata.dataState ?? null, terrainState: metadata.data?.state ?? null,
+-          hasImageUrl: typeof metadata.data?.imageUrl === 'string' && metadata.data.imageUrl.length > 0,
+-          imageBytes: Number.isSafeInteger(metadata.data?.imageBytes) ? metadata.data.imageBytes : null };
+-      } catch { responseFacts = { metadataSummary: 'UNKNOWN' }; }
+-    } else if (observedRoute === 'terrain-asset') {
+-      const header = response.headers.get('content-length');
+-      const bytes = header === null ? null : Number(header);
+-      responseFacts = { responseBytes: Number.isSafeInteger(bytes) && bytes !== null && bytes >= 0 ? bytes : null };
++      responseFacts = await terrainIdentityReceipts.metadata(response, responseFacts);
+     }
++    const assetDigest = observedRoute === 'terrain-asset' && responseFacts
++      ? terrainIdentityReceipts.asset(response, responseFacts, req.method) : null;
+     const responseHeaders = Object.fromEntries([...response.headers].filter(([key]) =>
+       !['connection', 'content-length', 'content-encoding', 'transfer-encoding'].includes(key)));
+     res.writeHead(response.status, responseHeaders);
+     // Client cancellation aborts fetch and errors its Readable. pipeline owns
+     // both stream errors; an ordinary supersession must not crash this lane.
+-    if (response.body) pipeline(Readable.fromWeb(response.body), res, () => {}); else res.end();
++    if (response.body && assetDigest) pipeline(Readable.fromWeb(response.body), assetDigest, res, () => {});
++    else if (response.body) pipeline(Readable.fromWeb(response.body), res, () => {}); else res.end();
+   } catch {
+     if (controller.signal.aborted || res.headersSent) { res.destroy(); return; }
+     res.writeHead(503, { 'content-type': 'application/json', 'cache-control': 'no-store' });

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "starward-h3-h6-offline-readiness-v1",
+  "date": "2026-10-19",
+  "status": "STATIC_RECOVERY_DEPENDENCIES_VERIFIED_RUNTIME_UNEXECUTED",
+  "baseArchive": {
+    "root": "E:/Dev/Starward-data/verification/sky-map-20261018/h3-gen26-pre-delivery/h3-source-preservation-20261019",
+    "manifestSha256": "cb9b5ac33dfe909d75517cc79b22c3f070b0a39b5bd667a30c4188f42d1ddc62",
+    "manifestUnchanged": true,
+    "filesPresentAndSizeMatched": 1937,
+    "bytes": 18989409,
+    "outOfScopeMissingSizeOrFileReparseProblems": 0,
+    "bulkSha256Repeated": false
+  },
+  "supplementArchive": {
+    "root": "E:/Dev/Starward-data/verification/sky-map-20261018/h3-gen26-pre-delivery/h3-photo-input-completion-20261019",
+    "createdBy": "root",
+    "independentReadback": true,
+    "manifestBytes": 1347,
+    "manifestSha256": "4000b37c69b6ecc99bc457a8c7d0d070faf9782926e9300eceb790466e3ef0fa",
+    "files": [
+      {
+        "path": "h3-photo-input/high-island-east-dam-minibus-20250502.original.jpg",
+        "bytes": 3050409,
+        "sha256": "84c3ac48ee8d54541e4e24fe0232890e970f21938de766d56541513e5191fc84",
+        "sourceAndArchiveMatchDeclared": true
+      },
+      {
+        "path": "h3-photo-input/product-input-candidate.json",
+        "bytes": 4123,
+        "sha256": "0b829fbaa86f1e4f7ebd9a02f99f32cfdbb44bd2763d2b6d3f5aa3c4be784a51",
+        "sourceAndArchiveMatchDeclared": true
+      },
+      {
+        "path": "h3-photo-input/public-source-readback.json",
+        "bytes": 3207,
+        "sha256": "193f421716ec66a26d09dd65978e14c3e496e1c0c30e863f91cdb9092576ab8e",
+        "sourceAndArchiveMatchDeclared": true
+      }
+    ],
+    "totalBytes": 3057739,
+    "originalsPreserved": true
+  },
+  "restoreLayout": {
+    "repositoryRelativeParent": ".codex/work-items/sky-map-performance-2026-10-18/tmp",
+    "siblings": ["h3-component-fixture", "h3-isolated-input", "h3-photo-input"],
+    "archivedPrepareDirectInputsResolvedStatically": [
+      "../h3-photo-input/high-island-east-dam-minibus-20250502.original.jpg",
+      "../h3-photo-input/product-input-candidate.json"
+    ],
+    "requiresRepositoryOwnersAndDependencies": true,
+    "cleanCloneAloneReproduces": false,
+    "phoneOriginExternalFileExists": true,
+    "phoneOriginValueRecorded": false,
+    "prepareExecuted": false,
+    "rebuildExecuted": false,
+    "runtimeRecoveryVerified": false
+  },
+  "h6": {
+    "n05": "HISTORICAL_PHONE_LOCAL_UNSAVED_DRAFT_CURRENT_IDENTITY_UNKNOWN_PRESERVE",
+    "planShareObject": "REQUIRES_SAME_ACCOUNT_SAVED_PLAN_TIMING_AND_QUALIFIED_SPOT",
+    "planShareContractValidityDays": 7,
+    "planShareBindsRevision": true,
+    "spotEvidence": "GENERATION9_MEMORY_TEST_PUBLIC_CARD_AND_ONE_NATIVE_ALBUM_SAVE",
+    "posterExactAlbumFileName": "UNKNOWN",
+    "accountExportOldNativeFiles": "HISTORICAL_OWNER_FINAL_READBACK_ZERO_NO_CURRENT_FILE_CLAIM",
+    "recipient": "NOT_CONFIRMED_BY_REVIEWED_OWNERS",
+    "naturalReceptionAndOpenOrSave": "UNVERIFIED",
+    "r6ReminderResend": false
+  },
+  "boundaries": {
+    "productionEdited": false,
+    "gitMutated": false,
+    "phoneAdbIdeOrPreview": false,
+    "serviceApiDatabaseOrAccountOperation": false,
+    "externalMessageOrRecipientSelection": false,
+    "newImageOrDataProduction": false,
+    "privatePayloadCopiedToGit": false,
+    "gen26OfficialOutcome": "UNKNOWN",
+    "h3ProductAcceptance": "UNVERIFIED",
+    "h6ProductAcceptance": "UNVERIFIED",
+    "wholeGoalComplete": false
+  }
+}

@@ -1,0 +1,3363 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-19T09:54:50.024Z",
+  "reviewer": "review_r8_native_entry",
+  "evidenceMode": "development_feedback_only",
+  "verdict": "TARGETED_TIME_INTERACTIONS_AND_CONTINUOUS_INPUT_ASSOCIATION_VALIDATED_SCOPE_LIMITED",
+  "candidate": {
+    "buildSourceSha256": "3362e2d0595b7871835b0232eb43f2ac233c5a5aa012f609c5eb40e04df4bcb0",
+    "appSha256": "a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e",
+    "buildGeneration": 27,
+    "fileCount": 337,
+    "totalBytes": 4996606,
+    "reviewRevision": 8
+  },
+  "firstEntryOwner": "R17-A1-R8-ENTRY-RESULT.md/.json",
+  "firstEntryScopeExpanded": false,
+  "priorBuildAndStableSurfaceReviewsReused": true,
+  "passedObservations": [
+    "Actual ruler gesture admitted after entry guard and changed nonempty Sky",
+    "Initial ruler swipe and manual ruler gesture converged to 2026-10-19 10:00 preview with coherent ruler endpoint",
+    "Future day was explicitly rejected while retaining existing day/time",
+    "Previous-day visible endpoint is 2026-10-18 10:00 preview with coherent replacement ruler window",
+    "Cancel restored 2026-10-19 04:30, non-preview state and night Sky",
+    "Continuous real ruler onPreview yielded nine latest-at-first-acceptance samples and a valid final accepted intent"
+  ],
+  "interactions": {
+    "rulerSwipe": {
+      "status": "OBSERVED_REAL_INPUT_AND_COHERENT_ENDPOINT",
+      "start": {
+        "date": "2026-10-19",
+        "time": "04:30:00"
+      },
+      "end": {
+        "date": "2026-10-19",
+        "time": "10:00:00",
+        "preview": true,
+        "nonemptyDaySky": true,
+        "centralAxisAndTickCoherent": true
+      },
+      "representativeActuallyReadTimes": [
+        "04:33:00",
+        "05:02:29",
+        "06:09:37",
+        "07:33:42",
+        "09:03:25",
+        "09:56:45",
+        "10:00:00"
+      ],
+      "updatingStateObserved": true,
+      "actualInputProvesReadyGuardDidNotBlockThisGesture": true,
+      "nativeComputedPointerEventsRead": false
+    },
+    "futureDay": {
+      "status": "EXPECTED_REJECTION_OBSERVED",
+      "message": "不能晚于当前时间",
+      "all14EncodedSamplesReviewed": true,
+      "dayRemained": 19,
+      "timeRemained": "10:00:00",
+      "successfulFutureCrossDayClaim": false
+    },
+    "previousDay": {
+      "status": "VISIBLE_ENDPOINT_COHERENT_SERVICE_KEY_IDENTITY_UNVERIFIED",
+      "end": {
+        "date": "2026-10-18",
+        "fieldsTime": "10:00:00",
+        "currentReadout": "10:00:00 预览",
+        "preview": true,
+        "nearbyLabels": [
+          "08:00",
+          "12:00"
+        ],
+        "centralAxisAndTickCoherent": true,
+        "nonemptyDaySky": true
+      },
+      "transition": {
+        "observedNotSuppressed": true,
+        "samples9to18": {
+          "ptsRangeSeconds": [
+            3.291889,
+            3.458744
+          ],
+          "dateFields": "2026-10-18",
+          "timeFields": "10:00:00",
+          "currentSkyReadout": "04:30:00 更新中",
+          "nightSkyTransient": true
+        },
+        "sample22": {
+          "ptsSeconds": 3.574833,
+          "currentSkyReadout": "10:00:00 预览",
+          "ticksHidden": true,
+          "positionStateSeparateLine": true
+        },
+        "sample31AndLaterSelected": {
+          "ptsSeconds": 5.009311,
+          "replacementWindowCoherent": true
+        }
+      },
+      "fullTemporalContinuityAccepted": false,
+      "initialScaledImageLabelMisreadCorrectedByOriginalPixelCrop": true
+    },
+    "cancel": {
+      "status": "VISIBLE_COMMITTED_DATE_TIME_AND_SKY_RESTORED",
+      "start": {
+        "date": "2026-10-18",
+        "time": "10:00:00",
+        "preview": true
+      },
+      "sample9": {
+        "ptsSeconds": 3.347689,
+        "date": "2026-10-19",
+        "time": "04:30:00",
+        "positionStateSeparateLine": true
+      },
+      "sample27AndLaterSelected": {
+        "ptsSeconds": 3.9482,
+        "date": "2026-10-19",
+        "time": "04:30:00",
+        "previewLabelVisible": false,
+        "cancelVisible": false,
+        "rulerCoherent": true
+      },
+      "terminalNightSky": true,
+      "applyOrDurablePersistenceClaim": false
+    },
+    "manualRuler": {
+      "status": "VALID_CONTINUOUS_REAL_INPUT_ASSOCIATION_AND_ENDPOINT",
+      "start": {
+        "date": "2026-10-19",
+        "time": "04:30:00"
+      },
+      "end": {
+        "date": "2026-10-19",
+        "time": "10:00:00",
+        "currentReadout": "10:00:00 预览",
+        "rulerCoherent": true,
+        "nonemptyDaySky": true
+      },
+      "representativeActuallyReadTimes": [
+        "04:33:37",
+        "05:31:21",
+        "06:30:20",
+        "07:53:47",
+        "09:57:23",
+        "10:00:00"
+      ],
+      "firstSelected1000Sample": {
+        "index": 103,
+        "ptsSeconds": 7.008767
+      },
+      "physicalInertiaOrRegrabClaim": false
+    }
+  },
+  "video": {
+    "ffmpegVersion": "9.0.2-essentials_build-www.gyan.dev",
+    "totalDecodedFrames": 480,
+    "totalExplicitlySelectedSamplesActuallyViewed": 90,
+    "independentTerminalPngsActuallyViewed": 5,
+    "cases": [
+      {
+        "key": "ruler-swipe",
+        "source": "recording-1792402382467.mp4",
+        "screen": "screen-9bb02847-8528-4d07-9887-6714e68cb82c.png",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "frames": 147,
+        "durationSeconds": 10.914489,
+        "lastPtsSeconds": 10.8995,
+        "zeroBasedIndices": true,
+        "allFramesDecodedWithoutTrimPtsResetOrDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": "0.000000",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 6,
+            "ptsSeconds": "3.875656",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 13,
+            "ptsSeconds": "3.991611",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 19,
+            "ptsSeconds": "4.092078",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 25,
+            "ptsSeconds": "4.190922",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 32,
+            "ptsSeconds": "4.307611",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 38,
+            "ptsSeconds": "4.407422",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 44,
+            "ptsSeconds": "4.507578",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 51,
+            "ptsSeconds": "4.625744",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 57,
+            "ptsSeconds": "4.725622",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 63,
+            "ptsSeconds": "4.825678",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 70,
+            "ptsSeconds": "4.941922",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 76,
+            "ptsSeconds": "5.041633",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 83,
+            "ptsSeconds": "5.155533",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 89,
+            "ptsSeconds": "5.257667",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 95,
+            "ptsSeconds": "5.355667",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 102,
+            "ptsSeconds": "5.473844",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 108,
+            "ptsSeconds": "5.579967",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 114,
+            "ptsSeconds": "5.705522",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 121,
+            "ptsSeconds": "6.340367",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 127,
+            "ptsSeconds": "6.439789",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 133,
+            "ptsSeconds": "6.540167",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 140,
+            "ptsSeconds": "10.801033",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 146,
+            "ptsSeconds": "10.899500",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          }
+        ],
+        "allEncodedSamplesVisuallyReviewed": false,
+        "screenshotSidecar": {
+          "schema": "starward-miniapp-screenshot-v1",
+          "captureId": "9bb02847-8528-4d07-9887-6714e68cb82c",
+          "capturedAt": "2026-10-19T09:33:02.467Z",
+          "file": "screen-9bb02847-8528-4d07-9887-6714e68cb82c.png",
+          "sha256": "71de63d70f74050411997239f355292b8aeafeb000884b6be1181d0be039f97e",
+          "bytes": 369626,
+          "size": {
+            "width": 1080,
+            "height": 2376
+          },
+          "screenScope": "miniapp"
+        },
+        "terminalActuallyViewed": true,
+        "archiveDirectory": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\normal-existing-resume-20261019\\a1-r8-time-interaction-20261019"
+      },
+      {
+        "key": "future-day-rejected",
+        "source": "recording-1792402479836.mp4",
+        "screen": "screen-913fad0c-6d08-4d2d-a167-62e1ab79569e.png",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "frames": 14,
+        "durationSeconds": 3.841022,
+        "lastPtsSeconds": 3.154056,
+        "zeroBasedIndices": true,
+        "allFramesDecodedWithoutTrimPtsResetOrDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": "0.000000",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 1,
+            "ptsSeconds": "2.287578",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 2,
+            "ptsSeconds": "2.299167",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 3,
+            "ptsSeconds": "2.319678",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 4,
+            "ptsSeconds": "2.335544",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 5,
+            "ptsSeconds": "2.351411",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 6,
+            "ptsSeconds": "2.368322",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 7,
+            "ptsSeconds": "2.384089",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 8,
+            "ptsSeconds": "2.400867",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 9,
+            "ptsSeconds": "2.417644",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 10,
+            "ptsSeconds": "2.433422",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 11,
+            "ptsSeconds": "2.450033",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 12,
+            "ptsSeconds": "2.467089",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 13,
+            "ptsSeconds": "3.154056",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          }
+        ],
+        "allEncodedSamplesVisuallyReviewed": true,
+        "screenshotSidecar": {
+          "schema": "starward-miniapp-screenshot-v1",
+          "captureId": "913fad0c-6d08-4d2d-a167-62e1ab79569e",
+          "capturedAt": "2026-10-19T09:34:39.836Z",
+          "file": "screen-913fad0c-6d08-4d2d-a167-62e1ab79569e.png",
+          "sha256": "0ca159f16518614e39f2f8338203bb91c16af1f7de3313849b53147686bf7866",
+          "bytes": 399406,
+          "size": {
+            "width": 1080,
+            "height": 2376
+          },
+          "screenScope": "miniapp"
+        },
+        "terminalActuallyViewed": true,
+        "archiveDirectory": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\normal-existing-resume-20261019\\a1-r8-time-interaction-20261019"
+      },
+      {
+        "key": "previous-day",
+        "source": "recording-1792402548422.mp4",
+        "screen": "screen-0856b01c-7f31-49eb-8202-1a9f54676973.png",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "frames": 58,
+        "durationSeconds": 8.496111,
+        "lastPtsSeconds": 8.478678,
+        "zeroBasedIndices": true,
+        "allFramesDecodedWithoutTrimPtsResetOrDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": "0.000000",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 4,
+            "ptsSeconds": "3.208722",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 9,
+            "ptsSeconds": "3.291889",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 13,
+            "ptsSeconds": "3.358644",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 18,
+            "ptsSeconds": "3.458744",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 22,
+            "ptsSeconds": "3.574833",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 26,
+            "ptsSeconds": "3.677722",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 31,
+            "ptsSeconds": "5.009311",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 35,
+            "ptsSeconds": "5.092667",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 39,
+            "ptsSeconds": "5.158278",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 44,
+            "ptsSeconds": "5.242689",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 48,
+            "ptsSeconds": "8.326956",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 53,
+            "ptsSeconds": "8.410678",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 57,
+            "ptsSeconds": "8.478678",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          }
+        ],
+        "allEncodedSamplesVisuallyReviewed": false,
+        "screenshotSidecar": {
+          "schema": "starward-miniapp-screenshot-v1",
+          "captureId": "0856b01c-7f31-49eb-8202-1a9f54676973",
+          "capturedAt": "2026-10-19T09:35:48.422Z",
+          "file": "screen-0856b01c-7f31-49eb-8202-1a9f54676973.png",
+          "sha256": "578a97a461ce17816f63053d8c6ee395eccb10136a52bd81c9d088bea2722e8a",
+          "bytes": 373282,
+          "size": {
+            "width": 1080,
+            "height": 2376
+          },
+          "screenScope": "miniapp"
+        },
+        "terminalActuallyViewed": true,
+        "archiveDirectory": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\normal-existing-resume-20261019\\a1-r8-time-interaction-20261019"
+      },
+      {
+        "key": "cancel-preview",
+        "source": "recording-1792402650588.mp4",
+        "screen": "screen-2ddcf20c-928f-4ec1-94b2-79491a7f832e.png",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "frames": 120,
+        "durationSeconds": 8.574178,
+        "lastPtsSeconds": 8.5582,
+        "zeroBasedIndices": true,
+        "allFramesDecodedWithoutTrimPtsResetOrDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": "0.000000",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 9,
+            "ptsSeconds": "3.347689",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 18,
+            "ptsSeconds": "3.527378",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 27,
+            "ptsSeconds": "3.948200",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 37,
+            "ptsSeconds": "4.471733",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 46,
+            "ptsSeconds": "4.747600",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 55,
+            "ptsSeconds": "5.076000",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 64,
+            "ptsSeconds": "5.223633",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 73,
+            "ptsSeconds": "5.405244",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 82,
+            "ptsSeconds": "5.846367",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 92,
+            "ptsSeconds": "6.212622",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 101,
+            "ptsSeconds": "6.428689",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 110,
+            "ptsSeconds": "8.407544",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 119,
+            "ptsSeconds": "8.558200",
+            "crop": [
+              280,
+              1000,
+              1040,
+              2220
+            ]
+          }
+        ],
+        "allEncodedSamplesVisuallyReviewed": false,
+        "screenshotSidecar": {
+          "schema": "starward-miniapp-screenshot-v1",
+          "captureId": "2ddcf20c-928f-4ec1-94b2-79491a7f832e",
+          "capturedAt": "2026-10-19T09:37:30.588Z",
+          "file": "screen-2ddcf20c-928f-4ec1-94b2-79491a7f832e.png",
+          "sha256": "2c64281e62307c631bf9c8d7e98e8207c38f4af8f50c64c63d4cc27edda3251d",
+          "bytes": 675266,
+          "size": {
+            "width": 1080,
+            "height": 2376
+          },
+          "screenScope": "miniapp"
+        },
+        "terminalActuallyViewed": true,
+        "archiveDirectory": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\normal-existing-resume-20261019\\a1-r8-time-interaction-20261019"
+      },
+      {
+        "key": "manual-ruler-swipe",
+        "source": "recording-1792402804637.mp4",
+        "screen": "screen-c35bc9b2-4c05-4d68-be10-3f51dbd9bb49.png",
+        "codec": "h264",
+        "width": 1080,
+        "height": 2376,
+        "timeBase": "1/90000 seconds",
+        "frames": 141,
+        "durationSeconds": 15.036233,
+        "lastPtsSeconds": 14.544444,
+        "zeroBasedIndices": true,
+        "allFramesDecodedWithoutTrimPtsResetOrDuplication": true,
+        "selectedSamplesActuallyViewed": [
+          {
+            "index": 0,
+            "ptsSeconds": "0.000000",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 6,
+            "ptsSeconds": "5.370378",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 12,
+            "ptsSeconds": "5.488944",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 18,
+            "ptsSeconds": "5.586256",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 24,
+            "ptsSeconds": "5.686133",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 30,
+            "ptsSeconds": "5.787789",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 37,
+            "ptsSeconds": "5.910833",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 43,
+            "ptsSeconds": "6.012322",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 49,
+            "ptsSeconds": "6.110500",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 55,
+            "ptsSeconds": "6.210622",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 61,
+            "ptsSeconds": "6.312333",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 67,
+            "ptsSeconds": "6.410278",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 73,
+            "ptsSeconds": "6.509978",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 79,
+            "ptsSeconds": "6.609456",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 85,
+            "ptsSeconds": "6.708967",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 91,
+            "ptsSeconds": "6.808833",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 97,
+            "ptsSeconds": "6.908822",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 103,
+            "ptsSeconds": "7.008767",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 110,
+            "ptsSeconds": "8.134656",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 116,
+            "ptsSeconds": "8.233133",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 122,
+            "ptsSeconds": "8.353622",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 128,
+            "ptsSeconds": "11.413867",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 134,
+            "ptsSeconds": "11.521978",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          },
+          {
+            "index": 140,
+            "ptsSeconds": "14.544444",
+            "crop": [
+              280,
+              1920,
+              1040,
+              2220
+            ]
+          }
+        ],
+        "allEncodedSamplesVisuallyReviewed": false,
+        "screenshotSidecar": {
+          "schema": "starward-miniapp-screenshot-v1",
+          "captureId": "c35bc9b2-4c05-4d68-be10-3f51dbd9bb49",
+          "capturedAt": "2026-10-19T09:40:04.637Z",
+          "file": "screen-c35bc9b2-4c05-4d68-be10-3f51dbd9bb49.png",
+          "sha256": "e0169b365122956418b6d2fc0bfd2a7b871dee526c41e0d8860bef480a969982",
+          "bytes": 370361,
+          "size": {
+            "width": 1080,
+            "height": 2376
+          },
+          "screenScope": "miniapp"
+        },
+        "terminalActuallyViewed": true,
+        "archiveDirectory": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\normal-existing-resume-20261019\\a1-r8-manual-ruler-20261019"
+      }
+    ],
+    "limits": [
+      "Encoded frames and PTS gaps are not physical application FPS",
+      "No PTS/host/phone Date.now calibration; no cross-clock subtraction",
+      "Each sparse interval remains unsampled; endpoints are not proof of every intermediate physical presentation",
+      "Container length and requested 15 seconds do not supply a presentation-clock anchor"
+    ]
+  },
+  "service": {
+    "healthSha256": "fe7516f81ce2262ea6f115ad177c049dd4136050de79506a7a25a8777b92220c",
+    "finiteAnonymousRingEntries": 32,
+    "uniqueNearbyGeometryBoundary": {
+      "route": "sky-geometry",
+      "method": "GET",
+      "status": 200,
+      "elapsedMs": 118,
+      "returnedAt": "2026-10-19T09:35:34.618Z"
+    },
+    "serviceParticipationObserved": true,
+    "exactRequestKeyOrGeometryPayloadRead": false,
+    "normalizedDayOrSupplyFingerprintBound": false,
+    "physicalLatencyClaim": false,
+    "newConnectionOrCaptureRequested": false
+  },
+  "manual": {
+    "rawFile": "baseline-r17-2-qet4x71ebh.json",
+    "rawBytes": 44347,
+    "compactBodyBytes": 29260,
+    "maxBodyBytes": 32768,
+    "sha256": "90816e8d7a5cd62211637f6dec62dca2a68a8d2634ce3943e79c5d9fea0155f7",
+    "strictActualDispatcher": true,
+    "schemaVersion": "starward-r17-phone-probe-v3-manual-input",
+    "caseKey": "manual-input",
+    "input": {
+      "schemaVersion": "starward-r17-manual-input-v1",
+      "trigger": 2,
+      "boundary": "legal-onPreview-before-preview-intent"
+    },
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 1868,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "binding": {
+      "mode": "normal",
+      "buildGeneration": 27,
+      "buildSourceSha256": "3362e2d0595b7871835b0232eb43f2ac233c5a5aa012f609c5eb40e04df4bcb0",
+      "windowId": 2
+    },
+    "window": {
+      "startDelayMs": 0,
+      "durationLimitMs": 45000,
+      "elapsedMs": 15009,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "controls": {
+      "recordingStartRelativeMs": 0,
+      "sealRelativeMs": 15009,
+      "events": {
+        "actualPlay": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "export": {
+          "calls": 1,
+          "firstRelativeMs": 15007,
+          "lastRelativeMs": 15007,
+          "lastResult": null
+        },
+        "pauseAttempt": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "pauseSuccess": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "terminalExport": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        }
+      }
+    },
+    "legalOnPreviewStartIsAfterPhysicalTouchDispatch": true,
+    "armIsNotMeasurementStart": true,
+    "historicalManualReasonIsNotActualManualStop": true,
+    "counters": {
+      "timeIntentPublications": 49,
+      "preparedRequests": 80,
+      "paintAttempts": 52,
+      "nativeCallbacks": 52,
+      "acceptedCopies": 52,
+      "sceneFinishes": 52,
+      "glDrawSubmissions": 464,
+      "bscSubmittedStars": 1110,
+      "saoSubmittedStars": 708,
+      "acceptedBscObjects": 1110,
+      "acceptedSaoObjects": 549,
+      "failedFrames": 0,
+      "invalidations": 0
+    },
+    "linkageSummary": {
+      "capacity": 2048,
+      "identityMapCapacity": 256,
+      "linkLimit": 32,
+      "intentsCreated": 49,
+      "firstAcceptedIntents": 37,
+      "duplicateIntentPresents": 15,
+      "supersededBeforeFirstAccepted": 40,
+      "firstAcceptedAfterSuperseded": 28,
+      "expiredUnacceptedIntents": 0,
+      "unknownIntentLookups": 0,
+      "stateIdentityRotations": 0,
+      "preparationsStarted": 38,
+      "preparationsFinished": 38,
+      "expiredUnconsumedPreparations": 0,
+      "expiredIncompletePreparations": 0,
+      "requests": 80,
+      "requestsWithUnknownPreparation": 0,
+      "requestsWithUnknownIntent": 0,
+      "linkageMismatches": 0,
+      "frameIdentityRotations": 0,
+      "inheritedFrames": 0,
+      "duplicateFramePresents": 0,
+      "unknownAcceptedFrames": 0,
+      "syntheticPublications": 0,
+      "prepareFinishUnknown": 0,
+      "prepareFinishDuplicate": 0,
+      "latencyUnknownIntents": 0,
+      "unacceptedIntents": 12,
+      "supersededUnacceptedIntents": 12,
+      "consumedPreparations": 37,
+      "unconsumedPreparations": 1,
+      "incompletePreparations": 0,
+      "costs": {
+        "consumed": {
+          "knownSubtotalMs": 25,
+          "validCalls": 24,
+          "unknownCalls": 13,
+          "unknown": {
+            "belowResolution": 13,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "unconsumed": {
+          "knownSubtotalMs": 0,
+          "validCalls": 0,
+          "unknownCalls": 1,
+          "unknown": {
+            "belowResolution": 1,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "expiredUnconsumed": {
+          "knownSubtotalMs": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        }
+      },
+      "knownResourceRevisions": 0,
+      "retainedIntents": 49,
+      "retainedPreparations": 38,
+      "linkSampleTruncated": true,
+      "latency": {
+        "intentToFirstAcceptedMs": {
+          "observedCalls": 37,
+          "validCalls": 37,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 2343,
+          "minMs": 24,
+          "maxMs": 149,
+          "keptSamples": 37,
+          "p50Ms": 53,
+          "p95Ms": 132,
+          "overflow": false
+        },
+        "unsupersededIntentToFirstAcceptedMs": {
+          "observedCalls": 9,
+          "validCalls": 9,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 381,
+          "minMs": 24,
+          "maxMs": 70,
+          "keptSamples": 9,
+          "p50Ms": 40,
+          "p95Ms": 70,
+          "overflow": false
+        },
+        "supersededIntentToFirstAcceptedMs": {
+          "observedCalls": 28,
+          "validCalls": 28,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 1962,
+          "minMs": 25,
+          "maxMs": 149,
+          "keptSamples": 28,
+          "p50Ms": 65,
+          "p95Ms": 132,
+          "overflow": false
+        }
+      }
+    },
+    "exportedLinkage": {
+      "selection": "First 16 and last 16 of 38 preparations; not random",
+      "allRetainedIntents": 49,
+      "allRetainedPreparations": 38,
+      "exportedPreparations": 32,
+      "originalSelectedLinks": [
+        {
+          "prepareToken": 1,
+          "intentSequence": 1,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1,
+          "finishedRelativeMs": 2,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 55,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 68,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 0,
+          "intentFirstAcceptedRelativeMs": 68,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 2,
+          "intentSequence": 2,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 26,
+          "finishedRelativeMs": 27,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 96,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 117,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 15,
+          "intentFirstAcceptedRelativeMs": 117,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 3,
+          "intentSequence": 3,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 132,
+          "finishedRelativeMs": 133,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 216,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 227,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 95,
+          "intentFirstAcceptedRelativeMs": 227,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 4,
+          "intentSequence": 5,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 175,
+          "finishedRelativeMs": 176,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 290,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 299,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 150,
+          "intentFirstAcceptedRelativeMs": 299,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 5,
+          "intentSequence": 7,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 240,
+          "finishedRelativeMs": 241,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 317,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 328,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 214,
+          "intentFirstAcceptedRelativeMs": 328,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 6,
+          "intentSequence": 9,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 308,
+          "finishedRelativeMs": 309,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 345,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 351,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 252,
+          "intentFirstAcceptedRelativeMs": 351,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 7,
+          "intentSequence": 11,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 336,
+          "finishedRelativeMs": 336,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 367,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 369,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 317,
+          "intentFirstAcceptedRelativeMs": 369,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 8,
+          "intentSequence": 12,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 358,
+          "finishedRelativeMs": 359,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 406,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 409,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 344,
+          "intentFirstAcceptedRelativeMs": 409,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 9,
+          "intentSequence": 13,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 397,
+          "finishedRelativeMs": 398,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 426,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 429,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 378,
+          "intentFirstAcceptedRelativeMs": 429,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 10,
+          "intentSequence": 14,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 417,
+          "finishedRelativeMs": 418,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 446,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 449,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 409,
+          "intentFirstAcceptedRelativeMs": 449,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 11,
+          "intentSequence": 15,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 438,
+          "finishedRelativeMs": 438,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 466,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 468,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 425,
+          "intentFirstAcceptedRelativeMs": 468,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 12,
+          "intentSequence": 16,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 458,
+          "finishedRelativeMs": 459,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 494,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 497,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 456,
+          "intentFirstAcceptedRelativeMs": 497,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 13,
+          "intentSequence": 17,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 487,
+          "finishedRelativeMs": 487,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 508,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 510,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 486,
+          "intentFirstAcceptedRelativeMs": 510,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 14,
+          "intentSequence": 18,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 519,
+          "finishedRelativeMs": 519,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 543,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 546,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 518,
+          "intentFirstAcceptedRelativeMs": 546,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 15,
+          "intentSequence": 19,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 561,
+          "finishedRelativeMs": 562,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 600,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 605,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 552,
+          "intentFirstAcceptedRelativeMs": 605,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 16,
+          "intentSequence": 20,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 647,
+          "finishedRelativeMs": 648,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 679,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 681,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 637,
+          "intentFirstAcceptedRelativeMs": 681,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 23,
+          "intentSequence": 29,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 884,
+          "finishedRelativeMs": 885,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 953,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 956,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 872,
+          "intentFirstAcceptedRelativeMs": 956,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 24,
+          "intentSequence": 32,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 940,
+          "finishedRelativeMs": 941,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 994,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 997,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 927,
+          "intentFirstAcceptedRelativeMs": 997,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 25,
+          "intentSequence": 34,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 999,
+          "finishedRelativeMs": 999,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 1019,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1022,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 997,
+          "intentFirstAcceptedRelativeMs": 1022,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 26,
+          "intentSequence": 35,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1031,
+          "finishedRelativeMs": 1031,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 1061,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1064,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1019,
+          "intentFirstAcceptedRelativeMs": 1064,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 27,
+          "intentSequence": 36,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1053,
+          "finishedRelativeMs": 1054,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1079,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1082,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1042,
+          "intentFirstAcceptedRelativeMs": 1082,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 28,
+          "intentSequence": 37,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1092,
+          "finishedRelativeMs": 1093,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1128,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1133,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1089,
+          "intentFirstAcceptedRelativeMs": 1133,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 29,
+          "intentSequence": 38,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1142,
+          "finishedRelativeMs": 1143,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 1183,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1191,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1128,
+          "intentFirstAcceptedRelativeMs": 1191,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 30,
+          "intentSequence": 39,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1170,
+          "finishedRelativeMs": 1171,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1220,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1226,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1156,
+          "intentFirstAcceptedRelativeMs": 1226,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 31,
+          "intentSequence": 41,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1243,
+          "finishedRelativeMs": 1244,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 1289,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1292,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1219,
+          "intentFirstAcceptedRelativeMs": 1292,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 32,
+          "intentSequence": 42,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1281,
+          "finishedRelativeMs": 1281,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 1309,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1312,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1254,
+          "intentFirstAcceptedRelativeMs": 1312,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 33,
+          "intentSequence": 43,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1299,
+          "finishedRelativeMs": 1299,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 1326,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1328,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1288,
+          "intentFirstAcceptedRelativeMs": 1328,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 34,
+          "intentSequence": 44,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1318,
+          "finishedRelativeMs": 1318,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 4,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1362,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1364,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1308,
+          "intentFirstAcceptedRelativeMs": 1364,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 35,
+          "intentSequence": 45,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1366,
+          "finishedRelativeMs": 1366,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 0,
+          "firstConsumedRelativeMs": null,
+          "consumed": false,
+          "firstAcceptedRelativeMs": null,
+          "firstAcceptedObserved": false,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1365,
+          "intentFirstAcceptedRelativeMs": null,
+          "intentFirstAcceptedObserved": false,
+          "intentSuperseded": true
+        },
+        {
+          "prepareToken": 36,
+          "intentSequence": 46,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1381,
+          "finishedRelativeMs": 1382,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1415,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1417,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1372,
+          "intentFirstAcceptedRelativeMs": 1417,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 37,
+          "intentSequence": 47,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1434,
+          "finishedRelativeMs": 1435,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 10,
+          "paintAttempts": 9,
+          "firstConsumedRelativeMs": 1457,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1461,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 8,
+          "intentRelativeMs": 1426,
+          "intentFirstAcceptedRelativeMs": 1461,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        },
+        {
+          "prepareToken": 38,
+          "intentSequence": 49,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1585,
+          "finishedRelativeMs": 1585,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1607,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1609,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1579,
+          "intentFirstAcceptedRelativeMs": 1609,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false
+        }
+      ]
+    },
+    "latestAtFirstAcceptance": {
+      "completeNineSelectedLinks": [
+        {
+          "prepareToken": 13,
+          "intentSequence": 17,
+          "intentRelativeMs": 486,
+          "firstAcceptedRelativeMs": 510,
+          "elapsedMs": 24
+        },
+        {
+          "prepareToken": 14,
+          "intentSequence": 18,
+          "intentRelativeMs": 518,
+          "firstAcceptedRelativeMs": 546,
+          "elapsedMs": 28
+        },
+        {
+          "prepareToken": 15,
+          "intentSequence": 19,
+          "intentRelativeMs": 552,
+          "firstAcceptedRelativeMs": 605,
+          "elapsedMs": 53
+        },
+        {
+          "prepareToken": 24,
+          "intentSequence": 32,
+          "intentRelativeMs": 927,
+          "firstAcceptedRelativeMs": 997,
+          "elapsedMs": 70
+        },
+        {
+          "prepareToken": 27,
+          "intentSequence": 36,
+          "intentRelativeMs": 1042,
+          "firstAcceptedRelativeMs": 1082,
+          "elapsedMs": 40
+        },
+        {
+          "prepareToken": 34,
+          "intentSequence": 44,
+          "intentRelativeMs": 1308,
+          "firstAcceptedRelativeMs": 1364,
+          "elapsedMs": 56
+        },
+        {
+          "prepareToken": 36,
+          "intentSequence": 46,
+          "intentRelativeMs": 1372,
+          "firstAcceptedRelativeMs": 1417,
+          "elapsedMs": 45
+        },
+        {
+          "prepareToken": 37,
+          "intentSequence": 47,
+          "intentRelativeMs": 1426,
+          "firstAcceptedRelativeMs": 1461,
+          "elapsedMs": 35
+        },
+        {
+          "prepareToken": 38,
+          "intentSequence": 49,
+          "intentRelativeMs": 1579,
+          "firstAcceptedRelativeMs": 1609,
+          "elapsedMs": 30
+        }
+      ],
+      "independentlyRecomputed": {
+        "observedCalls": 9,
+        "minMs": 24,
+        "maxMs": 70,
+        "knownSubtotalMs": 381,
+        "p50Ms": 40,
+        "p95Ms": 70
+      },
+      "conditionalSubsetNotUnbiasedAllInputDistribution": true,
+      "alreadyAcceptedIntentsNotReclassifiedWhenFutureIntentArrives": true
+    },
+    "aCorrelation": {
+      "schemaVersion": "starward-r17-a-correlation-v1",
+      "coverage": "retained-preparations",
+      "linkLimit": 8,
+      "retainedPreparations": 38,
+      "linkSampleTruncated": true,
+      "preparationToRequest": {
+        "observedCalls": 38,
+        "validCalls": 38,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 817,
+        "minMs": 7,
+        "maxMs": 58,
+        "p50Ms": 18,
+        "p95Ms": 53
+      },
+      "requestToPaint": {
+        "observedCalls": 38,
+        "validCalls": 37,
+        "unknownCalls": 1,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 1
+        },
+        "knownSubtotalMs": 830,
+        "minMs": 1,
+        "maxMs": 63,
+        "p50Ms": 17,
+        "p95Ms": 56
+      },
+      "links": [
+        {
+          "prepareToken": 1,
+          "intentSequence": 1,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1,
+          "finishedRelativeMs": 2,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 1,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 55,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 68,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 0,
+          "intentFirstAcceptedRelativeMs": 68,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true,
+          "firstRequestRelativeMs": 25,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            0,
+            0,
+            0
+          ],
+          "pageAtRequest": [
+            1,
+            0,
+            1
+          ],
+          "pageAtPaint": [
+            1,
+            1,
+            0
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 68,
+            "preparationFinishToRequestMs": 23,
+            "requestToFirstPaintMs": 30,
+            "firstPaintToAcceptedMs": 13
+          }
+        },
+        {
+          "prepareToken": 2,
+          "intentSequence": 2,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 26,
+          "finishedRelativeMs": 27,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 96,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 117,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 15,
+          "intentFirstAcceptedRelativeMs": 117,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true,
+          "firstRequestRelativeMs": 67,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            1,
+            0,
+            1
+          ],
+          "pageAtRequest": [
+            1,
+            1,
+            0
+          ],
+          "pageAtPaint": [
+            2,
+            1,
+            1
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 102,
+            "preparationFinishToRequestMs": 40,
+            "requestToFirstPaintMs": 29,
+            "firstPaintToAcceptedMs": 21
+          }
+        },
+        {
+          "prepareToken": 3,
+          "intentSequence": 3,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 132,
+          "finishedRelativeMs": 133,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 216,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 227,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 95,
+          "intentFirstAcceptedRelativeMs": 227,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true,
+          "firstRequestRelativeMs": 160,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            3,
+            1,
+            2
+          ],
+          "pageAtRequest": [
+            3,
+            3,
+            0
+          ],
+          "pageAtPaint": [
+            4,
+            4,
+            0
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 132,
+            "preparationFinishToRequestMs": 27,
+            "requestToFirstPaintMs": 56,
+            "firstPaintToAcceptedMs": 11
+          }
+        },
+        {
+          "prepareToken": 4,
+          "intentSequence": 5,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 175,
+          "finishedRelativeMs": 176,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 1,
+          "firstConsumedRelativeMs": 290,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 299,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 150,
+          "intentFirstAcceptedRelativeMs": 299,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": true,
+          "firstRequestRelativeMs": 227,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            4,
+            3,
+            1
+          ],
+          "pageAtRequest": [
+            4,
+            4,
+            0
+          ],
+          "pageAtPaint": [
+            5,
+            4,
+            1
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 149,
+            "preparationFinishToRequestMs": 51,
+            "requestToFirstPaintMs": 63,
+            "firstPaintToAcceptedMs": 9
+          }
+        },
+        {
+          "prepareToken": 35,
+          "intentSequence": 45,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1366,
+          "finishedRelativeMs": 1366,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 2,
+          "paintAttempts": 0,
+          "firstConsumedRelativeMs": null,
+          "consumed": false,
+          "firstAcceptedRelativeMs": null,
+          "firstAcceptedObserved": false,
+          "syntheticPublications": 0,
+          "duplicatePresents": 0,
+          "intentRelativeMs": 1365,
+          "intentFirstAcceptedRelativeMs": null,
+          "intentFirstAcceptedObserved": false,
+          "intentSuperseded": true,
+          "firstRequestRelativeMs": 1381,
+          "firstRequestObserved": true,
+          "firstPaintObserved": false,
+          "pageAtPreparationFinish": [
+            48,
+            47,
+            1
+          ],
+          "pageAtRequest": [
+            49,
+            48,
+            1
+          ],
+          "pageAtPaint": [
+            null,
+            null,
+            null
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": null,
+            "preparationFinishToRequestMs": 15,
+            "requestToFirstPaintMs": null,
+            "firstPaintToAcceptedMs": null
+          }
+        },
+        {
+          "prepareToken": 36,
+          "intentSequence": 46,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1381,
+          "finishedRelativeMs": 1382,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1415,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1417,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1372,
+          "intentFirstAcceptedRelativeMs": 1417,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false,
+          "firstRequestRelativeMs": 1393,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            49,
+            48,
+            1
+          ],
+          "pageAtRequest": [
+            50,
+            48,
+            2
+          ],
+          "pageAtPaint": [
+            50,
+            49,
+            1
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 45,
+            "preparationFinishToRequestMs": 11,
+            "requestToFirstPaintMs": 22,
+            "firstPaintToAcceptedMs": 2
+          }
+        },
+        {
+          "prepareToken": 37,
+          "intentSequence": 47,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1434,
+          "finishedRelativeMs": 1435,
+          "elapsedMs": 1,
+          "elapsedStatus": "valid",
+          "completed": true,
+          "requests": 10,
+          "paintAttempts": 9,
+          "firstConsumedRelativeMs": 1457,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1461,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 8,
+          "intentRelativeMs": 1426,
+          "intentFirstAcceptedRelativeMs": 1461,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false,
+          "firstRequestRelativeMs": 1442,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            52,
+            50,
+            2
+          ],
+          "pageAtRequest": [
+            52,
+            51,
+            1
+          ],
+          "pageAtPaint": [
+            54,
+            52,
+            2
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 35,
+            "preparationFinishToRequestMs": 7,
+            "requestToFirstPaintMs": 15,
+            "firstPaintToAcceptedMs": 4
+          }
+        },
+        {
+          "prepareToken": 38,
+          "intentSequence": 49,
+          "scopeGeneration": 1,
+          "kind": "presentation",
+          "resourceRevision": null,
+          "startedRelativeMs": 1585,
+          "finishedRelativeMs": 1585,
+          "elapsedMs": null,
+          "elapsedStatus": "belowResolution",
+          "completed": true,
+          "requests": 3,
+          "paintAttempts": 2,
+          "firstConsumedRelativeMs": 1607,
+          "consumed": true,
+          "firstAcceptedRelativeMs": 1609,
+          "firstAcceptedObserved": true,
+          "syntheticPublications": 0,
+          "duplicatePresents": 1,
+          "intentRelativeMs": 1579,
+          "intentFirstAcceptedRelativeMs": 1609,
+          "intentFirstAcceptedObserved": true,
+          "intentSuperseded": false,
+          "firstRequestRelativeMs": 1593,
+          "firstRequestObserved": true,
+          "firstPaintObserved": true,
+          "pageAtPreparationFinish": [
+            62,
+            61,
+            1
+          ],
+          "pageAtRequest": [
+            62,
+            61,
+            1
+          ],
+          "pageAtPaint": [
+            64,
+            62,
+            2
+          ],
+          "derived": {
+            "intentToFirstAcceptedMs": 30,
+            "preparationFinishToRequestMs": 8,
+            "requestToFirstPaintMs": 14,
+            "firstPaintToAcceptedMs": 2
+          }
+        }
+      ]
+    },
+    "terminal": {
+      "prepareToken": 38,
+      "intentSequence": 49,
+      "scopeGeneration": 1,
+      "kind": "presentation",
+      "resourceRevision": null,
+      "startedRelativeMs": 1585,
+      "finishedRelativeMs": 1585,
+      "elapsedMs": null,
+      "elapsedStatus": "belowResolution",
+      "completed": true,
+      "requests": 3,
+      "paintAttempts": 2,
+      "firstConsumedRelativeMs": 1607,
+      "consumed": true,
+      "firstAcceptedRelativeMs": 1609,
+      "firstAcceptedObserved": true,
+      "syntheticPublications": 0,
+      "duplicatePresents": 1,
+      "intentRelativeMs": 1579,
+      "intentFirstAcceptedRelativeMs": 1609,
+      "intentFirstAcceptedObserved": true,
+      "intentSuperseded": false,
+      "firstRequestRelativeMs": 1593,
+      "firstRequestObserved": true,
+      "firstPaintObserved": true,
+      "pageAtPreparationFinish": [
+        62,
+        61,
+        1
+      ],
+      "pageAtRequest": [
+        62,
+        61,
+        1
+      ],
+      "pageAtPaint": [
+        64,
+        62,
+        2
+      ],
+      "derived": {
+        "intentToFirstAcceptedMs": 30,
+        "preparationFinishToRequestMs": 8,
+        "requestToFirstPaintMs": 14,
+        "firstPaintToAcceptedMs": 2
+      }
+    },
+    "stageElapsed": {
+      "presentation": {
+        "observedCalls": 38,
+        "validCalls": 23,
+        "unknownCalls": 15,
+        "unknown": {
+          "belowResolution": 15,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 24,
+        "minMs": 1,
+        "maxMs": 2,
+        "keptSamples": 23,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "base": {
+        "observedCalls": 365,
+        "validCalls": 3,
+        "unknownCalls": 362,
+        "unknown": {
+          "belowResolution": 362,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 3,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 3,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "selection": {
+        "observedCalls": 38,
+        "validCalls": 2,
+        "unknownCalls": 36,
+        "unknown": {
+          "belowResolution": 36,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 2,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 2,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "supplement": {
+        "observedCalls": 38,
+        "validCalls": 1,
+        "unknownCalls": 37,
+        "unknown": {
+          "belowResolution": 37,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "constellations": {
+        "observedCalls": 38,
+        "validCalls": 38,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 146,
+        "minMs": 2,
+        "maxMs": 28,
+        "keptSamples": 38,
+        "p50Ms": 3,
+        "p95Ms": 10,
+        "overflow": false
+      },
+      "draw": {
+        "observedCalls": 52,
+        "validCalls": 52,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 224,
+        "minMs": 2,
+        "maxMs": 21,
+        "keptSamples": 52,
+        "p50Ms": 3,
+        "p95Ms": 11,
+        "overflow": false
+      },
+      "nativePaintOwner": {
+        "observedCalls": 52,
+        "validCalls": 52,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 227,
+        "minMs": 2,
+        "maxMs": 21,
+        "keptSamples": 52,
+        "p50Ms": 3,
+        "p95Ms": 11,
+        "overflow": false
+      },
+      "displayCopy": {
+        "observedCalls": 52,
+        "validCalls": 4,
+        "unknownCalls": 48,
+        "unknown": {
+          "belowResolution": 48,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 4,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 4,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "publishAccepted": {
+        "observedCalls": 52,
+        "validCalls": 12,
+        "unknownCalls": 40,
+        "unknown": {
+          "belowResolution": 40,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 12,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 12,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      }
+    },
+    "timing": {
+      "nativeCallbackMs": {
+        "observedCalls": 52,
+        "validCalls": 52,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 209,
+        "minMs": 1,
+        "maxMs": 20,
+        "keptSamples": 52,
+        "p50Ms": 3,
+        "p95Ms": 11,
+        "overflow": false
+      },
+      "acceptedGapMs": {
+        "observedCalls": 51,
+        "validCalls": 51,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1558,
+        "minMs": 13,
+        "maxMs": 76,
+        "keptSamples": 51,
+        "p50Ms": 25,
+        "p95Ms": 67,
+        "overflow": false
+      },
+      "intentToAcceptedWallMs": {
+        "observedCalls": 17,
+        "validCalls": 17,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1114,
+        "minMs": 24,
+        "maxMs": 148,
+        "keptSamples": 17,
+        "p50Ms": 53,
+        "p95Ms": 148,
+        "overflow": false
+      }
+    },
+    "time": {
+      "intent": {
+        "events": 49,
+        "distinct": 48,
+        "firstRelativeMs": 0,
+        "lastRelativeMs": 19582354,
+        "minRelativeMs": 0,
+        "maxRelativeMs": 19582354,
+        "overflow": false
+      },
+      "prepared": {
+        "events": 80,
+        "distinct": 38,
+        "firstRelativeMs": 0,
+        "lastRelativeMs": 19582354,
+        "minRelativeMs": 0,
+        "maxRelativeMs": 19582354,
+        "overflow": false
+      },
+      "painted": {
+        "events": 52,
+        "distinct": 37,
+        "firstRelativeMs": 0,
+        "lastRelativeMs": 19582354,
+        "minRelativeMs": 0,
+        "maxRelativeMs": 19582354,
+        "overflow": false
+      },
+      "accepted": {
+        "events": 52,
+        "distinct": 37,
+        "firstRelativeMs": 0,
+        "lastRelativeMs": 19582354,
+        "minRelativeMs": 0,
+        "maxRelativeMs": 19582354,
+        "overflow": false
+      },
+      "lastRequestedMinusAcceptedMs": 0,
+      "maximumRequestedMinusAcceptedMs": 1920003
+    },
+    "scene": {
+      "baseRowsMin": 8404,
+      "baseRowsMax": 8404,
+      "saoRowsMin": 0,
+      "saoRowsMax": 666,
+      "selectedTilesMin": 0,
+      "selectedTilesMax": 17,
+      "catalogVersions": [
+        "bsc5p-bright-stars.v3"
+      ],
+      "saoPublicationHashes": [
+        "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+      ],
+      "modelAlgorithms": [],
+      "modes": [
+        "DAY"
+      ]
+    },
+    "viewport": {
+      "widthMin": 384,
+      "widthMax": 384,
+      "heightMin": 796.800048828125,
+      "heightMax": 796.800048828125,
+      "fovMin": 45,
+      "fovMax": 45
+    },
+    "observations": {
+      "tm": {
+        "captures": 2,
+        "first": {
+          "relativeMs": 0,
+          "values": {
+            "hits": null,
+            "misses": null,
+            "evictions": null,
+            "nativeGlyphCalls": 0,
+            "lifetimeHits": null,
+            "lifetimeMisses": null,
+            "lifetimeEvictions": null,
+            "lifetimeNativeGlyphCalls": 614,
+            "entries": null,
+            "capacity": null,
+            "observationResets": 2,
+            "retired": false,
+            "available": true
+          }
+        },
+        "last": {
+          "relativeMs": 15005,
+          "values": {
+            "hits": null,
+            "misses": null,
+            "evictions": null,
+            "nativeGlyphCalls": 372,
+            "lifetimeHits": null,
+            "lifetimeMisses": null,
+            "lifetimeEvictions": null,
+            "lifetimeNativeGlyphCalls": 986,
+            "entries": null,
+            "capacity": null,
+            "observationResets": 2,
+            "retired": false,
+            "available": true
+          }
+        }
+      },
+      "page": {
+        "captures": 2,
+        "first": {
+          "relativeMs": 0,
+          "values": {
+            "available": 1,
+            "submitted": 0,
+            "completed": 0,
+            "failed": 0,
+            "failedBeforeCallback": 0,
+            "callbackMissing": 0,
+            "pending": 0,
+            "inheritedPending": 0,
+            "maxPending": 0,
+            "duplicateCallback": 0,
+            "keyCountTotal": 0,
+            "maxKeyCount": 0,
+            "keyCountFailures": 0,
+            "sampledCalls": 0,
+            "sampledBytes": 0,
+            "maxSampledBytes": 0,
+            "serializationFailures": 0,
+            "bufferDataCalls": 0,
+            "totalTypedUploadBytes": 0,
+            "maxTypedUploadBytes": 0,
+            "latencyTotalMs": 0,
+            "latencyMaxMs": 0,
+            "enableDebug": false
+          }
+        },
+        "last": {
+          "relativeMs": 15006,
+          "values": {
+            "available": 1,
+            "submitted": 66,
+            "completed": 66,
+            "failed": 0,
+            "failedBeforeCallback": 0,
+            "callbackMissing": 0,
+            "pending": 0,
+            "inheritedPending": 0,
+            "maxPending": 3,
+            "duplicateCallback": 0,
+            "keyCountTotal": 952,
+            "maxKeyCount": 34,
+            "keyCountFailures": 0,
+            "sampledCalls": 16,
+            "sampledBytes": 27830,
+            "maxSampledBytes": 2724,
+            "serializationFailures": 0,
+            "bufferDataCalls": 101,
+            "totalTypedUploadBytes": 441396,
+            "maxTypedUploadBytes": 11376,
+            "latencyTotalMs": 2004,
+            "latencyMaxMs": 87,
+            "enableDebug": false
+          }
+        }
+      },
+      "scene": {
+        "captures": 2,
+        "first": {
+          "relativeMs": 0,
+          "values": {
+            "nativeCopies": 0,
+            "readyNativeCopies": 0,
+            "syntheticBegins": 0,
+            "syntheticFinishes": 0,
+            "syntheticPublications": 0,
+            "discs": null,
+            "segments": null,
+            "images": null,
+            "readiness": null,
+            "frozen": false,
+            "retired": false
+          }
+        },
+        "last": {
+          "relativeMs": 15006,
+          "values": {
+            "nativeCopies": 52,
+            "readyNativeCopies": 52,
+            "syntheticBegins": 0,
+            "syntheticFinishes": 0,
+            "syntheticPublications": 0,
+            "discs": null,
+            "segments": null,
+            "images": null,
+            "readiness": null,
+            "frozen": false,
+            "retired": false
+          }
+        }
+      },
+      "memo": {
+        "captures": 0,
+        "first": null,
+        "last": null
+      }
+    },
+    "semantics": [
+      "First accepted owner marks a genuine non-synthetic software accepted frame; it is not physical presentation",
+      "Superseded counts and complete first-acceptance distribution are retained beside the conditional latest subset",
+      "Only 1 unconsumed presentation preparation, below-resolution cost unknown; not evidence of costly preparation waste",
+      "Independent stage percentiles must not be added",
+      "draw and nativePaintOwner overlap and must not be summed",
+      "A1 Page counter triplets establish temporal overlap only, not payload/React/bridge CPU causality",
+      "Page legacy performance.now/Date.now fallback latency is not calibrated to the recorder wall clock",
+      "time relative fields and requested-minus-accepted concern astronomical instants, not wall input latency",
+      "DAY is DisplayMode, not a sufficient solar-altitude measurement",
+      "Glyph cache counters absent/null remain unknown; nativeGlyphCalls372 is actual observed work"
+    ],
+    "noSyntheticOrFrozenWorkload": true,
+    "latestRequestedAstronomicalInstantEqualsLastAccepted": true,
+    "terminalPhoto1000Consistent": true
+  },
+  "nextDecision": {
+    "newEvidence": "Continuous actual ruler input now supplies nine valid latest-at-first-acceptance observations and convergent terminal intent, replacing the prior zero-sample gap for that route",
+    "keepCurrentOwners": true,
+    "expensiveUnconsumedPreparationHypothesisSupported": false,
+    "pageOverlapProvesBridgeOrReactCause": false,
+    "repeatSameManualOrEntryProbeRequiredForTheseAnsweredQuestions": false,
+    "continue": "Existing remaining product obligations, cross-day supply/transition semantics, other material interaction/lifecycle paths and final ordinary candidate; do not infer full A/B/Goal acceptance"
+  },
+  "sourceAssociation": {
+    "developmentFeedbackCandidateOnly": true,
+    "runtimeAppIdReadback": false,
+    "wholePhoneBundleBytesReadback": false,
+    "entrySourceAndProtocolManifestReused": true,
+    "threeActualRuntimeOwnersByteExactWithFrozenR8Map": true,
+    "productionSourceChanged": false,
+    "newInstrumentation": false,
+    "adoptedPngStillUnavailable": true,
+    "fullVisualConformanceClaim": false
+  },
+  "archive": {
+    "base": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019",
+    "directories": {
+      "a1-r8-time-interaction-20261019": {
+        "manifest.private.json": {
+          "files": 20,
+          "bytes": 3580139,
+          "manifestBytes": 8205,
+          "sha256": "1c24fae0f1d971f1ce75ef76df91ba0bb8b8a67c0139292d25a5f5c6eab78db7",
+          "allCopiesReadback": true
+        },
+        "samples-manifest.private.json": {
+          "files": 420,
+          "bytes": 124337886,
+          "manifestBytes": 73164,
+          "sha256": "1319921d0e7dccb32e6d1b4ce5741b7ecb1823fddf3e1a5f701d0ad9f6562028",
+          "allCopiesReadback": true
+        },
+        "review-tools-manifest.private.json": {
+          "files": 4,
+          "bytes": 17704,
+          "manifestBytes": 796,
+          "sha256": "1fdf1fd3fbb452e00a77454cc112aa940a32cc968e46e7037d9f7e1fb5f74745",
+          "allCopiesReadback": true
+        },
+        "service-manifest.private.json": {
+          "files": 1,
+          "bytes": 4012,
+          "manifestBytes": 566,
+          "sha256": "8903e4f4683e0feeef4434691b08724d0f39e3ea3649646a8f1824e8e842ddc4",
+          "allCopiesReadback": true
+        }
+      },
+      "a1-r8-manual-ruler-20261019": {
+        "manifest.private.json": {
+          "files": 12,
+          "bytes": 1476502,
+          "manifestBytes": 4892,
+          "sha256": "791c1a189121228b8cb5a6acdeb04019d4c443ef6f1c346024f66b98e033c3df",
+          "allCopiesReadback": true
+        },
+        "samples-manifest.private.json": {
+          "files": 172,
+          "bytes": 49998091,
+          "manifestBytes": 30964,
+          "sha256": "2c443526a49fd69b9755c69df18b0b9ad29f873275b62ce23915eb71f1b84ceb",
+          "allCopiesReadback": true
+        },
+        "review-tools-manifest.private.json": {
+          "files": 4,
+          "bytes": 17704,
+          "manifestBytes": 796,
+          "sha256": "1fdf1fd3fbb452e00a77454cc112aa940a32cc968e46e7037d9f7e1fb5f74745",
+          "allCopiesReadback": true
+        },
+        "semantics-manifest.private.json": {
+          "files": 3,
+          "bytes": 53871,
+          "manifestBytes": 1679,
+          "sha256": "902d992b114610d55a3a4c1d410238dd6bb6c3fd0c3a818883ea4bd1a68c7cab",
+          "allCopiesReadback": true
+        }
+      }
+    },
+    "originalsPreserved": true,
+    "allRawSourcesReadBeforeCopyAndAgainAfterCopy": true,
+    "allFrozenCopiesReadbackBeforeReport": true,
+    "allPngSidecarsByteExact": true
+  },
+  "actions": {
+    "filesOnly": true,
+    "deviceOrAdb": false,
+    "ide": false,
+    "service": false,
+    "feedbackOrSessionMutation": false,
+    "buildOrPreview": false,
+    "productionCodeChanged": false,
+    "gitCommit": false,
+    "coordinatorDocsChanged": false,
+    "dependencyInstalled": false,
+    "privateStorageScanned": false,
+    "planRereview": false,
+    "newHumanAction": false
+  },
+  "remainingUnverified": [
+    "Physical touch-to-presentation latency and FPS",
+    "Inertia/reverse/regrab as independent physical mechanisms",
+    "Failure/retry, relevant hide/resize, Apply/persistence and iOS",
+    "Exact per-request cross-day geometry identity, complete time coverage and temporal continuity",
+    "Final ordinary candidate and complete A, B, Terrain and Goal obligations"
+  ]
+}

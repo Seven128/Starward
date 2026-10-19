@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "starward-task-independent-review-v1",
+  "date": "2026-10-19",
+  "status": "PREBUILD_REVIEW_PASS_RUNTIME_UNVERIFIED",
+  "scope": "R17_NORMAL_R9_TASK_ONLY_SURFACE_RETIREMENT_AND_FINITE_60S_PAUSE",
+  "independentReviewer": "/root/review_r9_retirement_observer",
+  "findings": [],
+  "p1p2Count": 0,
+  "reviewedFiles": {
+    "scripts/build-r17-normal-baseline-v3.mjs": "d706a76fa1f8b9e410b943d177f21035eea5ab99a468bef951bf9364d875103e",
+    "scripts/r17-normal-observations.ts": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a",
+    "scripts/r17-normal-baseline-v3-fixture.mjs": "7b7a17af6861def2b5f81f800f92c2ca95f81322e714552ff7fd1cce6a7abcf8"
+  },
+  "referenceBindings": {
+    "R17-NORMAL-R9-RETIREMENT-OBSERVATION.md": "7ff7c3de861c9c88680156a859f61676e756de05b4e5ebad75239b9096d8c425",
+    "productionSkyCanvasSurface": "89ab750a1b524c2455bba99242b5907f3be7c5e5482ff2221d5fc456ecde9140",
+    "originalControls": "308ca7fe277e99590e341450395c5e78bbceab9d1e58aa650b4676bb17716c07",
+    "normalInputDispatcher": "4f48172576d0080e572cc95a67a86566ea96ee87cea87eaac5565ba91400325a",
+    "v3Runtime": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018",
+    "v3Protocol": "1dc289b6a92c0e40a2f423da3403dbb7745095deba18f143042073ccc0fcf120"
+  },
+  "verifiedSemantics": {
+    "originalDisposedGuardAndSelectionExceptionPreserved": true,
+    "originalIndependentNativeStepFailurePoliciesPreserved": true,
+    "postTeardownFactsReadIndependentlyWithNullUnknown": true,
+    "attemptReturnThrowAbsentUnsupportedDistinguished": true,
+    "singleSourceBoundOwnKeyOverwrite": true,
+    "oldSurfaceCannotOverwriteNewReceipt": true,
+    "noNativeContextReaderOrTeardownCallbackRetainedByObservation": true,
+    "onlyStorageAdapterCallbackRetained": true,
+    "perFrameNumericCountersOnly": true,
+    "sameRunAndLifecyclePauseGuardsPreserved": true,
+    "historical15sMetricsAnd45sRecorderLimitPreserved": true,
+    "late60sRelativeStampNullAcceptedByOriginalStrictDispatcher": true,
+    "noFull60sMetricsClaim": true
+  },
+  "executedChecks": {
+    "preparedSourcesMode": "ORIGINAL_FUNCTION_IN_MEMORY_EXPORT_NO_MAIN_OR_CANDIDATE_WRITES",
+    "typescriptVersion": "5.9.3",
+    "r9ExistingFixture": { "passed": 25, "total": 25 },
+    "historicalActualR8FrozenSourceFixture": { "passed": 21, "total": 21 },
+    "finiteArgvCases": { "passed": 8, "total": 8 },
+    "currentProductionBindingsEqualR8Manifest": 1573,
+    "fullCandidateTypecheckExecutedByReviewer": false
+  },
+  "protectedFilesBeforeAfterEqual": {
+    "tmp/r17-normal-a1-review-r8/manifest.json": "c888e807494165c375c4d1c0379c39b72a790dcfea1936bfb05bb63abe629722",
+    "tmp/r17-normal-a1-review-r8/source-map-bindings.json": "e69113388f4e7162dca438ca37d09c1a86032621cde1ac02bb6e1767ccc97025",
+    "tmp/r17-normal-a1-review-r8/source/apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts": "c52b7c341db755d0e37dc1f40ac2210cc8616663f1c2499f21b1da12c56793a2",
+    "tmp/r17-normal-a1-review-r8/source/apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+    "tmp/r17-normal-a1-review-r8/source/apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx": "2cb8ab2b35a7af4a532b4731953762013d654c8c46e70f539e2b61d065a1c92d",
+    "R17-NORMAL-A1-PREPARATION.json": "75da27d772859a36d5adb5fdf12b3030185700912388eff4baa1f7c8ed3b12f8"
+  },
+  "limits": [
+    "Construction count starts after original dimension validation; it is not a count of every invalid factory invocation.",
+    "Copy counts cover the observer module scope, not a per-surface GPU residency owner; comparisons need matching session and reset boundaries.",
+    "Only the last surface and last armed normal Play scalar facts persist. Rejected old-generation events do not establish their retirement.",
+    "Outcome returned does not imply every independent teardown step succeeded; after dimensions and step results must also be read.",
+    "Context loss may be asynchronous and does not prove physical GPU reclamation or a retaining graph.",
+    "Date.now receipts are wall stamps with unknown effective resolution and no monotonicity claim.",
+    "15s metrics cover approximately 14s active recording; they do not cover the full 60s trial."
+  ],
+  "remaining": [
+    "Root rechecks reviewed file hashes, performs complete r9 build, delta typecheck, source maps and package checks.",
+    "Actual new candidate delivery, target binding and source-bound ready receipt remain unverified.",
+    "Actual 60s normal Play, guarded Pause, at least30s drain, Map exit and same-key retirement readback remain unverified.",
+    "Sky B and full Goal remain open."
+  ],
+  "mutationsByReviewer": ["R17-NORMAL-R9-RETIREMENT-REVIEW.md", "R17-NORMAL-R9-RETIREMENT-REVIEW.json"],
+  "deviceIdeServicesFeedbackBuildPreviewGitWritesByReviewer": false
+}

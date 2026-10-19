@@ -1,0 +1,1034 @@
+{
+  "schemaVersion": "starward-r17-a1-r3-play-result-v1",
+  "createdAt": "2026-10-19T04:23:28.892Z",
+  "status": "VALID_BOUNDED_NORMAL_PLAY_ASSOCIATION_NO_PRODUCTION_REPAIR_SELECTED",
+  "scope": "Interpretation of existing raw receipts only; no runtime, device, service, source, build, preview or sampler operation.",
+  "sources": {
+    "archiveDirectory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r3-play-association-archive-20261019",
+    "archiveManifestSha256": "ea7e96b3d6be67de13ba47132e01118123409e1907b1ea92427ce2b0569bbcf8",
+    "files": [
+      {
+        "name": "baseline-r17-2-63s0s4grac.json",
+        "bytes": 44549,
+        "sha256": "902ae4c82161b626c99718a5acd94a2f78468d608e3d0479cfeac2430eecd1e0",
+        "exactByteCopyReadbackVerified": true
+      },
+      {
+        "name": "baseline-r17-2-63s0s4grac-terminal.json",
+        "bytes": 1587,
+        "sha256": "334aff7aea732d091de7b9cf380c6def2bae5d06b04cb685fd04593dc00ec415",
+        "exactByteCopyReadbackVerified": true
+      },
+      {
+        "name": "baseline-r17-1-w6gz92o2ck.json",
+        "bytes": 16760,
+        "sha256": "26b90383d21037ac48f74f226018f30646bc265ebd1159f84de9d5a76a45e114",
+        "exactByteCopyReadbackVerified": true
+      }
+    ],
+    "fullJsonParsed": true,
+    "strictValidation": {
+      "playMetrics": true,
+      "terminal": true,
+      "terminalMatchesMetrics": true,
+      "cameraMetrics": true
+    },
+    "contractSources": [
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-v3-runtime.ts",
+        "sha256": "d7cb371814aa092c9a4f1bc408d08ba92972fabc5cbe3174dd212203c55e5018"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation-runtime.ts",
+        "sha256": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation-instrumentation.mjs",
+        "sha256": "e3c557d31562d296bca04b8ddda10ecc25a17cba434393845c3e1e9213e801e2"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-a-correlation-protocol.mjs",
+        "sha256": "a4a2deb3f5b544c9e2ed0db5e6b2161a430eb50ac969fd88eb6dce18cc61bbf7"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-collector.mjs",
+        "sha256": "6cd5a66278331a4e5557b92211a58ec16990889f9389d233ef16c9942a902406"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs",
+        "sha256": "a9acfb1a5c67f54fd04a19daa4e4eb650da37996c899ef71044c05f200a16a1b"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-page-bridge-observer.ts",
+        "sha256": "9c17e44a2d0ea0acc92f9a1a1a8f6e7e30bc5d5a3752c74dfb699d4836599b9d"
+      }
+    ],
+    "materializedR3Sources": [
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "sha256": "87a5782be101781d67c40201a5dead3b5a379ccfada63a97ba7a32da6d65d8aa"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/r17-a-correlation-runtime.ts",
+        "sha256": "b6fbaa9e972e4f8eeb3152b68351dda1593df459618b018d0e4fa059ac9e5613"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+        "sha256": "bb62faa5dee007fb20ffcef567b68e8b7e06a8fd111296f46330c53ad31f5ee1"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/r17-page-bridge-observer.ts",
+        "sha256": "4d567364a8e54b9e84b821d64a5c41597035337bd63518b0586862c3ec2bfbb2"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+        "sha256": "8b07a0ba2f25b8245290a32960130a8a3f2fba6af6fef1db1452abc6e853a1d5"
+      },
+      {
+        "file": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "sha256": "ed4a657fad58cbf429b680c90a552338649fc0ca4767cd8d792c9fd39295b331"
+      }
+    ]
+  },
+  "association": {
+    "candidateReviewRevision": 3,
+    "applicationSha256": "a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445",
+    "buildSourceSha256": "f76630fe3c39180d81e272fcef1c2c785018dc530ab6051b81f605e1fc4db472",
+    "buildGeneration": 27,
+    "feedbackRunSuffix": "Ol0LKl",
+    "feedbackGeneration": 1,
+    "phoneVisibleUniqueLabel": "R17 正常Sky关联 A1 r3",
+    "sourceOwner": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r4-20261019/R17-NORMAL-A1-PREPARATION.json",
+    "sourceOwnerSha256": "24a393870824414a7de9a983f662d8cd4f59ca24363d912695a2abed2dc80821",
+    "bindingProvenance": "Existing preparation/runtime owner verified the delivered unique label and source/bundle chain; these raw receipts carry build source marker, not a fresh phone-byte or AppID readback.",
+    "runtimeAppIdVerified": false,
+    "phoneBundleBytesVerified": false,
+    "mode": "normal",
+    "execution": "ordinary official preview; no CPU or allocation profiler in this run"
+  },
+  "run": {
+    "runId": "r17-2-63s0s4grac",
+    "caseKey": "wide-play",
+    "binding": {
+      "mode": "normal",
+      "buildGeneration": 27,
+      "buildSourceSha256": "f76630fe3c39180d81e272fcef1c2c785018dc530ab6051b81f605e1fc4db472",
+      "windowId": 2
+    },
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 17855,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "sampleLimit": 2048,
+    "window": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 14004,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "controls": {
+      "recordingStartRelativeMs": 1019,
+      "sealRelativeMs": 15023,
+      "events": {
+        "actualPlay": {
+          "calls": 1,
+          "firstRelativeMs": 2,
+          "lastRelativeMs": 2,
+          "lastResult": true
+        },
+        "export": {
+          "calls": 1,
+          "firstRelativeMs": 15022,
+          "lastRelativeMs": 15022,
+          "lastResult": null
+        },
+        "pauseAttempt": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "pauseSuccess": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        },
+        "terminalExport": {
+          "calls": 0,
+          "firstRelativeMs": null,
+          "lastRelativeMs": null,
+          "lastResult": null
+        }
+      }
+    },
+    "terminalControls": {
+      "sealRelativeMs": 20023,
+      "events": {
+        "actualPlay": {
+          "calls": 1,
+          "firstRelativeMs": 2,
+          "lastRelativeMs": 2,
+          "lastResult": true
+        },
+        "export": {
+          "calls": 1,
+          "firstRelativeMs": 15022,
+          "lastRelativeMs": 15022,
+          "lastResult": null
+        },
+        "pauseAttempt": {
+          "calls": 1,
+          "firstRelativeMs": 20023,
+          "lastRelativeMs": 20023,
+          "lastResult": true
+        },
+        "pauseSuccess": {
+          "calls": 1,
+          "firstRelativeMs": 20023,
+          "lastRelativeMs": 20023,
+          "lastResult": true
+        },
+        "terminalExport": {
+          "calls": 1,
+          "firstRelativeMs": 20023,
+          "lastRelativeMs": 20023,
+          "lastResult": null
+        }
+      }
+    },
+    "terminalClock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 17859,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "windows": {
+      "runRelativeClock": "Date.now wall elapsed from recorder arm; nominal 1 ms, effective resolution uncalibrated",
+      "productPlayStartRelativeMs": 2,
+      "activeMetricsStartRelativeMs": 1019,
+      "metricsExportRequestedRelativeMs": 15022,
+      "metricsSealRelativeMs": 15023,
+      "activeMetricsElapsedMs": 14004,
+      "scalarObservationFirstRelativeMs": 1,
+      "scalarObservationLastRelativeMs": 15022,
+      "sameRunPauseSuccessRelativeMs": 20023,
+      "terminalSealRelativeMs": 20023,
+      "limits": [
+        "Metrics end at 15023 ms; they do not cover the final approximately 5 seconds before Pause.",
+        "Scalar counters span reset/arm through the 15022-ms read, not only the 14004-ms active recorder window.",
+        "The terminal receipt records successful product-owned same-run Pause, without paused-drain allocation, process-memory, exit or steady-tail observations.",
+        "time.* relative instants and requested-minus-accepted values are differences in selected observation-time strings, not host/device input latency."
+      ]
+    },
+    "workload": {
+      "scene": {
+        "baseRowsMin": 8404,
+        "baseRowsMax": 8404,
+        "saoRowsMin": 752,
+        "saoRowsMax": 752,
+        "selectedTilesMin": 17,
+        "selectedTilesMax": 17,
+        "catalogVersions": [
+          "bsc5p-bright-stars.v3"
+        ],
+        "saoPublicationHashes": [
+          "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+        ],
+        "modelAlgorithms": [],
+        "modes": [
+          "DAY"
+        ]
+      },
+      "viewport": {
+        "widthMin": 384,
+        "widthMax": 384,
+        "heightMin": 796.800048828125,
+        "heightMax": 796.800048828125,
+        "fovMin": 45,
+        "fovMax": 45
+      },
+      "counters": {
+        "timeIntentPublications": 505,
+        "preparedRequests": 923,
+        "paintAttempts": 504,
+        "nativeCallbacks": 504,
+        "acceptedCopies": 504,
+        "sceneFinishes": 504,
+        "glDrawSubmissions": 6552,
+        "bscSubmittedStars": 103834,
+        "saoSubmittedStars": 73504,
+        "acceptedBscObjects": 103834,
+        "acceptedSaoObjects": 56448,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "notes": [
+        "scene.modes DAY is the product DisplayMode/theme, not a solar-daylight measurement. Actual BSC and loaded-SAO star submissions are nonzero; solar altitude/light condition is not exported by this receipt and remains UNKNOWN. No representative dense/narrow-viewport acceptance is established.",
+        "No failed frame, invalidation or synthetic publication was recorded inside this metrics window; this does not establish every rendered pixel or later lifecycle."
+      ],
+      "displayModeMeaning": {
+        "producer": "SpotSkyPage reads useAppStore(state.mode), passed as DisplayMode to drawSkyScene and then sceneFinished.",
+        "definition": "DisplayMode = DAY | NIGHT | OBSERVATION; OBSERVATION selects the red-light presentation.",
+        "solarOwner": "drawSkyScene derives sun separately with skySolarLightAt(data.hourly, frameAt); star appearance uses sun?.altitudeDeg outside OBSERVATION.",
+        "solarCondition": "UNKNOWN_FROM_THIS_RECEIPT",
+        "sourceReferences": [
+          "tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx:1171",
+          "tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/sky-scene-render.ts:171",
+          "tmp/r17-normal-a1-review-r3/source/apps/wechat-miniapp/src/features/sky/sky-scene-render.ts:425",
+          "tmp/r17-normal-a1-review-r3/source/packages/miniapp-contracts/src/types.ts:932"
+        ]
+      }
+    },
+    "observations": {
+      "text": {
+        "firstRelativeMs": 1,
+        "lastRelativeMs": 15022,
+        "nativeGlyphCalls": 3222,
+        "lifetimeNativeGlyphCallsBefore": 396,
+        "lifetimeNativeGlyphCallsAfter": 3618,
+        "observationResets": 2,
+        "available": true,
+        "retired": false
+      },
+      "page": {
+        "firstRelativeMs": 1,
+        "lastRelativeMs": 15022,
+        "resetAtStart": true,
+        "available": 1,
+        "submitted": 452,
+        "completed": 451,
+        "failed": 0,
+        "failedBeforeCallback": 0,
+        "callbackMissing": 0,
+        "pending": 1,
+        "inheritedPending": 0,
+        "maxPending": 2,
+        "duplicateCallback": 0,
+        "keyCountTotal": 3817,
+        "maxKeyCount": 10,
+        "keyCountFailures": 0,
+        "sampledCalls": 16,
+        "sampledBytes": 19493,
+        "maxSampledBytes": 1383,
+        "serializationFailures": 0,
+        "bufferDataCalls": 1074,
+        "totalTypedUploadBytes": 9587340,
+        "maxTypedUploadBytes": 12708,
+        "latencyTotalMs": 12723,
+        "latencyMaxMs": 185,
+        "enableDebug": false
+      },
+      "scene": {
+        "firstRelativeMs": 1,
+        "lastRelativeMs": 15022,
+        "nativeCopies": 537,
+        "readyNativeCopies": 537,
+        "syntheticBegins": 0,
+        "syntheticFinishes": 0,
+        "syntheticPublications": 0,
+        "frozen": false,
+        "retired": false
+      },
+      "memo": {
+        "captures": 0,
+        "meaning": "No memo diagnostic scalar captured; this run uses the normal ownership path."
+      }
+    }
+  },
+  "a": {
+    "linkage": {
+      "capacity": 2048,
+      "identityMapCapacity": 256,
+      "linkLimit": 32,
+      "intentsCreated": 505,
+      "firstAcceptedIntents": 419,
+      "duplicateIntentPresents": 80,
+      "supersededBeforeFirstAccepted": 504,
+      "firstAcceptedAfterSuperseded": 419,
+      "expiredUnacceptedIntents": 0,
+      "unknownIntentLookups": 1,
+      "stateIdentityRotations": 1,
+      "preparationsStarted": 422,
+      "preparationsFinished": 422,
+      "expiredUnconsumedPreparations": 0,
+      "expiredIncompletePreparations": 0,
+      "requests": 923,
+      "requestsWithUnknownPreparation": 1,
+      "requestsWithUnknownIntent": 3,
+      "linkageMismatches": 0,
+      "frameIdentityRotations": 3,
+      "inheritedFrames": 0,
+      "duplicateFramePresents": 0,
+      "unknownAcceptedFrames": 5,
+      "syntheticPublications": 0,
+      "prepareFinishUnknown": 0,
+      "prepareFinishDuplicate": 0,
+      "latencyUnknownIntents": 0,
+      "unacceptedIntents": 86,
+      "supersededUnacceptedIntents": 85,
+      "consumedPreparations": 421,
+      "unconsumedPreparations": 1,
+      "incompletePreparations": 0,
+      "knownResourceRevisions": 0,
+      "retainedIntents": 505,
+      "retainedPreparations": 422,
+      "linkSampleTruncated": true
+    },
+    "preparationConsumption": {
+      "retained": 422,
+      "consumedByFirstPaintAttempt": 421,
+      "unconsumedAtMetricsSeal": 1,
+      "expiredUnconsumed": 0,
+      "unconsumedCostKnownSubtotalMs": 0,
+      "unconsumedCostValidCalls": 0,
+      "unconsumedCostBelowResolutionUnknownCalls": 1,
+      "lastPreparationToken": 422,
+      "lastPreparationFinishRelativeMs": 14991,
+      "lastPreparationFirstRequestRelativeMs": 15014,
+      "sealRelativeMs": 15023,
+      "interpretation": "The one unconsumed preparation is censored at the export boundary; it is not evidence of costly discarded work. 923 requests versus 504 paint attempts cannot be treated as 419 wasted preparations.",
+      "consumedCostCoverage": {
+        "knownSubtotalMs": 307,
+        "validCalls": 255,
+        "unknownCalls": 166,
+        "unknown": {
+          "belowResolution": 166,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        }
+      }
+    },
+    "firstAccepted": {
+      "distribution": {
+        "observedCalls": 419,
+        "validCalls": 419,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 29356,
+        "minMs": 46,
+        "maxMs": 247,
+        "keptSamples": 419,
+        "p50Ms": 69,
+        "p95Ms": 82,
+        "overflow": false
+      },
+      "unsupersededDistribution": {
+        "observedCalls": 0,
+        "validCalls": 0,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 0,
+        "minMs": null,
+        "maxMs": null,
+        "keptSamples": 0,
+        "p50Ms": null,
+        "p95Ms": null,
+        "overflow": false
+      },
+      "semantics": "Software accepted after returned native present/copy and publication; not physical display. All 419 observed first-accepted intents had already been superseded. 86 unaccepted intents (85 superseded, one remaining current) are excluded from this observed-first-accepted distribution; it is not a latest-intent or terminal responsiveness percentile.",
+      "supersededFirstAcceptedCount": 419,
+      "unsupersededFirstAcceptedCount": 0,
+      "intentMeaning": "New states published by the existing observation-time owner, including normal Play advancement; 505 intent states are not 505 physical user gestures."
+    },
+    "correlation": {
+      "schemaVersion": "starward-r17-a-correlation-v1",
+      "coverage": "retained-preparations",
+      "retainedPreparations": 422,
+      "preparationToFirstRequest": {
+        "observedCalls": 422,
+        "validCalls": 422,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 8853,
+        "minMs": 11,
+        "maxMs": 171,
+        "p50Ms": 21,
+        "p95Ms": 26
+      },
+      "firstRequestToFirstPaintAttempt": {
+        "observedCalls": 422,
+        "validCalls": 384,
+        "unknownCalls": 38,
+        "unknown": {
+          "belowResolution": 37,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 1
+        },
+        "knownSubtotalMs": 6519,
+        "minMs": 1,
+        "maxMs": 30,
+        "p50Ms": 18,
+        "p95Ms": 23
+      },
+      "distributionCoverage": "Both distributions evaluate all 422 retained preparations, not just the eight exported links. The second uses only its 384 valid durations; 37 equal readings and one absent first paint remain unknown.",
+      "selectedLinkPolicy": "First four and last four preparations; bounded, not random or representative of every request. Original linkage exports first/last 16, capacity 2048.",
+      "pagePositions": {
+        "order": [
+          "submitted",
+          "completed",
+          "pending"
+        ],
+        "sampleCount": 8,
+        "submittedChangedBetweenFinishAndRequest": 0,
+        "completedChangedBetweenFinishAndRequest": 2,
+        "interpretation": "Concurrent Page activity only. These positions do not identify a payload or React render, explain the whole interval, or establish bridge/physical-render time."
+      },
+      "selectedLinks": [
+        {
+          "prepareToken": 1,
+          "intentSequence": null,
+          "intentSuperseded": null,
+          "preparationStartedRelativeMs": 1029,
+          "preparationFinishedRelativeMs": 1030,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "firstRequestRelativeMs": 1056,
+          "firstPaintAttemptRelativeMs": 1078,
+          "firstSoftwareAcceptedRelativeMs": 1092,
+          "requests": 2,
+          "paintAttempts": 1,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            30,
+            29,
+            1
+          ],
+          "pageAtRequest": [
+            30,
+            29,
+            1
+          ],
+          "pageAtPaint": [
+            31,
+            30,
+            1
+          ]
+        },
+        {
+          "prepareToken": 2,
+          "intentSequence": 1,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 1065,
+          "preparationFinishedRelativeMs": 1066,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "firstRequestRelativeMs": 1092,
+          "firstPaintAttemptRelativeMs": 1093,
+          "firstSoftwareAcceptedRelativeMs": 1104,
+          "requests": 3,
+          "paintAttempts": 2,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            31,
+            30,
+            1
+          ],
+          "pageAtRequest": [
+            31,
+            30,
+            1
+          ],
+          "pageAtPaint": [
+            31,
+            31,
+            0
+          ]
+        },
+        {
+          "prepareToken": 3,
+          "intentSequence": 3,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 1115,
+          "preparationFinishedRelativeMs": 1115,
+          "preparationElapsedMs": null,
+          "preparationElapsedStatus": "belowResolution",
+          "firstRequestRelativeMs": 1130,
+          "firstPaintAttemptRelativeMs": 1150,
+          "firstSoftwareAcceptedRelativeMs": 1162,
+          "requests": 2,
+          "paintAttempts": 1,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            32,
+            31,
+            1
+          ],
+          "pageAtRequest": [
+            32,
+            31,
+            1
+          ],
+          "pageAtPaint": [
+            33,
+            33,
+            0
+          ]
+        },
+        {
+          "prepareToken": 4,
+          "intentSequence": 4,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 1136,
+          "preparationFinishedRelativeMs": 1137,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "firstRequestRelativeMs": 1162,
+          "firstPaintAttemptRelativeMs": 1184,
+          "firstSoftwareAcceptedRelativeMs": 1197,
+          "requests": 2,
+          "paintAttempts": 1,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            33,
+            32,
+            1
+          ],
+          "pageAtRequest": [
+            33,
+            33,
+            0
+          ],
+          "pageAtPaint": [
+            34,
+            34,
+            0
+          ]
+        },
+        {
+          "prepareToken": 419,
+          "intentSequence": 501,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 14899,
+          "preparationFinishedRelativeMs": 14900,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "firstRequestRelativeMs": 14918,
+          "firstPaintAttemptRelativeMs": 14935,
+          "firstSoftwareAcceptedRelativeMs": 14948,
+          "requests": 2,
+          "paintAttempts": 1,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            448,
+            447,
+            1
+          ],
+          "pageAtRequest": [
+            448,
+            447,
+            1
+          ],
+          "pageAtPaint": [
+            449,
+            448,
+            1
+          ]
+        },
+        {
+          "prepareToken": 420,
+          "intentSequence": 502,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 14928,
+          "preparationFinishedRelativeMs": 14928,
+          "preparationElapsedMs": null,
+          "preparationElapsedStatus": "belowResolution",
+          "firstRequestRelativeMs": 14948,
+          "firstPaintAttemptRelativeMs": 14968,
+          "firstSoftwareAcceptedRelativeMs": 14983,
+          "requests": 2,
+          "paintAttempts": 1,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            449,
+            448,
+            1
+          ],
+          "pageAtRequest": [
+            449,
+            448,
+            1
+          ],
+          "pageAtPaint": [
+            450,
+            450,
+            0
+          ]
+        },
+        {
+          "prepareToken": 421,
+          "intentSequence": 503,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 14956,
+          "preparationFinishedRelativeMs": 14957,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "firstRequestRelativeMs": 14983,
+          "firstPaintAttemptRelativeMs": 15001,
+          "firstSoftwareAcceptedRelativeMs": 15014,
+          "requests": 2,
+          "paintAttempts": 1,
+          "consumed": true,
+          "firstAcceptedObserved": true,
+          "pageAtPreparationFinish": [
+            450,
+            448,
+            2
+          ],
+          "pageAtRequest": [
+            450,
+            450,
+            0
+          ],
+          "pageAtPaint": [
+            451,
+            450,
+            1
+          ]
+        },
+        {
+          "prepareToken": 422,
+          "intentSequence": 504,
+          "intentSuperseded": true,
+          "preparationStartedRelativeMs": 14991,
+          "preparationFinishedRelativeMs": 14991,
+          "preparationElapsedMs": null,
+          "preparationElapsedStatus": "belowResolution",
+          "firstRequestRelativeMs": 15014,
+          "firstPaintAttemptRelativeMs": null,
+          "firstSoftwareAcceptedRelativeMs": null,
+          "requests": 1,
+          "paintAttempts": 0,
+          "consumed": false,
+          "firstAcceptedObserved": false,
+          "pageAtPreparationFinish": [
+            451,
+            450,
+            1
+          ],
+          "pageAtRequest": [
+            451,
+            450,
+            1
+          ],
+          "pageAtPaint": [
+            null,
+            null,
+            null
+          ]
+        }
+      ]
+    },
+    "stages": {
+      "meaning": "Synchronous wall elapsed around the named owner; nested/overlapping spans and independently ranked distributions must not be added. Not thread CPU, GPU elapsed or physical FPS.",
+      "values": {
+        "presentation": {
+          "observedCalls": 422,
+          "validCalls": 251,
+          "unknownCalls": 171,
+          "unknown": {
+            "belowResolution": 171,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 303,
+          "minMs": 1,
+          "p50Ms": 1,
+          "p95Ms": 3,
+          "maxMs": 5,
+          "overflow": false
+        },
+        "base": {
+          "observedCalls": 3115,
+          "validCalls": 46,
+          "unknownCalls": 3069,
+          "unknown": {
+            "belowResolution": 3069,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 65,
+          "minMs": 1,
+          "p50Ms": 1,
+          "p95Ms": 3,
+          "maxMs": 4,
+          "overflow": false
+        },
+        "selection": {
+          "observedCalls": 422,
+          "validCalls": 74,
+          "unknownCalls": 348,
+          "unknown": {
+            "belowResolution": 348,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 76,
+          "minMs": 1,
+          "p50Ms": 1,
+          "p95Ms": 1,
+          "maxMs": 3,
+          "overflow": false
+        },
+        "supplement": {
+          "observedCalls": 422,
+          "validCalls": 18,
+          "unknownCalls": 404,
+          "unknown": {
+            "belowResolution": 404,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 20,
+          "minMs": 1,
+          "p50Ms": 1,
+          "p95Ms": 2,
+          "maxMs": 2,
+          "overflow": false
+        },
+        "constellations": {
+          "observedCalls": 422,
+          "validCalls": 422,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 1178,
+          "minMs": 1,
+          "p50Ms": 3,
+          "p95Ms": 6,
+          "maxMs": 9,
+          "overflow": false
+        },
+        "draw": {
+          "observedCalls": 504,
+          "validCalls": 504,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 5860,
+          "minMs": 4,
+          "p50Ms": 12,
+          "p95Ms": 15,
+          "maxMs": 165,
+          "overflow": false
+        },
+        "nativePaintOwner": {
+          "observedCalls": 504,
+          "validCalls": 504,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 5893,
+          "minMs": 4,
+          "p50Ms": 12,
+          "p95Ms": 15,
+          "maxMs": 165,
+          "overflow": false
+        },
+        "displayCopy": {
+          "observedCalls": 504,
+          "validCalls": 70,
+          "unknownCalls": 434,
+          "unknown": {
+            "belowResolution": 434,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 70,
+          "minMs": 1,
+          "p50Ms": 1,
+          "p95Ms": 1,
+          "maxMs": 1,
+          "overflow": false
+        },
+        "publishAccepted": {
+          "observedCalls": 504,
+          "validCalls": 79,
+          "unknownCalls": 425,
+          "unknown": {
+            "belowResolution": 425,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 82,
+          "minMs": 1,
+          "p50Ms": 1,
+          "p95Ms": 1,
+          "maxMs": 3,
+          "overflow": false
+        }
+      },
+      "timing": {
+        "nativeCallbackMs": {
+          "observedCalls": 504,
+          "validCalls": 504,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 5708,
+          "minMs": 3,
+          "maxMs": 164,
+          "keptSamples": 504,
+          "p50Ms": 12,
+          "p95Ms": 15,
+          "overflow": false
+        },
+        "acceptedGapMs": {
+          "observedCalls": 503,
+          "validCalls": 503,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 13957,
+          "minMs": 9,
+          "maxMs": 178,
+          "keptSamples": 503,
+          "p50Ms": 29,
+          "p95Ms": 36,
+          "overflow": false
+        },
+        "intentToAcceptedWallMs": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 0,
+          "minMs": null,
+          "maxMs": null,
+          "keptSamples": 0,
+          "p50Ms": null,
+          "p95Ms": null,
+          "overflow": false
+        }
+      },
+      "pageObserverClock": "Legacy performance.now if callable, otherwise Date.now; no calibration/monotonicity result here. Page callback aggregate/max is supplementary, not an A1-calibrated CPU or physical-presentation duration."
+    },
+    "interpretation": {
+      "distinguished": [
+        "This is a nonempty original-path normal Play association and a valid paired terminal receipt, unlike the earlier camera run.",
+        "Almost all retained presentation preparations reached a first paint attempt; this run does not demonstrate a substantial known cost of unconsumed preparation.",
+        "The new first-request boundary separates measurable post-preparation waiting from first-request-to-first-paint-attempt waiting. Neither is itself the synchronous preparation cost or native drawing duration.",
+        "Software accepted latency includes superseded intents explicitly; the legacy latest-time conditional metric has zero samples and is not a zero-latency result."
+      ],
+      "notDistinguished": [
+        "The responsible source of post-preparation/request wait: React scheduling/effects, admission/coalescing, Page update interaction or other main-thread work.",
+        "Latest-intent and terminal settling behavior after active Play; no unsuperseded first-accepted sample was captured.",
+        "Input gesture/dense ruler responsiveness, repaired ruler geometry and physical presentation delay.",
+        "Current normal Sky surviving JS allocations, total allocation churn, retained graph, native/GPU ownership and the cause of sustained process growth or exit."
+      ],
+      "productionRepairDecision": "Insufficient evidence to choose a scheduling/admission or React-publication rewrite. Do not move preparation solely from request-minus-paint counts, add phase percentiles/maxima, or disable neighboring owners."
+    }
+  },
+  "excludedEarlierCamera": {
+    "runId": "r17-1-w6gz92o2ck",
+    "caseKey": "wide-camera",
+    "window": {
+      "startDelayMs": 1000,
+      "durationLimitMs": 45000,
+      "elapsedMs": 14006,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "recordingStartRelativeMs": 1005,
+    "sealRelativeMs": 15012,
+    "validation": "PARSE_AND_SCHEMA_VALID_BUT_NO_REPRESENTATIVE_ACTION",
+    "reason": "The 15-second camera sampler did not overlap the actual phone gesture, per root action chronology. Zero workload counters cannot be interpreted as zero performance cost or valid A evidence.",
+    "allWorkloadCountersZero": true
+  },
+  "acceptance": {
+    "A": "UNVERIFIED; bounded Play association only, no production repair selected",
+    "B": "UNVERIFIED; no current normal Sky allocation sample, no aligned sustained/paused-drain/exit evidence",
+    "nativeRuler": "FAILED_IN_R3; prior cross-day 37-physical-pixel offset and wrong-day cancel window remain with their evidence owner; r4 software work is not this run",
+    "goal": "INCOMPLETE; no retained Goal obligation retired"
+  },
+  "constraints": [
+    "No raw payload copied into Git; full artifacts remain in the exact-byte external archive.",
+    "No source or runtime modification, new sample, profiler, build, preview, commit, PLAN, HANDOFF or preparation-owner edit was performed by this interpretation."
+  ]
+}

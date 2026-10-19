@@ -1,0 +1,793 @@
+{
+  "checkedAt": "2026-10-19T12:58:07.256Z",
+  "head": "69401c097572799234e6b97478a4a1ddfe06c810",
+  "counts": {
+    "files": 92,
+    "modified": 17,
+    "untracked": 75,
+    "types": {
+      ".md": 50,
+      ".json": 33,
+      ".mjs": 6,
+      ".ts": 2,
+      ".patch": 1
+    }
+  },
+  "nodeSyntax": [
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs",
+      "exit": 0
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/inject-terrain-wait-observer.mjs",
+      "exit": 0
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs",
+      "exit": 0
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.test.mjs",
+      "exit": 0
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.mjs",
+      "exit": 0
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.test.mjs",
+      "exit": 0
+    }
+  ],
+  "reviewBindings": [
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "taskBindings",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs",
+      "sha256": "9f742e3d5e1877075c93e35d6bc43a03e147776b3007125d878613b63c3d7893",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "taskBindings",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs",
+      "sha256": "a153f4dceb4def34b6d2b276dcf6408a27b88fbcac10eda688728ea89cb7302e",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "taskBindings",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.ts",
+      "sha256": "2478e9e6d2dcec608cb0720c30867f5fe1731a68f5ab3b3388952ef82d0c9b3b",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "taskBindings",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/inject-terrain-wait-observer.mjs",
+      "sha256": "c19c1b2eeba4523a7eecc35fb9cc65e75df34347b140816b984fba42cb642835",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "taskBindings",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.test.mjs",
+      "sha256": "8f8d2ec9fc4c054871f4ec8409537b6ea0c0b2eb009f93085375520c576425c8",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "taskBindings",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-observations.ts",
+      "sha256": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "5a92132429f8c907bab16f0a4a509c6b3c9c7505543031610191fb3bcb8fd3e1",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "4f939acad956032080661328ab29ecf3b6074baf1dbb87e07397270b9c1d1390",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/hooks/use-raster-image.ts",
+      "sha256": "4ea85720104ad8ca98f8df04f2c05d2c67b10361ca5e1a52582fb4d9f369cde0",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/hooks/use-terrain-overlay.ts",
+      "sha256": "c86396df706bb8d9df6b537edaffec51a682b3e8acdd524ab2c66c5a6a611465",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/services/raster-image-resources.ts",
+      "sha256": "2ae75bcb7233097f5d17783de3c692a848aeee26a3c409b28ec3330da4a5457e",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/services/raster-file-adapter.ts",
+      "sha256": "d7ef3c4ab15267fdc39907e5226a3f9b1c73a12b7ef994e38b1279e2035f56e3",
+      "matches": true
+    },
+    {
+      "review": "R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "group": "productionBindings",
+      "file": "apps/wechat-miniapp/src/services/map-raster-files.ts",
+      "sha256": "d3ad99cc48e9a569efe1c9cd32a9a4bc361678448584360c89c17744f70e00d9",
+      "matches": true
+    },
+    {
+      "review": "TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT.md",
+      "sha256": "e14f34cf462835ee905088e0f6d9bb19b5a1c583f28c9aa0596cd066c8ddc49c",
+      "matches": true
+    },
+    {
+      "review": "TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT.json",
+      "sha256": "2b707350331b4f5536576563d2a1e7c2f2319180c81f4793b98a4251e244e2b0",
+      "matches": true
+    },
+    {
+      "review": "TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-BRIDGE.patch",
+      "sha256": "69328dc9b0ee62fc9bd794a2672d9614af10cba80e14d6d98d8bfce865d074d1",
+      "matches": true
+    },
+    {
+      "review": "TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.mjs",
+      "sha256": "57c48c85d65ecacda36dc620b87c866ff56bd4c709d235f9034467899628ae1d",
+      "matches": true
+    },
+    {
+      "review": "TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+      "file": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.test.mjs",
+      "sha256": "785698bb4feb7f78ca08224887d528d100848e2b3480accbe8fad5316adf6a2b",
+      "matches": true
+    }
+  ],
+  "jsonParsed": [
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-A1-PREPARATION.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R10-CROSSDAY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R3-PLAY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R4-RULER-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R5-ENTRY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R6-ENTRY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R6-MANUAL-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-ENTRY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-EXIT-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-PASSIVE-NATIVE-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-PLAY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R8-ENTRY-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R8-TIME-INTERACTION-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R9-PLAY-EXIT-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-BUILD-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-BUILDER-INTEGRATION.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R6-OBSERVATION-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-ALLOCATION-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-BUILD-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R8-BUILD-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-BUILD-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-RETIREMENT-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-FIX.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-ASSET-PATH-BINDING.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-WAIT-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R8-IDENTITY-ACTION-RESULT.json",
+    ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-RESIDUAL-NEXT-DECISION.json"
+  ],
+  "invalidJson": [],
+  "localMarkdownLinks": {
+    "checked": 379,
+    "missing": []
+  },
+  "credentialScan": {
+    "highConfidenceMatches": []
+  },
+  "inventory": [
+    {
+      "status": " M",
+      "path": ".codex/skills/starward-miniapp-development/references/performance-investigation.md",
+      "bytes": 19367,
+      "sha256": "6c25c300e862b6c96b02f335da78fa12370b5b4190dfc32b502807bbfb988d14"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/CURRENT-DELIVERY-VERIFICATION.md",
+      "bytes": 14050,
+      "sha256": "18dfafcb50f9438068da44511cb3b6a95e658055b6dce06fc046fe54d93ed74a"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/GOAL-OBJECTIVE.md",
+      "bytes": 6079,
+      "sha256": "f1080bbad23936456054fe01da31f75707a663b6da8ef4222039e67f30ef9f28"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/HANDOFF.md",
+      "bytes": 12735,
+      "sha256": "28b653666b5ec50bc06df4c821699ed09d945c952dd842bc8a5d680cb167913d"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/INDEX.md",
+      "bytes": 24161,
+      "sha256": "16e47ad7191f48265f3c07f1a716e417ae0c869aa891cf693ec4bfd6b411f128"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/NEXT-CHAT-PROMPT.md",
+      "bytes": 6206,
+      "sha256": "485ac87c54641799c7af2e3b5475f3d828e9d682650bc036101f0c4721d5b73c"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-RUNTIME-INTEGRATION.md",
+      "bytes": 13944,
+      "sha256": "aec4388f062fd4b5e3ee7c12dc14d59ceda9d4504a59ed8544847bd09c8bbf9a"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-A1-PREPARATION.json",
+      "bytes": 29781,
+      "sha256": "70b4d072bcd2e40fa5ea808abc44d2c5f0e461733c924fe9eb7bc8d45d6865a2"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-A1-PREPARATION.md",
+      "bytes": 2394,
+      "sha256": "f304a44688181d3f7ef0f44d08ce760369a9af3b50cb6b08f3ef24e192170a43"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/REQUIREMENTS.md",
+      "bytes": 14740,
+      "sha256": "99cd2ccd87768009b24b13d2a7c194846a0a25ec4ad0b0dd634eef6b95481c36"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-WAIT-OBSERVATION.md",
+      "bytes": 14756,
+      "sha256": "860d15424e8cc9f2ec57f6bde8146875f00b5cef5ce567469809d2f63b34484a"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs",
+      "bytes": 56272,
+      "sha256": "9f742e3d5e1877075c93e35d6bc43a03e147776b3007125d878613b63c3d7893"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/inject-terrain-wait-observer.mjs",
+      "bytes": 8259,
+      "sha256": "c19c1b2eeba4523a7eecc35fb9cc65e75df34347b140816b984fba42cb642835"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs",
+      "bytes": 43191,
+      "sha256": "a153f4dceb4def34b6d2b276dcf6408a27b88fbcac10eda688728ea89cb7302e"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-observations.ts",
+      "bytes": 9810,
+      "sha256": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.test.mjs",
+      "bytes": 7630,
+      "sha256": "8f8d2ec9fc4c054871f4ec8409537b6ea0c0b2eb009f93085375520c576425c8"
+    },
+    {
+      "status": " M",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/terrain-wait-observer.ts",
+      "bytes": 6921,
+      "sha256": "2478e9e6d2dcec608cb0720c30867f5fe1731a68f5ab3b3388952ef82d0c9b3b"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/DELIVERY-NEXT-ACTIONS-20261019.md",
+      "bytes": 12087,
+      "sha256": "8a4199f5e075d9bd357f21dd08ea4377dffe501bbc041544fb67ec90e7b1dc32"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/NATIVE-RULER-VISIBILITY-BOUNDARY.md",
+      "bytes": 9526,
+      "sha256": "5b2ea4edd5920a981da5b6ccd3d07849705121556c60a04ff6a1322f8b2a4bc8"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/PERFORMANCE-STATUS.md",
+      "bytes": 6601,
+      "sha256": "85732b607dd1272c05281a4f8869da9dae94b27b1830b7cb8b9c334393be2cfb"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R10-CROSSDAY-RESULT.json",
+      "bytes": 17265,
+      "sha256": "6ca47e2cf747b6e32975fa0988b1fe99b3cca9f6c5f3c12c96674c227860b7a0"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R10-CROSSDAY-RESULT.md",
+      "bytes": 6427,
+      "sha256": "5205d03396f6d436d8d3fbaf552c4fbe86400baf11f9ba4039cbd84be072fb95"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R10-ORDINARY-PARTIAL.md",
+      "bytes": 4238,
+      "sha256": "5ebdd86693c6366ca90acc4723cdbe4fb2dcf5f4a415ab729774577c7fd900a8"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R3-PLAY-RESULT.json",
+      "bytes": 35741,
+      "sha256": "7635707f6cb6002508cc7f49db0f9e1623ef48a59dfc46c9d4ac682b979f5069"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R3-PLAY-RESULT.md",
+      "bytes": 9977,
+      "sha256": "b566048b243ab8ea1ebf7c14ee33f16d4d620d3f2d903c19cf8cec85067c98a4"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R4-RULER-RESULT.json",
+      "bytes": 3610,
+      "sha256": "40aa11720a6163e4b283938f004fc853768c2f9fc51c1e0d0d1033278dbc927f"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R4-RULER-RESULT.md",
+      "bytes": 3767,
+      "sha256": "1621f316545506d975aa01e6b5a846810e8cf1bda689509775f8830b77d8fb38"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R5-ENTRY-RESULT.json",
+      "bytes": 8410,
+      "sha256": "f7a3b9b3ab17c9cf29cb0591a657a66d7cafe1e99808d882f3209d62aa158504"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R5-ENTRY-RESULT.md",
+      "bytes": 6008,
+      "sha256": "cb58215edb0a834cdfea56ed02b8e1db1c7ee855059cece7bf429be35d428e98"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R6-ENTRY-RESULT.json",
+      "bytes": 20005,
+      "sha256": "ed2166058b8fb07bfbd2b3a5a0f2786f0f72b31cd2d7c45b5b98f3bc23b22e33"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R6-ENTRY-RESULT.md",
+      "bytes": 8671,
+      "sha256": "88d8b6db7377cc68d2e6e4b1ea28ee003c4688807c784b1265694de0927b49a1"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R6-MANUAL-RESULT.json",
+      "bytes": 33942,
+      "sha256": "cdc18af547393a0c2a4d129516ea1ca7ad5ea0c48886509364f1baaefb76dd36"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R6-MANUAL-RESULT.md",
+      "bytes": 8736,
+      "sha256": "ae105cc6480f9b5f836531ef19785d92484c06da03fc8fe133311c67d3f73028"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-ENTRY-RESULT.json",
+      "bytes": 25149,
+      "sha256": "4dc229949f641dd2997f55c4848f8ce6921a2ef2ad516f593dbd6b141e3b20a7"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-ENTRY-RESULT.md",
+      "bytes": 11989,
+      "sha256": "f36d5655b45396300f08f8059ff76c28e4ff8d37abbf301955acb4dbc3c06510"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-EXIT-RESULT.json",
+      "bytes": 33297,
+      "sha256": "dc01defdc2591a6f441a1b33a5ad1d75b2bc14d8e19035f74ebed2c8fc54f251"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-EXIT-RESULT.md",
+      "bytes": 4810,
+      "sha256": "359d20a8cdbfac5f00be941c710605b93a70778fba48d762a77f70bdcd0b6e2c"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-PASSIVE-NATIVE-RESULT.json",
+      "bytes": 9837,
+      "sha256": "2c2b8c9bafc323cf6adfac808141fa50dfc36dfc5a81c626773e9af6b27aa4e6"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-PASSIVE-NATIVE-RESULT.md",
+      "bytes": 3838,
+      "sha256": "dbe927501adc2c99f8758c1ada313a02e6b2cb49642e22ab5485464012f72487"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-PLAY-RESULT.json",
+      "bytes": 48535,
+      "sha256": "8b3d91433b42e4e95523ec95346b90a5e0bbd5bc1ccb7abce9a13f62241d2a33"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R7-PLAY-RESULT.md",
+      "bytes": 4359,
+      "sha256": "e0c836b4cf0b6d34d45131df6a55c55865e492b8ae7ec14d1c7170be1a893aa3"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R8-ENTRY-RESULT.json",
+      "bytes": 30092,
+      "sha256": "cbd5272f2a0ebcc44489d68fc4e4de8d2a292a7101b31fefc1669630e8639c6b"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R8-ENTRY-RESULT.md",
+      "bytes": 10671,
+      "sha256": "d99cdf22899307b47ebc4fe3c879c9f987e8e3c264c1cd2c90e356ce40728ac3"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R8-TIME-INTERACTION-RESULT.json",
+      "bytes": 95348,
+      "sha256": "ddf1d2dacba993b6f8a8b865c40d9614e59f923cc4a4a9402e7d6c0738087287"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R8-TIME-INTERACTION-RESULT.md",
+      "bytes": 11776,
+      "sha256": "c0b4786fe284d92467a43884557b468b796afa5d1b5fd77d059f51570cd3fc84"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R9-PLAY-EXIT-RESULT.json",
+      "bytes": 30690,
+      "sha256": "52d9e39d8085cbdfe9c408029b3d6b1b05efcd03f35fe40c29802c714d0c49af"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-A1-R9-PLAY-EXIT-RESULT.md",
+      "bytes": 8001,
+      "sha256": "f48386e0ee3cbc5ecd34eda86f3c712e18083add91452a6d214c8eebef2a9676"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-BUILD-REVIEW.json",
+      "bytes": 25637,
+      "sha256": "0f0653ceb141f754d1dcd39e1280f74f18c238a4a8b8c94dc902258836e00b7e"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-BUILD-REVIEW.md",
+      "bytes": 3527,
+      "sha256": "d0cbb8624c42a301835add3f4595e31a03ff64fa919d84053283fc99fd0ca33a"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-BUILDER-INTEGRATION.json",
+      "bytes": 14273,
+      "sha256": "572d6795d77779ef1223d7dba7df8a49eaf3db447e9403b6c894057ff79d0b71"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-BUILDER-INTEGRATION.md",
+      "bytes": 2956,
+      "sha256": "0366838cccf716861f7e8c5c732b0f3e955e50944fddcc0ec187b0936486137d"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-INTEGRATION-REVIEW.json",
+      "bytes": 8525,
+      "sha256": "06b72aaa9a542368d47c3dbd28ae2660398abd9a41eda691db18ca83eff736f2"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R10-INTEGRATION-REVIEW.md",
+      "bytes": 3879,
+      "sha256": "2cd84f2a0a1fe5c8b317618fa960dcedeea5cc5c50375d1779d0b82c16d5f87f"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R6-OBSERVATION-REVIEW.json",
+      "bytes": 9584,
+      "sha256": "b5ca2b87a5c2f3a080ef38c48041c4d2fd61553bbb395384dd0acddcf4a2cde1"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R6-OBSERVATION-REVIEW.md",
+      "bytes": 7940,
+      "sha256": "3249ab83c72708502ed9fc309ec08bef78970ea0ea476b5654893ed70f9a7b54"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-ALLOCATION-RESULT.json",
+      "bytes": 75367,
+      "sha256": "dd5a6a7d9547e85634423cbe16d61c41a80ad42abdce4741b02c720080d2ccbd"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-ALLOCATION-RESULT.md",
+      "bytes": 9327,
+      "sha256": "eec16ff48f3141dde1b26919a22bfe14e9d561735a3897d52d36699cbffcb104"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-BUILD-REVIEW.json",
+      "bytes": 18402,
+      "sha256": "f065b923b7a7fec59f8f735812bffb88da620a9049609cdae6fa13e57afcae47"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R7-BUILD-REVIEW.md",
+      "bytes": 6107,
+      "sha256": "8a1a7496be99e6793ab596081c0eb373b87526ceb3a0c23fb2392947985773b7"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R8-BUILD-REVIEW.json",
+      "bytes": 10868,
+      "sha256": "87e32be6dcc09fac4e6978c40145ac2a2f81910bb56bcdddb218e8910d2ced24"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R8-BUILD-REVIEW.md",
+      "bytes": 6264,
+      "sha256": "e4a3b574f01d413bcfd905bcdfcdb9c728b539c0f273f6dd36b766d5795bd0ad"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-BUILD-REVIEW.json",
+      "bytes": 11031,
+      "sha256": "6568251ff26fe1b90239aefb809fd25e0f802bb7ad6e0c63fe61d5ede2dba71f"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-BUILD-REVIEW.md",
+      "bytes": 5748,
+      "sha256": "3763b0b6b4db127384790e24b87a496f428c251bc3d4b9fceb99a1fda44ec0c8"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-RETIREMENT-OBSERVATION.md",
+      "bytes": 5083,
+      "sha256": "7ff7c3de861c9c88680156a859f61676e756de05b4e5ebad75239b9096d8c425"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-RETIREMENT-REVIEW.json",
+      "bytes": 4877,
+      "sha256": "ec4f653a0f1b0fdd24107550c5f0f4419e35fc56dc73e73a47800052babf37c3"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-RETIREMENT-REVIEW.md",
+      "bytes": 4550,
+      "sha256": "456efc5c5198d30a4d308a949d282074c00a2523fd43234750bc0d2e8ebe88e8"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-CROSSDAY-FOLLOWUP.md",
+      "bytes": 10310,
+      "sha256": "334d4e1bb19601231d2fe5058c0bb08de3653e9f0ce695c0cbd437dc53ae1e5d"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-INITIAL-NATIVE-ADMISSION-REVIEW.md",
+      "bytes": 8246,
+      "sha256": "f887b2a5bee380b512fdd93337b2ff2ed25ea361c0e98375d51e2dab419e37a5"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-FIX.json",
+      "bytes": 2652,
+      "sha256": "3d9e3b4c995363b0fa687777aedf3a9efbf6df497d1a143f7c759bbedfac9663"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-FIX.md",
+      "bytes": 4987,
+      "sha256": "3d43b2f85abd76a6d93d89f5aa025f7d9bb8572979ed86ebe4918191a4269c95"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-REVIEW.json",
+      "bytes": 3906,
+      "sha256": "c1b780b47eb15539ddd72d67d96cef3bca1961507caf8344abfe53d24abf256c"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-REVEAL-NATIVE-ADMISSION-REVIEW.md",
+      "bytes": 6494,
+      "sha256": "a5ec903736a315b11de3e4b0e64062af9038a1e3959d0ce0d601189848511c56"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.json",
+      "bytes": 5939,
+      "sha256": "a3b46683aa0a5b1c1095fc52116167dce97f395dcafdae26afaf61c6da6ca06a"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.md",
+      "bytes": 5939,
+      "sha256": "ed09878d2400dbdbba514204e679352cd48c9e8bbcaf7f794723358b7bdce734"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE.json",
+      "bytes": 4662,
+      "sha256": "719aa5c736a4fbd1c06918256228ca79793031a50ab2c80abc629098b87fc332"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE.md",
+      "bytes": 5189,
+      "sha256": "5e0365b5947aceaf91b271e6a16d8039ff6418422eaae3802c0c9910f0cc1e80"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-BRIDGE.patch",
+      "bytes": 5544,
+      "sha256": "69328dc9b0ee62fc9bd794a2672d9614af10cba80e14d6d98d8bfce865d074d1"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.json",
+      "bytes": 4310,
+      "sha256": "42301ae4abd806c37d3cbcd3513feb167f5d2d1452b841a2cd179461adc0e786"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT-REVIEW.md",
+      "bytes": 6558,
+      "sha256": "23080d381c9afbaca976f1f57118bbf51ce811157b00ca915bde51d1aba25de4"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT.json",
+      "bytes": 3971,
+      "sha256": "2b707350331b4f5536576563d2a1e7c2f2319180c81f4793b98a4251e244e2b0"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-HTTP-IDENTITY-RECEIPT.md",
+      "bytes": 9142,
+      "sha256": "e14f34cf462835ee905088e0f6d9bb19b5a1c583f28c9aa0596cd066c8ddc49c"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-METADATA-WAIT-OWNER.md",
+      "bytes": 10492,
+      "sha256": "f699d28fefa3811c3d9d0dc7a62a5a20e08b309e321c1e8966f2b15314d7d033"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-ASSET-PATH-BINDING.json",
+      "bytes": 8802,
+      "sha256": "ad8637140f09ec8e603fb11f3b1bd001b4f61d2f4e03e49858a7f215b5281d0e"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-ASSET-PATH-BINDING.md",
+      "bytes": 8216,
+      "sha256": "43f2b8c5d8ff9ab04d141f4a571a2c0c157ca089294d8ea7dcb062443abb4bb0"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-WAIT-RESULT.json",
+      "bytes": 5961,
+      "sha256": "77193f986aea0ee4994384431b6ffdd20814cf2591c000b28299004b037a0a66"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R6-WAIT-RESULT.md",
+      "bytes": 7605,
+      "sha256": "331824deea83c2b990a4ab0a3606112939b175a620a37c03d9df8c3ae9072597"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R8-IDENTITY-ACTION-RESULT.json",
+      "bytes": 13063,
+      "sha256": "b9c793a55c3f6c4894fe45aaa802cee9a1f814c2c9562cfb088c834d55177662"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-R8-IDENTITY-ACTION-RESULT.md",
+      "bytes": 8314,
+      "sha256": "c10c3dafa75eb6a338741820ee09362e49d65d03818e93a221ae9fbf7b4678b6"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-RESIDUAL-NEXT-DECISION.json",
+      "bytes": 7983,
+      "sha256": "3c9107ea6657387fccce524d4bb3ca7ceeed4e3d5721d200c64693dc6d52cac5"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/TERRAIN-RESIDUAL-NEXT-DECISION.md",
+      "bytes": 7408,
+      "sha256": "05b6854e66fc7d16b41ca34983adc8b7447802559e822ecc1943bacc00f1c701"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.mjs",
+      "bytes": 5731,
+      "sha256": "57c48c85d65ecacda36dc620b87c866ff56bd4c709d235f9034467899628ae1d"
+    },
+    {
+      "status": "??",
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-terrain-identity-receipt.test.mjs",
+      "bytes": 6908,
+      "sha256": "785698bb4feb7f78ca08224887d528d100848e2b3480accbe8fad5316adf6a2b"
+    }
+  ],
+  "diffCheckExit": 0,
+  "archiveManifestReadback": {
+    "scope": "manifest identity only; no repeat per-member hash or artifact content read",
+    "results": [
+      {
+        "owner": "H3",
+        "exists": true,
+        "bytes": 522773,
+        "sha256": "cb9b5ac33dfe909d75517cc79b22c3f070b0a39b5bd667a30c4188f42d1ddc62",
+        "matches": true,
+        "jsonParseable": true
+      },
+      {
+        "owner": "r10",
+        "exists": true,
+        "bytes": 602333,
+        "sha256": "5e5f746bcebcecb7588763a2a7e5ac8b33fa45d0524034a6ec2e95a7398f3b82",
+        "matches": true,
+        "jsonParseable": true
+      }
+    ]
+  },
+  "rawProfileShapeScan": {
+    "scope": "known large trace/heap arrays, metadata only",
+    "hits": []
+  },
+  "protectedJsonFieldShapeScan": {
+    "files": 33,
+    "scope": "exact sensitive-field names; metadata only",
+    "hits": []
+  }
+}

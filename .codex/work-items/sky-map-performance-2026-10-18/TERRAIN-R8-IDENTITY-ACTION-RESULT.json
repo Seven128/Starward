@@ -1,0 +1,325 @@
+{
+  "schemaVersion": "starward-terrain-r8-identity-action-result-v1",
+  "reviewedAt": "2026-10-19",
+  "result": "NEW_HTTP_PRODUCT_BOUND__VISIBLE_GAP_AFTER_FILE_READY__NOT_FINAL_ACCEPTANCE",
+  "scope": "Independent files-only review of one root-performed necessary representative terrain gesture; existing PLAN and research reused",
+  "candidate": {
+    "appSha256": "a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e",
+    "buildSourceSha256": "3362e2d0595b7871835b0232eb43f2ac233c5a5aa012f609c5eb40e04df4bcb0",
+    "feedback": "cnbWtR",
+    "preparedGeneration": 1,
+    "phoneSession": "x20PZ8",
+    "runtimeWholeBundleBytesVerified": false,
+    "runtimeAppIdVerified": false,
+    "mode": "development_feedback_only"
+  },
+  "action": {
+    "rootReported": {
+      "gestureCountActuallySent": 1,
+      "guardRejectedAttemptsWithoutInput": 1,
+      "gesture": {
+        "from": [
+          0.78,
+          0.31
+        ],
+        "to": [
+          0.12,
+          0.31
+        ],
+        "durationMs": 1400,
+        "requestedRecordSeconds": 15
+      },
+      "before": "Actual Map with medium selected-spot panel; terrain checked and reported valid 100%; cloud checked but selected date has no forecast; nightlight unchecked",
+      "cacheReset": false
+    },
+    "reviewerPerformedNoDeviceOrHttpCalls": true,
+    "fullMapLayoutBegins": {
+      "index": 343,
+      "ptsSeconds": 5.740411
+    },
+    "panelClosedDuringRecordedAction": true,
+    "doesPanelChangeEstablishAnotherPhysicalInput": false
+  },
+  "archives": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r8-terrain-identity-20261019",
+    "raw": {
+      "files": 34,
+      "bytes": 9133111,
+      "manifestSha256": "cc96056e7df3a09d4ac4f9823d6585dd3636be03aebbdc6a7d802c8fe82dcc45",
+      "beforeCopyAfterEqual": true,
+      "finalReadback": true
+    },
+    "source": {
+      "files": 10,
+      "bytes": 199305,
+      "manifestSha256": "948dfb3c46cde8930e37c7077ec29a2bffa614dbc11fef63ba4e25e43418bc93",
+      "beforeCopyAfterEqual": true,
+      "eightInstrumentedSourcesMatchR8TerrainManifest": true,
+      "finalReadback": true
+    },
+    "derived": {
+      "files": 60,
+      "bytes": 82953786,
+      "manifestSha256": "9ad9d1e58a3e61314de4434f536b020f87661148a659c01337c26d170c686e8a",
+      "finalReadback": true
+    },
+    "associationSha256": "21fc3e4ec2a9a16fb2cc8b03547b2e92006fad2a1069af456e3595ac8d740e59",
+    "oldCache": {
+      "files": 24,
+      "bytes": 1011435,
+      "manifestSha256": "864068b70e51dc00e90a4d5c43da57f4d1f072c180f2bce57a7533798f5cc119",
+      "allArchiveFilesReadback": true
+    }
+  },
+  "http": {
+    "version": "starward.task.terrain-http-identity.v1",
+    "bridgeSha256": "d2ab53a59d805930ab31f65429631c8183e243c3d5c1338d974e4061f7d29f3e",
+    "rootReportedRunningExec": 21018,
+    "reviewerReadProcessIdentity": false,
+    "beforeSha256": "7e7c88771ae7bcbc5b83fd8f91fc28928fc0b82754faaf8ef6c5d4205341d903",
+    "afterSha256": "e13c8d2017f26ac0f5440d7478776e8034e2b50c2d960528f890539e42971b86",
+    "beforePrefixUnchanged": true,
+    "beforeHasNoTerrainRows": true,
+    "beforeContainsReceiptRunId": false,
+    "beforeAndAfterProcessBinding": "Root reported one unchanged exec; before has no run UUID and cannot independently establish UUID equality",
+    "newTerrainRows": 2,
+    "pairSameRunId": true,
+    "receiptRunId": "489c5890-11bd-4f0a-9970-8b132b73d552",
+    "metadata": {
+      "ordinal": 1,
+      "method": "GET",
+      "status": 200,
+      "elapsedHostMs": 11,
+      "finishHostDate": "2026-10-19T09:56:58.498Z",
+      "metadataReadState": "COMPLETE",
+      "envelopeState": "PARTIAL",
+      "terrainState": "AVAILABLE",
+      "imageBytes": 314570,
+      "imageSha256": "4ba6d68aa59958c2017957929a6fcc72715896a702026b4f055bcd7046478340",
+      "requestKeySha256": "ca6355e6ca781cf0206eaf245d6bbfcfb1249a729723c51b2c580c0d32cd1f68",
+      "assetPathSha256": "af2264f1b734959edaa7136e55e39eabe4c2e92b7ffd23257206d27693f00146"
+    },
+    "asset": {
+      "ordinal": 2,
+      "method": "GET",
+      "status": 200,
+      "elapsedHostMs": 184,
+      "finishHostDate": "2026-10-19T09:56:58.727Z",
+      "responseBytes": 314570,
+      "responseBodyBytes": 314570,
+      "responseBodySha256": "4ba6d68aa59958c2017957929a6fcc72715896a702026b4f055bcd7046478340",
+      "responseHashState": "COMPLETE_RESPONSE",
+      "assetPathSha256": "af2264f1b734959edaa7136e55e39eabe4c2e92b7ffd23257206d27693f00146"
+    },
+    "bridgeFinishNotPhoneReceive": true,
+    "observerCostIncluded": true,
+    "metadataAndAssetEndTimesNotPhysicalPresentationClock": true,
+    "futureNamedCollectorDoesNotChangePhoneCandidate": true
+  },
+  "product": {
+    "schemaVersion": "starward-terrain-publication-v4",
+    "imageSha256": "4ba6d68aa59958c2017957929a6fcc72715896a702026b4f055bcd7046478340",
+    "imageBytes": 314570,
+    "width": 512,
+    "height": 512,
+    "proofSha256": "89fafe5c5c2cc00120bfd38127e65daa56170308b18cd0b32ef7669f08cfd9b9",
+    "requestKeySha256": "ca6355e6ca781cf0206eaf245d6bbfcfb1249a729723c51b2c580c0d32cd1f68",
+    "keyFromBoundsAgrees": true,
+    "assetPathSha256": "af2264f1b734959edaa7136e55e39eabe4c2e92b7ffd23257206d27693f00146",
+    "sourceSetSha256": "3485dd5abe00e2d6b5125b0fe1ca9eecd9869600588cdc2e526933b99fd5f83b",
+    "derivedAt": "2026-10-19T07:03:47.633Z",
+    "columns": 2,
+    "rows": 2,
+    "validPixelPercent": 100,
+    "sourceIssues": 0,
+    "existingProductionPublicationAndAssetValidation": true,
+    "normalizedWindowKeyAndKeyFromOwnBoundsAgree": true,
+    "newActualHttpRequestKeyMatchesProof": true,
+    "metadataAndBodyImageHashesAndBytesMatchProof": true,
+    "actualOriginalRequestBoundsRetained": false,
+    "phoneConsumerSha256Verified": false,
+    "clientOpaqueA5ToShaDirectlyReadBack": false,
+    "oldR6ActualResponseAssociation": "UNKNOWN",
+    "oldR6NotRetroactivelyBound": true,
+    "existingProductDerivationReusedNotNewlyGeneratedByThisReview": true
+  },
+  "video": {
+    "file": "raw/recording-1792403831439.mp4",
+    "bytes": 2243961,
+    "sha256": "0ed20a9caea4fdbaca91ef9e006a136bad484817a981cd7570ebb00752fb2609",
+    "codec": "h264",
+    "width": 1080,
+    "height": 2376,
+    "encodedFrames": 389,
+    "containerDurationSeconds": 18.252533,
+    "lastEncodedFramePtsSeconds": 14.739333,
+    "timeBase": "1/90000 seconds",
+    "ptsReset": false,
+    "trimmed": false,
+    "selectedUniqueEncodedFramesActuallyViewed": 49,
+    "overviewSamples": 22,
+    "refinedBoundarySamples": 29,
+    "selectionOverlap": 2,
+    "fullSizeKeyFramesActuallyViewed": [
+      344,
+      345,
+      346,
+      347,
+      348
+    ],
+    "allFourFrozenScreenshotsActuallyViewed": true,
+    "observations": [
+      {
+        "index": 0,
+        "ptsSeconds": 0,
+        "description": "Terrain nonempty; medium selected-spot panel; TW armed gesture"
+      },
+      {
+        "index": 239,
+        "ptsSeconds": 3.996533,
+        "description": "TW 1 action A1 0ms readable; map has started moving; asynchronous marker not physical touch clock"
+      },
+      {
+        "index": 299,
+        "ptsSeconds": 4.994622,
+        "description": "Clear right-hand new-area terrain gap, old left terrain retained; medium panel still present"
+      },
+      {
+        "index": 329,
+        "ptsSeconds": 5.493089,
+        "description": "Same clear right gap, loading notification, medium panel"
+      },
+      {
+        "index": 336,
+        "ptsSeconds": 5.607989,
+        "description": "TW 4 file_acquire A5 1802ms readable; gap remains"
+      },
+      {
+        "index": 343,
+        "ptsSeconds": 5.740411,
+        "description": "TW 5 download_returned A5 2041ms readable; medium panel now absent, full map exposed; right gap remains"
+      },
+      {
+        "index": 344,
+        "ptsSeconds": 5.7573,
+        "description": "TW 6 file_ready A5 2052ms readable; right gap remains"
+      },
+      {
+        "index": 345,
+        "ptsSeconds": 5.774189,
+        "description": "Last sampled gap; TW 6 file_ready A5 2052ms still readable"
+      },
+      {
+        "index": 346,
+        "ptsSeconds": 5.790578,
+        "description": "Immediately next encoded frame first shows new right terrain relief and removes old vertical edge; still file_ready A5 marker and loading notification"
+      },
+      {
+        "index": 347,
+        "ptsSeconds": 5.807122,
+        "description": "New coverage already present; still file_ready A5 marker"
+      },
+      {
+        "index": 348,
+        "ptsSeconds": 5.824222,
+        "description": "First sampled TW 7 native_ack A5 2107ms; coverage was already present"
+      },
+      {
+        "index": 354,
+        "ptsSeconds": 5.923867,
+        "description": "Loading notification briefly present although new relief remains visible"
+      },
+      {
+        "index": 355,
+        "ptsSeconds": 5.941922,
+        "description": "TW 9 file_ready A5 2259ms; new relief retained"
+      },
+      {
+        "index": 356,
+        "ptsSeconds": 5.959,
+        "description": "TW 10 native_ack A5 2266ms; new relief retained"
+      },
+      {
+        "index": 388,
+        "ptsSeconds": 14.739333,
+        "description": "Same new relief retained in sparse terminal sample"
+      }
+    ],
+    "firstUsefulNewCoverageBoundary": {
+      "lastGapIndex": 345,
+      "lastGapPtsSeconds": 5.774189,
+      "firstCoverageIndex": 346,
+      "firstCoveragePtsSeconds": 5.790578,
+      "intervalConvention": "(lastGap, firstCoverage]"
+    },
+    "readyBeforeObservedGap": {
+      "positive": true,
+      "firstReadyMarkerIndex": 344,
+      "nextStillGapIndex": 345,
+      "assetLabel": "A5",
+      "sourceMeaning": "Use-raster-image has received a validated resource path and live effect has not been aborted; async marker is supplementary order evidence, not a presentation timestamp",
+      "preciseReadyToPhysicalPresentationLatencyMs": null
+    },
+    "reviewedGapSampleSpan": {
+      "firstIndex": 299,
+      "lastIndex": 345,
+      "seconds": 0.7795670000000001,
+      "continuousWholeIntervalVerified": false
+    },
+    "physicalFpsMeasured": false,
+    "phoneClockHostClockPtsCalibrated": false,
+    "completeReceiptClockValidityVerified": false,
+    "fullTaskReceiptExportedForThisReview": false,
+    "sparseTailPtsGapsSeconds": [
+      1.1388109999999996,
+      0.6575000000000006,
+      2.864922,
+      3.5131999999999994
+    ],
+    "limits": [
+      "Encoded frames, average/r_frame_rate and sparse PTS are not physical app FPS",
+      "Requested 15 seconds, container length, file name and terminal screenshot Date do not establish a recording-start clock",
+      "Markers render asynchronously; first captured native_ack is not first visible coverage",
+      "The full anonymous task receipt is not available here: attempt/current/cleanup/cache status/clock-invalid and overflow remain unknown",
+      "Panel closure changes map viewport and exposed area, so this is not a matched old-r6 latency comparison",
+      "A5 is an opaque client label; bridge SHA association does not prove the phone consumed or rendered those exact bytes",
+      "Endpoint and sparse terminal samples do not establish every intermediate physical frame or complete required detail"
+    ]
+  },
+  "conclusion": {
+    "newProductHttpIdentityClosed": true,
+    "visibleGapConfirmed": true,
+    "narrowFileReadyBeforeVisibleGapConfirmed": true,
+    "entireResidualWaitAttributed": false,
+    "sourceIoVsCpu": "UNKNOWN",
+    "exactClientStageOrNativeCause": "UNKNOWN",
+    "performanceImprovementEstablished": false,
+    "oldR6ColdWaitExplained": false,
+    "blocksPrefetchWorkerOrLargerCacheAdopted": false,
+    "terrainCloudLightIosAndGoalAcceptanceClosed": false
+  },
+  "nextDecision": "Reuse this positive ready-before-gap result at the existing file/native-install/presentation owner if a remaining decision needs subdivision; use an already available exact task receipt if recoverable, without replaying this action. Keep original-r6 cold metadata/source-stage attribution separate. Do not repeat identity qualification, rederive products, choose blocks/prefetch/workers or compare old-r6 as a controlled before/after from this sample.",
+  "operations": {
+    "deviceAdbIdeHttp": false,
+    "servicesOrBridgeEdited": false,
+    "feedbackOrBuild": false,
+    "productionEdited": false,
+    "coordinatorDocsEdited": false,
+    "git": false,
+    "cacheOrAccountStateReset": false,
+    "backgroundProcessLeft": false,
+    "rootProtected8791N05R6ReminderPairingVpnTouched": false
+  },
+  "tools": {
+    "ffmpeg": {
+      "version": "9.0.2-essentials_build-www.gyan.dev",
+      "sha256": "3256173f3f8bffd7df12227c68adf68025edb1832273a9530688a7bb1ed8edec"
+    },
+    "ffprobe": {
+      "sha256": "f0d36ecbbdd3bcfac3efa078c96c7271c2e68b3810595552ac3b7f17e9a65c52"
+    },
+    "dependenciesInstalled": false,
+    "decode": "select exact original frame indices, -copyts -fps_mode passthrough -enc_time_base 1:90000 -frame_pts 1; no trim/PTS reset",
+    "videoWarnings": "Only non-video data streams have zero-duration warnings; selected v:0 was decoded successfully"
+  }
+}

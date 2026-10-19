@@ -61,3 +61,5 @@ const response = await binding.handleMedia(request);
 原ignored tmp中的H3 helper、isolated adapter、已准备照片、回执、1560份phone-revision源输入和16份overlay，以及341文件完整包，已复制到既有外部owner的`h3-gen26-pre-delivery/h3-source-preservation-20261019`。共1937文件、18,989,409B，逐文件校验原件及副本SHA；原包复制前、复制后和归档读回均为`1ee545f004155d693e0d7384240da558b1de20a4a22cb67c300d2f9368d77941`。未复制node_modules或设备session，未删改原件，未重新构建或预览。
 
 私有manifest SHA为`cb9b5ac33dfe909d75517cc79b22c3f070b0a39b5bd667a30c4188f42d1ddc62`；精确位置、范围和计数见同名JSON的`sourcePreservation`。Git只保存定位与完整性摘要，私有origin、生成物和照片原件仍在外部；新clone本身不提供这些材料。此保全解除必要phone-revision源只存tmp的风险，不升级原官方UNKNOWN或任何产品验收。
+
+2026-10-19接手后的实际依赖核对发现，上述1937文件未含`h3-isolated-input/prepare.mts`引用的兄弟目录`h3-photo-input`。现已把该目录的原始JPEG、`product-input-candidate.json`和`public-source-readback.json`精确保全到同一外部owner下的`h3-photo-input-completion-20261019`：3文件/3,057,739B，源→副本→源再读SHA全部相等；新manifest SHA `4000b37c69b6ecc99bc457a8c7d0d070faf9782926e9300eceb790466e3ef0fa`。旧manifest和全部原件保持不变。恢复时将新归档的`h3-photo-input`与旧归档`h3-isolated-input`、`h3-component-fixture`放在同一新私有目录下；此次未运行prepare、重产照片、恢复服务或发送gen26，重建与目标运行验收仍未由归档完成。

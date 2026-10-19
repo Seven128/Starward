@@ -1,0 +1,901 @@
+{
+  "schema": "starward-r17-r7-exit-result-v1",
+  "createdAt": "2026-10-19T09:17:50.314Z",
+  "scope": "INDEPENDENT_FILE_ONLY_REVIEW_OF_ROOT_OWNED_ACTIONS",
+  "identity": {
+    "reviewRevision": 7,
+    "appSha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+    "buildSourceSha256": "528b3d8a99ca4c87958e10b01ac7af7040b031e5270e601e61bcf2b3949cf755",
+    "fileCount": 337,
+    "totalBytes": 4995907,
+    "feedbackGeneration": 1,
+    "deviceSession": "Y554SA",
+    "officialDisposition": "operator_confirmed",
+    "evidenceMode": "development_feedback_only",
+    "runtimeAppIdVerified": false,
+    "phoneWholeBundleBytesVerified": false,
+    "laterCandidateIncluded": false
+  },
+  "archive": {
+    "directory": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/a1-r7-exit-native-passive-20261019",
+    "manifestSha256": "5084ec6acefcacd06b871cdcc2c564fc7bd7218e4ed6b32571f90fe9dbe02343",
+    "files": 56,
+    "bytes": 9999046,
+    "exclusiveCreate": true,
+    "originalsUnchangedAtFreezeReadback": true,
+    "allCopiesReadbackEqual": true,
+    "allFrozenCopiesRecheckedBeforeReport": true,
+    "rawIdentifiersRemainPrivate": true,
+    "largeSourceAndRuntimeReusedFromPriorArchives": true
+  },
+  "status": {
+    "actualProductSkyToMapNavigation": "ESTABLISHED_BY_ACTUAL_PHONE_PIXELS",
+    "sameWatchProcessBinding": "VALID_8_OF_8",
+    "processFootprint": "PARTIAL_FALL_WITH_MAP_RESOURCE_LOAD",
+    "runtimeSkyResourceRetirement": "UNVERIFIED",
+    "bComplete": false,
+    "r7NativeEntry": "FAILED_RETAINED",
+    "settledCandidateAcceptance": false
+  },
+  "rootActions": {
+    "evidenceSource": "Root first-hand guarded-input observations supplied with this file-only task; capture sidecars do not encode input receipts.",
+    "actualCancel": {
+      "performed": true,
+      "exactHostInputTimestamp": null,
+      "resultCapture": "phone/screen-cfe527bf-fef1-4026-8af3-4e45af19b72d.png"
+    },
+    "ineffectiveDoorAttempt": {
+      "coordinate": {
+        "x": 0.9,
+        "y": 0.22
+      },
+      "actualInputs": 1,
+      "guardRecentCaptureRejectionsWithoutInput": 2,
+      "navigationSucceeded": false,
+      "individualReceiptFilesNotSupplied": true
+    },
+    "debugOverlayDrag": {
+      "from": {
+        "x": 0.6,
+        "y": 0.19
+      },
+      "to": {
+        "x": 0.6,
+        "y": 0.32
+      },
+      "durationMs": 1000,
+      "performed": true,
+      "resultCapture": "phone/screen-2fdc7b67-aeaa-4cd7-8cb2-459fa2fc1c46.png"
+    },
+    "actualProductDoorTap": {
+      "coordinate": {
+        "x": 0.9,
+        "y": 0.198
+      },
+      "actualInputs": 1,
+      "approximateHostInputUtc": "2026-10-19T09:07:49Z",
+      "exactInputTimestampAndRouteLifecycleAckUnknown": true,
+      "resultCapture": "phone/screen-25fdd8ea-a0fd-4270-bd25-9a34d2ea8324.png"
+    }
+  },
+  "screenshots": [
+    {
+      "key": "phone/screen-6ddd3eca-cf7c-45ba-83f1-25dc593fb125.png",
+      "bytes": 673348,
+      "sha256": "1686bf39548fe4b6a061230a675d384dcfeca17cdde43c407bebbdc757ba2b1d",
+      "capturedAt": "2026-10-19T08:56:02.309Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-6ddd3eca-cf7c-45ba-83f1-25dc593fb125.png.json",
+        "bytes": 391,
+        "sha256": "554032a28b4a6342f25d7072951b66a859fb6e37b4860a5485bc269489286cac"
+      },
+      "actuallyViewed": true,
+      "observation": "Nonempty Sky; preview 04:30:20, Play triangle, noon ruler 12:00/14:00/16:00, connected debug overlay."
+    },
+    {
+      "key": "phone/screen-9cd52ac7-a44f-41ee-b5e9-a87729ab43f2.png",
+      "bytes": 674629,
+      "sha256": "1bb643e647aaf3d741a23a9d9f3decb66aff4caa17ee916bec23535aa406211b",
+      "capturedAt": "2026-10-19T08:58:39.032Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-9cd52ac7-a44f-41ee-b5e9-a87729ab43f2.png.json",
+        "bytes": 391,
+        "sha256": "e04e09eb4dab9fe93cc8f780e5f7bd8d7b89d568cf298140df5636bd8dd4698e"
+      },
+      "actuallyViewed": true,
+      "observation": "Same retained wrong preview window after passive batch: 04:30:20, noon ruler 12:00/14:00/16:00."
+    },
+    {
+      "key": "phone/screen-cfe527bf-fef1-4026-8af3-4e45af19b72d.png",
+      "bytes": 667961,
+      "sha256": "65d5ceff6b036e15e42c393d421951b08a7c980dc815d9b1a6e4a53ee984c18c",
+      "capturedAt": "2026-10-19T09:00:49.334Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-cfe527bf-fef1-4026-8af3-4e45af19b72d.png.json",
+        "bytes": 391,
+        "sha256": "b06de8c58a37bf5bcd036a6314f1f8afed1ebb82d7d501e8e9de5da0cf390a7c"
+      },
+      "actuallyViewed": true,
+      "observation": "After root actual Cancel: current label 04:30:00, noon mismatch gone and surrounding ruler labels 00:00/02:00/08:00 correspond to early morning. Some large six-field glyphs are clipped in this still; no general glyph-quality pass."
+    },
+    {
+      "key": "phone/screen-e4ce68bc-3e2a-4335-bbf7-f79268667bfa.png",
+      "bytes": 845720,
+      "sha256": "7952bf0386d6d9e60d2e47f154596dd4e71e1bebd2605199791fff05471cafc4",
+      "capturedAt": "2026-10-19T09:01:42.068Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-e4ce68bc-3e2a-4335-bbf7-f79268667bfa.png.json",
+        "bytes": 391,
+        "sha256": "d70f9e60f41718c1a7dfe99580c39dee43809406f87d97b5823e99b730b5b573"
+      },
+      "actuallyViewed": true,
+      "observation": "Sky menu open, door behind connected-debug overlay; still Sky."
+    },
+    {
+      "key": "phone/screen-fbb174dd-aee1-4469-90c0-db125999e2e3.png",
+      "bytes": 846188,
+      "sha256": "5467c7f57fde8deaed8c93660e455fd2e75c00026e5d5df96c97905642297caa",
+      "capturedAt": "2026-10-19T09:04:58.501Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-fbb174dd-aee1-4469-90c0-db125999e2e3.png.json",
+        "bytes": 391,
+        "sha256": "6d2e8ba847c3492c51ca1b9d1bc904211cdfbec81c97ece6c6ddf4227fecd5c5"
+      },
+      "actuallyViewed": true,
+      "observation": "Still Sky/menu; no navigation. Pixels byte-identical to 1bf capture, independent sidecar timestamps."
+    },
+    {
+      "key": "phone/screen-1bf882b0-aa42-489e-9cdc-d3d73f2915f8.png",
+      "bytes": 846188,
+      "sha256": "5467c7f57fde8deaed8c93660e455fd2e75c00026e5d5df96c97905642297caa",
+      "capturedAt": "2026-10-19T09:04:09.995Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-1bf882b0-aa42-489e-9cdc-d3d73f2915f8.png.json",
+        "bytes": 391,
+        "sha256": "afa62a76348be0e8f0099a0bdbbc446aa14f3f27040dc557eeb31242067e3f11"
+      },
+      "actuallyViewed": true,
+      "observation": "Still Sky/menu; no navigation. Pixels byte-identical to fbb capture, independent sidecar timestamps."
+    },
+    {
+      "key": "phone/screen-dd626cd2-3993-4127-957e-f50d4415f696.png",
+      "bytes": 846754,
+      "sha256": "db339ff5b8e14beff029a3336c7ce8c900b5c9a3dc1eeb0c0f3a3f14ae480d6a",
+      "capturedAt": "2026-10-19T09:06:31.986Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-dd626cd2-3993-4127-957e-f50d4415f696.png.json",
+        "bytes": 391,
+        "sha256": "6ea1b3e0aab16b290943a2cf9b25a645a245e67372123da3b6d93b30a5ea1938"
+      },
+      "actuallyViewed": true,
+      "observation": "Expanded native debug overlay covers product door; connected/server-normal labels and repeated cmdId1006 errCode-50011 are visible, no causal classification of those errors."
+    },
+    {
+      "key": "phone/screen-2fdc7b67-aeaa-4cd7-8cb2-459fa2fc1c46.png",
+      "bytes": 844133,
+      "sha256": "1e55e07ee2f476cbfd8978038c58d1a9b5add057a5b67c518fd32ea2483f6372",
+      "capturedAt": "2026-10-19T09:07:03.719Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-2fdc7b67-aeaa-4cd7-8cb2-459fa2fc1c46.png.json",
+        "bytes": 391,
+        "sha256": "184dc6560470f83fa5edb02d47087fb5ab8e04a0cd61bbbb26b84a126d27010c"
+      },
+      "actuallyViewed": true,
+      "observation": "After root actual overlay drag, debug overlay lower; product door clearly exposed above it. Sky remains foreground."
+    },
+    {
+      "key": "phone/screen-25fdd8ea-a0fd-4270-bd25-9a34d2ea8324.png",
+      "bytes": 1004732,
+      "sha256": "2b2ba72e6ed960d22f0d284db5a1d97231c04214159ce18dea7f9543301d647a",
+      "capturedAt": "2026-10-19T09:07:53.501Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-25fdd8ea-a0fd-4270-bd25-9a34d2ea8324.png.json",
+        "bytes": 392,
+        "sha256": "f6c90d4fd4141e25c35045043f52c0fb0ca158cd073eac3fe0bba64deb8c53aa"
+      },
+      "actuallyViewed": true,
+      "observation": "After actual exposed product-door tap: nonempty Map and same isolated test spot panel, plan still loading; debug overlay remains."
+    },
+    {
+      "key": "phone/screen-fdec73ff-5c24-4ab0-9380-189cc2419c9a.png",
+      "bytes": 1288149,
+      "sha256": "53258d0bf245ddb10826966f2bdcd41efc4227ecbbde5c3b394560cf732d9b4a",
+      "capturedAt": "2026-10-19T09:09:37.543Z",
+      "width": 1080,
+      "height": 2376,
+      "sidecar": {
+        "key": "phone/screen-fdec73ff-5c24-4ab0-9380-189cc2419c9a.png.json",
+        "bytes": 392,
+        "sha256": "7803a1e088861297ec6c2e8aef2bdf8d15a32283b5a64a356bea9dc606ab6ed1"
+      },
+      "actuallyViewed": true,
+      "observation": "Later Map and same isolated test spot panel; plan unavailable/retry text visible; no Sky surface shown. This is not proof of plan success or resource retirement."
+    }
+  ],
+  "processMemory": {
+    "actualExitWatch": {
+      "evidence": {
+        "key": "memory/r7-actual-exit-drain-1792400856559.ndjson",
+        "bytes": 5164,
+        "sha256": "8eeb27e11f3aca8c7c643a164b130c5d31c3a9b820e91df572b4bdbbb0a0abfd"
+      },
+      "scope": "WATCH_STRADDLING_ACTUAL_SKY_TO_MAP_EXIT",
+      "rows": 8,
+      "clock": "host.performance.now",
+      "unit": "KiB",
+      "firstSampleStartElapsedMs": 0,
+      "lastSampleEndElapsedMs": 85898,
+      "filenameWallClockAnchorUtc": "2026-10-19T09:07:36.559Z",
+      "filenameWallClockAnchorMeaning": "Date.now naming anchor immediately after performance.now start in frozen producer, not a calibrated bridge between clocks or exact input timestamp",
+      "withinWatchForegroundOwnerVerified": true,
+      "ownerChangedObserved": false,
+      "acrossWatchSamePidEstablished": false,
+      "sampleRows": [
+        {
+          "sampleStartElapsedMs": 0,
+          "sampleEndElapsedMs": 1697,
+          "totalPssKiB": 1226834,
+          "totalRssKiB": 1539836,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 230392,
+          "dalvikHeapPssKiB": 79943,
+          "unknownPssKiB": 457000,
+          "glMtrackPssKiB": 12364,
+          "eglMtrackPssKiB": 108452
+        },
+        {
+          "sampleStartElapsedMs": 11702,
+          "sampleEndElapsedMs": 13546,
+          "totalPssKiB": 1216235,
+          "totalRssKiB": 1529236,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 230388,
+          "dalvikHeapPssKiB": 69343,
+          "unknownPssKiB": 457000,
+          "glMtrackPssKiB": 12364,
+          "eglMtrackPssKiB": 108452
+        },
+        {
+          "sampleStartElapsedMs": 23551,
+          "sampleEndElapsedMs": 25591,
+          "totalPssKiB": 1502952,
+          "totalRssKiB": 1826292,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 237172,
+          "dalvikHeapPssKiB": 124827,
+          "unknownPssKiB": 654492,
+          "glMtrackPssKiB": 20348,
+          "eglMtrackPssKiB": 116852
+        },
+        {
+          "sampleStartElapsedMs": 35606,
+          "sampleEndElapsedMs": 37471,
+          "totalPssKiB": 1442944,
+          "totalRssKiB": 1766292,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 209580,
+          "dalvikHeapPssKiB": 92435,
+          "unknownPssKiB": 654512,
+          "glMtrackPssKiB": 20348,
+          "eglMtrackPssKiB": 116852
+        },
+        {
+          "sampleStartElapsedMs": 47483,
+          "sampleEndElapsedMs": 49419,
+          "totalPssKiB": 1363124,
+          "totalRssKiB": 1686488,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 209064,
+          "dalvikHeapPssKiB": 79983,
+          "unknownPssKiB": 587736,
+          "glMtrackPssKiB": 20340,
+          "eglMtrackPssKiB": 116852
+        },
+        {
+          "sampleStartElapsedMs": 59423,
+          "sampleEndElapsedMs": 61517,
+          "totalPssKiB": 1361588,
+          "totalRssKiB": 1684960,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 208980,
+          "dalvikHeapPssKiB": 78635,
+          "unknownPssKiB": 587612,
+          "glMtrackPssKiB": 20340,
+          "eglMtrackPssKiB": 116852
+        },
+        {
+          "sampleStartElapsedMs": 71530,
+          "sampleEndElapsedMs": 73693,
+          "totalPssKiB": 1360005,
+          "totalRssKiB": 1683384,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 208968,
+          "dalvikHeapPssKiB": 76423,
+          "unknownPssKiB": 588256,
+          "glMtrackPssKiB": 20340,
+          "eglMtrackPssKiB": 116852
+        },
+        {
+          "sampleStartElapsedMs": 83697,
+          "sampleEndElapsedMs": 85898,
+          "totalPssKiB": 1263833,
+          "totalRssKiB": 1587216,
+          "totalSwapPssKiB": 40,
+          "nativeHeapPssKiB": 210468,
+          "dalvikHeapPssKiB": 78823,
+          "unknownPssKiB": 488436,
+          "glMtrackPssKiB": 20300,
+          "eglMtrackPssKiB": 116852
+        }
+      ],
+      "ranges": {
+        "totalPssKiB": {
+          "first": 1226834,
+          "minimum": 1216235,
+          "maximum": 1502952,
+          "last": 1263833,
+          "lastMinusFirst": 36999,
+          "lastMinusMaximum": -239119
+        },
+        "totalRssKiB": {
+          "first": 1539836,
+          "minimum": 1529236,
+          "maximum": 1826292,
+          "last": 1587216,
+          "lastMinusFirst": 47380,
+          "lastMinusMaximum": -239076
+        },
+        "totalSwapPssKiB": {
+          "first": 40,
+          "minimum": 40,
+          "maximum": 40,
+          "last": 40,
+          "lastMinusFirst": 0,
+          "lastMinusMaximum": 0
+        },
+        "nativeHeapPssKiB": {
+          "first": 230392,
+          "minimum": 208968,
+          "maximum": 237172,
+          "last": 210468,
+          "lastMinusFirst": -19924,
+          "lastMinusMaximum": -26704
+        },
+        "dalvikHeapPssKiB": {
+          "first": 79943,
+          "minimum": 69343,
+          "maximum": 124827,
+          "last": 78823,
+          "lastMinusFirst": -1120,
+          "lastMinusMaximum": -46004
+        },
+        "unknownPssKiB": {
+          "first": 457000,
+          "minimum": 457000,
+          "maximum": 654512,
+          "last": 488436,
+          "lastMinusFirst": 31436,
+          "lastMinusMaximum": -166076
+        },
+        "glMtrackPssKiB": {
+          "first": 12364,
+          "minimum": 12364,
+          "maximum": 20348,
+          "last": 20300,
+          "lastMinusFirst": 7936,
+          "lastMinusMaximum": -48
+        },
+        "eglMtrackPssKiB": {
+          "first": 108452,
+          "minimum": 108452,
+          "maximum": 116852,
+          "last": 116852,
+          "lastMinusFirst": 8400,
+          "lastMinusMaximum": 0
+        }
+      }
+    },
+    "earlierMisnamedWatches": [
+      {
+        "evidence": {
+          "key": "memory/r7-cancel-exit-drain-1792400275347.ndjson",
+          "bytes": 7759,
+          "sha256": "04fab71ad74154bb1ab56ca0fe8e9c2a1190cb5e8a1962a05f19e0d3f5424b9e"
+        },
+        "scope": "POST_PLAY_IDLE_BEFORE_ACTUAL_CANCEL_NO_EXIT",
+        "rows": 12,
+        "clock": "host.performance.now",
+        "unit": "KiB",
+        "firstSampleStartElapsedMs": 0,
+        "lastSampleEndElapsedMs": 131373,
+        "filenameWallClockAnchorUtc": "2026-10-19T08:57:55.347Z",
+        "filenameWallClockAnchorMeaning": "Date.now naming anchor immediately after performance.now start in frozen producer, not a calibrated bridge between clocks or exact input timestamp",
+        "withinWatchForegroundOwnerVerified": true,
+        "ownerChangedObserved": false,
+        "acrossWatchSamePidEstablished": false,
+        "sampleRows": [
+          {
+            "sampleStartElapsedMs": 0,
+            "sampleEndElapsedMs": 1690,
+            "totalPssKiB": 1266348,
+            "totalRssKiB": 1578600,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 227544,
+            "dalvikHeapPssKiB": 117747,
+            "unknownPssKiB": 460784,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 11703,
+            "sampleEndElapsedMs": 13528,
+            "totalPssKiB": 1217639,
+            "totalRssKiB": 1529892,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 227380,
+            "dalvikHeapPssKiB": 69215,
+            "unknownPssKiB": 460784,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 23537,
+            "sampleEndElapsedMs": 25404,
+            "totalPssKiB": 1217600,
+            "totalRssKiB": 1529852,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 227376,
+            "dalvikHeapPssKiB": 69183,
+            "unknownPssKiB": 460784,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 35416,
+            "sampleEndElapsedMs": 37149,
+            "totalPssKiB": 1217108,
+            "totalRssKiB": 1529360,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 227380,
+            "dalvikHeapPssKiB": 68675,
+            "unknownPssKiB": 460796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 47151,
+            "sampleEndElapsedMs": 48919,
+            "totalPssKiB": 1308363,
+            "totalRssKiB": 1620616,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228832,
+            "dalvikHeapPssKiB": 149315,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 58930,
+            "sampleEndElapsedMs": 60583,
+            "totalPssKiB": 1227507,
+            "totalRssKiB": 1539760,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228444,
+            "dalvikHeapPssKiB": 68975,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 70588,
+            "sampleEndElapsedMs": 72262,
+            "totalPssKiB": 1227156,
+            "totalRssKiB": 1539408,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228440,
+            "dalvikHeapPssKiB": 68639,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 82265,
+            "sampleEndElapsedMs": 84081,
+            "totalPssKiB": 1227723,
+            "totalRssKiB": 1539976,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228432,
+            "dalvikHeapPssKiB": 69207,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 94083,
+            "sampleEndElapsedMs": 95961,
+            "totalPssKiB": 1227239,
+            "totalRssKiB": 1539492,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228428,
+            "dalvikHeapPssKiB": 68735,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 105974,
+            "sampleEndElapsedMs": 107802,
+            "totalPssKiB": 1227107,
+            "totalRssKiB": 1539360,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228432,
+            "dalvikHeapPssKiB": 68595,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 117804,
+            "sampleEndElapsedMs": 119736,
+            "totalPssKiB": 1227116,
+            "totalRssKiB": 1539368,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228436,
+            "dalvikHeapPssKiB": 68603,
+            "unknownPssKiB": 469796,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 129740,
+            "sampleEndElapsedMs": 131373,
+            "totalPssKiB": 1227215,
+            "totalRssKiB": 1539468,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 228440,
+            "dalvikHeapPssKiB": 68679,
+            "unknownPssKiB": 469808,
+            "glMtrackPssKiB": 12624,
+            "eglMtrackPssKiB": 108452
+          }
+        ],
+        "ranges": {
+          "totalPssKiB": {
+            "first": 1266348,
+            "minimum": 1217108,
+            "maximum": 1308363,
+            "last": 1227215,
+            "lastMinusFirst": -39133,
+            "lastMinusMaximum": -81148
+          },
+          "totalRssKiB": {
+            "first": 1578600,
+            "minimum": 1529360,
+            "maximum": 1620616,
+            "last": 1539468,
+            "lastMinusFirst": -39132,
+            "lastMinusMaximum": -81148
+          },
+          "totalSwapPssKiB": {
+            "first": 40,
+            "minimum": 40,
+            "maximum": 40,
+            "last": 40,
+            "lastMinusFirst": 0,
+            "lastMinusMaximum": 0
+          },
+          "nativeHeapPssKiB": {
+            "first": 227544,
+            "minimum": 227376,
+            "maximum": 228832,
+            "last": 228440,
+            "lastMinusFirst": 896,
+            "lastMinusMaximum": -392
+          },
+          "dalvikHeapPssKiB": {
+            "first": 117747,
+            "minimum": 68595,
+            "maximum": 149315,
+            "last": 68679,
+            "lastMinusFirst": -49068,
+            "lastMinusMaximum": -80636
+          },
+          "unknownPssKiB": {
+            "first": 460784,
+            "minimum": 460784,
+            "maximum": 469808,
+            "last": 469808,
+            "lastMinusFirst": 9024,
+            "lastMinusMaximum": 0
+          },
+          "glMtrackPssKiB": {
+            "first": 12624,
+            "minimum": 12624,
+            "maximum": 12624,
+            "last": 12624,
+            "lastMinusFirst": 0,
+            "lastMinusMaximum": 0
+          },
+          "eglMtrackPssKiB": {
+            "first": 108452,
+            "minimum": 108452,
+            "maximum": 108452,
+            "last": 108452,
+            "lastMinusFirst": 0,
+            "lastMinusMaximum": 0
+          }
+        }
+      },
+      {
+        "evidence": {
+          "key": "memory/r7-product-exit-drain-1792400565429.ndjson",
+          "bytes": 7757,
+          "sha256": "d985b4e4bbfd23f9c0b68589b2ecc041a6469d94b3796aaeed68ef9a3f9ee9ce"
+        },
+        "scope": "POST_CANCEL_SKY_IDLE_INEFFECTIVE_TAP_NO_EXIT",
+        "rows": 12,
+        "clock": "host.performance.now",
+        "unit": "KiB",
+        "firstSampleStartElapsedMs": 0,
+        "lastSampleEndElapsedMs": 131853,
+        "filenameWallClockAnchorUtc": "2026-10-19T09:02:45.429Z",
+        "filenameWallClockAnchorMeaning": "Date.now naming anchor immediately after performance.now start in frozen producer, not a calibrated bridge between clocks or exact input timestamp",
+        "withinWatchForegroundOwnerVerified": true,
+        "ownerChangedObserved": false,
+        "acrossWatchSamePidEstablished": false,
+        "sampleRows": [
+          {
+            "sampleStartElapsedMs": 0,
+            "sampleEndElapsedMs": 1859,
+            "totalPssKiB": 1174655,
+            "totalRssKiB": 1486928,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 194116,
+            "dalvikHeapPssKiB": 79303,
+            "unknownPssKiB": 440992,
+            "glMtrackPssKiB": 12628,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 11864,
+            "sampleEndElapsedMs": 13751,
+            "totalPssKiB": 1164414,
+            "totalRssKiB": 1476688,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 194080,
+            "dalvikHeapPssKiB": 69111,
+            "unknownPssKiB": 440992,
+            "glMtrackPssKiB": 12628,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 23761,
+            "sampleEndElapsedMs": 25544,
+            "totalPssKiB": 1163947,
+            "totalRssKiB": 1476220,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 194080,
+            "dalvikHeapPssKiB": 68655,
+            "unknownPssKiB": 440992,
+            "glMtrackPssKiB": 12628,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 35558,
+            "sampleEndElapsedMs": 37272,
+            "totalPssKiB": 1164583,
+            "totalRssKiB": 1476856,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 194080,
+            "dalvikHeapPssKiB": 69287,
+            "unknownPssKiB": 440992,
+            "glMtrackPssKiB": 12628,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 47284,
+            "sampleEndElapsedMs": 49021,
+            "totalPssKiB": 1143134,
+            "totalRssKiB": 1455408,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 194668,
+            "dalvikHeapPssKiB": 68655,
+            "unknownPssKiB": 419584,
+            "glMtrackPssKiB": 12628,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 59024,
+            "sampleEndElapsedMs": 60711,
+            "totalPssKiB": 1299915,
+            "totalRssKiB": 1612188,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229600,
+            "dalvikHeapPssKiB": 153271,
+            "unknownPssKiB": 456984,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 70727,
+            "sampleEndElapsedMs": 72348,
+            "totalPssKiB": 1215194,
+            "totalRssKiB": 1527468,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229496,
+            "dalvikHeapPssKiB": 68787,
+            "unknownPssKiB": 456984,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 82350,
+            "sampleEndElapsedMs": 84256,
+            "totalPssKiB": 1213481,
+            "totalRssKiB": 1527072,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229208,
+            "dalvikHeapPssKiB": 68679,
+            "unknownPssKiB": 456984,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 94261,
+            "sampleEndElapsedMs": 96096,
+            "totalPssKiB": 1215426,
+            "totalRssKiB": 1527700,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229208,
+            "dalvikHeapPssKiB": 69311,
+            "unknownPssKiB": 456984,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 106101,
+            "sampleEndElapsedMs": 108240,
+            "totalPssKiB": 1214886,
+            "totalRssKiB": 1527160,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229208,
+            "dalvikHeapPssKiB": 68759,
+            "unknownPssKiB": 456984,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 118249,
+            "sampleEndElapsedMs": 119951,
+            "totalPssKiB": 1214834,
+            "totalRssKiB": 1527108,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229208,
+            "dalvikHeapPssKiB": 68715,
+            "unknownPssKiB": 456980,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          },
+          {
+            "sampleStartElapsedMs": 129956,
+            "sampleEndElapsedMs": 131853,
+            "totalPssKiB": 1214697,
+            "totalRssKiB": 1527152,
+            "totalSwapPssKiB": 40,
+            "nativeHeapPssKiB": 229212,
+            "dalvikHeapPssKiB": 68747,
+            "unknownPssKiB": 456980,
+            "glMtrackPssKiB": 12364,
+            "eglMtrackPssKiB": 108452
+          }
+        ],
+        "ranges": {
+          "totalPssKiB": {
+            "first": 1174655,
+            "minimum": 1143134,
+            "maximum": 1299915,
+            "last": 1214697,
+            "lastMinusFirst": 40042,
+            "lastMinusMaximum": -85218
+          },
+          "totalRssKiB": {
+            "first": 1486928,
+            "minimum": 1455408,
+            "maximum": 1612188,
+            "last": 1527152,
+            "lastMinusFirst": 40224,
+            "lastMinusMaximum": -85036
+          },
+          "totalSwapPssKiB": {
+            "first": 40,
+            "minimum": 40,
+            "maximum": 40,
+            "last": 40,
+            "lastMinusFirst": 0,
+            "lastMinusMaximum": 0
+          },
+          "nativeHeapPssKiB": {
+            "first": 194116,
+            "minimum": 194080,
+            "maximum": 229600,
+            "last": 229212,
+            "lastMinusFirst": 35096,
+            "lastMinusMaximum": -388
+          },
+          "dalvikHeapPssKiB": {
+            "first": 79303,
+            "minimum": 68655,
+            "maximum": 153271,
+            "last": 68747,
+            "lastMinusFirst": -10556,
+            "lastMinusMaximum": -84524
+          },
+          "unknownPssKiB": {
+            "first": 440992,
+            "minimum": 419584,
+            "maximum": 456984,
+            "last": 456980,
+            "lastMinusFirst": 15988,
+            "lastMinusMaximum": -4
+          },
+          "glMtrackPssKiB": {
+            "first": 12628,
+            "minimum": 12364,
+            "maximum": 12628,
+            "last": 12364,
+            "lastMinusFirst": -264,
+            "lastMinusMaximum": -264
+          },
+          "eglMtrackPssKiB": {
+            "first": 108452,
+            "minimum": 108452,
+            "maximum": 108452,
+            "last": 108452,
+            "lastMinusFirst": 0,
+            "lastMinusMaximum": 0
+          }
+        }
+      }
+    ],
+    "clockAndWindowBoundary": "85.898s is the complete watch straddling actual door navigation, not 85.898s entirely after exit. Filename anchor is about 12.4s before root approximate door input; first sample is before navigation and second is near input. Third and later samples follow the Map capture, but no clock calibration supplies an exact native lifecycle time. Older watch names containing exit do not prove exit.",
+    "qualitativeResult": "Actual watch PSS rises to 1502952 KiB as Map loads and later falls to 1263833 KiB, still 36999 KiB above its first sample. Native Heap PSS ends 19924 KiB below first; Unknown ends 31436 KiB above first. These host-process categories include engine/debugger and new Map resources; no product-exclusive allocator, immediate-release pass, leak verdict or subtraction against the allocation profile follows.",
+    "sourceLifetimeBoundary": {
+      "frozenLifecycleOwner": "prior r7 frozen-r7-source/sky-canvas-lifecycle.ts hide/dispose",
+      "frozenSurfaceOwner": "prior r7 frozen-r7-source/sky-canvas-surface.ts retire",
+      "observedSourceBehavior": "dispose resets and clears latest; surface retire marks r17NormalSurfaceRetired, retires selection, attempts loseContext and zeroes native/display backing sizes.",
+      "sourceIsRuntimeExecutionProof": false,
+      "postExitRetiredBooleanOrLifecycleReceiptSupplied": false
+    }
+  },
+  "planUnavailable": {
+    "visible": true,
+    "rootSuppliedReason": "Public isolated bridge returned expected403; original8791 account is not accessed.",
+    "httpReceiptIndependentlyReviewed": false,
+    "planJourneyPassed": false
+  },
+  "limits": [
+    "No device/IDE/ADB/service/feedback/preview/account operation by this reviewer; no product-source, PLAN, HANDOFF, preparation or allocation report changes; no commit.",
+    "One actual Sky-to-Map product exit was observed. This is not Mini Program process exit, application backgrounding, OS kill or full normal-use acceptance.",
+    "No post-exit JS retaining graph, exact retired boolean, resource counter readback, native allocator profile or calibrated drain plateau was supplied. The source cleanup path and process drop do not establish actual resource release.",
+    "The prior Play and valid allocation evidence keep their existing scope. Do not reuse old wrongly named watches as after-exit data, join different watch slots into a PID proof, or divide memory deltas by Play frames.",
+    "The r7 entry/ruler failure and six-field glyph issue remain; actual Cancel recovery does not pass cross-day, motion, repeated navigation, iOS or the complete Goal."
+  ]
+}

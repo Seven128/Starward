@@ -1,0 +1,277 @@
+{
+  "schema": "starward-r17-normal-r9-build-review-v1",
+  "createdAt": "2026-10-19T10:21:20.884Z",
+  "reviewer": "qualify_r9_complete_build",
+  "status": "OFFLINE_BUILD_BINDING_AND_FINITE_TASK_DIFF_REVIEW_PASSED_TARGET_UNVERIFIED",
+  "findings": [],
+  "materialOpenP1P2": 0,
+  "scope": "File-only complete r9 source/bundle/map qualification, source-bound independent retirement-review reuse and finite task delta. No new plan review, build/prepare/inspect or device/runtime operations.",
+  "identities": {
+    "productionBaseHead": "3818b44009d53d4b27cb16a95904c42ed3723af7",
+    "buildSourceSha256": "ac12fdd389fac80b1858c3376e43952020d38024279cf1d296a7fd9fd2872211",
+    "bundleSha256": "413b8e0f97c46b99040e9cc5e78e0b81b6e2839575cb82c19f8b6e4170fb9eaf",
+    "fileCount": 337,
+    "totalBytes": 5002086,
+    "manifestSha256": "f90760f4f90501c5b60b4578d96c72e6cb9af265049860623a77b24bbc2f3fa2",
+    "builderSha256": "d706a76fa1f8b9e410b943d177f21035eea5ab99a468bef951bf9364d875103e",
+    "sourceSnapshotSha256": "fc40ffd08c8bb9db7816999c78ae37b1e691304bbf9556966bba14cd555023a8",
+    "sourceMapsReport": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r9/source-map-bindings.json",
+    "sourceMapsReportSha256": "82abd538c5f5ac3ebb1cedb6d988e0b557729c0658b8362fe979d790604166b6",
+    "sourceMapsReportBytes": 58925
+  },
+  "inputs": {
+    "independentRetirementReview": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R9-RETIREMENT-REVIEW.json",
+    "independentRetirementReviewSha256": "ec4f653a0f1b0fdd24107550c5f0f4419e35fc56dc73e73a47800052babf37c3",
+    "stableSurfaceReview": ".codex/work-items/sky-map-performance-2026-10-18/SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.json",
+    "stableSurfaceReviewSha256": "a3b46683aa0a5b1c1095fc52116167dce97f395dcafdae26afaf61c6da6ca06a",
+    "priorBuildReview": ".codex/work-items/sky-map-performance-2026-10-18/R17-NORMAL-R8-BUILD-REVIEW.json",
+    "priorBuildReviewSha256": "87e32be6dcc09fac4e6978c40145ac2a2f81910bb56bcdddb218e8910d2ced24",
+    "priorMaps": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r8/source-map-bindings.json",
+    "priorMapsSha256": "e69113388f4e7162dca438ca37d09c1a86032621cde1ac02bb6e1767ccc97025",
+    "r8Archive": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r8-before-r9-20261019/manifest.private.json",
+    "r8ArchiveSha256": "9d3cca404f9a10a65ef33be6e1a11c51932705a2abe34b274d0df1138542834f",
+    "r8ArchiveFiles": 82,
+    "r8ArchiveBytes": 30633097,
+    "allArchivedHashesMatched": true
+  },
+  "taskDelta": {
+    "reviewedCurrentFiles": {
+      "scripts/build-r17-normal-baseline-v3.mjs": "d706a76fa1f8b9e410b943d177f21035eea5ab99a468bef951bf9364d875103e",
+      "scripts/r17-normal-observations.ts": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a",
+      "scripts/r17-normal-baseline-v3-fixture.mjs": "7b7a17af6861def2b5f81f800f92c2ca95f81322e714552ff7fd1cce6a7abcf8"
+    },
+    "changedTemplates": [
+      "r17-normal-observations.ts",
+      "r17-normal-baseline-v3-fixture.mjs"
+    ],
+    "changedMaterialized": [
+      "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+      "apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts",
+      "apps/wechat-miniapp/src/services/terrain-wait-observer.ts",
+      "terrain-wait-source.json"
+    ],
+    "finiteArgumentChecks": [
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r9"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 9,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true,
+          "retirementReceipt": true
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r8"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 8,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true,
+          "retirementReceipt": false
+        }
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r7"
+        ],
+        "accepted": true,
+        "actual": {
+          "reviewRevision": 7,
+          "rulerEntry": true,
+          "nativeAdmission": true,
+          "observationA1": true,
+          "retirementReceipt": false
+        }
+      },
+      {
+        "args": [
+          "--review-r9"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r10"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r9",
+          "--review-r8"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r9",
+          "--review-r9"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      },
+      {
+        "args": [
+          "--observe-a1",
+          "--review-r8",
+          "--review-r7"
+        ],
+        "accepted": false,
+        "reason": "finite_normal_revision_required"
+      }
+    ],
+    "historicalBuilderNotReconstructedOrClaimed": true,
+    "originalPreparedSourcesExportedOnlyInMemory": true,
+    "pureOutputFilesExact": 1583,
+    "instrumentationMetadataExact": true,
+    "normalPlayTrialMs": 60000,
+    "retirement": {
+      "schemaVersion": "starward-r17-normal-surface-retirement-v1",
+      "ownKey": "starward.r17.normal-surface-retirement.v1.ac12fdd389fac80b1858c3376e43952020d38024279cf1d296a7fd9fd2872211",
+      "lastSurfaceOnly": true,
+      "nativeObjectsRetained": false,
+      "perFrameSerialization": false,
+      "normalPlayTrialMs": 60000,
+      "metricsExportMs": 15000,
+      "afterPauseDrainMinimumMs": 30000,
+      "drainOwner": "root-existing-device-and-process-observation"
+    }
+  },
+  "mapQualification": {
+    "reusedPairs": 22,
+    "freshPairs": 9,
+    "sourceMaps": 31,
+    "mapBytes": 7299540,
+    "segments": 368539,
+    "freshGenerated": 169806,
+    "freshOriginal": 169806,
+    "reusedKeySourceBindings": 1,
+    "freshKeySourceBindings": 31,
+    "exactKeySources": 32,
+    "unchangedNormalResponsibilities": 13,
+    "changedNormalObservationOwners": 2,
+    "bothBundleJavascriptCopiesChecked": 80,
+    "oldEvidenceNotRelabeledAsCurrent": true
+  },
+  "staticPackages": {
+    "main": {
+      "bytes": 1993648,
+      "source_map_bytes": 0
+    },
+    "content": {
+      "bytes": 1041374,
+      "source_map_bytes": 0
+    },
+    "spot": {
+      "bytes": 598325,
+      "source_map_bytes": 0
+    },
+    "sky": {
+      "bytes": 1368739,
+      "source_map_bytes": 0
+    },
+    "mainHeadroomBytes": 103504,
+    "bothCopiesRecomputedByExistingBudgetOwner": true
+  },
+  "sourceChecks": {
+    "currentProductionReadback": 1573,
+    "materializedReadback": 1583,
+    "templateReadback": 25,
+    "bindingInputDigestMatches": true,
+    "allProductionInputsEqualR8": true,
+    "rootFullBuildDeltaTypecheckReused": {
+      "productionDiagnostics": 0,
+      "currentDiagnostics": 0,
+      "addedDiagnostics": [],
+      "noAddedDiagnostics": true,
+      "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+    },
+    "independentR9_25Of25AndR8_21Of21ReusedByExactHash": {
+      "preparedSourcesMode": "ORIGINAL_FUNCTION_IN_MEMORY_EXPORT_NO_MAIN_OR_CANDIDATE_WRITES",
+      "typescriptVersion": "5.9.3",
+      "r9ExistingFixture": {
+        "passed": 25,
+        "total": 25
+      },
+      "historicalActualR8FrozenSourceFixture": {
+        "passed": 21,
+        "total": 21
+      },
+      "finiteArgvCases": {
+        "passed": 8,
+        "total": 8
+      },
+      "currentProductionBindingsEqualR8Manifest": 1573,
+      "fullCandidateTypecheckExecutedByReviewer": false
+    },
+    "productionTestsOrBuildRerun": false
+  },
+  "preservationReadback": {
+    "localR8ManifestAndMapExactToArchive": true,
+    "r8BundleCopies": [
+      {
+        "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r8/source/apps/wechat-miniapp/dist/weapp-check-r17-normal-a1-review-r8",
+        "sha256": "a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e",
+        "fileCount": 337,
+        "totalBytes": 4996606
+      },
+      {
+        "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r8/project/weapp",
+        "sha256": "a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e",
+        "fileCount": 337,
+        "totalBytes": 4996606
+      }
+    ],
+    "frozenR8SourcesOrBundlesModified": false
+  },
+  "metadataNote": {
+    "observedCurrentPreparationRevision": 9,
+    "generatedHistoricalPointer": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-owner-before-review-r9-20261019/archive-bindings.json",
+    "generatedHistoricalPointerExists": false,
+    "actualArchiveVerifiedAbove": true,
+    "ownerCorrection": "Root owns correcting preparation historical metadata to the actual82-file r8 archive. This reviewer did not mutate preparation, frozen manifest, source or candidate identity."
+  },
+  "limitations": [
+    "Offline Taro JS/map binding only. An actual target profile still needs its captured runtime script and VM binding; WeChat repacking/wrappers are not mapped by assumption.",
+    "Report lines are one-based, columns zero-based UTF-16. Source/map readback is not native composition, hit-testing or physical-presentation evidence.",
+    "15s sealed metrics retain their approximately14s active window; a60s guarded product Pause does not extend metrics coverage. Late relative timestamps stay null under the unchanged strict schema.",
+    "The receipt records only the source-bound last surface and last armed normal Play scalars. Root must bind actual ready and post-Map-exit receipts by source/session/surface. Missing, failed, stale or unmatched observations remain UNKNOWN.",
+    "Complete/returned teardown and zero dimensions or contextLost are boundary facts, not a retaining graph or physical GPU reclamation proof. Sky B and the full Goal remain open.",
+    "Static package bytes are not official preview/upload size or delivery. Reviewer operated no device, IDE, ADB, service, feedback, preview, build, prepare or inspect, and changed no source, builder or coordinator metadata."
+  ],
+  "actions": {
+    "onlyNewMapBindingAndIndependentReviewReportsWritten": true,
+    "ignoredFiniteHelperAdded": true,
+    "productionSourceOrTestsChanged": false,
+    "builderChanged": false,
+    "candidateChanged": false,
+    "preparationChanged": false,
+    "planOrHandoffChanged": false,
+    "build": false,
+    "prepare": false,
+    "inspect": false,
+    "device": false,
+    "ide": false,
+    "service": false,
+    "feedback": false,
+    "preview": false,
+    "gitWrites": false
+  }
+}

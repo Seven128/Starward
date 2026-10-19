@@ -73,6 +73,20 @@ test('backward wall clock is explicit and cannot yield clamped elapsed evidence'
   assert.equal(report.rows[2].relativeMs, null);
 });
 
+test('file-ready identity uses admitted file facts and omits arbitrary or invalid values', () => {
+  const f = fixture(), p = f.probe, digest = 'AB'.repeat(32);
+  p.start('gesture', 'private-request', null, null, baseline);
+  p.fileReady('private-key', 'private-path', { bytes: 314570, sha256: digest, rawUrl: 'private-url' });
+  p.fileReady('private-key', 'private-path', { bytes: -1, sha256: 'not-a-digest' });
+  p.fileReady('another-private-key', 'another-private-path');
+  f.end();
+  const rows = f.receipts[0].rows.filter(row => row.phase === 'file_ready');
+  assert.equal(rows[0].fileBytes, 314570); assert.equal(rows[0].fileSha256, digest.toLowerCase());
+  assert.equal(rows[1].asset, rows[0].asset); assert.equal(rows[1].file, rows[0].file);
+  for (const row of rows.slice(1)) { assert.equal(row.fileBytes, null); assert.equal(row.fileSha256, null); }
+  assert.doesNotMatch(JSON.stringify(f.receipts[0]), /private-|not-a-digest|rawUrl/);
+});
+
 test('event overflow seals once and later work cannot mutate the captured observation', () => {
   const f = fixture(), p = f.probe;
   p.start('gesture', 'r', null, null, baseline);
@@ -100,6 +114,10 @@ test('current real consumer transforms have valid syntax and keep the cache/down
   assert.ok(resource.indexOf('entry.retired = true; current.delete(input.key); entry = undefined;') < resource.indexOf('terrainWait.cacheAcquire'));
   assert.match(resource, /await makeRoom\(1, 0\)/);
   assert.match(transformed.get('apps/wechat-miniapp/src/hooks/use-terrain-overlay.ts'), /return \{ \.\.\.response, request: input \};/);
+  const hook = transformed.get('apps/wechat-miniapp/src/hooks/use-raster-image.ts');
+  assert.match(hook, /read\.promise\.then\(\(\{ path, bytes, sha256 \}\)/);
+  assert.match(hook, /terrainWait\.fileReady\(imageKey, path, \{ bytes,/);
+  assert.doesNotMatch(hook, /fileReady\([^\n]*imageSha256/);
   assert.match(transformed.get('apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts'), /void coordinator\.apply/);
   assert.throws(() => transformTerrainWaitSources(transformed), /original_sources_required/);
 });

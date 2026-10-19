@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "starward-task-source-fix-v1",
+  "date": "2026-10-19",
+  "author": "stabilize_native_ruler_surface",
+  "baseCommit": "c6bb28bc55b8b3e2ed2e32090f05512e233c4253",
+  "scope": "OrientationTimeRuler native surface, fixed admission controls and recovery layout",
+  "status": "SOURCE_CHECKS_PASSED_NATIVE_UNVERIFIED_INDEPENDENT_REVIEW_PENDING",
+  "priorCandidate": {
+    "reviewRevision": 7,
+    "appSha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+    "status": "FAILED_NATIVE_ENTRY_POSITION_COHERENCE",
+    "nativeInternalTrigger": "UNKNOWN",
+    "sourceVisibilityAndSiblingUpdatesObserved": true,
+    "viewedFrozenImages": [
+      "a1-r7-entry-motion-trace-archive-20261019/frames/000515380.png",
+      "a1-r7-entry-motion-trace-archive-20261019/bound/screen-8335fb95-b6be-4f49-8d0a-41d6e7fce8d7.png"
+    ]
+  },
+  "changes": {
+    "scrollViewOwnAdmissionStyleRemoved": true,
+    "nativeScrollViewMountIdClassSizeAndWriterPreserved": true,
+    "fixedTrackAndAxisOpacityAdmission": true,
+    "fixedRecoveryGuard": true,
+    "recoveryContentStartsBelowCurrentLabel": "var(--type-body-secondary-line)",
+    "recoveryMinimumTargetPx": 44,
+    "cancelSiblingRetainedWithHiddenDisabledState": true,
+    "secondScrollWriter": false,
+    "fixedWaitOrPoll": false,
+    "newDiagnosticQuery": false,
+    "nativeResetSimulationIntroduced": false,
+    "emptySupplyBranchChanged": false
+  },
+  "adoptedReference": {
+    "node": "5385664345158066168",
+    "sha256": "4c6cfc021e5f3c02db4036eab437fe64d25f57c8adbd49864a755ce598345c79",
+    "sourceInspected": true,
+    "centerScaleAndFadePreserved": true,
+    "surfaceMotionChanged": false,
+    "originalAdoptedPngAvailable": false,
+    "substituteGenerated": false,
+    "completeVisualConformanceClaim": false
+  },
+  "regression": {
+    "test": "native scroll surface and its sibling slots stay stable through admission, preview and recovery",
+    "beforeProductionEdit": {
+      "command": "node tools/run-node.cjs --import tsx --test --test-name-pattern 'native scroll surface and its sibling slots' apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+      "exitCode": 1,
+      "tests": 1,
+      "failed": 1,
+      "actualFailure": "ScrollView own style was {visibility:'hidden'}, expected no admission style",
+      "nativePlatformCauseCertified": false
+    },
+    "after": "PASS in focused five-file run"
+  },
+  "checks": {
+    "focused": {
+      "command": "node tools/run-node.cjs --import tsx --test apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts apps/wechat-miniapp/src/features/sky/orientation-time-ruler.test.ts apps/wechat-miniapp/src/features/sky/orientation-ruler-layout.test.ts apps/wechat-miniapp/src/features/sky/sky-time-ruler-settlement.test.ts apps/wechat-miniapp/src/components/ruler-scroll-position.test.ts",
+      "exitCode": 0,
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10206.4795
+    },
+    "miniappTypeScript": {
+      "version": "5.9.3",
+      "command": "node tools/run-node.cjs apps/wechat-miniapp/node_modules/typescript/bin/tsc --noEmit -p apps/wechat-miniapp/tsconfig.json",
+      "exitCode": 0,
+      "diagnostics": 0
+    },
+    "affectedDiffCheckExitCode": 0,
+    "fullSuiteRepeated": false,
+    "completeCandidateBuild": "NOT_RUN",
+    "preview": "NOT_RUN",
+    "physicalDevice": "NOT_RUN",
+    "independentReview": "PENDING"
+  },
+  "changedProductionAndTests": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 246579,
+      "sha256": "dbd27bcda233639776b9737223b0ee69078d25cca5b1951bb066a887f025f9d4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss",
+      "bytes": 71458,
+      "sha256": "3fc2efb06c9af2b0a5c493e89dfbd1af02b5da69f367e382555e6ce4294f611d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+      "bytes": 40055,
+      "sha256": "b1f9488f1a07560b9ea53793d3f1d0cda12bd8a6538c155e89d76ac318f50b4b"
+    }
+  ],
+  "remaining": [
+    "independent source review",
+    "complete candidate build and native projection",
+    "actual first visible tick, terminal alignment and recovery wording geometry",
+    "affected native drag, preview cancellation and cross-day recovery",
+    "A",
+    "B",
+    "Terrain",
+    "all remaining full Goal obligations"
+  ],
+  "actions": {
+    "productionChanged": true,
+    "taskReportChanged": true,
+    "planHandoffPreparationBuilderOrCandidateChanged": false,
+    "deviceAdbIdeServiceOrFeedbackOperation": false,
+    "gitCommit": false,
+    "branchOrWorktreeChanged": false
+  }
+}

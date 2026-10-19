@@ -1,0 +1,2132 @@
+{
+  "schemaVersion": "starward-r17-r7-allocation-result-v1",
+  "reviewedAt": "2026-10-19T08:59:20.778Z",
+  "reviewer": "analyze_r7_sky_allocations",
+  "scope": "Independent file-only analysis of the one already-exported ordinary true-debug phone Sky allocation sample; development feedback only",
+  "result": "VALID_NONEMPTY_SKY_ALLOCATION_SAMPLE_DEFAULT_SURVIVING_ESTIMATE; KEY_OFFICIAL_RUNTIME_SOURCE_CHAINS_CLOSED; B_OPEN",
+  "candidate": {
+    "appSha256": "c9874bb3c40e0167be3f840577ac02cb9ec3a86ba8539830a74b3b946b1f3ae1",
+    "buildSourceSha256": "528b3d8a99ca4c87958e10b01ac7af7040b031e5270e601e61bcf2b3949cf755",
+    "reviewRevision": 7,
+    "buildGeneration": 27,
+    "feedbackGeneration": 1,
+    "runtimeAppIdVerified": false,
+    "phoneBundleBytesVerified": false,
+    "currentWorkingTreeUsedAsCapturedSource": false
+  },
+  "qualification": {
+    "profile": {
+      "privateKey": "r7-normal-sky-play.heapprofile",
+      "bytes": 192220,
+      "sha256": "d3d790a3fe622aa5651bc8017cfea3cb2b5c3775161e5e87fdba733c158e7a8c"
+    },
+    "rootReceipt": {
+      "privateKey": "root-capture-qualification.private.json",
+      "bytes": 1856,
+      "sha256": "c5e64546c34cc90cc4dec2947fd67559027e701eb844396f4252b8aa50a73b43"
+    },
+    "playReview": {
+      "file": "R17-A1-R7-PLAY-RESULT.json",
+      "bytes": 48535,
+      "sha256": "8b3d91433b42e4e95523ec95346b90a5e0bbd5bc1ccb7abce9a13f62241d2a33",
+      "archiveManifestSha256": "379c25f2b98edbf81897df6bc12ba87ae5631dcf53599fd1198c320c3ccc06b3"
+    },
+    "target": {
+      "publicConsoleActualReturn": {
+        "platform": "android",
+        "page": [
+          "sky/detail/index"
+        ]
+      },
+      "phoneLabel": "R17 正常Sky关联 A1 r7",
+      "actualNonemptySky": true,
+      "vmLabel": "(empty)",
+      "emptyLabelDoesNotMeanEmptyProfile": true
+    },
+    "profileNewlyExportedByRoot": true,
+    "independentlyObservedPhoneOrGui": false,
+    "reusedQualifiedPhoneEvidence": true
+  },
+  "schema": {
+    "topKeys": [
+      "head",
+      "samples"
+    ],
+    "headKeys": [
+      "callFrame",
+      "selfSize",
+      "id",
+      "children"
+    ],
+    "sampleKeys": [
+      "size",
+      "nodeId",
+      "ordinal"
+    ],
+    "nodeCount": 982,
+    "nonzeroSelfNodeCount": 161,
+    "sampleCount": 625,
+    "uniqueNodeIds": 982,
+    "uniqueSampleOrdinals": 625,
+    "nodeReferencesValid": true,
+    "treeParentsUnique": true,
+    "negativeOrNonfiniteSampleSizeCount": 0,
+    "ordinalMinimum": 16,
+    "ordinalMaximum": 248142,
+    "exportSamplesSortedByOrdinal": false,
+    "perSampleTimestampsAvailable": false,
+    "durationFieldAvailable": false
+  },
+  "timing": {
+    "hostClock": "host UTC wall clock; not calibrated to phone Date.now or profile sample ordinals",
+    "hostEvents": {
+      "clock": "host Date.toISOString wall-clock; uncalibrated to phone Date.now",
+      "startRequested": "2026-10-19T08:31:41.039Z",
+      "playTapApproximate": "2026-10-19T08:32:23Z",
+      "stopRequested": "2026-10-19T08:34:16.716Z",
+      "stillStoppingObserved": "2026-10-19T08:34:57.596Z",
+      "completeFirstObserved": "2026-10-19T08:38:16.088Z",
+      "saveRequested": "2026-10-19T08:41:14.426Z",
+      "targetCaptureStopTime": null
+    },
+    "targetCaptureStart": null,
+    "targetCaptureStop": null,
+    "stopRequestToCompletionIsCaptureDuration": false,
+    "profileCanBeSplitIntoPlayVsDrain": false,
+    "profileCanBeDividedByActiveMetricsDuration": false,
+    "metricsWindowMs": 14004,
+    "sameRunProductPauseRelativeMs": 20018,
+    "profileCoversInitialPreparationPlayPauseAndSomeDrainUnderRootObservedOrdering": true
+  },
+  "semantics": {
+    "mode": "ordinary true-debug Memory / Allocation sampling",
+    "installedFrontendSources": [
+      {
+        "privateKey": "installed-HeapProfilerModel.js.private.txt",
+        "bytes": 5016,
+        "sha256": "f76024cc6c08a3433bca7b33e438a90b99be5f7aba248031898d6308adefe185"
+      },
+      {
+        "privateKey": "installed-HeapProfileView.js.private.txt",
+        "bytes": 13538,
+        "sha256": "8a8f064561a42817ed93f78d47890d046c117eff71663893b08c579bda02048d"
+      }
+    ],
+    "frontendStartSamplingArguments": {
+      "samplingInterval": 16384
+    },
+    "frontendRequestsCollectedByMajorGC": false,
+    "frontendRequestsCollectedByMinorGC": false,
+    "interpretation": "Standard protocol default reports sampled allocations still alive when profile is retrieved. Treat this export as surviving-allocation estimates; collected allocations are not requested. Remote backend options/engine implementation were not separately traced.",
+    "actualBackendFlagTraceCaptured": false,
+    "weightedStatisticalEstimates": true,
+    "totalJsHeapSize": false,
+    "totalAllocationChurn": false,
+    "retainingGraphAvailable": false,
+    "nativeOrGpuOwnershipAvailable": false,
+    "preStartHeapCoverageEstablished": false,
+    "stopMayHaveObserverEffects": true,
+    "actualGcEventsOrPauseDurationsEstablished": false
+  },
+  "weights": {
+    "estimatedNodeSelfBytes": 16778484,
+    "estimatedSampleBytes": 16677760,
+    "differenceBytes": 100724,
+    "nodesWithDifferentSelfAndSummedSampleWeights": 19,
+    "allNonzeroNodesHaveSampleReferences": true,
+    "reconciliation": "Keep node selfSize and summed samples.size as separate estimates; do not force equality. V8 scales and rounds per-size node counts separately from individual samples. The two largest Do differences fit that documented weighting arithmetic; no missing node references were found.",
+    "largestDifferenceExamples": [
+      {
+        "functionName": "Do",
+        "scriptId": "51",
+        "selfBytes": 470736,
+        "sampleBytes": 403488,
+        "differenceBytes": 67248
+      },
+      {
+        "functionName": "Do",
+        "scriptId": "51",
+        "selfBytes": 201744,
+        "sampleBytes": 168120,
+        "differenceBytes": 33624
+      },
+      {
+        "functionName": "ma",
+        "scriptId": "51",
+        "selfBytes": 4121424,
+        "sampleBytes": 4120416,
+        "differenceBytes": 1008
+      },
+      {
+        "functionName": "D",
+        "scriptId": "26",
+        "selfBytes": 919056,
+        "sampleBytes": 919736,
+        "differenceBytes": -680
+      },
+      {
+        "functionName": "prepareStarted",
+        "scriptId": "51",
+        "selfBytes": 131824,
+        "sampleBytes": 132352,
+        "differenceBytes": -528
+      }
+    ]
+  },
+  "scripts": [
+    {
+      "scriptId": "51",
+      "scriptBasename": "chunk_0.appservice.js",
+      "nodeCount": 231,
+      "selfBytes": 8620176,
+      "sampleBytes": 8518680,
+      "sampleCount": 467,
+      "selfPercent": 51.38
+    },
+    {
+      "scriptId": "0",
+      "scriptBasename": null,
+      "nodeCount": 66,
+      "selfBytes": 2653460,
+      "sampleBytes": 2653532,
+      "sampleCount": 41,
+      "selfPercent": 15.81
+    },
+    {
+      "scriptId": "42",
+      "scriptBasename": "appservice.app.js",
+      "nodeCount": 422,
+      "selfBytes": 2520808,
+      "sampleBytes": 2520828,
+      "sampleCount": 44,
+      "selfPercent": 15.02
+    },
+    {
+      "scriptId": "38",
+      "scriptBasename": "WARemoteDebug.js",
+      "nodeCount": 2,
+      "selfBytes": 1811200,
+      "sampleBytes": 1811200,
+      "sampleCount": 2,
+      "selfPercent": 10.79
+    },
+    {
+      "scriptId": "26",
+      "scriptBasename": "WASubContext.js",
+      "nodeCount": 87,
+      "selfBytes": 952568,
+      "sampleBytes": 953248,
+      "sampleCount": 58,
+      "selfPercent": 5.68
+    },
+    {
+      "scriptId": "41",
+      "scriptBasename": "common.app.js",
+      "nodeCount": 88,
+      "selfBytes": 136680,
+      "sampleBytes": 136680,
+      "sampleCount": 8,
+      "selfPercent": 0.81
+    },
+    {
+      "scriptId": "15",
+      "scriptBasename": "WAServiceMainContext.js",
+      "nodeCount": 81,
+      "selfBytes": 67000,
+      "sampleBytes": 67000,
+      "sampleCount": 4,
+      "selfPercent": 0.4
+    },
+    {
+      "scriptId": "46",
+      "scriptBasename": "appservice.app.js",
+      "nodeCount": 3,
+      "selfBytes": 16592,
+      "sampleBytes": 16592,
+      "sampleCount": 1,
+      "selfPercent": 0.1
+    },
+    {
+      "scriptId": "10",
+      "scriptBasename": null,
+      "nodeCount": 2,
+      "selfBytes": 0,
+      "sampleBytes": 0,
+      "sampleCount": 0,
+      "selfPercent": 0
+    }
+  ],
+  "exactFrameAggregationRule": "Only identical full callFrame records are combined. Published rows omit full runtime URLs and positions; private statistics preserve them.",
+  "topExactFrameAggregates": [
+    {
+      "scriptId": "51",
+      "functionName": "ma",
+      "nodeCount": 6,
+      "selfBytes": 4531968,
+      "sampleBytes": 4530816,
+      "sampleCount": 276,
+      "selfPercent": 27.01
+    },
+    {
+      "scriptId": "0",
+      "functionName": "join",
+      "nodeCount": 2,
+      "selfBytes": 1930520,
+      "sampleBytes": 1930520,
+      "sampleCount": 3,
+      "selfPercent": 11.51
+    },
+    {
+      "scriptId": "42",
+      "functionName": "set",
+      "nodeCount": 1,
+      "selfBytes": 1811200,
+      "sampleBytes": 1811200,
+      "sampleCount": 2,
+      "selfPercent": 10.79
+    },
+    {
+      "scriptId": "38",
+      "functionName": "addResource",
+      "nodeCount": 1,
+      "selfBytes": 1811200,
+      "sampleBytes": 1811200,
+      "sampleCount": 2,
+      "selfPercent": 10.79
+    },
+    {
+      "scriptId": "26",
+      "functionName": "D",
+      "nodeCount": 1,
+      "selfBytes": 919056,
+      "sampleBytes": 919736,
+      "sampleCount": 56,
+      "selfPercent": 5.48
+    },
+    {
+      "scriptId": "51",
+      "functionName": "Do",
+      "nodeCount": 6,
+      "selfBytes": 856000,
+      "sampleBytes": 755128,
+      "sampleCount": 25,
+      "selfPercent": 5.1
+    },
+    {
+      "scriptId": "51",
+      "functionName": "va",
+      "nodeCount": 4,
+      "selfBytes": 640368,
+      "sampleBytes": 640224,
+      "sampleCount": 39,
+      "selfPercent": 3.82
+    },
+    {
+      "scriptId": "51",
+      "functionName": "cn",
+      "nodeCount": 1,
+      "selfBytes": 336200,
+      "sampleBytes": 336200,
+      "sampleCount": 5,
+      "selfPercent": 2
+    },
+    {
+      "scriptId": "51",
+      "functionName": "Ko",
+      "nodeCount": 4,
+      "selfBytes": 279040,
+      "sampleBytes": 278968,
+      "sampleCount": 17,
+      "selfPercent": 1.66
+    },
+    {
+      "scriptId": "51",
+      "functionName": "",
+      "nodeCount": 3,
+      "selfBytes": 201840,
+      "sampleBytes": 201840,
+      "sampleCount": 6,
+      "selfPercent": 1.2
+    },
+    {
+      "scriptId": "51",
+      "functionName": "ei",
+      "nodeCount": 3,
+      "selfBytes": 180428,
+      "sampleBytes": 180448,
+      "sampleCount": 11,
+      "selfPercent": 1.08
+    },
+    {
+      "scriptId": "0",
+      "functionName": "hypot",
+      "nodeCount": 3,
+      "selfBytes": 144084,
+      "sampleBytes": 144084,
+      "sampleCount": 8,
+      "selfPercent": 0.86
+    },
+    {
+      "scriptId": "0",
+      "functionName": "hasOwnProperty",
+      "nodeCount": 4,
+      "selfBytes": 140744,
+      "sampleBytes": 140744,
+      "sampleCount": 7,
+      "selfPercent": 0.84
+    },
+    {
+      "scriptId": "51",
+      "functionName": "displayTransmission",
+      "nodeCount": 1,
+      "selfBytes": 134480,
+      "sampleBytes": 134480,
+      "sampleCount": 2,
+      "selfPercent": 0.8
+    },
+    {
+      "scriptId": "51",
+      "functionName": "prepareStarted",
+      "nodeCount": 1,
+      "selfBytes": 131824,
+      "sampleBytes": 132352,
+      "sampleCount": 8,
+      "selfPercent": 0.79
+    },
+    {
+      "scriptId": "0",
+      "functionName": "map",
+      "nodeCount": 21,
+      "selfBytes": 131340,
+      "sampleBytes": 131412,
+      "sampleCount": 8,
+      "selfPercent": 0.78
+    },
+    {
+      "scriptId": "51",
+      "functionName": "",
+      "nodeCount": 2,
+      "selfBytes": 131168,
+      "sampleBytes": 131240,
+      "sampleCount": 8,
+      "selfPercent": 0.78
+    },
+    {
+      "scriptId": "0",
+      "functionName": "set",
+      "nodeCount": 4,
+      "selfBytes": 115228,
+      "sampleBytes": 115228,
+      "sampleCount": 4,
+      "selfPercent": 0.69
+    },
+    {
+      "scriptId": "51",
+      "functionName": "fr",
+      "nodeCount": 2,
+      "selfBytes": 114912,
+      "sampleBytes": 114912,
+      "sampleCount": 7,
+      "selfPercent": 0.68
+    },
+    {
+      "scriptId": "51",
+      "functionName": "u",
+      "nodeCount": 3,
+      "selfBytes": 82016,
+      "sampleBytes": 82060,
+      "sampleCount": 5,
+      "selfPercent": 0.49
+    }
+  ],
+  "subtreeUnions": [
+    {
+      "functionName": "forEachProjected",
+      "matchingTreeNodes": 5,
+      "uniqueCoveredNodes": 47,
+      "selfBytes": 6102436,
+      "sampleBytes": 6101284,
+      "overlapWithOtherRowsPossible": true,
+      "selfPercent": 36.37
+    },
+    {
+      "functionName": "paint",
+      "matchingTreeNodes": 1,
+      "uniqueCoveredNodes": 85,
+      "selfBytes": 6539644,
+      "sampleBytes": 6538420,
+      "overlapWithOtherRowsPossible": true,
+      "selfPercent": 38.98
+    },
+    {
+      "functionName": "e.useMemo",
+      "matchingTreeNodes": 7,
+      "uniqueCoveredNodes": 117,
+      "selfBytes": 2232264,
+      "sampleBytes": 2132064,
+      "overlapWithOtherRowsPossible": true,
+      "selfPercent": 13.3
+    },
+    {
+      "functionName": "displayTransmission",
+      "matchingTreeNodes": 1,
+      "uniqueCoveredNodes": 1,
+      "selfBytes": 134480,
+      "sampleBytes": 134480,
+      "overlapWithOtherRowsPossible": true,
+      "selfPercent": 0.8
+    },
+    {
+      "functionName": "prepareStarted",
+      "matchingTreeNodes": 1,
+      "uniqueCoveredNodes": 1,
+      "selfBytes": 131824,
+      "sampleBytes": 132352,
+      "overlapWithOtherRowsPossible": true,
+      "selfPercent": 0.79
+    },
+    {
+      "functionName": "addResource",
+      "matchingTreeNodes": 1,
+      "uniqueCoveredNodes": 1,
+      "selfBytes": 1811200,
+      "sampleBytes": 1811200,
+      "overlapWithOtherRowsPossible": true,
+      "selfPercent": 10.79
+    }
+  ],
+  "namedFramesAbsent": [
+    "motionAt",
+    "mayProjectVector"
+  ],
+  "absenceMeaning": "No surviving sampled node with these names; not proof of zero execution, zero allocation, zero CPU or a removed product path.",
+  "mapping": {
+    "report": {
+      "file": "tmp/r17-normal-a1-review-r7/source-map-bindings.json",
+      "bytes": 60897,
+      "sha256": "127036c4b2f1be50df11e33735d13ddf0da4e324227489797d4df3b3a6bcf9cb"
+    },
+    "currentTaroSourcesVerified": [
+      {
+        "file": "packages/astronomy-core/src/stellar-vectors.ts",
+        "bytes": 3405,
+        "sha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48",
+        "manifestExact": true,
+        "sourcesContentByteExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "bytes": 2750,
+        "sha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "manifestExact": true,
+        "sourcesContentByteExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "bytes": 10462,
+        "sha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102",
+        "manifestExact": true,
+        "sourcesContentByteExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+        "bytes": 5543,
+        "sha256": "d7d0f156f0e51c6e0ce1bb510ba2d9a5cbc3dfce2e973e07a84f20d4fa4d25f1",
+        "manifestExact": true,
+        "sourcesContentByteExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "bytes": 13886,
+        "sha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6",
+        "manifestExact": true,
+        "sourcesContentByteExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "bytes": 39818,
+        "sha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "manifestExact": true,
+        "sourcesContentByteExact": true
+      }
+    ],
+    "taroSkyJavascript": {
+      "file": "sky/detail/index.js",
+      "bytes": 595974,
+      "sha256": "25a659943f6dab0d348dcf10667e45443d414e6c48f3f95c0e34427f5aea3d4a"
+    },
+    "taroSkyMap": {
+      "file": "sky/detail/index.js.map",
+      "bytes": 2611328,
+      "sha256": "9bd47b6199f5995cd3c911da6a16c3936f29cf796e6e61590b6547459c010f33"
+    },
+    "runtimeCoordinatesDirectlyAppliedToTaroMap": false,
+    "semanticOwners": [
+      {
+        "frame": "ma",
+        "owner": "rotateStellarDirection",
+        "source": "packages/astronomy-core/src/stellar-vectors.ts",
+        "selfBytes": 4531968,
+        "sampleBytes": 4530816,
+        "samples": 276,
+        "qualification": "Exact runtime inline map -> byte-exact r7 Taro JS -> current bound Taro map -> byte-exact frozen source. Call-frame provenance/owner, not per-allocation statement."
+      },
+      {
+        "frame": "Do",
+        "owner": "createSkyStellarTransform",
+        "source": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "selfBytes": 856000,
+        "sampleBytes": 755128,
+        "samples": 25,
+        "qualification": "Same two-stage exact byte-bound mapping; does not establish retaining roots."
+      },
+      {
+        "frame": "set",
+        "owner": "createResponseCache > set",
+        "source": "apps/wechat-miniapp/src/services/response-cache.ts",
+        "selfBytes": 1811200,
+        "sampleBytes": 1811200,
+        "samples": 2,
+        "qualification": "Same two-stage mapping; actual code JSON.stringify(envelope), then bounded response-cache ownership. Entire self weight is not proven to a single allocation statement."
+      },
+      {
+        "frame": "prepareStarted",
+        "owner": "finite task correlation recorder",
+        "selfBytes": 131824,
+        "qualification": "Mapped to frozen task source; observer work remains visible."
+      },
+      {
+        "frame": "addResource",
+        "owner": "WARemoteDebug runtime resource registration",
+        "selfBytes": 1811200,
+        "qualification": "Actual runtime basename/function only; no additional host script was exported or mapped."
+      }
+    ],
+    "exactRuntimeToAuthoredMappings": [
+      {
+        "runtimeScriptId": "51",
+        "frameName": "ma",
+        "nodeId": 1485,
+        "runtimeZeroBased": {
+          "line": 62,
+          "column": 78442
+        },
+        "authoredFile": "sky/detail/index.js",
+        "authoredZeroBased": {
+          "line": 1,
+          "column": 78139
+        },
+        "sourcePath": "packages/astronomy-core/src/stellar-vectors.ts",
+        "sourceZeroBased": {
+          "line": 38,
+          "column": 16
+        },
+        "sourceOwner": "rotateStellarDirection",
+        "sourceSha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48"
+      },
+      {
+        "runtimeScriptId": "51",
+        "frameName": "Do",
+        "nodeId": 41452,
+        "runtimeZeroBased": {
+          "line": 62,
+          "column": 132684
+        },
+        "authoredFile": "sky/detail/index.js",
+        "authoredZeroBased": {
+          "line": 1,
+          "column": 132534
+        },
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "sourceZeroBased": {
+          "line": 12,
+          "column": 62
+        },
+        "sourceOwner": "createSkyStellarTransform",
+        "sourceSha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453"
+      },
+      {
+        "runtimeScriptId": "51",
+        "frameName": "cn",
+        "nodeId": 1452,
+        "runtimeZeroBased": {
+          "line": 62,
+          "column": 184239
+        },
+        "authoredFile": "sky/detail/index.js",
+        "authoredZeroBased": {
+          "line": 1,
+          "column": 185069
+        },
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "sourceZeroBased": {
+          "line": 442,
+          "column": 25
+        },
+        "sourceOwner": "drawSkyScene > paintCatalogPoint",
+        "sourceSha256": "bb77fa2f01cd99e7f7bda80f204493c7339dbf1bb76c2a20f9d8f51cc9beb0f5"
+      },
+      {
+        "runtimeScriptId": "42",
+        "frameName": "set",
+        "nodeId": 150792,
+        "runtimeZeroBased": {
+          "line": 7785,
+          "column": 242943
+        },
+        "authoredFile": "common.js",
+        "authoredZeroBased": {
+          "line": 0,
+          "column": 244226
+        },
+        "sourcePath": "apps/wechat-miniapp/src/services/response-cache.ts",
+        "sourceZeroBased": {
+          "line": 252,
+          "column": 2
+        },
+        "sourceOwner": "createResponseCache > set",
+        "sourceSha256": "a02c8c0c35d989b49e28b6a1eab2c02cde7365d71811978d3a053c5e3dbb8111"
+      },
+      {
+        "runtimeScriptId": "42",
+        "frameName": "success",
+        "nodeId": 150789,
+        "runtimeZeroBased": {
+          "line": 7785,
+          "column": 250939
+        },
+        "authoredFile": "common.js",
+        "authoredZeroBased": {
+          "line": 0,
+          "column": 252257
+        },
+        "sourcePath": "apps/wechat-miniapp/src/services/api-client.ts",
+        "sourceZeroBased": {
+          "line": 497,
+          "column": 15
+        },
+        "sourceOwner": "request > success",
+        "sourceSha256": "5ffecfd5c84bc8fcc316e9a9204bf82506d4e82880136132e510094fc23fbe51"
+      },
+      {
+        "runtimeScriptId": "42",
+        "frameName": "m",
+        "nodeId": 150790,
+        "runtimeZeroBased": {
+          "line": 7785,
+          "column": 248854
+        },
+        "authoredFile": "common.js",
+        "authoredZeroBased": {
+          "line": 0,
+          "column": 250169
+        },
+        "sourcePath": "apps/wechat-miniapp/src/services/api-client.ts",
+        "sourceZeroBased": {
+          "line": 386,
+          "column": 19
+        },
+        "sourceOwner": "request > finish",
+        "sourceSha256": "5ffecfd5c84bc8fcc316e9a9204bf82506d4e82880136132e510094fc23fbe51"
+      }
+    ],
+    "pending": null,
+    "coordinateConvention": "All machine line/column pairs are zero-based. GUI row/column one-based equivalents are explicitly named separately.",
+    "runtimeExports": [
+      {
+        "runtimeScriptId": "51",
+        "runtimeFile": {
+          "privateKey": "r7-sky-chunk_0.appservice.js",
+          "bytes": 2335108,
+          "sha256": "babed6d0f863c65a7d949af11c1b145600802c39bbdbb782c000956815917bad"
+        },
+        "inlineMap": {
+          "privateKey": "r7-runtime-inline-map.private.json",
+          "bytes": 1305102,
+          "sha256": "758ab34a5d856fa0bb9fdae061f164abb38bf50b0974b586440782d74d8ec0f3"
+        },
+        "authoredJavascriptBindings": [
+          {
+            "file": "sky/detail/index.js",
+            "bytes": 595974,
+            "sha256": "25a659943f6dab0d348dcf10667e45443d414e6c48f3f95c0e34427f5aea3d4a",
+            "byteExactToFrozenR7": true
+          }
+        ]
+      },
+      {
+        "runtimeScriptId": "42",
+        "runtimeFile": {
+          "privateKey": "r7-main-appservice.app.js",
+          "bytes": 3324817,
+          "sha256": "0d682fa821dec18e6ebe1dad81a01ee7a9bbde9a2064a99e584cddd53f7ca996"
+        },
+        "inlineMap": {
+          "privateKey": "r7-main-runtime-inline-map.private.json",
+          "bytes": 1774528,
+          "sha256": "9717c1fc0c207cac906e38cabe359d97a0092e2e070184581e72ae94ca08bcce"
+        },
+        "authoredJavascriptBindings": [
+          {
+            "file": "common.js",
+            "bytes": 453495,
+            "sha256": "93f1e80376b1701a578bcea293bd92d4467323e1f3d62df402b28f5adbbad6b0",
+            "byteExactToFrozenR7": true
+          },
+          {
+            "file": "runtime.js",
+            "bytes": 2088,
+            "sha256": "c812f9fd23c7820f5d8afde8582f2d3df42354f4ed672408d101dd59c1ca01c8",
+            "byteExactToFrozenR7": true
+          },
+          {
+            "file": "taro.js",
+            "bytes": 131069,
+            "sha256": "73e99b12b18c0bac3ab1127ada2be5fc8de90361ae836f2739a477d51d25b05b",
+            "byteExactToFrozenR7": true
+          },
+          {
+            "file": "vendors.js",
+            "bytes": 63658,
+            "sha256": "ff772d6c63b0d7445a53bf2bd88df3d4d6085e8971c4c360daae7072247d419a",
+            "byteExactToFrozenR7": true
+          },
+          {
+            "file": "app.js",
+            "bytes": 97440,
+            "sha256": "4d272472d1fbf0db7347ca1a82401d78ff558cb9528462c2b87ad5d93fd1d95e",
+            "byteExactToFrozenR7": true
+          },
+          {
+            "file": "custom-tab-bar/index.js",
+            "bytes": 4513,
+            "sha256": "e18105270ea323dbea3b342778a47f1665f60e2b6a16554a3738f1c4ad1e8954",
+            "byteExactToFrozenR7": true
+          }
+        ]
+      }
+    ],
+    "frozenOriginalSourceFileReadback": [
+      {
+        "file": "apps/wechat-miniapp/src/components/notification.tsx",
+        "bytes": 8942,
+        "sha256": "721fb2032c1ccd6f24405fd5089dfff1be9f2ec65ae84cf3dc158b0372cc6297",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/components/weather-alert-state.ts",
+        "bytes": 1206,
+        "sha256": "628fe9034e757b8bad575cb52b9887de31ca39df4dcf3c207d02df9b88f6d9f9",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/components/weather-alerts.tsx",
+        "bytes": 5134,
+        "sha256": "ece8bf81e29b6d3c002983009a779ef533200c9d7933e74a3b1011583cf6d8c6",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts",
+        "bytes": 1489,
+        "sha256": "fa8a5787921fdd313ebe2faa1dc701455a1c5f0eece8ba669593bcb25f438386",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/r17-page-bridge-observer.ts",
+        "bytes": 8037,
+        "sha256": "4d567364a8e54b9e84b821d64a5c41597035337bd63518b0586862c3ec2bfbb2",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+        "bytes": 13588,
+        "sha256": "dbf440d496854dc29cb28be89b4babf6b487b4e9da6224140c173f25d3a112c3",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "bytes": 39818,
+        "sha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+        "bytes": 5811,
+        "sha256": "85f9843fb004260360cb06f047b49f403cdb49fde0a97c367cdea7f63b718b89",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-artwork-texture-window.ts",
+        "bytes": 2872,
+        "sha256": "34b7a9d0d4a98d7e1b3f98783c3aafef64f2c4f64088e697d2dfd6f06a2139dd",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+        "bytes": 10628,
+        "sha256": "e2781b3cf0458a88347916a563f9faaf8a0e6d6c9fe5224ca8590453c05367eb",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+        "bytes": 13578,
+        "sha256": "8b07a0ba2f25b8245290a32960130a8a3f2fba6af6fef1db1452abc6e853a1d5",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+        "bytes": 7080,
+        "sha256": "a1790007eacfb1cc3ffe7d94078f310e8b3008e3380524ed675d19777b7c4095",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-constellation-scene.ts",
+        "bytes": 4827,
+        "sha256": "f92db59e2c0837cabbd404abde8b20467c78a1b56a1252cf4ef7042e016ce969",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+        "bytes": 73466,
+        "sha256": "22f99f713e17ea43a6580baa691314405b0a5bca7abb5460182df5976d14d7fc",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+        "bytes": 4974,
+        "sha256": "3827678f343afa30d01e7f1414439ee91bd5c57287012df6c94a5e2a06b47b3b",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-overlay-motion.tsx",
+        "bytes": 6119,
+        "sha256": "250c0d08ac0db4932ba6a3e90038f53573d43370462c244ce502c6fd638ea2e7",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-phase-disc.ts",
+        "bytes": 3033,
+        "sha256": "a0f35a0ebb14aa8f8c1ceea7d4fe5d0131e24615d9c680ff5f14f58b866db4e1",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-planet-disc.ts",
+        "bytes": 12961,
+        "sha256": "9c326650ba984d3659a7ded195567e4dce2d8a33cf66f136a8833d79f28925e1",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-ready-artwork.ts",
+        "bytes": 4088,
+        "sha256": "a91893eb48e63ffbdd5e8763b7791a9a7b7fc846832fbb592052b0a33409f61e",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-ready-presentation.ts",
+        "bytes": 3700,
+        "sha256": "d9a864dad824212c465aae3e58ff67f7cb9e1bf957cc1f09ac28838c1ee0fce9",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-scene-frame-facts.ts",
+        "bytes": 1988,
+        "sha256": "96d58951ba3756d6ca85e6bdfb9d2168c473b39d412190be5e7312c83f7024f0",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "bytes": 46271,
+        "sha256": "bb77fa2f01cd99e7f7bda80f204493c7339dbf1bb76c2a20f9d8f51cc9beb0f5",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-star-transition.ts",
+        "bytes": 4005,
+        "sha256": "87dcfec42916bc6899cfa124d092bfd9d1ab5f79ca543148c4e35407b0d9f60a",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "bytes": 10462,
+        "sha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+        "bytes": 5543,
+        "sha256": "d7d0f156f0e51c6e0ce1bb510ba2d9a5cbc3dfce2e973e07a84f20d4fa4d25f1",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "bytes": 2750,
+        "sha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-time-controls.tsx",
+        "bytes": 8698,
+        "sha256": "c50280187a3a14f4aa52c0dd1064d7dc38bfe20d0bd70a403f10979ae63dab26",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+        "bytes": 8297,
+        "sha256": "ffe24eb0a7c232a42b5da846f68329b316a0128da1ced385dda54914b470b7fc",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "bytes": 13886,
+        "sha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "bytes": 250196,
+        "sha256": "daa66cfda05adf3c493841e9589f431a7c92cc0927bd3409c54444dc04628f8a",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+        "bytes": 6616,
+        "sha256": "6da39898ee08e1864b01cb260fb9b7502f3ebe18718f7765073f4f9ce0632845",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-body-image.ts",
+        "bytes": 3131,
+        "sha256": "46a2c5870a2bde4df5d8bac385134e930ff66f9b7c8e1a110d245e1fb7f9c916",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-body-images.ts",
+        "bytes": 1550,
+        "sha256": "edb34639a691877e45b0e15fbc79ff9fee7fefe3580d0f8601232ae300f8005d",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-fixed-image.ts",
+        "bytes": 1248,
+        "sha256": "624525531975ecba0d0d59fa0e720cddfce466132262c353a295b8c0df23c5fe",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-image-recovery.ts",
+        "bytes": 1023,
+        "sha256": "4e239d92dfeb77e872079d606bc21f5c0e2f63d07057a6e6dba3c6ca80f28cd9",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.ts",
+        "bytes": 7720,
+        "sha256": "b8211a90a6640f37e1acf1564b3689a3632b4c82660170785b80f7f2b9357c27",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts",
+        "bytes": 6754,
+        "sha256": "3d17a5fe928b10ce023869d8bdb83ed2a4f995d7b5ea09238a9f9c8cd5376b5e",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts",
+        "bytes": 3135,
+        "sha256": "2de6f70104141b00d2c40a4aa585afce86bb522bb7ec8958b4d08468432569a5",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/hooks/use-forecast-query.ts",
+        "bytes": 4976,
+        "sha256": "4d5c20eee9e6b9725b6706f8db196f7c0f865fe75034c87c4881005cb7768bb6",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/hooks/use-resource-query.ts",
+        "bytes": 3959,
+        "sha256": "5a709f46e8a6e8607e4c754887ef8c8160a55e16a38c2fd7d8badce2961dbbda",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/api-client.ts",
+        "bytes": 78089,
+        "sha256": "5ffecfd5c84bc8fcc316e9a9204bf82506d4e82880136132e510094fc23fbe51",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/authenticated-operation.ts",
+        "bytes": 4373,
+        "sha256": "90a1c8eda476c9882fd8166cb467218eecdedcff7605ee031bb34e80cd611d7d",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/forecast-presentation.ts",
+        "bytes": 6184,
+        "sha256": "34d11cb132183adabb568c07c064e6ec0f70469037a3e1c89fbbbfe034071599",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/response-cache.ts",
+        "bytes": 17112,
+        "sha256": "a02c8c0c35d989b49e28b6a1eab2c02cde7365d71811978d3a053c5e3dbb8111",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/sky-report-catalog.ts",
+        "bytes": 2787,
+        "sha256": "84a24acb73b02cd2dcbdfface31c36bc120cd3b398a6e9d577ff156e9ad3b224",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/sky-report-planets.ts",
+        "bytes": 2440,
+        "sha256": "e5bad5c8ef54e7c45ab4f7f407417344e7697e712db790c5791e74a550d67d30",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/services/sky-report-time-model.ts",
+        "bytes": 982,
+        "sha256": "37ba287b822d4ae63ca25363a3ffe701c2e6bb0522efbaaf3a9f439cfe677568",
+        "manifestExact": true
+      },
+      {
+        "file": "apps/wechat-miniapp/src/utils/zoned-date.ts",
+        "bytes": 4397,
+        "sha256": "23f4850549a69a02fbf0555d488b75812e4bac5aab614314731e8a4dbabc3490",
+        "manifestExact": true
+      },
+      {
+        "file": "packages/astronomy-core/src/sky-time-model.ts",
+        "bytes": 9552,
+        "sha256": "e033b97cf5177bbcef3bc05ed3d8108fd4e0bb2da8f4e440926231bbfd8f8d7d",
+        "manifestExact": true
+      },
+      {
+        "file": "packages/astronomy-core/src/stellar-vectors.ts",
+        "bytes": 3405,
+        "sha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48",
+        "manifestExact": true
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-time-model.ts",
+        "bytes": 8408,
+        "sha256": "d4c8a8af7164a5d0a9f154f31f82929a6b1c558b427c766da0d01af487aad7f9",
+        "manifestExact": true
+      },
+      {
+        "file": "packages/miniapp-contracts/src/types.ts",
+        "bytes": 40483,
+        "sha256": "4e0c32f4083f30c79a4dd87da3c93dea2b75ae4d3f936043555ea5bfa8bf150d",
+        "manifestExact": true
+      }
+    ],
+    "coverage": [
+      {
+        "runtimeScriptId": "51",
+        "profileNodes": 231,
+        "nodesWithOriginalSourcePosition": 227,
+        "selfBytes": 8620176,
+        "selfBytesWithOriginalSourcePosition": 8620176,
+        "selfBytesWithoutOriginalSourcePosition": 0,
+        "selfBytesBoundToFrozenTrackedSource": 8603784,
+        "selfBytesMappedOnlyToDependencies": 16392
+      },
+      {
+        "runtimeScriptId": "42",
+        "profileNodes": 422,
+        "nodesWithOriginalSourcePosition": 331,
+        "selfBytes": 2520808,
+        "selfBytesWithOriginalSourcePosition": 2389596,
+        "selfBytesWithoutOriginalSourcePosition": 131212,
+        "selfBytesBoundToFrozenTrackedSource": 1957104,
+        "selfBytesMappedOnlyToDependencies": 432492
+      }
+    ],
+    "guiOneBasedExample": {
+      "runtimeFrame": "ma",
+      "authoredFile": "sky/detail/index.js",
+      "line": 2,
+      "column": 78140
+    },
+    "keyOfficialRuntimeChainsClosed": true,
+    "allRuntimeLocationsOrAllDependenciesMapped": false,
+    "ownerGroups": [
+      {
+        "sourcePath": "packages/astronomy-core/src/stellar-vectors.ts",
+        "owner": "rotateStellarDirection",
+        "nodes": 6,
+        "selfBytes": 4531968,
+        "sampleBytes": 4530816,
+        "sampleCount": 276,
+        "sourceSha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/services/response-cache.ts",
+        "owner": "createResponseCache > set",
+        "nodes": 1,
+        "selfBytes": 1811200,
+        "sampleBytes": 1811200,
+        "sampleCount": 2,
+        "sourceSha256": "a02c8c0c35d989b49e28b6a1eab2c02cde7365d71811978d3a053c5e3dbb8111",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "owner": "createSkyStellarTransform",
+        "nodes": 6,
+        "selfBytes": 856000,
+        "sampleBytes": 755128,
+        "sampleCount": 25,
+        "sourceSha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "packages/astronomy-core/src/stellar-vectors.ts",
+        "owner": "normalized",
+        "nodes": 4,
+        "selfBytes": 640368,
+        "sampleBytes": 640224,
+        "sampleCount": 39,
+        "sourceSha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "owner": "drawSkyScene > paintCatalogPoint",
+        "nodes": 1,
+        "selfBytes": 336200,
+        "sampleBytes": 336200,
+        "sampleCount": 5,
+        "sourceSha256": "bb77fa2f01cd99e7f7bda80f204493c7339dbf1bb76c2a20f9d8f51cc9beb0f5",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+        "owner": "constellationArc",
+        "nodes": 4,
+        "selfBytes": 279040,
+        "sampleBytes": 278968,
+        "sampleCount": 17,
+        "sourceSha256": "a1790007eacfb1cc3ffe7d94078f310e8b3008e3380524ed675d19777b7c4095",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+        "owner": "registerSkyArtworkPlane",
+        "nodes": 8,
+        "selfBytes": 229600,
+        "sampleBytes": 229640,
+        "sampleCount": 14,
+        "sourceSha256": "85f9843fb004260360cb06f047b49f403cdb49fde0a97c367cdea7f63b718b89",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "owner": "resolveSkySceneFrame",
+        "nodes": 7,
+        "selfBytes": 219312,
+        "sampleBytes": 219312,
+        "sampleCount": 7,
+        "sourceSha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-scene.ts",
+        "owner": "resolveConstellationFrame",
+        "nodes": 7,
+        "selfBytes": 196848,
+        "sampleBytes": 196952,
+        "sampleCount": 12,
+        "sourceSha256": "f92db59e2c0837cabbd404abde8b20467c78a1b56a1252cf4ef7042e016ce969",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "owner": "createSkyStellarTransform > displayTransmission",
+        "nodes": 1,
+        "selfBytes": 134480,
+        "sampleBytes": 134480,
+        "sampleCount": 2,
+        "sourceSha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "prepareStarted",
+        "nodes": 1,
+        "selfBytes": 131824,
+        "sampleBytes": 132352,
+        "sampleCount": 8,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": null,
+        "owner": null,
+        "nodes": 91,
+        "selfBytes": 131212,
+        "sampleBytes": 131232,
+        "sampleCount": 8,
+        "sourceSha256": null,
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "owner": "prepareSkyDirection",
+        "nodes": 2,
+        "selfBytes": 114912,
+        "sampleBytes": 114912,
+        "sampleCount": 7,
+        "sourceSha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "owner": "createSkyStellarTransform > position",
+        "nodes": 3,
+        "selfBytes": 82016,
+        "sampleBytes": 82060,
+        "sampleCount": 5,
+        "sourceSha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "owner": "SpotSkyPage",
+        "nodes": 11,
+        "selfBytes": 65648,
+        "sampleBytes": 65648,
+        "sampleCount": 4,
+        "sourceSha256": "daa66cfda05adf3c493841e9589f431a7c92cc0927bd3409c54444dc04628f8a",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/utils/zoned-date.ts",
+        "owner": "fixedEastEightParts",
+        "nodes": 3,
+        "selfBytes": 63864,
+        "sampleBytes": 63864,
+        "sampleCount": 3,
+        "sourceSha256": "23f4850549a69a02fbf0555d488b75812e4bac5aab614314731e8a4dbabc3490",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": ".._src_dom_event-target.ts",
+        "owner": "addEventListener",
+        "nodes": 4,
+        "selfBytes": 49296,
+        "sampleBytes": 49296,
+        "sampleCount": 3,
+        "sourceSha256": "ee20146133fcb8de1207115522513d99fa461bdb1cb7df4068491bbab2dc35e6",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+        "owner": "resolveSkyStellarSupplement",
+        "nodes": 9,
+        "selfBytes": 49288,
+        "sampleBytes": 49288,
+        "sampleCount": 3,
+        "sourceSha256": "d7d0f156f0e51c6e0ce1bb510ba2d9a5cbc3dfce2e973e07a84f20d4fa4d25f1",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "._node_modules_react-reconciler_cjs_react-reconciler.production.min.js",
+        "owner": "$$$reconciler > df",
+        "nodes": 3,
+        "selfBytes": 49264,
+        "sampleBytes": 49264,
+        "sampleCount": 3,
+        "sourceSha256": "8966040dbc025373dae6751915ac2b564054453b44f19553ef77756cfdf58654",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+        "owner": "constellationLineSegments > arc",
+        "nodes": 3,
+        "selfBytes": 49232,
+        "sampleBytes": 49232,
+        "sampleCount": 3,
+        "sourceSha256": "a1790007eacfb1cc3ffe7d94078f310e8b3008e3380524ed675d19777b7c4095",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-star-transition.ts",
+        "owner": "createSkyStarTransitions > prepare > retarget",
+        "nodes": 2,
+        "selfBytes": 49196,
+        "sampleBytes": 49224,
+        "sampleCount": 3,
+        "sourceSha256": "87dcfec42916bc6899cfa124d092bfd9d1ab5f79ca543148c4e35407b0d9f60a",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "packages/astronomy-core/src/sky-time-model.ts",
+        "owner": "unit",
+        "nodes": 1,
+        "selfBytes": 45632,
+        "sampleBytes": 45632,
+        "sampleCount": 2,
+        "sourceSha256": "e033b97cf5177bbcef3bc05ed3d8108fd4e0bb2da8f4e440926231bbfd8f8d7d",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "owner": "resolveSkySceneFrame > forEachProjected",
+        "nodes": 2,
+        "selfBytes": 35040,
+        "sampleBytes": 35040,
+        "sampleCount": 2,
+        "sourceSha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": ".._src_is.ts",
+        "owner": "<module>",
+        "nodes": 2,
+        "selfBytes": 34704,
+        "sampleBytes": 34704,
+        "sampleCount": 2,
+        "sourceSha256": "abc80756b9d32808dde5f77c70020e56a63a6bad20d6ec047d4c4b5d376d820a",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "record",
+        "nodes": 2,
+        "selfBytes": 33648,
+        "sampleBytes": 33648,
+        "sampleCount": 2,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "owner": "resolveSkySceneFrame > pointAt",
+        "nodes": 1,
+        "selfBytes": 32856,
+        "sampleBytes": 32856,
+        "sampleCount": 2,
+        "sourceSha256": "10cb3f51994176ab07b5c7b05d300a98e890eada0529ef8bc9688e81c60bd102",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "owner": "skyHorizontalDirection",
+        "nodes": 2,
+        "selfBytes": 32832,
+        "sampleBytes": 32832,
+        "sampleCount": 2,
+        "sourceSha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+        "owner": "resolveSkyStellarSupplement > pointAt",
+        "nodes": 1,
+        "selfBytes": 32800,
+        "sampleBytes": 32800,
+        "sampleCount": 2,
+        "sourceSha256": "d7d0f156f0e51c6e0ce1bb510ba2d9a5cbc3dfce2e973e07a84f20d4fa4d25f1",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "packages/miniapp-contracts/src/types.ts",
+        "owner": "validSkyBodyFrame",
+        "nodes": 4,
+        "selfBytes": 32784,
+        "sampleBytes": 32784,
+        "sampleCount": 2,
+        "sourceSha256": "4e0c32f4083f30c79a4dd87da3c93dea2b75ae4d3f936043555ea5bfa8bf150d",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "summarizeLinks",
+        "nodes": 2,
+        "selfBytes": 32780,
+        "sampleBytes": 32780,
+        "sampleCount": 2,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+        "owner": "exportDiagnostic",
+        "nodes": 3,
+        "selfBytes": 29656,
+        "sampleBytes": 29656,
+        "sampleCount": 1,
+        "sourceSha256": "dbf440d496854dc29cb28be89b4babf6b487b4e9da6224140c173f25d3a112c3",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "start",
+        "nodes": 1,
+        "selfBytes": 24648,
+        "sampleBytes": 24648,
+        "sampleCount": 1,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+        "owner": "createSkyGpuRenderer > assertAvailable",
+        "nodes": 1,
+        "selfBytes": 19840,
+        "sampleBytes": 19840,
+        "sampleCount": 1,
+        "sourceSha256": "22f99f713e17ea43a6580baa691314405b0a5bca7abb5460182df5976d14d7fc",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+        "owner": "dot",
+        "nodes": 1,
+        "selfBytes": 19200,
+        "sampleBytes": 19200,
+        "sampleCount": 1,
+        "sourceSha256": "a1790007eacfb1cc3ffe7d94078f310e8b3008e3380524ed675d19777b7c4095",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+        "owner": "constellationLineSegments",
+        "nodes": 1,
+        "selfBytes": 19096,
+        "sampleBytes": 19096,
+        "sampleCount": 1,
+        "sourceSha256": "a1790007eacfb1cc3ffe7d94078f310e8b3008e3380524ed675d19777b7c4095",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "javascript_node_modules_@babel_runtime_helpers_esm_arrayWithHoles.js",
+        "owner": "_arrayWithHoles",
+        "nodes": 1,
+        "selfBytes": 17952,
+        "sampleBytes": 17952,
+        "sampleCount": 1,
+        "sourceSha256": "7cac6e680e7a3091012c64690e88ea7aadcd0035ef87a3e9d7d092a48c8936e3",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "javascript_node_modules_@babel_runtime_helpers_esm_nonIterableRest.js",
+        "owner": "_nonIterableRest",
+        "nodes": 1,
+        "selfBytes": 17120,
+        "sampleBytes": 17120,
+        "sampleCount": 1,
+        "sourceSha256": "c6107ade34a6ef9b5eea0c189fb87377d32faae61df50fdbc973aa4210e0efe8",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "javascript_node_modules_@babel_runtime_helpers_esm_toArray.js",
+        "owner": "_toArray",
+        "nodes": 1,
+        "selfBytes": 17100,
+        "sampleBytes": 17100,
+        "sampleCount": 1,
+        "sourceSha256": "60f122f0e23ed82635618d56bf9511b96e5df76186ab2e1139e6882d1d4e634c",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "._node_modules_@tanstack_query-core_build_modern_utils.js",
+        "owner": "hashKey",
+        "nodes": 1,
+        "selfBytes": 16896,
+        "sampleBytes": 16896,
+        "sampleCount": 1,
+        "sourceSha256": "0320163e689704e1bab13bda0be043db6e97f8ffeb1301d01a61f3429d2dd66d",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+        "owner": "presentSkyTime",
+        "nodes": 5,
+        "selfBytes": 16864,
+        "sampleBytes": 16864,
+        "sampleCount": 1,
+        "sourceSha256": "ffe24eb0a7c232a42b5da846f68329b316a0128da1ced385dda54914b470b7fc",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "owner": "OrientationTimeRuler",
+        "nodes": 3,
+        "selfBytes": 16632,
+        "sampleBytes": 16632,
+        "sampleCount": 1,
+        "sourceSha256": "daa66cfda05adf3c493841e9589f431a7c92cc0927bd3409c54444dc04628f8a",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "intent",
+        "nodes": 1,
+        "selfBytes": 16560,
+        "sampleBytes": 16560,
+        "sampleCount": 1,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "._node_modules_@tanstack_query-core_build_modern_timeoutManager.js",
+        "owner": "systemSetTimeoutZero",
+        "nodes": 1,
+        "selfBytes": 16544,
+        "sampleBytes": 16544,
+        "sampleCount": 1,
+        "sourceSha256": "c5897815e2c2cb6f02401de3425f99d56884732930186d1b8095e6904c5d6589",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": ".._src_dom_node.ts",
+        "owner": "enqueueUpdate",
+        "nodes": 1,
+        "selfBytes": 16536,
+        "sampleBytes": 16536,
+        "sampleCount": 1,
+        "sourceSha256": "2f703def60bbca7ad4759d260aa8a723b2da9a208dc8955856f9ad1e04b1df3c",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-phase-disc.ts",
+        "owner": "projectSkyPhaseDisc",
+        "nodes": 1,
+        "selfBytes": 16512,
+        "sampleBytes": 16512,
+        "sampleCount": 1,
+        "sourceSha256": "a0f35a0ebb14aa8f8c1ceea7d4fe5d0131e24615d9c680ff5f14f58b866db4e1",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "._node_modules_@tanstack_query-core_build_modern_queryObserver.js",
+        "owner": "<module>",
+        "nodes": 5,
+        "selfBytes": 16512,
+        "sampleBytes": 16512,
+        "sampleCount": 1,
+        "sourceSha256": "0e7de009817ed61d07d8bc440b047ee4a33d2a82e274b1cbff5d3604d37f7944",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": ".._src_reconciler.ts",
+        "owner": "removeChild",
+        "nodes": 1,
+        "selfBytes": 16464,
+        "sampleBytes": 16464,
+        "sampleCount": 1,
+        "sourceSha256": "6673356a137818cc628cb772cb2a899b954bf27a131b93b5c3359284004fb34c",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/services/api-client.ts",
+        "owner": "ensureSession > assertCurrentLogin",
+        "nodes": 1,
+        "selfBytes": 16448,
+        "sampleBytes": 16448,
+        "sampleCount": 1,
+        "sourceSha256": "5ffecfd5c84bc8fcc316e9a9204bf82506d4e82880136132e510094fc23fbe51",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "._node_modules_@tanstack_query-core_build_modern_utils.js",
+        "owner": "hashQueryKeyByOptions",
+        "nodes": 2,
+        "selfBytes": 16440,
+        "sampleBytes": 16440,
+        "sampleCount": 1,
+        "sourceSha256": "0320163e689704e1bab13bda0be043db6e97f8ffeb1301d01a61f3429d2dd66d",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "owner": "<module>",
+        "nodes": 1,
+        "selfBytes": 16416,
+        "sampleBytes": 16416,
+        "sampleCount": 1,
+        "sourceSha256": "daa66cfda05adf3c493841e9589f431a7c92cc0927bd3409c54444dc04628f8a",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "owner": "createSkyStellarTransform > forEachProjected",
+        "nodes": 3,
+        "selfBytes": 16416,
+        "sampleBytes": 16416,
+        "sampleCount": 1,
+        "sourceSha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "._node_modules_react-reconciler_cjs_react-reconciler.production.min.js",
+        "owner": "$$$reconciler",
+        "nodes": 6,
+        "selfBytes": 16416,
+        "sampleBytes": 16416,
+        "sampleCount": 1,
+        "sourceSha256": "8966040dbc025373dae6751915ac2b564054453b44f19553ef77756cfdf58654",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "._node_modules_react_cjs_react-jsx-runtime.production.min.js",
+        "owner": "q",
+        "nodes": 1,
+        "selfBytes": 16416,
+        "sampleBytes": 16416,
+        "sampleCount": 1,
+        "sourceSha256": "76e3364c46895ed2c4a8d5cc332e5e4ef31d6f732d35b1e56826dc5895245452",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "._node_modules_react-reconciler_cjs_react-reconciler.production.min.js",
+        "owner": "$$$reconciler > nf",
+        "nodes": 1,
+        "selfBytes": 16416,
+        "sampleBytes": 16416,
+        "sampleCount": 1,
+        "sourceSha256": "8966040dbc025373dae6751915ac2b564054453b44f19553ef77756cfdf58654",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-controls.tsx",
+        "owner": "retireManualInput",
+        "nodes": 1,
+        "selfBytes": 16412,
+        "sampleBytes": 16412,
+        "sampleCount": 1,
+        "sourceSha256": "dbf440d496854dc29cb28be89b4babf6b487b4e9da6224140c173f25d3a112c3",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "owner": "drawSkyScene > paintStar",
+        "nodes": 1,
+        "selfBytes": 16412,
+        "sampleBytes": 16412,
+        "sampleCount": 1,
+        "sourceSha256": "bb77fa2f01cd99e7f7bda80f204493c7339dbf1bb76c2a20f9d8f51cc9beb0f5",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": ".._src_dom_root.ts",
+        "owner": "performUpdate",
+        "nodes": 2,
+        "selfBytes": 16412,
+        "sampleBytes": 16412,
+        "sampleCount": 1,
+        "sourceSha256": "af42f5d43f30ed802275d4a33bd35a2f4b4bf615862c04c84fa433c5f4c84c91",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "._node_modules_react-reconciler_cjs_react-reconciler.production.min.js",
+        "owner": "$$$reconciler > cf",
+        "nodes": 1,
+        "selfBytes": 16412,
+        "sampleBytes": 16412,
+        "sampleCount": 1,
+        "sourceSha256": "8966040dbc025373dae6751915ac2b564054453b44f19553ef77756cfdf58654",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+        "owner": "useSkyNativeImages",
+        "nodes": 2,
+        "selfBytes": 16408,
+        "sampleBytes": 16408,
+        "sampleCount": 1,
+        "sourceSha256": "6da39898ee08e1864b01cb260fb9b7502f3ebe18718f7765073f4f9ce0632845",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "packages/astronomy-core/src/stellar-vectors.ts",
+        "owner": "stellarHorizontalPosition",
+        "nodes": 1,
+        "selfBytes": 16408,
+        "sampleBytes": 16408,
+        "sampleCount": 1,
+        "sourceSha256": "bc062ab7f55636059522aff86e610a051dca7f96fa6ec88cf415adac87648b48",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": ".._src_tools.ts",
+        "owner": "getPxTransform",
+        "nodes": 1,
+        "selfBytes": 16408,
+        "sampleBytes": 16408,
+        "sampleCount": 1,
+        "sourceSha256": "c893e97c42d9b952c053f97d7ea380de07c4ac35e28fecc10e612d8886d96413",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/services/sky-report-catalog.ts",
+        "owner": "projectAdoptedSkyCatalog",
+        "nodes": 1,
+        "selfBytes": 16408,
+        "sampleBytes": 16408,
+        "sampleCount": 1,
+        "sourceSha256": "84a24acb73b02cd2dcbdfface31c36bc120cd3b398a6e9d577ff156e9ad3b224",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-time-controls.tsx",
+        "owner": "SkyTimeControls",
+        "nodes": 3,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "c50280187a3a14f4aa52c0dd1064d7dc38bfe20d0bd70a403f10979ae63dab26",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "packages/astronomy-core/src/sky-time-model.ts",
+        "owner": "evaluateSkyTimeModel",
+        "nodes": 2,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "e033b97cf5177bbcef3bc05ed3d8108fd4e0bb2da8f4e440926231bbfd8f8d7d",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+        "owner": "dot",
+        "nodes": 1,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "85f9843fb004260360cb06f047b49f403cdb49fde0a97c367cdea7f63b718b89",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "snapshot",
+        "nodes": 1,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "clockFacts",
+        "nodes": 1,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/hooks/use-resource-query.ts",
+        "owner": "useResourceQuery",
+        "nodes": 5,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "5a709f46e8a6e8607e4c754887ef8c8160a55e16a38c2fd7d8badce2961dbbda",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "._node_modules_react-reconciler_cjs_react-reconciler.production.min.js",
+        "owner": "$$$reconciler > Ph",
+        "nodes": 2,
+        "selfBytes": 16400,
+        "sampleBytes": 16400,
+        "sampleCount": 1,
+        "sourceSha256": "8966040dbc025373dae6751915ac2b564054453b44f19553ef77756cfdf58654",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "owner": "orientationRulerDistance",
+        "nodes": 3,
+        "selfBytes": 16392,
+        "sampleBytes": 16392,
+        "sampleCount": 1,
+        "sourceSha256": "daa66cfda05adf3c493841e9589f431a7c92cc0927bd3409c54444dc04628f8a",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "javascript_node_modules_quaternion_dist_quaternion.mjs",
+        "owner": "newQuaternion",
+        "nodes": 1,
+        "selfBytes": 16392,
+        "sampleBytes": 16392,
+        "sampleCount": 1,
+        "sourceSha256": "2276f9768978735c6bcc12d08ac10f769a7414ae64d9bf730b569fb8b813e0ad",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+        "owner": "readClockValue",
+        "nodes": 1,
+        "selfBytes": 16392,
+        "sampleBytes": 16392,
+        "sampleCount": 1,
+        "sourceSha256": "23ae124cb49500163b617304f96b246460193978ecf72ce4e89f649bba3129da",
+        "frozenSourceExact": true,
+        "runtimeScriptId": "51"
+      },
+      {
+        "sourcePath": "._node_modules_@tanstack_query-core_build_modern_utils.js",
+        "owner": "replaceEqualDeep",
+        "nodes": 6,
+        "selfBytes": 16392,
+        "sampleBytes": 16392,
+        "sampleCount": 1,
+        "sourceSha256": "0320163e689704e1bab13bda0be043db6e97f8ffeb1301d01a61f3429d2dd66d",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      },
+      {
+        "sourcePath": "javascript_node_modules_@babel_runtime_helpers_esm_objectSpread2.js",
+        "owner": "_objectSpread2",
+        "nodes": 1,
+        "selfBytes": 16392,
+        "sampleBytes": 16392,
+        "sampleCount": 1,
+        "sourceSha256": "d03a134abca2a223a82172030d7d79a4b779ab3ee7df91391fb62cad74586284",
+        "frozenSourceExact": false,
+        "runtimeScriptId": "42"
+      }
+    ],
+    "unresolvedScopes": [
+      "script51 four zero-self frames do not resolve to original source positions",
+      "script42 91 frames / 131212 estimated self bytes do not resolve to original source positions",
+      "remaining platform/runtime/built-in scripts retain basename/function attribution only",
+      "mapped dependency source is from the exact bound Taro map; absence from the tracked frozen-source manifest is explicit"
+    ]
+  },
+  "workload": {
+    "metricsWindowMs": 14004,
+    "sameRunBoundedAutoPauseMs": 20018,
+    "paintAndNativeAndAccepted": 366,
+    "glDrawSubmissions": 4392,
+    "baseRows": 8404,
+    "saoRows": 666,
+    "selectedTiles": 16,
+    "fovDeg": 45,
+    "syntheticPublications": 0,
+    "failedFrames": 0,
+    "nonemptyActualWork": true,
+    "source": "R17-A1-R7-PLAY-RESULT.json; window and broader counters retain that owner scope"
+  },
+  "processMemory": {
+    "source": "R17-A1-R7-PLAY-RESULT.json",
+    "unit": "KiB",
+    "watchSamples": 8,
+    "watchSpanMs": 85158,
+    "ranges": {
+      "totalPssKiB": {
+        "first": 1198828,
+        "minimum": 1149995,
+        "maximum": 1512697,
+        "last": 1461011,
+        "lastMinusFirst": 262183
+      },
+      "totalRssKiB": {
+        "first": 1510904,
+        "minimum": 1462096,
+        "maximum": 1824912,
+        "last": 1773208,
+        "lastMinusFirst": 262304
+      },
+      "totalSwapPssKiB": {
+        "first": 40,
+        "minimum": 40,
+        "maximum": 40,
+        "last": 40,
+        "lastMinusFirst": 0
+      },
+      "nativeHeapPssKiB": {
+        "first": 187204,
+        "minimum": 187204,
+        "maximum": 227456,
+        "last": 224388,
+        "lastMinusFirst": 37184
+      },
+      "dalvikHeapPssKiB": {
+        "first": 118271,
+        "minimum": 68499,
+        "maximum": 118271,
+        "last": 68563,
+        "lastMinusFirst": -49708
+      },
+      "unknownPssKiB": {
+        "first": 432256,
+        "minimum": 432124,
+        "maximum": 758368,
+        "last": 707336,
+        "lastMinusFirst": 275080
+      },
+      "glMtrackPssKiB": {
+        "first": 14348,
+        "minimum": 12184,
+        "maximum": 14348,
+        "last": 12700,
+        "lastMinusFirst": -1648
+      },
+      "eglMtrackPssKiB": {
+        "first": 108452,
+        "minimum": 108452,
+        "maximum": 108452,
+        "last": 108452,
+        "lastMinusFirst": 0
+      }
+    },
+    "withinWatchOwnerBindingVerified": true,
+    "clockJoinedToPhoneMetrics": false,
+    "processExitOrHideObserved": false,
+    "profileWeightedBytesSubtractableFromPssDelta": false,
+    "unknownMeansJsNativeOrGpu": false,
+    "comparedWithEarlierR2OrR3AsMatchedPerformanceGain": false
+  },
+  "decision": {
+    "allocationRouteState": "validated by useful nonempty target sample",
+    "anotherCpuCaptureNeeded": false,
+    "anotherAllocationCaptureForReassuranceNeeded": false,
+    "immediateSceneMemoOrDisableVariantJustified": false,
+    "leakExplained": false,
+    "AComplete": false,
+    "BComplete": false,
+    "finalAcceptance": false,
+    "next": [
+      "The necessary key mapping is complete on existing exports. Preserve exact residual unmapped coverage; no new runtime scripts, CPU record, preview or allocation repeat are required for this attribution boundary.",
+      "For B, next use the already-required actual page/renderer exit or retirement, with existing owner-bound resource/process observation, to distinguish which lifetime survives. The current profile gives creation owners but no concrete incorrect retirement or retaining root.",
+      "Only if that result leaves a material JS retention question should a targeted graph/counter observation be selected at the mapped stellar/cache owner. Keep gen24 scene-memo parked; do not optimize based on 4531968B or subtract this estimate from process PSS."
+    ],
+    "keyRuntimeMappingComplete": true,
+    "newMappedOwnerRepairJustified": false,
+    "actualExitRetirementIsNextNecessaryBObservation": true,
+    "heavyHeapGraphRequiredNow": false
+  },
+  "limits": [
+    "One warm remote-debugging capture with task probes; target acceptance and product-only overhead remain unverified.",
+    "Actual capture stop is unknown. Stop request, still-Stopping, first observed completion and save time are distinct host observations.",
+    "No total churn, retaining paths, all-isolate JS ownership, native/GPU allocation ownership or physical presentation/FPS claim.",
+    "Allocation weighted bytes and process PSS/RSS/Swap have different scope and unjoined windows; no bytes-per-frame or residual native-leak arithmetic.",
+    "The noon ruler mismatch remains failed under its existing owner. This allocation result does not repair or close it.",
+    "No phone, IDE, ADB, service, preview, account, production source, PLAN, HANDOFF or preparation was changed; no commit."
+  ],
+  "primaryReferences": [
+    {
+      "url": "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/js_protocol.json",
+      "scope": "HeapProfiler SamplingHeapProfileNode / Sample / startSampling defaults and ordinal semantics"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ChromeDevTools/devtools-frontend/main/front_end/core/sdk/HeapProfilerModel.ts",
+      "scope": "Public upstream comparison; installed official frontend bytes above are the actual local reference"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/v8/v8/main/src/profiler/sampling-heap-profiler.cc",
+      "scope": "ScaleSample, per-node aggregate scaling, per-sample scaling and collected sample handling; not a verified phone engine revision"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/v8/v8/main/src/inspector/v8-heap-profiler-agent-impl.cc",
+      "scope": "Protocol conversion and current reference flags; no claim that the phone version was inspected"
+    }
+  ],
+  "lifetimeInspection": {
+    "scope": "Static inspection of the measured r7 creation owners and immediate current consumers, not a runtime retaining graph",
+    "stellarTransform": {
+      "creation": "createSkyStellarTransform creates exact-time vectors/positions/directions/transmissions arrays; lazy rotation/normalized/direction values are created on use",
+      "bsc": "currentFrames is WeakMap<ResolvedStellarScene,ResolvedStellarFrame>; one current time value per scene key",
+      "sao": "transformed is WeakMap<SaoTilePublication,TileTransform>; replacing geometry replaces the value for the tile key",
+      "consumerBoundary": "BSC frame facts/painter/current page and SAO hook use these values; actual strong roots retaining scene/tile/page/native resources were not measured",
+      "finding": "No unbounded strong-key history collection or concrete incorrect retirement was established in these inspected owners"
+    },
+    "responseCache": {
+      "owner": "createResponseCache",
+      "creationAndUse": "GET response success -> finish -> responseCache.set -> serialized text/envelope memory entry + dirty/persistence queue",
+      "existingSerializedBudgets": {
+        "entries": 24,
+        "memoryBytes": 6291456,
+        "persistedBytes": 3145728,
+        "persistedItemBytes": 2097152
+      },
+      "retirement": "boundMemory/freshness/invalidation and request fences already own replacement/retirement; this cache intentionally outlives a single page",
+      "budgetsAreRetainedHeapBytes": false,
+      "finding": "A two-sample 1811200B creation weight cannot identify the endpoint, prove repeated growth, or establish a broken eviction. No account/cache contents were read"
+    },
+    "taskProbe": {
+      "finding": "Correlation aFinishedValue/aRequestValue/aPaintValue are scalar number timestamps; inspected recorder does not store full reports/frames/payloads in its preparation rows",
+      "ordinaryProductionOnlySample": false
+    }
+  }
+}

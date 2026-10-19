@@ -1,0 +1,345 @@
+{
+  "schemaVersion": "starward-task-r10-builder-integration-v1",
+  "date": "2026-10-19",
+  "author": "/root/adapt_r10_normal_builder",
+  "status": "TASK_ONLY_OFFLINE_PASS_COMPLETE_BUILD_AND_PHONE_UNVERIFIED",
+  "scope": "Finite r10 only integrates already independently reviewed pending continuity production source; normal Sky remains complete; no product repair or new investigation decision here.",
+  "entry": [
+    "--observe-a1",
+    "--review-r10"
+  ],
+  "productionBindings": {
+    "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "5a92132429f8c907bab16f0a4a509c6b3c9c7505543031610191fb3bcb8fd3e1",
+    "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts": "4f939acad956032080661328ab29ecf3b6074baf1dbb87e07397270b9c1d1390"
+  },
+  "sourceReview": "SKY-TIME-PENDING-CONTINUITY-REVIEW.json",
+  "preparationSemantics": {
+    "target": "actual requestedTimePresentation presentSkyTime memo",
+    "dependencies": [
+      "rawReportData",
+      "requestedAt",
+      "timeModel",
+      "timeGeometrySources"
+    ],
+    "selectionAndAcceptedScopeByteIdentical": true,
+    "currentPreparationRefOnly": true,
+    "noHistoryOrNativeObjectsInNewProbe": true,
+    "drawDependenciesAndFieldsByteIdentical": true,
+    "retainedFallbackPreparationUnbound": true,
+    "equalInstantMemoRetainsOriginalPreparationIntent": true,
+    "missingRequestedComputationIsActualAttemptNotAcceptedResult": true
+  },
+  "windows": {
+    "metricsExportMs": 15000,
+    "sameRunPauseMs": 60000,
+    "recorderLimitMs": 45000,
+    "afterPauseDrainMinimumMs": 30000,
+    "retirementReceipt": "same-r9-single-source-bound-last-surface",
+    "lateRelativeStamp": "null under unchanged 60000ms protocol range"
+  },
+  "executedChecks": {
+    "r10Fixture": {
+      "passed": 30,
+      "total": 30,
+      "checks": {
+        "originalSetterImmediateExactlyOnceClosureAndRefBeforeDispatch": true,
+        "fullStateIdentityEqualityAndAllThreeNullRetirementsRetained": true,
+        "sameIdentityStillDispatches": true,
+        "sequentialAToBToAUpdaterAndDispatchFailureRetainOriginalSemantics": true,
+        "productionCommandSetterAndUnaffectedConsumersByteIdentical": true,
+        "actualPresentationMemoOriginalDependenciesAndExactResultIdentity": true,
+        "fallbackExplicitlyUnbound": true,
+        "completeRequestFieldsAndDrawDependenciesUnchanged": true,
+        "explicitPreparationIdentitySurvivesResolveClone": true,
+        "realAcceptedCopyAndNoSyntheticPublication": true,
+        "nativeMeasureTextReturnIdentityAndNumericCountersOnly": true,
+        "explicitVersion3ProtocolAndDateFake": true,
+        "nullElapsedConsumerDisplaysUnknownAndActualReason": true,
+        "guardedNormalPlayAnd15sMetricsKept": true,
+        "exactSameRun60sOriginalPauseAndSeparateTerminalReceiptWithUnknownLateTimestamp": true,
+        "hiddenUnmountReplacementRunAndExportFailureGuarded": true,
+        "sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay": true,
+        "lateMetricsAfterHideCannotSendRetiredTerminal": true,
+        "fixturesNotPhoneEvidence": true,
+        "rulerEntryDisabledForPlayAndUsesExistingWideTimeCollector": true,
+        "boundedACorrelationUsesActualPreparedRuntimeAndStrictDispatcher": true,
+        "surfaceReceiptOnlyWritesAtInitializationReadyAndRetireBoundaries": true,
+        "surfaceReceiptReadsActualPostTeardownDimensionsAndContext": true,
+        "surfaceReceiptFailureUnknownAndOriginalThrowPoliciesPreserved": true,
+        "surfaceReceiptSourceBoundLastSurfaceAndScalarPlayTailOnly": true,
+        "requestedMemoKeepsFourProductionDependenciesAndSelectionByteIdentical": true,
+        "acceptedFallbackAndStaleDrawCannotConsumeNewIntentPreparation": true,
+        "acceptedOnlyRenderDoesNotCreateAnotherPreparation": true,
+        "newTargetAndSameTimeMemoReusePreserveOriginalPreparationIntent": true,
+        "cancelledEmptyAndForeignInputsAndThrownPreparationKeepHonestLinkage": true
+      }
+    },
+    "historicalFixtures": {
+      "r8": {
+        "passed": 21,
+        "total": 21,
+        "checks": {
+          "originalSetterImmediateExactlyOnceClosureAndRefBeforeDispatch": true,
+          "fullStateIdentityEqualityAndAllThreeNullRetirementsRetained": true,
+          "sameIdentityStillDispatches": true,
+          "sequentialAToBToAUpdaterAndDispatchFailureRetainOriginalSemantics": true,
+          "productionCommandSetterAndUnaffectedConsumersByteIdentical": true,
+          "actualPresentationMemoOriginalDependenciesAndExactResultIdentity": true,
+          "fallbackExplicitlyUnbound": true,
+          "completeRequestFieldsAndDrawDependenciesUnchanged": true,
+          "explicitPreparationIdentitySurvivesResolveClone": true,
+          "realAcceptedCopyAndNoSyntheticPublication": true,
+          "nativeMeasureTextReturnIdentityAndNumericCountersOnly": true,
+          "explicitVersion3ProtocolAndDateFake": true,
+          "nullElapsedConsumerDisplaysUnknownAndActualReason": true,
+          "guardedNormalPlayAnd15sMetricsKept": true,
+          "exactSameRun20sOriginalPauseAndSeparateTerminalReceipt": true,
+          "hiddenUnmountReplacementRunAndExportFailureGuarded": true,
+          "sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay": true,
+          "lateMetricsAfterHideCannotSendRetiredTerminal": true,
+          "fixturesNotPhoneEvidence": true,
+          "rulerEntryDisabledForPlayAndUsesExistingWideTimeCollector": true,
+          "boundedACorrelationUsesActualPreparedRuntimeAndStrictDispatcher": true
+        }
+      },
+      "r9": {
+        "passed": 25,
+        "total": 25,
+        "checks": {
+          "originalSetterImmediateExactlyOnceClosureAndRefBeforeDispatch": true,
+          "fullStateIdentityEqualityAndAllThreeNullRetirementsRetained": true,
+          "sameIdentityStillDispatches": true,
+          "sequentialAToBToAUpdaterAndDispatchFailureRetainOriginalSemantics": true,
+          "productionCommandSetterAndUnaffectedConsumersByteIdentical": true,
+          "actualPresentationMemoOriginalDependenciesAndExactResultIdentity": true,
+          "fallbackExplicitlyUnbound": true,
+          "completeRequestFieldsAndDrawDependenciesUnchanged": true,
+          "explicitPreparationIdentitySurvivesResolveClone": true,
+          "realAcceptedCopyAndNoSyntheticPublication": true,
+          "nativeMeasureTextReturnIdentityAndNumericCountersOnly": true,
+          "explicitVersion3ProtocolAndDateFake": true,
+          "nullElapsedConsumerDisplaysUnknownAndActualReason": true,
+          "guardedNormalPlayAnd15sMetricsKept": true,
+          "exactSameRun60sOriginalPauseAndSeparateTerminalReceiptWithUnknownLateTimestamp": true,
+          "hiddenUnmountReplacementRunAndExportFailureGuarded": true,
+          "sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay": true,
+          "lateMetricsAfterHideCannotSendRetiredTerminal": true,
+          "fixturesNotPhoneEvidence": true,
+          "rulerEntryDisabledForPlayAndUsesExistingWideTimeCollector": true,
+          "boundedACorrelationUsesActualPreparedRuntimeAndStrictDispatcher": true,
+          "surfaceReceiptOnlyWritesAtInitializationReadyAndRetireBoundaries": true,
+          "surfaceReceiptReadsActualPostTeardownDimensionsAndContext": true,
+          "surfaceReceiptFailureUnknownAndOriginalThrowPoliciesPreserved": true,
+          "surfaceReceiptSourceBoundLastSurfaceAndScalarPlayTailOnly": true
+        }
+      }
+    },
+    "finiteArgv": {
+      "passed": 12,
+      "total": 12,
+      "cases": [
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r9"
+          ],
+          "revision": 9,
+          "retirement": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r8"
+          ],
+          "revision": 8,
+          "retirement": false
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r7"
+          ],
+          "revision": 7,
+          "retirement": false
+        },
+        {
+          "args": [
+            "--review-r9"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r11"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r9",
+            "--review-r8"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r9",
+            "--review-r9"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r8",
+            "--review-r7"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r10"
+          ],
+          "revision": 10,
+          "retirement": true
+        },
+        {
+          "args": [
+            "--review-r10"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r10",
+            "--review-r10"
+          ],
+          "rejected": true
+        },
+        {
+          "args": [
+            "--observe-a1",
+            "--review-r10",
+            "--review-r9"
+          ],
+          "rejected": true
+        }
+      ]
+    },
+    "historicalFunctionOutputs": {
+      "passed": 24,
+      "total": 24,
+      "checks": [
+        {
+          "revision": 2,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 3,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 4,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 5,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 6,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 7,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 8,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        },
+        {
+          "revision": 9,
+          "normalPage": true,
+          "controls": true,
+          "normalSurface": true
+        }
+      ],
+      "rawProductionBinding": {
+        "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": {
+          "sha256": "dbd27bcda233639776b9737223b0ee69078d25cca5b1951bb066a887f025f9d4",
+          "bytes": 246579,
+          "lineEndings": "CRLF-restored-and-exact-manifest-match"
+        },
+        "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts": {
+          "sha256": "9bd4599df04e5ec371dc261de413644f9474856b7b8a45423f2158dbad78f197",
+          "bytes": 8191,
+          "lineEndings": "git-blob"
+        }
+      }
+    },
+    "staleRefCountercheck": {
+      "expected": null,
+      "actual": 1,
+      "meaning": "removing current preparation ref publication causes pending old draw to claim old token instead of remaining unbound",
+      "mutation": "remove only r17TimePreparationRef.current = r17TimePreparation",
+      "outcome": "EXPECTED_ASSERTION_FAILURE"
+    },
+    "existingNormalInputTest": {
+      "command": "node tools/run-node.cjs --test .codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+      "passed": 11,
+      "total": 11,
+      "meaning": "Includes current exported source transformation, strict TypeScript and unchanged manual/ruler/collector/20s fixture tests; temporary fixture files only."
+    },
+    "typescript": {
+      "version": "5.9.3",
+      "mode": "full in-memory prepared-source overlay on actual strict Miniapp config",
+      "overlayFiles": 1583,
+      "diagnostics": 0,
+      "noEmit": true
+    }
+  },
+  "archive": {
+    "ownerManifest": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r9-before-r10-20261019/owner-manifest.private.json",
+    "sha256": "163ddd56ee02177da1554506f00bd10bc80bf94023deee2d818d8baf00f0f6f9",
+    "frozenFilesMatched": 6,
+    "runtimeArchiveNotInspectedOrClaimed": true
+  },
+  "protectedR9BeforeAfter": {
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r9/manifest.json": "f90760f4f90501c5b60b4578d96c72e6cb9af265049860623a77b24bbc2f3fa2",
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r9/source-map-bindings.json": "82abd538c5f5ac3ebb1cedb6d988e0b557729c0658b8362fe979d790604166b6"
+  },
+  "limitations": [
+    "No prepare/refresh/build/inspect main invocation or candidate directory creation. The 1583 transformed files existed only in memory.",
+    "No device, ADB, DevTools, feedback, service, account, storage, pairing or VPN operation; no Git mutation. Only authorized git show read two old files into memory and restored exact manifest-bound CRLF bytes where needed.",
+    "No independent review claim: root owns a new independent builder review and complete r10 build, delta check, maps/budget verification, candidate delivery and actual cross-day/cancel acceptance.",
+    "These software checks do not establish native pixels, phone timing, ordinary-preview sustained stability, Apply/persistence, full A/B, terrain improvement or remaining Goal acceptance.",
+    "Old r2..r9 source transformations remain unchanged. A build selects the finite revision explicitly; only offline exported helpers can infer the declared current memo shape when a caller omits the boolean."
+  ],
+  "taskFileBindings": {
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs": "9f742e3d5e1877075c93e35d6bc43a03e147776b3007125d878613b63c3d7893",
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs": "a153f4dceb4def34b6d2b276dcf6408a27b88fbcac10eda688728ea89cb7302e"
+  },
+  "unchangedObservationBinding": {
+    ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-observations.ts": "9f0fb5922771ca0719bbd647f558ac492c442bc32b65111f5a557dabff49d17a"
+  }
+}

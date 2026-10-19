@@ -1,0 +1,47 @@
+{
+  "schema": "starward-reveal-native-admission-independent-review-v1",
+  "date": "2026-10-19",
+  "reviewer": "review_reveal_native_admission",
+  "scope": "source and bounded asynchronous behavior; native acceptance excluded",
+  "status": "SOURCE_AND_BOUNDED_BEHAVIOR_REVIEW_PASSED_NATIVE_UNVERIFIED",
+  "baseCommit": "526d00ec2b9333951f7b63f1ab40081e22d9584f",
+  "initialSourceSha256": "500743d7992dd5a01cf0470e870611f3323afb7a4e1e72dee653e8e378f5aed4",
+  "initialWindowTestSha256": "f0b9eeefcee1e34b02aaf3a92569677fa0ff513e90a187d121f28cf952b896bd",
+  "finalSourceSha256": "ecb5e51f83a49b3d9fb9c94062f33d9b32bee1d1be6392aea6f095cc0bbd327a",
+  "finalWindowTestSha256": "f1295f75a55a2ed8f272594ae0327f8015bbf470846982d2ff883d766117b6d1",
+  "adoptedHtmlSha256": "4c6cfc021e5f3c02db4036eab437fe64d25f57c8adbd49864a755ce598345c79",
+  "adoptedRenderActuallyViewed": false,
+  "adoptedRenderGap": "original adopted-stitch-render.png not found at supplied path; no substitute render used; full visual conformance is outside this source review",
+  "r6FailedOriginalFrameActuallyViewed": true,
+  "findings": [
+    {
+      "priority": "P2",
+      "status": "FIXED_AND_INDEPENDENTLY_RECHECKED",
+      "owner": "OrientationTimeRuler render layoutReady generation and in-flight createOrientationRulerLayout callback",
+      "input": "preparing layout read queued; render ready->opening->ready before passive effects; deliver old layout, then native node and matching offset",
+      "actual": { "staleWrites": 1, "visibility": "visible" },
+      "expected": { "staleWrites": 0, "visibility": "hidden" },
+      "initialFailure": { "path": "tmp/review-reveal-admission-initial-failure.json", "sha256": "c846676765fb8740d8282c694054268ef8f29b4e7a60aef5960864c3cf70d494" },
+      "repair": "root moved layoutRef ahead of render gate, synchronously invalidated the original layout owner with held projection retention, and added geometry revision to existing effect dependencies",
+      "finalSameCase": "PASS; no stale native write or visibility admission"
+    }
+  ],
+  "independentChecks": [
+    { "case": "late preparation geometry after ready-opening-ready before passive effects", "initial": "FAIL", "status": "PASS" },
+    { "case": "newer selected time while opening plus changed endpoint cadence/origin", "status": "PASS", "nativeLeft": 604.75, "animated": false, "previewWrites": 0, "commitWrites": 0 },
+    { "case": "fresh endpoint admission after old geometry retirement across reversal", "status": "PASS", "nativeLeft": 561.5, "animated": false, "nativeCommands": 1, "previewWrites": 0, "commitWrites": 0 }
+  ],
+  "independentEvidence": {
+    "script": { "path": "tmp/review-reveal-admission-independent.mts", "sha256": "130b7f5a6aa27a397511806bee00e32a9124f0af2ab4e96379f375203b328674" },
+    "finalResult": { "path": "tmp/review-reveal-admission-independent.json", "sha256": "4348da0a4475957852d4530fa7878b7697f053dc1e9b26aa4640f4efa3ec47bd" },
+    "related": { "passed": 46, "failed": 0, "skipped": 0, "cancelled": 0, "exitCode": 0, "groups": ["window", "native position", "layout", "motion"], "path": "tmp/review-reveal-admission-related.log", "sha256": "45f20a59abb37ef54cc7cde4d42006f67c90f682fd3c761d6de94e6b69f5cc11" },
+    "affectedDiffCheckExitCode": 0,
+    "sourceHashesStableAfterChecks": true,
+    "typecheck": "not rerun by reviewer; root owns integration",
+    "build": "not run by reviewer"
+  },
+  "openP1P2": 0,
+  "nativeAcceptance": "UNVERIFIED",
+  "remaining": ["complete candidate build", "actual first visible tick and stable tail", "affected interaction recovery", "original adopted PNG and full design conformance", "A", "B", "Terrain", "all other full Goal obligations"],
+  "boundaries": { "productionModified": false, "regressionFilesModified": false, "device": false, "ide": false, "services": false, "feedback": false, "build": false, "commit": false, "planHandoffModified": false }
+}

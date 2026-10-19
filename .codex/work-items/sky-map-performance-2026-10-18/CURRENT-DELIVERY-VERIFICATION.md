@@ -1,44 +1,60 @@
 # 当前变更的共享验证与提交范围
 
-2026-10-19。沿当前 PLAN 进行离线验证，复用 [A1 / preview 独审](A1-AND-PREVIEW-FIX-INDEPENDENT-REVIEW.md)与[原生刻度 / motion 独审](SKY-RULER-NATIVE-CADENCE-REVIEW.md)，没有重新选择方案。本轮覆盖的当前源码未发现新增未处理的消费者遗漏；必要本地共享检查现已通过。此结论不等于远端 CI、当前候选手机交付或完整 Goal 通过。
+2026-10-19。沿同一 PLAN 复用已完成研究、软件检查与独审。当前执行状态只由 [HANDOFF](HANDOFF.md)拥有；本文件按实际源码批次区分检查、提交、远端CI和目标结果，不把历史“当前/未交付”复述成新指令。
 
-## 当前结果
+## 当前 r10、跨日修复与 Git 范围
 
-| 检查 | 实际结果与范围 |
+当前 HEAD `69401c097572799234e6b97478a4a1ddfe06c810`（`fix(sky): preserve accepted sky while time geometry loads`）已push并精确远端读回。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均实际success。此提交包含跨日pending连续性修复的2份生产文件、4份既有fixture及对应作者/独审记录；133/133、Miniapp TS5.9.3 noEmit0与独审无P1/P2保各自范围。r10完整构建、接入及整包独审已通过，一次官方preview明确success，实际非空Sky独有“A1 r10”label后绑定；新跨日等待/取消已取得[r10实际独审](R17-A1-R10-CROSSDAY-RESULT.md)；普通预览持续表现只有[部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)，完整B仍未验证。用户携手机离开，后续优先离线分析与Git/服务交付；CI和label绑定不替代目标结果。
+
+此前 `3818b44009d53d4b27cb16a95904c42ed3723af7` 已push，[Product39232255739](https://github.com/Seven128/Starward/actions/runs/39232255739)与[Context39232264173](https://github.com/Seven128/Starward/actions/runs/39232264173)均success。r8在提交前以相同生产字节构建，r9基于3818只改任务观察；r9有效播放/退休证据继续复用，但旧包不含69401的新修复。
+
+更早 `c6bb28bc55b8b3e2ed2e32090f05512e233c4253` 已push并精确远端读回，[Product CI39222800554](https://github.com/Seven128/Starward/actions/runs/39222800554)与[Context CI39222915373](https://github.com/Seven128/Starward/actions/runs/39222915373)均success。上述CI为当前分支workflow_dispatch，非main推送/部署，各自只覆盖所绑定提交。main最后确认32ec61a4…、staging CD=true，最终main同步仍待收口。
+
+| 检查/证据 | 结果与适用范围 |
 | --- | --- |
-| `npm run test --workspace @starward/wechat-miniapp` | 2,650 项，2,649 passed、1 skipped、0 failed，149.8 秒；包含实际 Sky 页面、ruler、motion、相关数据 / 状态消费者的全部现有单元与组件夹具。唯一跳过项是 `sky-sdss-optical-page.test.ts` 的真实 science publication 用例，因本进程未设 `CLOUD_SKY_SCIENCE_PUBLICATION_PATH`；未将其记为通过。 |
-| `npm run test:miniapp:workflow` 首轮 | 175 项，174 passed、1 failed。唯一失败是 `development-automation.test.mjs:159` 的 warm-entry 夹具；原失败日志完整保留，没有改写成成功。 |
-| warm-entry 定向修复后 | `node tools/run-node.cjs --test tools/miniapp/development-automation.test.mjs`：9/9 passed。 |
-| 同一完整 workflow 修后再跑一轮 | 175/175 passed，22.8 秒；preview/feedback 的三份边界测试仍全部通过，device capture、技能引用、observer 与 automation 工作流一起通过。 |
-| `npm run test:miniapp:ui-contracts` | 4 项 source-pattern probes passed；输出明确保留 `product_conformance: unverified`。 |
-| 受影响文件 `git diff --check` | exit 0；只有既有换行规范化提示。 |
+| 稳定原生表面源码 | [作者记录](SKY-RULER-STABLE-NATIVE-SURFACE.md)、[独审](SKY-RULER-STABLE-NATIVE-SURFACE-REVIEW.md)：ScrollView本体style与直接兄弟槽固定，准入下移track/axis和固定guard，恢复/Cancel保持槽位。保持唯一定位writer、精确供给、.76→1/180ms motion。无P1/P2；平台remount原因仍UNKNOWN。 |
+| r8 受影响检查 | 原五文件42/42、miniapp TypeScript5.9.3 `--noEmit` exit0；结构回归在未修生产源码上真实失败、修后通过。独审独立42/42并核三文件SHA相同。未因纯提交重复检查，也未称已重跑全2668。 |
+| r8 完整构建与独审 | [R17-NORMAL-R8-BUILD-REVIEW](R17-NORMAL-R8-BUILD-REVIEW.md)：1,583 materialized /1,573 production /25模板全部绑定；双份app均337文件/4,996,606B，app `a4b55d3d876a65f731d0e044eb043e0961c05718a2d2a81c1f40aa502be8eb3e`，source `3362e2d0595b7871835b0232eb43f2ac233c5a5aa012f609c5eb40e04df4bcb0`。main1,993,648B、raw余量103,504B。 |
+| r8 maps 与有限任务差异 | 31maps/7,279,403B/367,653segments；22个map+JS双哈希配对复用、9重新解码；32关键sourcesContent、6纯插桩变换精确，双份80JS无map/sourceMappingURL。builder仅3行有限r8分支、白名单/互斥变化，8参数边界通过；15个正常Scene/copy/caption/accepted等owner与r7相同。 |
+| r8 历史交付与反馈 | 一次官方preview明确success，实际r8 label后绑定cnbWtR/gen1/6LCwTB/x20PZ8；现已退休输入，82件必要证据在r9前冻结，manifest9d3cca40…。其development_feedback_only效力保留，非产品/发布验收。 |
+| r8 原生与A结果 | [首次入场](R17-A1-R8-ENTRY-RESULT.md)限域通过：strict90/90零drop，首个捕获可见刻度正确、提示不叠字；不称物理首次帧/连续15s。[时间交互](R17-A1-R8-TIME-INTERACTION-RESULT.md)实证连续拖到10:00、前一天终态与取消回04:30，未来拒绝。49intents/37firstAccepted中9latest为24–70ms，末30ms，28superseded保留；37/38准备实际消费，不支持因昂贵未消费准备改调度。跨日等待退回旧夜景已判P2并由下行修复；供给key、惯性/重抓/必要恢复/Apply/iOS及完整A仍欠。 |
+| r9 完整构建与独审 | [退休观察](R17-NORMAL-R9-RETIREMENT-OBSERVATION.md)、[源码独审](R17-NORMAL-R9-RETIREMENT-REVIEW.md)及[完整构建独审](R17-NORMAL-R9-BUILD-REVIEW.md)：25/25、历史21/21、argv8/8、delta typecheck0；1,583 materialized/1,573生产/25模板与双app全部匹配。app413b8e0f…/337files5,002,086B，sourceac12fdd3…，31maps7,299,540B/368,539segments，main余103,504B；22配对复用、9新解码。 |
+| r9 历史交付及60秒实际结果 | 一次官方preview exec32765明确业务success，无taskId；实际r9 label后绑定26UyKk/gen1/s2S6bX/z6lbss，该输入现已退休。[实际独审](R17-A1-R9-PLAY-EXIT-RESULT.md)确认60.015s正常Play/Pause、至少31s暂停尾段、Cancel与非空Map；同surface退休实际1×1/selection层移除，context扩展unavailable，未证GPU全部释放。15s metrics非60s全窗，PSS未给出泄漏owner，完整B未关闭。 |
+| r9 运行档案与执行层 | 425件/34,363,242B运行档案manifest a40f027c…保留44件不可变审查原件；首轮归档与capture并行导致session.json可变元数据变化，历史会话字节不能称45/45复现，已有中间与最新版本分别保存。[可信度核对](PERFORMANCE-STATUS.md)结合安装remoteAppservice/cdp、Android无DOM runtime和真实动作支持r9的2.0手机逻辑目标；LAN→WAN只切传输。工具端Storage和WAN等待保原观察条件，不把字段倒填r7或普通预览r10。r9 debug163252880已实际关闭/枚举absent。 |
+| 跨日等待连续性新修复 | [源码与反例](SKY-TIME-PENDING-CONTINUITY-FIX.md)、[独审](SKY-TIME-PENDING-CONTINUITY-REVIEW.md)：当前有效accepted输入统一供draw/资源，Context/report/mode/native失效不复活、取消优先committed；2生产/4既有fixture、133/133、TS5.9.3 noEmit0、独审无P1/P2。已提交/push为69401并进入r10；task接入已适配真实requestedTimePresentation，原生产selection/依赖不变。[r10真实独审](R17-A1-R10-CROSSDAY-RESULT.md)已确认跨日等待白昼连续性与取消终态，保留取消异步字段过渡；完整A/Apply仍欠，不重开方案审查。 |
+| r10 接入及完整构建 | [任务接入](R17-NORMAL-R10-BUILDER-INTEGRATION.md)、[接入独审](R17-NORMAL-R10-INTEGRATION-REVIEW.md)与[整包独审](R17-NORMAL-R10-BUILD-REVIEW.md)均PASS/无P1/P2；r10 30/30、地形owner17/17和5条实际hook端到端路径，完整1,583物化/1,573生产/25模板及双app绑定。app `077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094` /337文件/5,003,601B，source `e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e`；main1,993,952B、余103,200B，31maps/7,305,672B字节绑定，未重复无新决策价值的CPU/Allocation/坐标解码。 |
+| r10 当前普通预览交付 | 一次官方preview exec67914明确success、无taskId，gen26原记录字节未变；root实际非空Sky看见独有“A1 r10”后绑定ncOpxo/gen1/1GLGwG/Klvb4h，见[当前准备/绑定](R17-NORMAL-A1-PREPARATION.md)。r9与r10 prebinding4haboM退休输入；runtime AppID/手机整包字节未读回，仍development_feedback_only。本次普通预览未建立remote，新行为、持续B及地形现场关联均未由送达完成。 |
 
-原生布局独审的六个 normalized-LF SHA-256 已对当前文件逐项重算，全部一致；当前 full miniapp run 因此涵盖独审最终版本，而非更早修订。strict、`noUncheckedIndexedAccess`、`exactOptionalPropertyTypes` 的当前独立 exit 0，以及 A1 r3 完整构建 / maps / materialized 20/20，按既有 owner 复用；未无变化重复类型或构建。当前 A1 r3 身份以 [preparation](R17-NORMAL-A1-PREPARATION.md) 为准，本轮未改其生产输入。
+## r7 已完成证据及真实失败
 
-脱敏日志保存在 ignored `tmp/current-delivery-{workflow,miniapp,automation-fixed,workflow-fixed}.tap` 和 `tmp/current-delivery-ui-contracts.log`。首轮失败与修后结果分文件保存。
+r7 app `c9874bb3…`/source `528b3d8a…` 的冻结字节不受r8改变。其完整build、maps与有限builder独审保留，[r7实际入场](R17-A1-R7-ENTRY-RESULT.md)仍为FAILED：98/98事件无drop，fresh endpoint、隐藏非动画561.422定位回执成立，ticksVisible后报0；首次可辨、尾段及终图均noon尺配04:30，恢复文案叠字。[公开被动batch](R17-A1-R7-PASSIVE-NATIVE-RESULT.md)随后实际读scrollLeft0、选中tick偏轴561.5px，但不确定最初回零或微信内部原因。r7 debug/source已在完整r8同步后正常结束关闭，所有r7输入session退休。
 
-## 本轮发现并修复的已有测试边界缺口
+[r7正常Play](R17-A1-R7-PLAY-RESULT.md) compact29644B严格准入，14.004s窗366次实际paint/native callback/accepted；337准备、335消费、2尾部未消费，333 firstAccepted全superseded，无最新未替代样本；20.018s正常autoPause一次。8行85.158s同owner进程watch仅定性增长及部分回落，非JS/native/GPU归因。
 
-首轮运行前，`start-development-session.mjs` 与 `development-automation.test.mjs` 都没有本地 diff。生产 warm entry 已在任何服务启动前调用 `syncWechatideSkill` 并输出同步阶段 JSON，但去掉 import 后执行实际入口的 VM sandbox 没有这个依赖。它提前因缺少绑定而 reject，尚未进入原本要检查的 automation failure；在 `auto-failure` 场景留下 `cleanupCalls=0`，与既有 `=1` 断言冲突。原来不匹配错误原因的 `assert.rejects` 还会令较早场景误收这种提前失败。另一个旧假设是“任何 stdout 即发 SIGINT”；同步阶段输出已经使其不再表示应用 ready。
+[r7有效allocation与双级映射](R17-NORMAL-R7-ALLOCATION-RESULT.md)已完成：192220B原profile，982nodes/625samples引用有效；实际官方runtime脚本inline maps→冻结Taro maps闭合关键恒星变换/绘制与response-cache owner。它只估计返回时仍存活的采样分配，既非总churn也非引用保留图；sample没有时间，target实际stop未知。未发现可直接修的错误生命周期，不因排名继续gen24或微变体。旧文档“缺有效Sky allocation/映射”的空缺已经退役；完整B仍未通过。
 
-root 在获知原因后明确授权定向修复测试。本轮只修改该测试的现有共享场景 sandbox：注入有明确返回 / 失败的 skill-sync 依赖；只在实际 `status=ready` 输出后发模拟 SIGINT；为每个失败场景匹配具体预期错误。原 API failure、redirected output、automation failure 和 signal 场景及拥有子进程 / receipt 清理断言保留；在同一场景入口补充 skill-sync failure 与 reload-required，验证它们不启动子进程，并核对同步顺序和三个 signal handler 的退休。没有复制生产启动实现、恢复旧结构或放宽断言。
+[r7实际Cancel/Map退出](R17-A1-R7-EXIT-RESULT.md)已经发生，手机返回非空Map/同隔离地点；8行85.898s同owner watch跨退出前、导航及Map加载，PSS峰后下降239119KiB、末比首仍高36999KiB。r7当时没有退出后retired标志读回，两个较早watch实际未退出，均不由r9倒填。后续r9补足自身60秒/暂停尾段及surface退休边界；普通预览持续结果、全部资源释放与完整A/B仍欠。
 
-本轮唯一测试改动是 `tools/miniapp/development-automation.test.mjs`，修后 normalized-LF SHA-256 为 `f6a4d101972d526fd5a1e3735ec59aefc4c51dad794673ce45a51dce655b35ba`。生产入口未改；没有访问或同步本机官方技能安装。
+## 历史共享检查：只保原批次效力
 
-## 可以独立形成代码提交的责任
+| 源码批次 | 已有检查 |
+| --- | --- |
+| 404d84df reveal/late-geometry修复 | 完整miniapp2668 total/2667pass/1原science环境skip/0fail，152.639s；正确miniapp TS5.9.3 noEmit0，独立3/3反例与恢复、相关46/46。后续r8不冒用这个全量结果作为同源全量。 |
+| 526d00ec 首次原生准入 | 11份生产/测试hash由root逐份核对，独立77/77；完整2664 total/2663pass/1skip/0fail、151.0s。旧rows认证新安装与render→passive迟到分支已修。r6手机入场后来仍FAILED，源码检查没有覆盖掉失败。 |
+| fb99d0dd 导航/包体及之前ruler批次 | 真实Taro导航12种路径/3必需位图、原素材保留；2654 total/2653pass/1skip/0fail、138.8s及TS5.9.3 exit0。较早2650/2649pass/1skip的149.8s批次也只保自身范围。 |
+| workflow共享入口 | 首轮175项174pass/1fail，warm-entry旧fixture提前缺少skill-sync绑定而reject，未进入所需automation-failure语义；原失败日志保留。定向9/9、修后完整175/175、22.8s。它是夹具适配，不是产品修复或本次r8重新运行。 |
+| UI source probes | 4项pattern检查通过，输出仍为 `product_conformance: unverified`，不认证外观。 |
 
-以下是完整的源码 / 测试集合，提交时应按责任一并纳入；这里的“可提交”指本地代码及已有独审证据足以形成可审阅提交，不表示已获手机或发布验收。
+science publication用例因未设 `CLOUD_SKY_SCIENCE_PUBLICATION_PATH` 持续skip，不计通过。root曾误选通用bin TypeScript6而遇baseUrl入口弃用错误，后以实际miniapp5.9.3完成；未改产品源码压制这个工具入口错误。历史换行提示不当业务失败。
 
-1. **官方预览结果与绑定保护（8 文件）：** `tools/miniapp/device-feedback-{official,preview,session,binding}.mjs`、`tools/miniapp/device-feedback.mjs`，以及 `device-feedback.test.mjs`、`device-feedback-preview.test.mjs`、`device-feedback-boundaries.test.mjs`。核对了两个真正的 ordinary-preview caller 都先持久化返回 handle，再做后验完整性 / QR 检查；自动预览保留真实 stdout 分类；load、preview、refresh、bind、stop 都沿共享状态规范化与 UNKNOWN / pending 守卫。auth success 仍不能完成业务 preview。当前仓库没有遗漏仍使用旧返回合同的真实 caller。`recordOfficialTaskResult` 只接收原 task 的显式查询结果，不自行发起轮询或业务预览。
-2. **Sky 时间窗口恢复与原生布局换算（7 文件）：** `apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx`、`orientation-ruler-layout.ts`、`sky-overlay-motion.tsx`，以及 `orientation-time-ruler.test.ts`、`orientation-time-ruler-window.test.ts`、`orientation-ruler-layout.test.ts`、`sky-overlay-motion.test.ts`。核对了 ruler 的程序定位和拖动换算共用实际投影；ruler 的唯一生产入口接入 time surface 的结束事件与 live active；search / object / layers / time 四类 disclosure 仍沿同一共享 surface，新增回调为可选且过滤子节点事件。Map 的明确独立几何没有被迁入 Sky owner。settlement / native-position 等未改源码的真实依赖由现有测试覆盖。
-3. **warm-entry 测试适配（1 文件）：** `tools/miniapp/development-automation.test.mjs`。这是本轮定位后的独立测试修复，可单独提交；不要求把 unrelated workflow / skill / Context 变更混入以上两组代码提交。
+warm-entry定向修改仅原共享sandbox：注入明确skill-sync成功/失败，实际status=ready后才发模拟SIGINT，所有失败匹配预期原因；API failure、redirected output、automation failure、signal及owned子进程/receipt清理断言保留，补sync-failure/reload-required不启动子进程与handler退休。修后 `tools/miniapp/development-automation.test.mjs` normalized-LF SHA为 `f6a4d101972d526fd5a1e3735ec59aefc4c51dad794673ce45a51dce655b35ba`。本执行者自检没有冒称另一份独审。历史日志 `tmp/current-delivery-*`、`tmp/current-ruler-and-package-miniapp.tap`、`tmp/r6-production-miniapp-full-tests.log` 保留原失败/修后各文件。
 
-preview 组与 Sky 组之间没有新增运行时依赖，可以独立提交。Sky 三个生产文件及其对应测试应作为一组，避免单独提交 consumer 而缺失 owner。上述前两组分别沿其已有独审；本轮测试适配由本执行者修复，不能把这项自检称为另一份独立审查。
+## 交付责任与剩余义务
 
-## 其余 dirty 成果与未关闭义务
+官方preview/feedback共享修复的范围继续由 [A1/preview独审](A1-AND-PREVIEW-FIX-INDEPENDENT-REVIEW.md)和 [剩余仓库审阅](REMAINING-DELIVERY-AUDIT.md)拥有：两个ordinary caller保handle/原stdout再分类，load/preview/refresh/bind/stop沿同一UNKNOWN/pending保护；auth success不完成业务preview，显式原task结果记录不自行轮询或重发。Sky窗口/原生换算/共享motion、导航声明/构建和warm-entry测试各按原责任保留，历史“可提交清单”不再作为当前Git状态。
 
-`tools/miniapp/device-test.mjs` / `.test.mjs` 的不可覆写截图路径与 receipt 是本轮之前的工作，本轮完整 workflow 覆盖了现有回归，但未重新作其独立审查，应继续保留其原责任与证据。已有 AGENTS、两项项目 Skill、performance 方法、Context / manifest / development-feedback / settled-candidate 变更，以及本任务全部文档、JSON、诊断脚本、历史 trial 与观察记录均继续保留；本轮不将它们自动归入上述生产修复提交，也不重写其状态。
+跨日修复六份生产/fixture及四份作者/独审记录已随69401提交。2026-10-19本次接手核对：生产和设备工具/Context没有未提交改动；未提交范围为性能方法reference的6行补充、当前任务builder/observer及MD/JSON/patch证据。设备原片/profile继续在外部私有owner，不能加入Git。各组沿各自已有审阅和精确字节核对交付，不抹掉原审阅边界。69401当前分支CI已通过；授权Git/main收口继续按最终实际范围完成，历史绿灯不提前证明新行为。
 
-读取了当前 Product CI / Context structure workflow：本轮覆盖相关本地 miniapp / workflow 检查，未执行远端 CI、Linux 环境、后端全套发布 / OCI / infrastructure 或发布动作，不能报告整体 CI 已绿。未构建、提交、切换分支、访问设备 / ADB / IDE / SDK / 服务、读取私人账号或原始 profile，也未编辑 PLAN / HANDOFF / INDEX / Context。
+Terrain旧metadata2248ms/file98ms/native34ms保 [r6资产owner](TERRAIN-R6-ASSET-PATH-BINDING.md)的UNKNOWN限界。[r8新动作](TERRAIN-R8-IDENTITY-ACTION-RESULT.md)已取得桥metadata/实际PNG的SHA与proof关联，file_ready后仍gap；手机A5→SHA尚未闭合，暖缓存不算优化收益。[残余等待决策](TERRAIN-RESIDUAL-NEXT-DECISION.md)已确认旧匿名key本就未序列化SHA，不恢复旧连接追该映射。r10随既有file_ready导出owner已返回的实际SHA/bytes，缺SHA仍null；软件独审/整包接入通过，下一必要连续动作及现场读取仍未完成。r6单次59ms latest accepted复用 [manual结果](R17-A1-R6-MANUAL-RESULT.md)，不等于完整A。gen22/23阴性、正常CPU复用，gen24暂停。
 
-gen26 原官方结果 **UNKNOWN** 仍不能重发或绑定；r3 当前实际送达、真实 transition endpoint / tick 中心 / scroll offset / 取消恢复、Sky A/B、地形 file-ready 对实际覆盖顺序及完整 R/H/A/N 验收均维持其各自未验证状态。8791 / N05 / 已送达 R6 / 配对 / VPN 的保护边界未变。
+全部R1–R18/H1–H8/A01–A15/N01–N09继续按原owner逐项比较：跨日修复目标确认、时间完整交互、地景、正常A/B、连续地形/年度夜光/真实云与运行identity、H3照片/许可/恢复、原生/iOS、自然分享接收及文件交接、资源与Git/main收尾仍保留；8791/N05/R6/配对/VPN/gen26保护不变。没有以软件成功或本文件更新宣称完整Goal通过。
