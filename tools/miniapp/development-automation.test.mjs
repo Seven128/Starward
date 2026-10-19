@@ -161,18 +161,34 @@ test("the actual warm entry tears down owned children/receipt on startup failure
   const parsed = ts.createSourceFile("warm.mjs", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   const script = parsed.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(parsed)).join("\n")
     .replaceAll("import.meta.url", JSON.stringify(new URL("./start-development-session.mjs", import.meta.url).href));
-  for (const scenario of ["api-failure", "redirected-output", "auto-failure", "signal"]) {
+  const failure = {
+    "skill-sync-failure": /synthetic skill sync failure/u,
+    "skill-reload": /development_skill_reload_required_before_start/u,
+    "api-failure": /miniapp_api_ready_timeout/u,
+    "redirected-output": /development_output_must_be_owned_physical_directory/u,
+    "auto-failure": /synthetic auto failure/u,
+  };
+  for (const scenario of [...Object.keys(failure), "signal"]) {
     const host = new EventEmitter();
     host.argv = ["node", "warm.mjs", "--memory", "--automation-port", "9420"];
     host.env = {}; host.execPath = process.execPath; host.platform = "win32";
     let now = 0, cleanupCalls = 0;
-    const started = [], stopped = [], events = [];
+    const started = [], stopped = [], events = [], output = [];
     const expectedOutput = path.resolve(fileURLToPath(new URL("../../apps/wechat-miniapp/dist/weapp", import.meta.url)));
-    host.stdout = { write: () => host.emit("SIGINT") };
+    host.stdout = { write: text => {
+      const value = JSON.parse(text);
+      output.push(value);
+      if (value.status === "ready") host.emit("SIGINT");
+    } };
     const sandbox = {
       process: host, path, fileURLToPath, AbortController, nodeEnvironment: (_node, env) => env,
       Date: { now: () => now },
       developmentOptions, canListen: async () => true,
+      syncWechatideSkill: async () => {
+        events.push("skill-sync");
+        if (scenario === "skill-sync-failure") throw Error("synthetic skill sync failure");
+        return { status: "unchanged", reloadRequired: scenario === "skill-reload" };
+      },
       realpath: async value => scenario === "redirected-output" && value === expectedOutput ? path.join(expectedOutput, "redirect") : value,
       access: async () => {},
       rm: async (value, options) => {
@@ -198,9 +214,14 @@ test("the actual warm entry tears down owned children/receipt on startup failure
       },
     };
     const run = vm.runInNewContext(`(async () => { ${script} })()`, sandbox);
-    if (scenario === "signal") await run; else await assert.rejects(run);
+    if (scenario === "signal") await run; else await assert.rejects(run, failure[scenario]);
     assert.deepEqual(stopped, started.map((_, index) => index + 1001), scenario);
-    const earlyFailure = ["api-failure", "redirected-output"].includes(scenario);
+    assert.equal(events[0], "skill-sync", scenario);
+    assert.equal(output.filter(value => value.scope === "devtools_skill_sync").length,
+      scenario === "skill-sync-failure" ? 0 : 1, scenario);
+    assert.equal(output.filter(value => value.status === "ready").length, scenario === "signal" ? 1 : 0, scenario);
+    if (scenario.startsWith("skill-")) assert.deepEqual(started, [], scenario);
+    const earlyFailure = ["skill-sync-failure", "skill-reload", "api-failure", "redirected-output"].includes(scenario);
     assert.equal(cleanupCalls, earlyFailure ? 0 : 1, scenario);
     if (earlyFailure) {
       assert.equal(events.includes("reset"), false);
@@ -211,5 +232,6 @@ test("the actual warm entry tears down owned children/receipt on startup failure
     }
     assert.equal(host.listenerCount("SIGINT"), 0);
     assert.equal(host.listenerCount("SIGTERM"), 0);
+    assert.equal(host.listenerCount("SIGHUP"), 0);
   }
 });
