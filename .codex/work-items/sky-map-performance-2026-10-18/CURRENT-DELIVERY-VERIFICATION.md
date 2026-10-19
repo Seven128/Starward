@@ -40,9 +40,9 @@ ba4当时的完整CI及发布/identity已实读；当时registry额度、主机M
 
 ## 2026-10-19 主机空间聚合的本地准备
 
-[实现与边界](HOST-STORAGE-OBSERVATION.md)复用原SSH owner及共享Linux目录factory，固定df/三根du/Docker分类，不读base载荷、不增加清理/部署入口。作者31项与root整合后的44/44通过，实际生成模块/fake、runner投影与部分结果保留已核；Linux原生fd3/df/du/shell及实际主机未验。[独审](HOST-STORAGE-INDEPENDENT-REVIEW.md)无尚存P1/P2，复核44项、4条精确生成模块反例和原runtime15项。原10GiB guard不改，2GB fixture可完成观察但不表示readiness。
+[实现与边界](HOST-STORAGE-OBSERVATION.md)复用原SSH owner及共享Linux目录factory，固定df/三根du/Docker分类，不读base载荷、不增加清理/部署入口。作者31项与root整合后的44/44通过，实际生成模块/fake、runner投影与部分结果保留已核；该本地阶段的Linux及实际主机结果由下一段后续实读补齐。[独审](HOST-STORAGE-INDEPENDENT-REVIEW.md)无尚存P1/P2，复核44项、4条精确生成模块反例和原runtime15项。原10GiB guard不改，2GB fixture可完成观察但不表示readiness。
 
-8d55完整CI已实际success：[有界核对及更正](CI-CURRENT-BOUNDARY-REVIEW.md)保源码相同等事实，撤回由页面局部日志推断25分钟contracts异常；完成日志明确84项约2.48秒。新源码0a855654已普通推两ref，自己的Linux/完整CI及第一次主机观察仍待验。旧自动release39280890796在queued阶段一次cancel409未成功；随后实际completed/success、qualify success与publish-and-deploy skipped已由页面及job118165724092确认，observer终止，不称root取消，不改CD/guard。[OCI私有保全](OCI-RECOVERY-PATH-REVIEW.md)及[本机入口补核](EXISTING-PRIVATE-TRANSFER-BOUNDARY.md)仍没有可直接消费的传输桥，未创建artifact/secret/session、复制镜像或执行清理。
+8d55完整CI已实际success：[有界核对及更正](CI-CURRENT-BOUNDARY-REVIEW.md)保源码相同等事实，撤回由页面局部日志推断25分钟contracts异常；完成日志明确84项约2.48秒。新源码0a855654已普通推两ref，后续完整Product39281927954/Context39281928030及三项Linux实际分支success，见[CI读回](HOST-STORAGE-CI-20261020.json)；一次[主机实读](HOST-STORAGE-REMOTE-20261020.json)39285085395/head0已completed/success，原waiting无pending approval且自然执行；source匹配、available9.7025GiB仍低于原guard，daemon BuildCache7.51GB只供下一责任判断，未清理/部署。新自动release39286309198一次cancel后已实读cancelled，pub job同cancelled/无步骤，CD/guard不改。旧自动release39280890796在queued阶段一次cancel409未成功；随后实际completed/success、qualify success与publish-and-deploy skipped已由页面及job118165724092确认，observer终止，不称root取消，不改CD/guard。[OCI私有保全](OCI-RECOVERY-PATH-REVIEW.md)及[本机入口补核](EXISTING-PRIVATE-TRANSFER-BOUNDARY.md)仍没有可直接消费的传输桥，未创建artifact/secret/session、复制镜像或执行清理。
 
 ## 69401 生产修复、r10 及此前 Git 证据
 

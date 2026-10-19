@@ -311,8 +311,27 @@
     "localTestsPassed": 44,
     "contextValidate": "passed",
     "independentReview": "HOST-STORAGE-INDEPENDENT-REVIEW.md",
-    "linuxNative": "unverified",
-    "remoteObservation": "not_dispatched",
+    "linuxNative": "three_actual_linux_branches_passed_in_completed_job_log",
+    "remoteObservation": {
+      "runId": 39285085395,
+      "headSha": "0a855654cf288b33091e39f513bf98910c4a635d",
+      "mode": "host-storage",
+      "status": "completed",
+      "dispatches": 1,
+      "actualReportObserved": true,
+      "jobId": 118168645936,
+      "jobStatus": "completed",
+      "logs": "captured_in_memory_strict_projection_saved_raw_not_saved",
+      "restarted": false,
+      "pendingDeploymentApprovals": 0,
+      "stagingProtectionRules": [
+        "branch_policy"
+      ],
+      "configurationOrApprovalChanged": false,
+      "conclusion": "success",
+      "evidence": "HOST-STORAGE-REMOTE-20261020.json",
+      "diagnosticSucceeded": true
+    },
     "hostGuardChanged": false,
     "cleanupAuthorization": "NONE",
     "phoneActions": false,
@@ -324,13 +343,24 @@
     "bothRefsReadBack": "0a855654cf288b33091e39f513bf98910c4a635d",
     "productCi": {
       "runId": 39281927954,
-      "status": "queued",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success",
+      "linuxDeploymentOwnerStep": "success",
+      "ociConstructionStep": "success",
+      "completeRunAccepted": true,
+      "jobId": 118157754019,
+      "jobStatus": "completed",
+      "jobConclusion": "success",
+      "jobStartedAt": "2026-10-19T15:58:39Z",
+      "jobCompletedAt": "2026-10-19T16:10:07Z",
+      "allPostSteps": "success",
+      "workflowTerminalAccepted": true,
+      "evidence": "HOST-STORAGE-CI-20261020.json"
     },
     "contextCi": {
       "runId": 39281928030,
-      "status": "queued",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     "existingLocalPrivateTransfer": "UNKNOWN_NOT_READY_FOR_LOCAL_READBACK",
     "privateTransferEvidence": "EXISTING-PRIVATE-TRANSFER-BOUNDARY.md",
@@ -347,6 +377,26 @@
       "preservation": "OCI-OFFLINE-TRIAL-PRESERVATION-20261020.json",
       "actualPrivateBackupOrRegistryRestore": false
     },
-    "deliveryEvidencePlan": "followup_documents_to_current_branch_first_main_after_required_0a855654_CI_to_avoid_canceling_queued_product_run"
+    "deliveryEvidencePlan": "ordinary_current_branch_and_main_fast_forward_after_source_CI_success_no_source_change",
+    "followupEvidenceRevision": "ba12713e4b90b2420eb5413cfe768343e2b11462",
+    "automaticRelease": {
+      "runId": 39286309198,
+      "headSha": "0a855654cf288b33091e39f513bf98910c4a635d",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "cancelRequests": 1,
+      "cdSettingOrGuardChanged": false,
+      "cancelRequest": "accepted",
+      "cancelSucceeded": true,
+      "publicationJobId": 118173478958,
+      "publicationJobConclusion": "cancelled",
+      "publicationJobSteps": 0,
+      "imagePush": "not_executed",
+      "hostSteps": "not_executed"
+    },
+    "currentGitStateOwner": "git_status_and_git_ls_remote",
+    "storageNextResponsibility": "bounded_build_cache_filesystem_ownership_and_precise_operation_capability_not_global_prune",
+    "currentAvailableBytes": 10417971200,
+    "guardChanged": false
   }
 }

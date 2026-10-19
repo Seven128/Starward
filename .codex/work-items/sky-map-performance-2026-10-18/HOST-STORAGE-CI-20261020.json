@@ -1,0 +1,43 @@
+{
+  "runId": 39281927954,
+  "headSha": "0a855654cf288b33091e39f513bf98910c4a635d",
+  "status": "completed",
+  "conclusion": "success",
+  "jobId": 118157754019,
+  "jobStartedAt": "2026-10-19T15:58:39Z",
+  "jobCompletedAt": "2026-10-19T16:10:07Z",
+  "steps": [
+    {
+      "name": "Test deployment owners",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Check release code",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Construct production OCI image",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "nativeChecks": [
+    {
+      "title": "native Linux df/du smoke passes the held parent descriptor as child fd3 without invoking Docker",
+      "passed": true
+    },
+    {
+      "title": "the native Linux shell wrapper exposes only fixed failure codes when timeout is missing or fails",
+      "passed": true
+    },
+    {
+      "title": "native filesystem smoke distinguishes Linux enforcement from Windows unsupported behavior",
+      "passed": true
+    }
+  ],
+  "windowsBranchExplanationFound": false,
+  "rawLogsSaved": false,
+  "hostOrDeviceAcceptance": false
+}

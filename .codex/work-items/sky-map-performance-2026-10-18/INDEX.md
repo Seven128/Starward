@@ -126,7 +126,7 @@
 
 68. [当前主机guard读回](CURRENT-HOST-PREFLIGHT-20261019.json)：一次既有host39277770300/head8d55已完整failure=host_preflight_disk_below_10_gib；平台waiting已自然结束，没有人工确认或改环境。未输出具体disk量，不构成广泛清理或调低guard授权；下一步按实际空间归属和私有精确保全边界选择。
 
-69. [固定主机空间聚合](HOST-STORAGE-OBSERVATION.md)、[独审](HOST-STORAGE-INDEPENDENT-REVIEW.md)与[边界建议](HOST-STORAGE-OBSERVATION-BOUNDARY.md)：只补原diagnostic固定mode和共享目录边界，本地44项通过；df/du/Docker范围分开，始终无清理授权，Linux原生与实际主机保持待验。
+69. [固定主机空间聚合](HOST-STORAGE-OBSERVATION.md)、[独审](HOST-STORAGE-INDEPENDENT-REVIEW.md)与[边界建议](HOST-STORAGE-OBSERVATION-BOUNDARY.md)：只补原diagnostic固定mode和共享目录边界，本地44项及独审通过，后续[完整CI及Linux实际分支](HOST-STORAGE-CI-20261020.json)success；df/du/Docker范围分开，始终无清理授权，[一次实际主机报告](HOST-STORAGE-REMOTE-20261020.json)已success：available9.7025GiB仍低于原guard，daemon BuildCache7.51GB只选下一归属责任；未清理/部署。
 
 70. [精确OCI私有保全路径核对](OCI-RECOVERY-PATH-REVIEW.md)：沿原owner-only Drive和批准registry；当前Actions→私有落点桥缺失，不默认公开artifact、低空间主机或新凭据中转。固定离线恢复契约可独立准备，实际导出/私有保全/registry恢复仍未验。
 

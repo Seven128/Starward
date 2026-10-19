@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "starward-host-storage-readback-v1",
+  "runId": 39285085395,
+  "jobId": 118168645936,
+  "headSha": "0a855654cf288b33091e39f513bf98910c4a635d",
+  "mode": "host-storage",
+  "sourceSha256": {
+    "tools/deployment/host-storage-diagnostics.mjs": "c1eeed0035a76838fa120923ac5c0282a9999f0d08c6b159b747595fa9d4a5e0",
+    "tools/deployment/protected-directory.mjs": "1294816e93b0a2f6312b0d4f31805b3469a9e7df1dd4f8cad79c43a6b97a1dbf"
+  },
+  "githubReportPrintedAt": "2026-10-19T16:38:27.5184937Z",
+  "report": {
+    "status": "observed",
+    "evidenceScope": "HOST_STORAGE_AGGREGATES_ONLY",
+    "snapshot": "NON_ATOMIC",
+    "referenceCompleteness": "UNVERIFIED",
+    "cleanupAuthorization": "NONE",
+    "filesystem": {
+      "status": "observed",
+      "code": null,
+      "totalBytes": 42156257280,
+      "usedBytes": 29896425472,
+      "availableBytes": 10417971200
+    },
+    "directories": {
+      "INBOX": {
+        "status": "observed",
+        "code": null,
+        "allocatedBytes": 265871360,
+        "sameFilesystemAsRelease": true
+      },
+      "RELEASE": {
+        "status": "observed",
+        "code": null,
+        "allocatedBytes": 294477824,
+        "sameFilesystemAsRelease": true
+      },
+      "CANDIDATE": {
+        "status": "observed",
+        "code": null,
+        "allocatedBytes": 1216512,
+        "sameFilesystemAsRelease": true
+      }
+    },
+    "docker": {
+      "status": "observed",
+      "code": null,
+      "Images": {
+        "status": "observed",
+        "code": null,
+        "total": 96,
+        "active": 4,
+        "size": "14.85GB",
+        "reclaimable": "13.41GB (90%)"
+      },
+      "Containers": {
+        "status": "observed",
+        "code": null,
+        "total": 5,
+        "active": 2,
+        "size": "69.63kB",
+        "reclaimable": "45.06kB (64%)"
+      },
+      "LocalVolumes": {
+        "status": "observed",
+        "code": null,
+        "total": 4,
+        "active": 4,
+        "size": "161.6MB",
+        "reclaimable": "0B (0%)"
+      },
+      "BuildCache": {
+        "status": "observed",
+        "code": null,
+        "total": 123,
+        "active": 6,
+        "size": "7.51GB",
+        "reclaimable": "7.173GB"
+      }
+    },
+    "observation": {
+      "status": "observed",
+      "code": null
+    }
+  },
+  "diagnosticSucceeded": true,
+  "workflowStatus": "completed",
+  "workflowConclusion": "success",
+  "rawLogsSaved": false,
+  "serviceOrDeviceAcceptance": false
+}

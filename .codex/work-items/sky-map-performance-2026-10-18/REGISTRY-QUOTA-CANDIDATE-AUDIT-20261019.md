@@ -70,3 +70,5 @@
 精确OCI备份的成熟候选是[ORAS copy](https://oras.land/docs/commands/oras_cp/)：支持按digest选择源，在registry与OCI image layout间复制，默认image index会复制其全部子manifest。官方[当前v1.3.5发行](https://github.com/oras-project/oras/releases/tag/v1.3.5)已核Windows amd64二进制/校验和条目，未下载安装或加入项目依赖；不采用experimental backup/restore作为前置方案。后续仍需实际目标manifest/blob完整性、同digest恢复读回及目标访问资格，工具文档不提供本候选已备份/可恢复证明。
 
 本机只核指定批准registry的既有Docker配置/credential helper，未列出其它账号、输出host/用户名/secret或修改登录：匹配auth entry不存在，固定已安装helper查该目标返回entry unavailable。因此本机直接保全路径当前未就绪，不声称所有现成授权通道不可用，也不要求用户现在登录。既有Actions凭据的固定备份路径可在明确必要输入/私有落点后继续评估；未输出凭据、扩共享、创建付费资源或把source rebuild当原digest恢复。
+
+后续[主机空间实读](HOST-STORAGE-REMOTE-20261020.json)39285085395/head0已success：available约9.7025GiB仍低于原10GiB guard，daemon BuildCache约7.51GB进入下一归属核对责任；此cache不等于TCR标签、原OCI备份或全部引用，不据reclaimable删image/tag/volume。新source0完整CI/OCI通过，新自动release39286309198已一次取消并实读cancelled、pub job无步骤，未重复quota失败或改变CD/guard。
