@@ -2,6 +2,23 @@
 
 This on-demand deployment node owns release-product CI, immutable backend image publication/promotion and explicit host provisioning/hardening boundaries. Mini Program bundle upload is routed separately.
 
+## Failure Boundaries And Current Implementation Limits
+
+Release qualification, image publication, host readiness, promotion and live health are separate outcomes. A green Product CI run proves only its executed scope. A successful release workflow whose `publish-and-deploy` job was skipped has not deployed anything. An existing successful current pointer records a completed operation; it does not override a currently stopped or different API container.
+
+| Observed boundary | Responsible next decision |
+| --- | --- |
+| Registry authentication or tag/image quota rejects publication | Resolve that approved registry's access or capacity. Retained-image references and exact recovery govern any proposed retirement; changing CDN configuration does not free registry capacity. |
+| Host preflight rejects disk or another host condition | Use the existing host/storage observations to identify the failing resource and its consumers. Remediate the identified condition through its owner before retrying deployment. |
+| Promotion fails after writers were stopped | Use the operation's failed-step/writer state and current runtime identity with the [operator-preview recovery owner](operator-preview.md). An older healthy receipt is not evidence that service recovered. |
+| API identity/readiness succeeds but an asset or provider path fails | Continue at that actual data/provider/static-delivery boundary, preserving the independently valid backend result. |
+
+The current staging YAML builds/pushes before its host preflight, although preflight still precedes control transfer and promotion. Consequently, a host rejection can leave a newly published image version. The workflow currently has neither a registry-capacity admission step nor a TCR image-retention operation. Earlier readiness/capacity admission and an owned retained-image lifecycle are implementation gaps to repair in this pipeline; this Context does not claim they are implemented. Inspect the actual failed job/step and reuse valid observations instead of repeatedly publishing a new revision to probe an unchanged failure.
+
+The disk threshold is implemented in `infrastructure/deployment/host-preflight.sh`. A threshold rejection is an admission result, not a measurement of the candidate's required disk footprint. Any revision of that capacity policy must account for actual image pull/update overlap, retained rollback images, database backup/restore peaks, logs and operating headroom; reducing the value merely to pass is not a capacity assessment. Docker's rounded reclaimable totals do not establish project ownership or a precise cleanup set. Database volumes, images and build caches have distinct retention/recovery responsibilities; OCI export is not a universal prerequisite for observing space or retiring separately proven disposable cache.
+
+Use the existing bounded diagnostic route for the question it supports. A failed console MFA or missing workstation registry login affects that access route, not a working Actions/SSH route using its existing Environment Secrets. Additional observation is warranted only when it can change the next recovery action. Keep the specific candidate, measurements, failed prerequisites and resumption condition in task evidence rather than growing this Context into an execution log. [Credential consumers and recovery access](data-and-operations.md#configuration-and-secret-boundary) retain their existing authority.
+
 ## Product CI, Image Promotion, And Host Lifecycle
 
 - A Skill may explain or invoke repository-owned release commands after they exist, but it is never the release executor, secret store, environment owner, receipt, approval boundary or source of deployed state. CI/CD and tracked deployment definitions are required for repeatability and auditability.

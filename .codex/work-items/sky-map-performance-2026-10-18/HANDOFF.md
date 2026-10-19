@@ -10,6 +10,8 @@
 
 原gen26 t6aywi/generation-000026-JYgy2m仍UNKNOWN，app1ee545f0…/341文件、deviceSession=null，未重发/绑定；r3–r10是另行授权的新run。保护8791原账号/N05 UNKNOWN草稿/历史、已送达R6提醒、原配对/VPN；不reseed、不清账号、不重发提醒。夜间拟物、100m/cm/屏幕物理尺寸、读屏和大文字排除，B04只按真实规模触发。
 
+用户已确认 CDN 尚未购买。静态分发的选型/采购/接入与后端服务恢复分属不同责任；当前 backend 的 registry额度、主机预检和停止API问题不能归因于缺CDN，也不以购买CDN为恢复前提。职责与现有流程缺口已补入[部署Context](../../../project_context/deployment.md)，部署当前是否成功仍按实际job、receipt和运行健康核对。
+
 ## 当前现场
 
 | 责任 | 最新已确认事实 |
