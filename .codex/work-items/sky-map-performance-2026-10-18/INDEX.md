@@ -1,6 +1,6 @@
 # Starward 收口任务索引
 
-2026-10-19已收到本接手对话的明确继续指令，完整正文Goal已创建为active、无预算、未完成；优先推进无需手机的工作。r10跨日pending白昼连续性及取消终态真机独审复用；普通Play/内存离线解读后仍保完整B缺口。当前源码、任务成果交付、main/真实天气及设备状态以[HANDOFF](HANDOFF.md)为准，不由本索引重复拥有。原gen26仍UNKNOWN，手机依赖保持未验。唯一方案见[PLAN](PLAN.md)，可复制提示词见[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)。
+2026-10-19已收到本接手对话的明确继续指令，完整正文Goal无预算、未完成；实际工具状态由get_goal核对，不沿用索引中的历史active描述。2026-10-20用户要求提交并通过一份文本交给另一电脑Codex；跨机仓库恢复、路径适配及未随Git迁移的资料边界见[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)，当前状态仍只由[HANDOFF](HANDOFF.md)拥有。优先推进无需手机的工作，复用r10跨日pending白昼连续性及取消终态独审；普通Play/内存离线解读后仍保完整B缺口。原gen26仍UNKNOWN，手机依赖保持未验。唯一方案见[PLAN](PLAN.md)，不以交接摘要替代完整目标或全部剩余义务。
 
 [Sky研究与实际基线](SKY-INTERACTION-RESEARCH.md)、[包含SAO的CPU样本](SKY-TIME-CPU-BASELINE.json)、[向量局部试验](SKY-VECTOR-RESEARCH.json)、[拖动边界](SKY-DRAG-BASELINE.json)、[几何窗口](SKY-TIME-WINDOW-PROBE.json)保留结论和限制。生产合批与独审见[R17审查](R17-INDEPENDENT-REVIEW.md)、[恒星集成](SKY-STELLAR-INTEGRATION.md)、[地景修复](R17-LANDSCAPE-REPAIR.md)、[稳定地形请求](OVERLAY-STABLE-WINDOW.md)；当前手机generation和剩余证据见HANDOFF。
 
@@ -137,6 +137,8 @@
 73. [OCI本地复制契约试验](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.md)、[结构化结果](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.json)及[必要证据保全/回收](OCI-OFFLINE-TRIAL-PRESERVATION-20261020.json)：ORAS1.3.5三正例、四故障、两边界已实际执行并由root读回55条bytes检查；fresh目标及root descriptor不可省。122件必要证据留原外部owner，248件临时目录已回收，可恢复。不证明真实私有传输、OCI备份或registry恢复，不重跑toy。
 
 74. [主机构建缓存边界](STAGING-CACHE-RECOVERY-BOUNDARY.md)：聚合不提供项目归属；固定上游history也不能映射到完整cache ID且可能Boot。无归属不新建probe/cleaner或prune；INBOX总量低于当次差额且旧副本保全资格未立，不承诺容量恢复。主机容量与TCR/私有OCI恢复仍分开。
+
+75. [本次跨电脑必要输入交接](CROSS-COMPUTER-TRANSFER.md)、[精确传输与读回状态](CROSS-COMPUTER-TRANSFER.json)及[标准库接收入口](scripts/restore-cross-computer-evidence.py)：当前性能原件、对应冻结源码/maps和H3必要输入的有限私有包；公开运行/重建/Map数据继续沿原runtime lock/LFS/Drive治理，不建第二版本库存。每次提交的必要输入责任由global→资源Context→开发skill承接；资料到达不等于性能修复或手机验收。
 
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 

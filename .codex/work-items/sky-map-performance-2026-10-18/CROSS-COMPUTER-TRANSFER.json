@@ -1,0 +1,83 @@
+{
+  "schema": "starward-task-transfer-receipt-v1",
+  "state": "REMOTE_BYTES_AND_FRESH_RECEIVER_VERIFIED",
+  "sourceCommit": "6b58f4a8504a410de1a298d9c9c081f37444bf63",
+  "purpose": "Continue Map overlay latency and Sky interaction/playback investigation, with required frozen builds/source maps and retained H3 inputs",
+  "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+  "visibility": "OWNER_ONLY",
+  "packet": {
+    "name": "starward-sky-map-evidence-20261020.zip",
+    "bytes": 117018930,
+    "sha256": "532b205f8154d4bb5b4c37fc66ac5eb12d7c1c877d6a81701cbe11dab62b6039",
+    "manifestName": "TRANSFER-MANIFEST.private.json",
+    "manifestSha256": "c4f651cda9617e4adac11cdee6213bcba532136634d07584b05b4345938c0423",
+    "files": 9234,
+    "uncompressedBytes": 194055608,
+    "parts": [
+      {
+        "order": 1,
+        "name": "starward-sky-map-evidence-20261020.zip.part001",
+        "bytes": 94371840,
+        "sha256": "7f039a5d7a30b5c831c8ce3a3262906eaa9fab827f4a216ca9835b6753c5a60e",
+        "driveFileId": "1_zj92Hk5ED6x9fegxzQUSWbn5mBQkjgE",
+        "url": "https://drive.google.com/file/d/1_zj92Hk5ED6x9fegxzQUSWbn5mBQkjgE/view?usp=drivesdk"
+      },
+      {
+        "order": 2,
+        "name": "starward-sky-map-evidence-20261020.zip.part002",
+        "bytes": 22647090,
+        "sha256": "5eea43a30b1b33b7bd8d37203b72eba18418b9fc80a0c5d03ae445190a2b7c4c",
+        "driveFileId": "1IKGmYocamY_0iQByk7pfeNZUIajJOx6G",
+        "url": "https://drive.google.com/file/d/1IKGmYocamY_0iQByk7pfeNZUIajJOx6G/view?usp=drivesdk"
+      }
+    ]
+  },
+  "scope": [
+    "Selected r10 original recordings/screens/metrics/watch, complete frozen build/source maps and original manifest",
+    "Normal Sky CPU profile, actual event/capture associations and matching frozen source/build/maps",
+    "r7 allocation profile, runtime scripts, both mapping levels, frozen source/build/maps, normal Play/Pause and retirement evidence",
+    "r9 normal playback/retirement originals and source/protocol inputs",
+    "r6/r8 terrain wait originals, response/file readiness evidence, finite PNG/proof and matching observation sources",
+    "r8 time and manual-ruler original inputs, metrics and semantics",
+    "H3 frozen source/safe image preparation and the separately preserved original input dependencies"
+  ],
+  "excluded": [
+    "Device/session/control connection configuration and preview authorization material",
+    "Credentials, private database, account storage and N05 phone-local draft",
+    "node_modules and links, repeated feedback projects, reconstructible frame dumps and unrelated old failed heap snapshots"
+  ],
+  "existingDevelopmentData": {
+    "owner": "data-pipelines/runtime-data/current.lock.json",
+    "instructions": "data-pipelines/runtime-data/README.md",
+    "runtimeLocalCheck": {"status": "LOCKED_PUBLIC_FILES_VERIFIED", "files": 1544, "bytes": 234624578, "databaseVerified": false},
+    "remoteMetadataCheckedOn": "2026-10-20",
+    "runtimeDrivePartsPresent": 3,
+    "rebuildDriveObjectsPresent": 9,
+    "mapStaticDriveObjectsPresent": 1,
+    "privateRecoveryEnvelopePresent": true,
+    "mapStaticFreshByteReadback": true,
+    "meaning": "Existing identities and past full admission/readback remain with the original lock/evidence; metadata presence is not a new complete download or database restore. No reupload or r6 republication."
+  },
+  "localVerification": {"allSelectedArchiveMembersVerified": true, "originalR10AndCrossdayManifestsMatched": true, "credentialShapeScanIssues": 0, "freshReceiverFilesVerified": 9234, "freshReceiverBytesVerified": 194055608},
+  "remoteReadback": {
+    "verifiedOn": "2026-10-20",
+    "method": "Independent authenticated Drive raw fetch; exact HTTP byte ranges assembled locally; both part SHA-256 values, complete ZIP, private manifest and every restored file verified in a fresh directory",
+    "partsVerified": 2,
+    "completeArchiveSha256Matched": true,
+    "manifestSha256Matched": true,
+    "restoredFiles": 9234,
+    "restoredBytes": 194055608,
+    "everyRestoredFileSha256Matched": true,
+    "parentFolderAndOwnerOnlyPermissionsVerified": true,
+    "sourceArchivesPreserved": true,
+    "deviceOperations": false,
+    "databaseRestored": false
+  },
+  "restoreOwner": "scripts/restore-cross-computer-evidence.py",
+  "limits": [
+    "This is a selected private evidence transfer, not all historical local artifacts or a running environment.",
+    "Historical manifests remain original and may reference intentionally excluded session configurations or derived frames.",
+    "Restore does not start services, reconnect devices, restore a database, change an account or grant access to any cloud.",
+    "Overlay final native coverage and full normal playback/six-field interaction still require target-device acceptance."
+  ]
+}

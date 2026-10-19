@@ -1,12 +1,26 @@
-# Starward 新对话接手提示词
+# Starward 跨电脑 / 新对话接手提示词
 
 请接手Starward，沿最新PLAN/HANDOFF持续实施完整Goal。这是明确继续指令，原“改完方案先停下”已解除。测试手机由用户携走：优先完成不需要手机的工作；暂不连接/操作手机、不发预览或真机调试、不要求用户立即配合。手机依赖保持未验，待用户明确设备重新可用后再恢复。
 
-工作区：E:/dev/worktrees/Starward/remote-main-20260908。保留codex/remote-main-20260908和全部未提交成果；不切分支、不reset/clean、不新建worktree。
+仓库：`https://github.com/Seven128/Starward.git`；继续使用已有分支 `codex/remote-main-20260908`。用户粘贴的完整提交 SHA 是本次交接点；先核仓库身份、工作区改动和远端提交，再按普通 fetch / 快进取得它，不 force/reset/clean 或覆盖本地成果。交接点之后若已有提交，先核新增内容与任务归属，不机械退回旧版本。
 
-先get_goal。无Goal时按GOAL-OBJECTIVE.md“Goal 正文”全部创建，不设token预算；已有同目标则续用，核实际状态，不以摘要缩减义务或制造重复Goal。当前对话已从null完整创建active；此文字不把工具状态跨聊天继承。完整读取最新INDEX、GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF，以及项目AGENTS、project_context/global.md和相关Context owner、最新小程序开发skill/performance-investigation。
+原电脑工作区是 `E:/dev/worktrees/Starward/remote-main-20260908`，仍须保分支和全部成果、不切分支、不新建 worktree。接收电脑复用自己的合适 checkout；若没有仓库，可普通 clone 到本机约定的开发目录（Windows 默认 `E:/Dev/Starward`），直接选已有交接分支，不创建新的工作分支或 worktree。不把原电脑盘符、用户目录、已装工具路径照搬成本机事实。仓库内入口一律相对当前仓库根目录解析；GOAL 正文中的原绝对入口也按这个规则定位，完整目标正文不删减。
+
+先get_goal。无Goal时按GOAL-OBJECTIVE.md“Goal 正文”全部创建，不设token预算；已有同目标则续用，核实际状态，不以摘要缩减义务或制造重复Goal。发送端最后实际状态为blocked、无预算、未完成；该状态和聊天记忆不假定跨电脑自动继承。本提示由用户在接收端明确要求执行即为继续授权，依赖未就绪的结果仍保留未验。完整读取最新INDEX、GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF，以及项目AGENTS、project_context/global.md和相关Context owner、最新小程序开发skill/performance-investigation。
 
 沿同一方案，复用已完成研究、r10跨日真机结果和有效证据，不重做同轮方案审查。实际Git/CI/CD、候选、服务、IDE和在途操作只由HANDOFF拥有，先按那里核现场；不要沿历史PID、旧session或旧截图输入。
+
+跨电脑恢复边界：
+
+- 代码、项目skill/Context、唯一PLAN/完整Goal及脱敏任务证据已在Git。先确认交接提交及必要依赖，按需准备资源；不要为了开始读代码就下载所有LFS或17GB原始TIFF。
+- 真实运行成品、EOG原始数据和有限Map静态包的版本及远端定位由 `data-pipelines/runtime-data/current.lock.json` 统一拥有，按其README和已有 `backend:data:*` 命令只恢复所需组。已核验的Drive镜像不等于接收机已下载；新收到的字节仍须走现有准入，但不重做原研究、不重产r6。普通开发不依赖重建源TIFF。
+- 私有数据库和旧A/N原始材料沿 `.codex/work-items/data-handoff-20261018/RESTORE.txt`、同目录manifest及既有私有恢复owner恢复；仅在需要时使用新建自有数据库，不能覆盖已有账号/草稿。凭据、密钥、连接器登录态与手机本机N05不会随Git或文本迁移；缺少哪个授权入口就保留哪个缺口，继续独立工作，不输出或转贴密钥。
+- 用户随后明确要求必要性能原件随Google Drive交接。先读 [CROSS-COMPUTER-TRANSFER.md](CROSS-COMPUTER-TRANSFER.md) 与其JSON回执，按实际上传/读回状态取得所列两片并运行已有接收脚本；原件选择、完整ZIP/逐文件hash和恢复入口随本提交绑定。包含r10普通/跨日原件和冻结构建、正常CPU及事件输入、r7分配与两层源码映射、r6/r8地形和r8手动时间/r9退休证据、H3必要源材料。沿原件身份复用审查，不重做资格/大矩阵，也不把传输成功当性能修复。原始归档仍保留，私有逐文件manifest不进Git；未取得的原件不能冒充亲自读过。
+- 原电脑的IDE窗口、临时进程/端口、防火墙规则、提权缓存、ADB配对和服务健康都是原机现场；接收端只核自己的相关条件，不按原taskId/PID/路径操作另一台电脑，也不把原机收尾义务记成已完成。GitHub可达、云账号/Drive可用、数据库恢复及实际服务健康分别核验。
+
+用户已明确要求每次提交把代码、Context、Harness与必要开发输入绑定为同一恢复点。遵守global入口链接的资源Context提交规则及开发skill：先识别本次消费者/未完调查所需输入；未变的合格远端对象复用，新增或变化的必要外部内容按既有LFS/私有Drive入口发布及读回，并把对应lock/manifest与代码同次提交。当前自动化只核已声明公共数据，不能假定Git/CI会自动同步任意Drive、数据库或ignored证据；缺必要绑定时不得宣称可恢复交付完成。
+
+部署最新澄清：用户确认CDN尚未购买；这不构成现有后端恢复的前置条件。TCR100版本额度、主机9.7025GiB低于10GiB guard、最后实观API停止仍未解决；绿色发布且publish-and-deploy skipped不是部署成功。先读 `project_context/deployment.md` 及其pipeline/current-state/decisions节点；先推镜像后主机预检、缺容量准入/版本回收是明确的现有流程缺口，Context更新不代表代码已修或服务恢复。不因换电脑重试未变化的失败、降低guard、广泛prune、采购CDN或另造部署系统。
 
 接手优先推进：
 

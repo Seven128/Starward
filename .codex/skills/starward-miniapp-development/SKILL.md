@@ -41,4 +41,6 @@ For slow launch, requests, data updates, interactions, rendering or memory growt
 
 Batch coherent repairs, then observe changed behavior and affected consumers. Reuse valid evidence and stop under `AGENTS.md`; imagined edge cases or reassurance do not justify broader checks. Document changes need document checks, and skill updates need package/loading checks, not whole-product reruns.
 
+Before committing/delivering changes or handing work to another computer, follow the [commit-bound input responsibility](../../../project_context/development-workflow/resources-and-artifacts.md#each-commit-binds-the-required-development-inputs): identify the changed consumers' required data and the evidence still needed for unfinished diagnosis, reuse valid unchanged remote objects, and bind new/changed inputs through the existing publication/recovery owners and same-commit lock/manifests. Git/CI success does not establish Drive, private-state or diagnostic-evidence synchronization.
+
 Keep logs bounded/redacted, stop on unexpected results and never automatically replay a possibly completed mutation. Close only owned connections/processes. Keep device, service and product failures explicit. Use `starward-wechat-device-verification` for physical behavior and `starward-miniapp-release` for environment-bound delivery without duplicating their workflows.
