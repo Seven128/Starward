@@ -1086,15 +1086,15 @@ function OrientationTimeRuler({
         ) : null}
       </View>
       <View id="sky-orientation-time-ruler-axis" className="sky-orientation-time-ruler__axis" aria-hidden="true"
-        style={{ visibility: ticksVisible ? "visible" : "hidden" }} />
-      {/* Ticks keep their layout while hidden, so a real native read can
-          qualify their first visible selected instant before the reveal. */}
+        style={{ opacity: ticksVisible ? 1 : 0 }} />
+      {/* Admission changes only the fixed contents' presentation. Keep the
+          native container unchanged and its controls in fixed sibling slots,
+          so a removal cannot rehydrate its parent after a position read. */}
       <ScrollView
         scrollX={!interactionDisabled}
         enhanced
         fastDeceleration
         showScrollbar={false}
-        style={{ visibility: ticksVisible ? "visible" : "hidden" }}
         className="sky-orientation-time-ruler__viewport"
         id="sky-orientation-time-ruler-scroll"
         data-od-id="sky-orientation-time-ruler-scroll"
@@ -1136,7 +1136,8 @@ function OrientationTimeRuler({
           settlement.end();
         }}
       >
-        <View className="sky-orientation-time-ruler__track">
+        <View className="sky-orientation-time-ruler__track"
+          style={{ opacity: ticksVisible ? 1 : 0, pointerEvents: ticksVisible ? "auto" : "none" }}>
           {rows.map((row, index) => {
             const distance = orientationRulerDistance(index, visualIndex);
             const isSelected = index === previewValue;
@@ -1166,14 +1167,20 @@ function OrientationTimeRuler({
           })}
         </View>
       </ScrollView>
-      {!ticksVisible ? <Button className="sky-orientation-time-ruler__position-state"
-        disabled={interactionDisabled || !layoutReady}
-        onClick={() => {
-          cancelPosition(); setPositionFailed(false);
-          layout.invalidate(true); layout.measure();
-        }}>
-        {positionFailed ? "时间尺暂不可用，重试" : "时间尺定位中，重试"}
-      </Button> : null}
+      <View className="sky-orientation-time-ruler__position-guard" catchMove
+        style={{ opacity: ticksVisible ? 0 : 1, pointerEvents: ticksVisible ? "none" : "auto" }}
+        onClick={event => event.stopPropagation()} onTouchStart={event => event.stopPropagation()}
+        onTouchMove={event => event.stopPropagation()} onTouchEnd={event => event.stopPropagation()}>
+        <Button className="sky-orientation-time-ruler__position-state"
+          disabled={ticksVisible || interactionDisabled || !layoutReady}
+          onClick={() => {
+            if (ticksVisible || interactionDisabled || !layoutReady) return;
+            cancelPosition(); setPositionFailed(false);
+            layout.invalidate(true); layout.measure();
+          }}>
+          {positionFailed ? "时间尺暂不可用，重试" : "时间尺定位中，重试"}
+        </Button>
+      </View>
       <View className="sky-orientation-time-ruler__assistive" role="group" aria-label="观测时刻辅助操作">
         <Button
           className="sky-orientation-time-ruler__step"
@@ -1192,24 +1199,23 @@ function OrientationTimeRuler({
           更晚一个时刻
         </Button>
       </View>
-      {isPreviewing ? (
-        <SoftButton
-          variant="ghost"
-          className="sky-orientation-time-ruler__cancel"
-          label="取消观测时刻预览"
-          disabled={interactionDisabled}
-          onClick={() => {
-            settlement.cancel();
-            if (committedIndex >= 0) {
-              setVisualIndex(safeCommittedIndex);
-              positionIndex(safeCommittedIndex);
-            }
-            onCancel();
-          }}
-        >
-          取消预览
-        </SoftButton>
-      ) : null}
+      <SoftButton
+        variant="ghost"
+        className={`sky-orientation-time-ruler__cancel${isPreviewing ? "" : " sky-orientation-time-ruler__cancel--inactive"}`}
+        label="取消观测时刻预览"
+        disabled={interactionDisabled || !isPreviewing}
+        onClick={() => {
+          if (!isPreviewing) return;
+          settlement.cancel();
+          if (committedIndex >= 0) {
+            setVisualIndex(safeCommittedIndex);
+            positionIndex(safeCommittedIndex);
+          }
+          onCancel();
+        }}
+      >
+        取消预览
+      </SoftButton>
     </View>
   );
 }

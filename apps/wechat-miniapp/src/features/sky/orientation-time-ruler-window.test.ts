@@ -151,7 +151,15 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
     get measurementCount() { return measurementCount; },
     get nextTickCount() { return nextTickCount; },
     get scroll() { return tree.children.find(child => child?.type === "scroll")!.props; },
-    get positionState() { return tree.children.find(child => child?.props.className === "sky-orientation-time-ruler__position-state"); },
+    get track() { return tree.children.find(child => child?.type === "scroll")!.children[0]!.props; },
+    get axis() { return tree.children.find(child => child?.props.id === "sky-orientation-time-ruler-axis")!.props; },
+    get positionGuard() { return tree.children.find(child => child?.props.className === "sky-orientation-time-ruler__position-guard")?.props; },
+    get positionState() {
+      const guard = tree.children.find(child => child?.props.className === "sky-orientation-time-ruler__position-guard");
+      return guard?.children.find(child => child?.props.className === "sky-orientation-time-ruler__position-state");
+    },
+    get siblings() { return tree.children.filter(Boolean).map(child => [child.type,
+      child.props.id ?? child.props.className?.split(" ")[0]]); },
     get cancel() { return tree.children.find(child => child?.type === "soft")!.props; },
     render(next: Props) { props = next; flush(); }, flush, nativeReady,
     renderBeforeEffects(next: Props) { props = next; renderComponent();
@@ -262,6 +270,43 @@ const nativeSample = [{ left: 194.7, width: 1 }, { left: -396, width: 17 },
   { left: -379, width: 17 }, { scrollLeft: 583.200012 }];
 const near = (actual: number, expected: number, message = `${actual} != ${expected}`) => assert.ok(Math.abs(actual - expected) < 1e-9, message);
 
+test("native scroll surface and its sibling slots stay stable through admission, preview and recovery", () => {
+  const props = windowProps(original, original[33]!.at, original[33]!.at);
+  const r = rulerFixture({ ...props, preparing: true }, 390);
+  const siblings = r.siblings, scrollClass = r.scroll.className;
+  const stableSurface = () => {
+    assert.equal(r.scroll.style, undefined, "admission must not change the enhanced ScrollView's own style");
+    assert.equal(r.scroll.className, scrollClass);
+    assert.equal(r.scroll.enhanced, true); assert.equal(r.scroll.scrollX, true);
+    assert.equal(r.scroll.scrollLeft, undefined); assert.equal(r.scroll.scrollWithAnimation, undefined);
+    assert.deepEqual(r.siblings, siblings, "native admission and preview controls cannot add/remove siblings around the ScrollView");
+  };
+  stableSurface();
+  r.takeLayoutRead()!(nativeSample); r.flush(); stableSurface();
+  assert.equal(r.track.style.opacity, 1); assert.equal(r.axis.style.opacity, 1);
+  assert.equal(r.positionGuard?.style.pointerEvents, "none");
+  assert.equal(r.positionState?.props.disabled, true, "the retired recovery control remains mounted but cannot retry");
+  const commands = r.nativeCommands.length;
+  r.positionState!.props.onClick(); r.flush();
+  assert.equal(r.nativeCommands.length, commands, "a hidden recovery control cannot issue another position command");
+  r.render({ ...props, isPreviewing: true }); stableSurface();
+  assert.equal(r.cancel.disabled, false);
+  r.render({ ...props, isPreviewing: false }); stableSurface();
+  assert.equal(r.cancel.disabled, true);
+  r.cancel.onClick(); assert.equal(r.cancels, 0, "an inactive retained Cancel cannot retract the current time");
+  r.resize(); stableSurface();
+  r.takeLayoutRead()!([]); r.takeLayoutRead()!([]); r.flush(); stableSurface();
+  assert.equal(r.track.style.opacity, 0); assert.equal(r.axis.style.opacity, 0);
+  assert.equal(r.positionGuard?.catchMove, true);
+  assert.equal(r.positionGuard?.style.pointerEvents, "auto");
+  assert.equal(r.positionState?.props.disabled, false);
+  r.positionState!.props.onClick(); r.flush();
+  r.takeLayoutRead()!(nativeSample); r.flush(); stableSurface();
+  assert.equal(r.track.style.opacity, 1); assert.equal(r.positionGuard?.style.pointerEvents, "none");
+  assert.deepEqual(r.previews, []); assert.deepEqual(r.commits, []);
+  r.unmount();
+});
+
 test("entry observes its selected native position before its first ticks become visible", () => {
   const props = windowProps(original, original[33]!.at, original[33]!.at);
   const ready: boolean[] = [];
@@ -269,21 +314,21 @@ test("entry observes its selected native position before its first ticks become 
   assert.equal(r.positions.length, 0, "transparent unscaled preparation must not send a nominal scroll");
   assert.equal(r.scroll.scrollLeft, undefined, "React is not a second positioning writer");
   assert.equal(r.scroll.scrollWithAnimation, undefined);
-  assert.equal(r.scroll.style.visibility, "hidden");
+  assert.equal(r.track.style.opacity, 0);
   r.takeLayoutRead()!(nativeSample); r.flush();
   near(r.nativeCommands.at(-1)!.left, 561.500012);
   assert.equal(r.nativeCommands.at(-1)!.animated, false, "the native entry command cannot traverse unrelated times");
-  assert.equal(r.scroll.style.visibility, "hidden", "command return and a still-old actual offset do not reveal ticks");
+  assert.equal(r.track.style.opacity, 0, "command return and a still-old actual offset do not reveal ticks");
   assert.equal(r.positionState?.children[0], "时间尺定位中，重试", "an early old offset is pending, not unavailable");
   assert.deepEqual(ready, [true], "six fields can be revealed even if the ruler offset is still pending");
   r.render({ ...props, layoutReady: false, onEntryReady: value => ready.push(value) });
   r.arrive(561.4222412109375);
-  assert.equal(r.scroll.style.visibility, "hidden", "a preparation receipt cannot qualify the surface during its reveal");
+  assert.equal(r.track.style.opacity, 0, "a preparation receipt cannot qualify the surface during its reveal");
   r.render({ ...props, onEntryReady: value => ready.push(value) });
-  assert.equal(r.scroll.style.visibility, "hidden", "the actual endpoint allows a new layout read, not immediate visibility");
+  assert.equal(r.track.style.opacity, 0, "the actual endpoint allows a new layout read, not immediate visibility");
   r.takeLayoutRead()!(nativeSample); r.flush();
   assert.equal(r.nativeCommands.at(-1)!.animated, false);
-  assert.equal(r.scroll.style.visibility, "visible", "current stable layout and actual offset can qualify the ruler");
+  assert.equal(r.track.style.opacity, 1, "current stable layout and actual offset can qualify the ruler");
   assert.deepEqual(r.previews, []); assert.deepEqual(r.commits, [], "program positioning is not a time intention");
   r.unmount();
 });
@@ -295,22 +340,22 @@ test("a native offset reset during reveal cannot expose unrelated times or anima
     { left: 201, width: 17 }, { scrollLeft: 0 }];
   r.takeLayoutRead()!(r6ZeroOffsetLayout); r.flush();
   r.arrive(561.4222412109375);
-  assert.equal(r.scroll.style.visibility, "visible", "transparent preparation has a valid real offset");
+  assert.equal(r.track.style.opacity, 1, "transparent preparation has a valid real offset");
   const preparedCommands = r.nativeCommands.length;
   r.render({ ...props, layoutReady: false });
-  assert.equal(r.scroll.style.visibility, "hidden", "opening retires the earlier native admission before revealing the surface");
+  assert.equal(r.track.style.opacity, 0, "opening retires the earlier native admission before revealing the surface");
   r.arrive(0);
-  assert.equal(r.scroll.style.visibility, "hidden", "the unrelated noon/afternoon window must remain hidden");
+  assert.equal(r.track.style.opacity, 0, "the unrelated noon/afternoon window must remain hidden");
   assert.equal(r.nativeCommands.length, preparedCommands, "the changing scale is not a positioning boundary");
   r.render(props);
-  assert.equal(r.scroll.style.visibility, "hidden", "a transition endpoint alone is not native alignment");
+  assert.equal(r.track.style.opacity, 0, "a transition endpoint alone is not native alignment");
   r.takeLayoutRead()!(r6ZeroOffsetLayout); r.flush();
   assert.equal(r.nativeCommands.length, preparedCommands + 1, "one fresh layout schedules one correction");
   near(r.nativeCommands.at(-1)!.left, 561.5);
   assert.equal(r.nativeCommands.at(-1)!.animated, false, "a reset after entry cannot turn into visible travel through unrelated times");
-  assert.equal(r.scroll.style.visibility, "hidden", "native command return with an old offset remains unqualified");
+  assert.equal(r.track.style.opacity, 0, "native command return with an old offset remains unqualified");
   r.arrive(561.4222412109375);
-  assert.equal(r.scroll.style.visibility, "visible");
+  assert.equal(r.track.style.opacity, 1);
   assert.deepEqual(r.previews, []); assert.deepEqual(r.commits, []);
   r.unmount();
 });
@@ -322,13 +367,13 @@ test("missing endpoint geometry cannot reuse preparation and a later retry resto
   const preparedCommands = r.nativeCommands.length;
   r.render({ ...props, layoutReady: false }); r.arrive(0); r.render(props);
   r.takeLayoutRead()!([]); r.takeLayoutRead()!([]); r.flush();
-  assert.equal(r.scroll.style.visibility, "hidden", "a former unscaled projection is not a current layout read");
+  assert.equal(r.track.style.opacity, 0, "a former unscaled projection is not a current layout read");
   assert.equal(r.nativeCommands.length, preparedCommands, "missing geometry cannot send an unverified correction");
   assert.equal(r.positionState?.children[0], "时间尺暂不可用，重试");
   r.positionState!.props.onClick(); r.flush();
   r.takeLayoutRead()!(nativeSample); r.flush();
   assert.equal(r.nativeCommands.at(-1)!.animated, false);
-  assert.equal(r.scroll.style.visibility, "visible", "the normal bounded recovery can qualify the ruler");
+  assert.equal(r.track.style.opacity, 1, "the normal bounded recovery can qualify the ruler");
   r.unmount();
 });
 
@@ -339,15 +384,15 @@ test("a reveal readiness reversal retires queued native work before passive effe
   const late = r.takeNodeRead()!;
   assert(late, "the preparation's native node callback is queued");
   r.renderBeforeEffects({ ...props, layoutReady: false });
-  const reopened = r.renderBeforeEffects(props);
-  assert.equal(reopened.style.visibility, "hidden");
+  r.renderBeforeEffects(props);
+  assert.equal(r.track.style.opacity, 0);
   let writes = 0;
   late([{ node: { scrollTo() { writes++; } } }]);
   assert.equal(writes, 0, "returning to ready cannot revive a preparation's retired command");
   r.commitEffects();
   r.takeLayoutRead()!([]); r.takeLayoutRead()!([]); r.nativeReady(); r.flush();
   assert.equal(r.positions.length, 0, "a readiness reversal still requires fresh geometry, even when its final boolean matches preparation");
-  assert.equal(r.scroll.style.visibility, "hidden");
+  assert.equal(r.track.style.opacity, 0);
   r.unmount();
 });
 
@@ -364,9 +409,9 @@ test("a preparation geometry callback cannot certify a reveal reversal before pa
   let writes = 0;
   r.takeNodeRead()?.([{ node: { scrollTo() { writes++; } } }]);
   r.readOffset([{ scrollLeft: 561.5 }]);
-  const current = r.renderBeforeEffects(props);
+  r.renderBeforeEffects(props);
   assert.equal(writes, 0, "late preparation geometry cannot create a new native write");
-  assert.equal(current.style.visibility, "hidden", "returning to ready cannot revive preparation's layout");
+  assert.equal(r.track.style.opacity, 0, "returning to ready cannot revive preparation's layout");
   r.unmount();
 });
 
@@ -382,23 +427,23 @@ test("missing entry layout exposes a recoverable ruler state and a later retry u
   r.positionState!.props.onClick(); r.flush();
   r.takeLayoutRead()!(nativeSample); r.flush();
   near(r.nativeLeft, 561.500012);
-  assert.equal(r.scroll.style.visibility, "visible");
-  assert.equal(r.positionState, undefined); assert.deepEqual(r.commits, []);
+  assert.equal(r.track.style.opacity, 1);
+  assert.equal(r.positionGuard?.style.opacity, 0); assert.deepEqual(r.commits, []);
   r.unmount();
 });
 
 test("pending geometry does not hide the six-field entry and a changed selection cannot expose an old tick during reveal", () => {
   const ready: boolean[] = [], props = windowProps(original, original[33]!.at, original[33]!.at);
   const waiting = rulerFixture({ ...props, selectionReady: false, preparing: true, onEntryReady: value => ready.push(value) }, 390);
-  assert.deepEqual(ready, [true]); assert.equal(waiting.scroll.style.visibility, "hidden");
+  assert.deepEqual(ready, [true]); assert.equal(waiting.track.style.opacity, 0);
   assert.deepEqual(waiting.positions, []); waiting.unmount();
   const r = rulerFixture({ ...props, preparing: true }, 390);
-  r.takeLayoutRead()!(nativeSample); r.flush(); assert.equal(r.scroll.style.visibility, "visible");
+  r.takeLayoutRead()!(nativeSample); r.flush(); assert.equal(r.track.style.opacity, 1);
   r.render({ ...props, activeIndex: 32, layoutReady: false });
-  assert.equal(r.scroll.style.visibility, "hidden", "new digits cannot reuse the old selected tick before their command is admitted");
+  assert.equal(r.track.style.opacity, 0, "new digits cannot reuse the old selected tick before their command is admitted");
   r.render({ ...props, activeIndex: 32, layoutReady: true });
   r.takeLayoutRead()!(nativeSample); r.flush();
-  assert.equal(r.scroll.style.visibility, "visible"); near(r.nativeLeft, 544.500012);
+  assert.equal(r.track.style.opacity, 1); near(r.nativeLeft, 544.500012);
   r.unmount();
 });
 
@@ -426,16 +471,16 @@ test("an old installed offset cannot admit replacement rows before their native 
   const props = windowProps(original, original[33]!.at, original[33]!.at);
   const r = rulerFixture(props, 390, true);
   r.nativeReady(); r.takeLayoutRead()!(nativeSample); r.nativeReady(); r.flush();
-  assert.equal(r.scroll.style.visibility, "visible");
+  assert.equal(r.track.style.opacity, 1);
   const oldLeft = r.nativeLeft, commands = r.positions.length;
   r.render(windowProps(previous, previous[33]!.at, original[33]!.at));
   assert.equal(r.positions.length, commands, "the new native update has not been crossed");
-  assert.equal(r.scroll.style.visibility, "hidden");
+  assert.equal(r.track.style.opacity, 0);
   r.scroll.onScroll({ detail: { scrollLeft: oldLeft } });
   r.readOffset([{ scrollLeft: oldLeft }]); r.flush();
-  assert.equal(r.scroll.style.visibility, "hidden", "an old offset matching the new index is still from the old installation");
+  assert.equal(r.track.style.opacity, 0, "an old offset matching the new index is still from the old installation");
   r.nativeReady(); r.flush();
-  assert.equal(r.scroll.style.visibility, "visible", "the current native command and observed position can admit the replacement");
+  assert.equal(r.track.style.opacity, 1, "the current native command and observed position can admit the replacement");
   r.unmount();
 });
 
@@ -446,9 +491,9 @@ test("an uninstalled A to B to A replacement cannot reuse A's old native install
   r.render(windowProps(previous, previous[33]!.at, original[33]!.at));
   r.render(props);
   assert.equal(r.takeNodeRead(), undefined, "returning to the old row identity still waits for the latest child update");
-  assert.equal(r.scroll.style.visibility, "hidden");
+  assert.equal(r.track.style.opacity, 0);
   r.nativeReady(); r.flush();
-  assert.equal(r.scroll.style.visibility, "visible");
+  assert.equal(r.track.style.opacity, 1);
   r.unmount();
 });
 
@@ -456,10 +501,10 @@ test("an A to B to A render cannot expose retired ticks before passive effects",
   const props = windowProps(original, original[33]!.at, original[33]!.at);
   const r = rulerFixture(props, 390, true);
   r.nativeReady(); r.takeLayoutRead()!(nativeSample); r.nativeReady(); r.flush();
-  assert.equal(r.scroll.style.visibility, "visible");
+  assert.equal(r.track.style.opacity, 1);
   const next = windowProps(previous, previous[33]!.at, original[33]!.at);
-  assert.equal(r.renderBeforeEffects(next).style.visibility, "hidden");
-  assert.equal(r.renderBeforeEffects(props).style.visibility, "hidden",
+  r.renderBeforeEffects(next); assert.equal(r.track.style.opacity, 0);
+  r.renderBeforeEffects(props); assert.equal(r.track.style.opacity, 0,
     "retiring the native installation must hide ticks in render, before effects can retire the old alignment state");
   r.unmount();
 });

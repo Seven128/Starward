@@ -1805,14 +1805,25 @@
   height: 0;
 }
 
-.sky-orientation-time-ruler__position-state {
+.sky-orientation-time-ruler__position-guard {
   position: absolute;
   z-index: 3;
   inset: 0;
+}
+
+.sky-orientation-time-ruler__position-state {
+  position: absolute;
+  top: var(--type-body-secondary-line);
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   min-height: 44Px;
   margin: 0;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   background: transparent;
   color: var(--text-secondary);
@@ -1929,6 +1940,12 @@
   color: var(--text-secondary);
   font-size: var(--type-action-size);
   line-height: var(--type-action-line);
+}
+
+.sky-orientation-time-ruler__cancel--inactive.soft-button {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .sky-orientation-time-ruler__empty {
