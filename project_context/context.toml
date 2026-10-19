@@ -165,7 +165,7 @@ triggers = ["selected design authority", "workflow scope", "dependency direction
 path = "project_context/development-workflow/development-feedback.md"
 role = "verification"
 read_policy = "on-demand"
-triggers = ["native-first feedback", "warm devtools", "physical development feedback", "开发反馈", "wechatide", "WXML", "小程序调试", "性能测量", "GPU计时", "官方 skill 同步"]
+triggers = ["native-first feedback", "warm devtools", "physical development feedback", "开发反馈", "wechatide", "WXML", "小程序调试", "miniapp performance", "小程序性能分析", "小程序卡顿", "小程序内存", "性能测量", "GPU计时", "官方 skill 同步"]
 
 [[context]]
 path = "project_context/development-workflow/candidate-acceptance.md"

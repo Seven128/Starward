@@ -1,6 +1,6 @@
 ---
 name: starward-miniapp-development
-description: Develop and debug Starward's WEAPP Mini Program with the matching official WeChat DevTools skill, scoped runtime observations and an existing warm session. Use for WXML/style/state inspection, Console/Network diagnosis and development-tool maintenance; device work and release have separate project skills.
+description: Develop, debug and investigate performance in Starward WEAPP (小程序开发、调试与性能分析). Use for slow launch, interaction/rendering delays, memory growth, WXML/style/state or request failures, and development-tool maintenance. Match the official WeChat DevTools skill and reuse the existing session; device operation and release have separate project skills.
 ---
 
 # Starward Mini Program development
@@ -28,10 +28,14 @@ Use only relevant rows; this is not an every-edit checklist.
 | Wrong state, event or navigation | Relevant page-data field and one real action followed by route/state readback; Console for attributable exceptions. Calling a handler is not proof of a working visible control. |
 | Failed or stale request | Filtered Network for the endpoint and related error/state; confirm origin and source/runtime identity. Empty filtered output does not prove no requests. |
 | Compiled output differs from source | Current build/watch result and changed emitted value. `compile_wxml`/`compile_wxss` are summaries, not rendered-page proof. Preserve storage during justified refresh/reopen. |
-| Concrete latency, allocation or frame problem | Measure one representative operation at its owner. Use available debugger profiling, Sources/source maps or scoped SDK/API measurements when they answer that question. A GUI panel does not imply an agent-callable API. |
+| Concrete latency, allocation or frame problem | Use the [performance investigation method](references/performance-investigation.md) to select a measurement or control that distinguishes the remaining causes. |
 | Canvas/native layer disagrees with WXML | Separate node/style facts from composition/capture facts; inspect the declared runtime/display boundary. WebView structure or H5 pixels cannot establish native visibility. |
 
-For startup or SDK timeouts, read [bounded recovery](references/startup-recovery.md). Stop queuing operations on a failed channel. Performance traces, memory snapshots and third-party CDP bridges are optional gap-driven tools, not routine gates. Before adoption, check current compatibility, target/scene identity and restart/storage effects; do not install duplicate automation stacks or enable debug ports speculatively.
+For tool startup or SDK timeouts, read [bounded recovery](references/startup-recovery.md). Stop queuing operations on a failed channel.
+
+## Performance investigations
+
+For slow launch, requests, data updates, interactions, rendering or memory growth, read the [performance investigation method](references/performance-investigation.md) before choosing measurements, diagnostic changes or substitute observations. It owns measurement selection, metric interpretation, capability checks and recovery of blocked investigations. Project requirements and adopted decisions stay with the linked Context owners; current sessions, samples and unfinished observations stay with the task. A performance question does not require every profiling tool or a new acceptance suite.
 
 ## Complete the changed responsibility
 

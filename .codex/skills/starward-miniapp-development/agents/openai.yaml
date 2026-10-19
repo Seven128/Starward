@@ -1,4 +1,4 @@
 interface:
-  display_name: "Starward 小程序开发调试"
-  short_description: "按问题选工具，复用开发会话，并同步匹配的微信官方 skill"
-  default_prompt: "Use $starward-miniapp-development to debug the current WEAPP issue with scoped official observations and reuse valid evidence."
+  display_name: "Starward 小程序开发调试与性能分析"
+  short_description: "小程序开发调试与性能分析：按问题选测量工具，复用会话与已有证据"
+  default_prompt: "Use $starward-miniapp-development to develop or debug the current WEAPP issue, choosing scoped measurements for performance questions and reusing valid sessions and evidence."
