@@ -6,7 +6,7 @@ import ts from "typescript";
 import type { ApiEnvelope, ObservationContext, SkyReport } from "@starward/miniapp-contracts";
 import { observationNightBounds } from "@starward/miniapp-contracts";
 import { createSkyTimeCommitContinuity, skyReportMatchesContext } from "./sky-time-commit-continuity";
-import { presentSkyTime, skyPresentationTimeModel } from "./sky-time-presentation";
+import { presentSkyTime, selectSkyTimePresentation, skyPresentationTimeModel } from "./sky-time-presentation";
 import { attachSkyCatalog } from "./sky-stellar-scene";
 import { confirmedObservationContextEdit, type ConfirmedObservationContextReply } from "../../services/observation-context-recovery";
 import { skyForecastPresentation } from "../../services/forecast-presentation";
@@ -134,13 +134,14 @@ test("actual page keeps its native Canvas and resource eligibility during the ad
   for (const statement of page.body!.statements) if (ts.isVariableStatement(statement))
     for (const declaration of statement.declarationList.declarations) declarations.set(declaration.name.getText(file), declaration);
   const names = ["carriedReport", "report", "data", "contextMatches", "rawReportData", "skyResourcesActive", "timeModel", "timeBinding", "committedAt",
-    "requestedAt", "timeGeometrySources", "timePresentation", "timeGeometryReady", "timePlaying", "fineTargetBinding", "geometryReport", "reportData", "row", "nativeCanvasMounted"];
+    "requestedAt", "timeGeometrySources", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation", "timeGeometryReady", "timePlaying", "fineTargetBinding", "geometryReport", "reportData", "row", "nativeCanvasMounted"];
   const code = ts.transpileModule(names.map(name => { const declaration = declarations.get(name); assert(declaration); return `const ${declaration.getText(file)};`; }).join("\n") +
     "\n({report,rawReportData,skyResourcesActive,nativeCanvasMounted,fineTargetBinding,row});", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const reportQuery = { data: undefined, isPending: true, isFetching: true, isError: false };
   const result = vm.runInNewContext(code, { timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
     resourcePageVisible: true, contextComplete: true, contextSession: { ownsContext: () => true }, reportQuery, rejectedReportError: null,
-    skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, useMemo: (fn: () => unknown) => fn(), timeIntent: {},
+    skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, selectSkyTimePresentation, useMemo: (fn: () => unknown) => fn(), timeIntent: {},
+    pageVisible: true, mode: "NIGHT", canvasError: null, presentedSkyFrame: null,
     previewGeometry: { model: skyPresentationTimeModel(f.source.data) },
     fineTargetData: null, timeScrubbing: false, stellarCatalog: {}, attachSkyCatalog,
     manualBasis: { forward: [0, Math.SQRT1_2, Math.SQRT1_2] }, devicePose: null, orientation: { presented: { current: null } } });
@@ -150,7 +151,8 @@ test("actual page keeps its native Canvas and resource eligibility during the ad
   f.owner.clear();
   const revoked = vm.runInNewContext(code, { timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
     resourcePageVisible: true, contextComplete: true, contextSession: { ownsContext: () => true }, reportQuery, rejectedReportError: null,
-    skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, useMemo: (fn: () => unknown) => fn(), timeIntent: {},
+    skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, selectSkyTimePresentation, useMemo: (fn: () => unknown) => fn(), timeIntent: {},
+    pageVisible: true, mode: "NIGHT", canvasError: null, presentedSkyFrame: null,
     previewGeometry: { model: null },
     fineTargetData: null, timeScrubbing: false, stellarCatalog: {}, attachSkyCatalog,
     manualBasis: {}, devicePose: null, orientation: { presented: { current: null } } });

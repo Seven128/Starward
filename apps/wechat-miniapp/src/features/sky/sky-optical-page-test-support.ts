@@ -27,7 +27,7 @@ export const skyPageSceneTestDependencies={liveSkyOpticalCompletion,sameSkyOptic
 
 /** Minimum empty resource declarations for tests of the page's camera port.
  * Supplied publications/bitmaps remain unchanged; absence is never success. */
-export const skyPageCanvasTestFrame = <T extends object>(frame: T) => ({ mode: "NIGHT", preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
+export const skyPageCanvasTestFrame = <T extends object>(frame: T) => ({ mode: "NIGHT", timePresentation: null, preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
 
 /** Shared controlled ports for the actual page Canvas callbacks. Every caller
  * supplies its result-bearing ports; these defaults represent absent resources
@@ -51,6 +51,7 @@ export function skyPageCanvasTestBindings(bindings:Record<string,any>={}) {
     canvasDrawRevisionRef:{current:0},canvasSurfaceRef,
     automaticContributionGroupsRef:{current:0},acceptSkyCalibrationRef:{current(){}},
     preparedRegionFailureRef:{current(){}},browsingDrawRef:{current(){}},
+    renderTimePresentation:null,timePresentationScope:{},
     orientationController:{snapshot:()=>({alignment:{mode:'auto'}})},
     manualBasisRef:{current:null},objectTracking:{snapshot:()=>({target:null})},zoomRef:{current:45},
     viewportInsetsRef:{current:{top:0,bottom:0}},reducedMotionRef:{current:false},

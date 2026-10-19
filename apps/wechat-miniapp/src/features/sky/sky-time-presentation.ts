@@ -71,10 +71,23 @@ function weatherAt(rows: SkyReport["hourly"], at: string): HourlySkyRow | null {
 }
 
 export interface SkyTimePresentation {
+  source: SkyReport;
+  model: SkyTimeModel | null;
   report: SkyGeometryReport;
   row: SkyGeometryRow;
   weather: HourlySkyRow | null;
   mode: "EXACT" | "MODEL";
+}
+
+/** The page supplies only its current lifecycle-accepted input. Reusing that
+ * one input keeps resource demand and drawing on the same valid instant while
+ * another window loads; cancellation always chooses the committed instant.
+ * Native generation, mode and visibility remain the page's acceptance scope. */
+export function selectSkyTimePresentation(report: SkyReport | undefined, requestedAt: string, committedAt: string,
+  requested: SkyTimePresentation | null, accepted: SkyTimePresentation | null): SkyTimePresentation | null {
+  if (requested) return requested;
+  if (requestedAt !== committedAt && accepted?.source === report) return accepted;
+  return presentSkyTime(report, committedAt);
 }
 
 /** A transient, single-instant render input. Never write it into Query,
@@ -84,7 +97,7 @@ export function presentSkyTime(report: SkyReport | undefined, at: string,
   suppliedModel?: SkyTimeModel | null, geometrySources?: readonly SourceSummary[]): SkyTimePresentation | null {
   if (!report) return null;
   const exact = exactSkyTimeFrame(report.hourly, at);
-  if (exact) return { report, row: exact, weather: exact.weatherAt ? exact : null, mode: "EXACT" };
+  if (exact) return { source: report, model: null, report, row: exact, weather: exact.weatherAt ? exact : null, mode: "EXACT" };
   const originalModel = skyPresentationTimeModel(report);
   const model = suppliedModel ?? originalModel;
   const anchorAt = originalModel?.startAt ?? report.observationFrames?.[0]?.at;
@@ -125,7 +138,7 @@ export function presentSkyTime(report: SkyReport | undefined, at: string,
     }
     deepSky = { ...deepSky, frames: [{ at, state: points ? "AVAILABLE" : "UNAVAILABLE", points }] };
   } else if (deepSky) deepSky = { ...deepSky, frames: [{ at, state: "UNAVAILABLE", points: null }] };
-  return { mode: "MODEL", row, weather, report: { ...report, hourly: [row], observationFrames: [geometry.observationFrame],
+  return { source: report, model, mode: "MODEL", row, weather, report: { ...report, hourly: [row], observationFrames: [geometry.observationFrame],
     timeModel: null, targets: [], targetFrames: [],
     ...(geometrySources?.length ? { sources: [...report.sources.filter(source =>
       !geometrySources.some(geometrySource => geometrySource.id === source.id)), ...geometrySources] } : {}),

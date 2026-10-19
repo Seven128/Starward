@@ -1,0 +1,84 @@
+{
+  "schema": "starward.task.sky-time-pending-continuity-fix.v1",
+  "date": "2026-10-19",
+  "author": "fix_crossday_pending_continuity",
+  "status": "SOURCE_REPAIR_OFFLINE_AND_INDEPENDENT_REVIEW_VERIFIED_TARGET_PENDING",
+  "independentReview": "SKY-TIME-PENDING-CONTINUITY-REVIEW.json",
+  "baseCommit": "3818b44009d53d4b27cb16a95904c42ed3723af7",
+  "branch": "codex/remote-main-20260908",
+  "requirements": [
+    "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md:27",
+    ".codex/work-items/sky-map-performance-2026-10-18/PLAN.md#sky-interaction-module-r17"
+  ],
+  "reusedEvidence": "R17-A1-R8-TIME-INTERACTION-RESULT.md",
+  "regressionBeforeFix": {
+    "command": "node tools/run-node.cjs --import tsx --test --test-name-pattern='cross-window pending and failure' apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts",
+    "exitCode": 1,
+    "tests": 1,
+    "failed": 1,
+    "failureKind": "BEHAVIOR_ASSERTION",
+    "assertion": "a pending earlier day must not flash back to the committed night",
+    "actual": "2026-09-30T14:00:00.000Z",
+    "expected": "2026-10-01T02:00:17.123Z",
+    "productionEditedAtRun": false,
+    "sameBehaviorAfterFix": "PASS"
+  },
+  "implementation": {
+    "selectionOwner": "sky-time-presentation.ts/selectSkyTimePresentation",
+    "order": ["current requested geometry", "current valid lifecycle-accepted shared input during preview", "committed presentation"],
+    "cancelPriority": "committed presentation; old accepted preview cannot override it",
+    "acceptedWriter": "existing createSkyCanvasLifecycle presented callback and setPresentedSkyFrame",
+    "scope": ["exact report reference", "Context/time binding", "committed instant", "display mode", "native generation", "visibility revision", "page visibility", "resource eligibility", "Canvas failure"],
+    "scopeIdentityPreventsAtoBtoARevival": true,
+    "preservedAcceptedSupply": ["model", "report", "source identities", "independently supplied fine targets", "same geometryReport and row for draw and timed resources"],
+    "readyMeaning": "requestedTimePresentation only; retained accepted output does not satisfy requested geometry readiness",
+    "applyGuardChanged": false,
+    "newTimeWriter": false,
+    "historicalFrameCache": false,
+    "schedulingOrBudgetChange": false
+  },
+  "verification": {
+    "relatedTests": {
+      "cwd": "apps/wechat-miniapp",
+      "command": "node ../../tools/run-node.cjs --import tsx --test --test-reporter=dot src/features/sky/use-sky-time-geometry.test.ts src/features/sky/sky-time-commit-continuity.test.ts src/features/sky/sky-location-preview.test.ts src/features/sky/sky-page-action-ownership.test.ts src/features/sky/sky-resource-eligibility.test.ts src/features/sky/sky-dome-integration.test.ts src/features/sky/sky-canvas-time.test.ts src/features/sky/orientation-time-ruler.test.ts src/features/sky/sky-observation-time.test.ts src/features/sky/sky-time-preview-status.test.ts src/features/sky/sky-render-invalidation.test.ts src/features/sky/sky-deep-auxiliary-page.test.ts",
+      "exitCode": 0,
+      "files": 12,
+      "tests": 133,
+      "passed": 133,
+      "failed": 0
+    },
+    "typecheck": {
+      "command": "node tools/run-node.cjs apps/wechat-miniapp/node_modules/typescript/lib/tsc.js --noEmit -p apps/wechat-miniapp/tsconfig.json",
+      "typescript": "5.9.3",
+      "exitCode": 0,
+      "errors": 0
+    },
+    "diffCheck": { "exitCode": 0, "scope": "six changed production/test files", "warnings": "spot-sky-page.tsx CRLF normalization notice only" },
+    "repairedHarnessIssues": [
+      "Initial related invocation from repository root could not resolve @/ aliases; rerun from actual Miniapp cwd.",
+      "Existing controlled Canvas fixture gained explicit absent presentation metadata; no product assertion weakened.",
+      "New page-projection fixture now reads both explicit and shorthand object properties and preserves useMemo dependencies across sequential renders."
+    ],
+    "evidenceLimit": "Portable source-expression and owner behavior only; no physical presentation, native latency, final bundle or target acceptance claim."
+  },
+  "files": [
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts", "role": "production", "sha256": "4f939acad956032080661328ab29ecf3b6074baf1dbb87e07397270b9c1d1390" },
+    { "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx", "role": "production", "sha256": "5a92132429f8c907bab16f0a4a509c6b3c9c7505543031610191fb3bcb8fd3e1" },
+    { "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts", "role": "existing regression fixture", "sha256": "e59f40b9e24ff2a35a6056eb2ba5570723dfa9e0c6849dfb11163a2636208ad8" },
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-time-commit-continuity.test.ts", "role": "existing page fixture", "sha256": "6cf13972c2c047ec7a1513fc6d0eec6d13ac82405b68d6574e5477eeb82171f3" },
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-location-preview.test.ts", "role": "existing page fixture", "sha256": "5428900adcb3c618abc3a1bac4514a947521e04833f6b47cee641cc96b114212" },
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-optical-page-test-support.ts", "role": "existing shared Canvas fixture", "sha256": "51c7b400d0f5098ae35a17c9ce85b5a9373e0efb66d5e1c112bae7a690bf5e14" }
+  ],
+  "remaining": [
+    "Root-owned finite builder same_time_memo probe adaptation to requestedTimePresentation.",
+    "Complete candidate build and one actual cross-date pending/cancel confirmation on the current authorized phone.",
+    "Retained complete A/B, Apply/persistence, iOS and other Goal obligations remain with their current owners."
+  ],
+  "boundaries": {
+    "deviceAdbIdeFeedbackServiceOperations": false,
+    "buildOrPreview": false,
+    "gitCommitOrBranchChange": false,
+    "coordinatorDocsEdited": false,
+    "old8791N05R6Gen26PairingVpnTouched": false
+  }
+}

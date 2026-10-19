@@ -1,0 +1,85 @@
+{
+  "schema": "starward.task.sky-time-pending-continuity-review.v1",
+  "date": "2026-10-19",
+  "reviewer": "review_crossday_pending_fix",
+  "independentOfAuthor": true,
+  "baseCommit": "3818b44009d53d4b27cb16a95904c42ed3723af7",
+  "branch": "codex/remote-main-20260908",
+  "verdict": "PASS_SOURCE_REVIEW_TARGET_CONFIRMATION_PENDING",
+  "findings": [],
+  "severityCounts": { "P1": 0, "P2": 0, "P3": 0 },
+  "requirements": [
+    "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md:27",
+    "project_context/architecture/runtime-and-domain.md#cloud-sky-reference-display",
+    ".codex/work-items/sky-map-performance-2026-10-18/PLAN.md#sky-interaction-module-r17",
+    ".codex/skills/starward-miniapp-development/references/performance-investigation.md"
+  ],
+  "reviewedReports": [
+    { "path": "SKY-TIME-PENDING-CONTINUITY-FIX.md", "sha256": "4eaac6bf3364cd64348d5e8beff337c9e21af593da597e2c4ef0a659e7b2c963" },
+    { "path": "SKY-TIME-PENDING-CONTINUITY-FIX.json", "sha256": "1682425c0be553d1b31443a4fce41e5270116e36a6744059d60a705b9086aa63" },
+    { "path": "R17-A1-R8-TIME-INTERACTION-RESULT.md", "sha256": "c0b4786fe284d92467a43884557b468b796afa5d1b5fd77d059f51570cd3fc84", "use": "reuse existing independently reviewed actual failure; no new raw-media review" }
+  ],
+  "files": [
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts", "sha256": "4f939acad956032080661328ab29ecf3b6074baf1dbb87e07397270b9c1d1390", "authorHashMatches": true },
+    { "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx", "sha256": "5a92132429f8c907bab16f0a4a509c6b3c9c7505543031610191fb3bcb8fd3e1", "authorHashMatches": true },
+    { "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts", "sha256": "e59f40b9e24ff2a35a6056eb2ba5570723dfa9e0c6849dfb11163a2636208ad8", "authorHashMatches": true },
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-time-commit-continuity.test.ts", "sha256": "6cf13972c2c047ec7a1513fc6d0eec6d13ac82405b68d6574e5477eeb82171f3", "authorHashMatches": true },
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-location-preview.test.ts", "sha256": "5428900adcb3c618abc3a1bac4514a947521e04833f6b47cee641cc96b114212", "authorHashMatches": true },
+    { "path": "apps/wechat-miniapp/src/features/sky/sky-optical-page-test-support.ts", "sha256": "51c7b400d0f5098ae35a17c9ce85b5a9373e0efb66d5e1c112bae7a690bf5e14", "authorHashMatches": true }
+  ],
+  "checkedResponsibilities": {
+    "currentRequestedThenValidAcceptedThenCommitted": true,
+    "cancelAndLateWindowRemainOwnedByExistingObservationTime": true,
+    "reportContextModeNativeVisibilityScopeFences": true,
+    "AtoBtoACannotReviveRenderedInvalidatedScope": true,
+    "metadataTravelsThroughExistingNativeAcceptedPublication": true,
+    "fineTargetSupplyPreservedInAcceptedInput": true,
+    "drawAndTimedResourceConsumersUseSamePresentation": true,
+    "requestedReadinessSeparateFromRetainedOutput": true,
+    "correspondingModelIdentityForPositionConsumers": true,
+    "newWriterHistoryCacheTimerOrSchedulingPolicy": false,
+    "applyGuardChanged": false
+  },
+  "verification": {
+    "relatedTests": {
+      "cwd": "apps/wechat-miniapp",
+      "command": "node ../../tools/run-node.cjs --import tsx --test --test-reporter=dot src/features/sky/use-sky-time-geometry.test.ts src/features/sky/sky-time-commit-continuity.test.ts src/features/sky/sky-location-preview.test.ts src/features/sky/sky-page-action-ownership.test.ts src/features/sky/sky-resource-eligibility.test.ts src/features/sky/sky-dome-integration.test.ts src/features/sky/sky-canvas-time.test.ts src/features/sky/orientation-time-ruler.test.ts src/features/sky/sky-observation-time.test.ts src/features/sky/sky-time-preview-status.test.ts src/features/sky/sky-render-invalidation.test.ts src/features/sky/sky-deep-auxiliary-page.test.ts",
+      "independentlyRerun": true,
+      "exitCode": 0,
+      "files": 12,
+      "tests": 133,
+      "passed": 133,
+      "failed": 0
+    },
+    "typecheck": {
+      "command": "node tools/run-node.cjs apps/wechat-miniapp/node_modules/typescript/lib/tsc.js --noEmit -p apps/wechat-miniapp/tsconfig.json",
+      "typescript": "5.9.3",
+      "independentlyRerun": true,
+      "exitCode": 0
+    },
+    "actualPageSameSceneCheck": {
+      "method": "In-memory TypeScript AST extraction of the current page sameScene expression with existing shared fixture dependencies; no source edit or persisted test added",
+      "assertions": 5,
+      "passed": 5,
+      "cases": ["same input and scope accepted", "changed input rejected", "changed scope rejected", "changed frameAt rejected", "changed native generation rejected"],
+      "exitCode": 0,
+      "nativePixelsClaim": false
+    },
+    "diffCheck": { "scope": "six reviewed production and fixture files", "exitCode": 0, "warning": "existing spot-sky-page.tsx CRLF normalization notice only" },
+    "counterexample": { "authorBeforeFixRecordReviewed": true, "reviewerRepeatedSourceMutation": false, "currentBehaviorAssertionPassed": true },
+    "evidenceLimit": "Software selection, resource/draw meaning and accepted-scope boundary only; no physical output, latency, current complete candidate, full A/B or Apply/persistence acceptance."
+  },
+  "remaining": [
+    "Root-owned finite builder same_time_memo anchor adaptation to requestedTimePresentation, preserving actual-preparation counting.",
+    "Complete candidate build and actual same-candidate cross-date pending and cancellation confirmation.",
+    "Existing full A/B, Apply/persistence and other Goal obligations remain open under their owners."
+  ],
+  "boundaries": {
+    "productionChanged": false,
+    "coordinatorDocsChanged": false,
+    "deviceAdbIdeFeedbackServiceOperations": false,
+    "buildOrPreview": false,
+    "gitCommitOrBranchChange": false,
+    "old8791N05R6Gen26PairingVpnTouched": false
+  }
+}
