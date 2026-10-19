@@ -5,7 +5,7 @@ import {
   validateR17PhoneProbeMetrics,
   validateR17PhoneProbeTerminal,
   matchR17PhoneProbeTerminal,
-} from './r17-a-correlation-protocol.mjs';
+} from './r17-normal-input-protocol.mjs';
 
 export function createR17PhoneProbeCollector(directory) {
   if (typeof directory !== 'string' || !path.isAbsolute(directory)) throw Error('metrics_directory_required');

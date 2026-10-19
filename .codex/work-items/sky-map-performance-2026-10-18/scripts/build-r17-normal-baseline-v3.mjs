@@ -8,13 +8,17 @@ import { createRequire } from 'node:module';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { addR17ACorrelation } from './r17-a-correlation-instrumentation.mjs';
+import { addR17RulerEntry } from './r17-ruler-entry-instrumentation.mjs';
+import { addR17RulerEntryV2 } from './r17-ruler-entry-v2-instrumentation.mjs';
+import { addR17NormalInput } from './r17-normal-input-instrumentation.mjs';
 import { terrainWaitSourceFiles, transformTerrainWaitSources } from './inject-terrain-wait-observer.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), work = path.resolve(here, '..'), root = path.resolve(here, '../../../..');
 const revisionArgs = process.argv.slice(3), observationA1 = revisionArgs.includes('--observe-a1');
-const reviewRevision = revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;
-if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
-    revisionArgs.includes('--review-r2') && revisionArgs.includes('--review-r3') || reviewRevision === 3 && !observationA1)
+const reviewRevision = revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;
+const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6;
+if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
+    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)
   throw Error('finite_normal_revision_required');
 const reviewSuffix = reviewRevision > 1 ? '-review-r' + reviewRevision : '';
 const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix;
@@ -23,7 +27,7 @@ const feature = 'apps/wechat-miniapp/src/features/sky/', pagePath = feature + 's
 const slot = observationA1 ? trialName : reviewRevision === 2 ? 'r17-normal-v3-r2' : trialName;
 const buildGeneration = observationA1 ? 27 : 25, bridgePort = 8798;
 const normalLabel = observationA1 ? '正常Sky关联 A1' + (reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3';
-const protocolName = observationA1 ? 'r17-a-correlation-protocol.mjs' : 'r17-phone-probe-v3-protocol.mjs';
+const protocolName = nativeAdmission ? 'r17-normal-input-protocol.mjs' : rulerEntry ? 'r17-ruler-entry-protocol.mjs' : observationA1 ? 'r17-a-correlation-protocol.mjs' : 'r17-phone-probe-v3-protocol.mjs';
 const preparationName = observationA1 ? 'R17-NORMAL-A1-PREPARATION.json' : 'R17-NORMAL-BASELINE-V3-PREPARATION.json';
 const bundleRoot = path.join(sourceRoot, 'apps/wechat-miniapp/dist/weapp-check-' + slot), manifestPath = path.join(trial, 'manifest.json');
 const scope = observationA1 ? 'TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : 'TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE';
@@ -48,6 +52,10 @@ const templateNames = ['r17-phone-probe-v3-runtime.ts', 'r17-phone-probe-v3-prot
 if (observationA1) templateNames.push('r17-a-correlation-runtime.ts', 'r17-a-correlation-instrumentation.mjs',
   'r17-a-correlation-protocol.mjs', 'r17-a-correlation.test.mjs', 'inject-terrain-wait-observer.mjs',
   'terrain-wait-observer.ts', 'terrain-wait-marker.tsx', 'terrain-wait-observer.test.mjs');
+if (rulerEntry) templateNames.push('r17-ruler-entry-runtime.ts', 'r17-ruler-entry-instrumentation.mjs',
+  'r17-ruler-entry-protocol.mjs', 'r17-ruler-entry.test.mjs');
+if (nativeAdmission) templateNames.push('r17-ruler-entry-v2-instrumentation.mjs', 'r17-normal-input-instrumentation.mjs',
+  'r17-normal-input-protocol.mjs', 'r17-normal-input.test.mjs');
 async function list(directory) {
   const files = [];
   for (const row of await fs.readdir(directory, { withFileTypes: true })) {
@@ -77,7 +85,7 @@ function wrapCalls(source, predicate, format, label) {
   return { source, count: edits.length };
 }
 async function templates() { return Object.fromEntries(await Promise.all(templateNames.map(async name => [name, await fs.readFile(path.join(here, name), 'utf8')]))); }
-function controls(source, binding) {
+export function controls(source, binding) {
   source = one(source, 'import { r17CpuPageOnlyStats } from "./r17-cpu-page-only";\nimport { r17CpuTextMetricsStats, r17ResetCpuTextMetricsObservation } from "./r17-cpu-text-metrics";\nimport { R17_ACCEPTED_ACTION_LABEL as label, R17_ACCEPTED_ACTION_MODE } from "./r17-accepted-action";',
     'import { r17NormalTextStats, r17NormalSceneStats, r17ResetNormalObservation } from "./r17-normal-observations";\nconst label = "' + normalLabel + '";\nconst R17_NORMAL_MODE = "normal";', 'normal_only_imports');
   source = source.replaceAll('R17_ACCEPTED_ACTION_MODE', 'R17_NORMAL_MODE').replaceAll('r17CpuTextMetricsStats', 'r17NormalTextStats')
@@ -206,6 +214,27 @@ async function preparedSources(normal, template, binding) {
     output['terrain-wait-source.json'] = JSON.stringify(terrainBinding, null, 2) + '\n';
     instrumentation.terrainWait = terrainBinding;
   }
+  if (rulerEntry) {
+    let observed = (nativeAdmission ? addR17RulerEntryV2 : addR17RulerEntry)({ runtime: output[feature + 'r17-phone-probe-runtime.ts'],
+      controls: output[feature + 'r17-phone-probe-controls.tsx'], page: output[pagePath],
+      layout: output[feature + 'orientation-ruler-layout.ts'].toString('utf8').replaceAll('\r\n', '\n'),
+      nativePosition: output['apps/wechat-miniapp/src/components/ruler-scroll-position.ts'].toString('utf8').replaceAll('\r\n', '\n') });
+    if (nativeAdmission) observed = { ...observed, ...addR17NormalInput(observed) };
+    const files = { 'r17-phone-probe-runtime.ts': observed.runtime, 'r17-phone-probe-controls.tsx': observed.controls,
+      'spot-sky-page.tsx': observed.page, 'orientation-ruler-layout.ts': observed.layout,
+      'r17-ruler-scroll-position.ts': observed.nativePosition, 'r17-ruler-entry-runtime.ts': nativeAdmission
+        ? template['r17-ruler-entry-runtime.ts'].replace('starward-r17-ruler-entry-v1', 'starward-r17-ruler-entry-v2') : template['r17-ruler-entry-runtime.ts'] };
+    for (const [name, after] of Object.entries(files)) {
+      const file = feature + name;
+      instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(after) };
+      output[file] = after;
+    }
+    instrumentation.rulerEntry = { schemaVersion: nativeAdmission ? 'starward-r17-ruler-entry-v2' : 'starward-r17-ruler-entry-v1', caseKey: 'wide-time',
+      immediate: true, capacity: 128, meaning: 'requests-offsets-not-presentation', sharedNativeOwnerUnchanged: true };
+    if (nativeAdmission) instrumentation.manualInput = { schemaVersion: 'starward-r17-phone-probe-v3-manual-input',
+      caseKey: 'manual-input', startDelayMs: 0, boundary: 'legal-onPreview-before-preview-intent', triggers: { sixField: 1, ruler: 2 },
+      sameRecorderAndCollector: true, scalarOnly: true };
+  }
   return { output, instrumentation };
 }
 async function verifyBindings(directory, bindings) {
@@ -235,7 +264,7 @@ async function verifyCurrent(manifest, template) {
   if (manifest.checks) return manifest.checks;
   const { verifyNormalBaselineV3Fixture } = await import(pathToFileURL(path.join(here, 'r17-normal-baseline-v3-fixture.mjs')));
   return verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot: root, feature, ts, buildGeneration,
-    protocolPath: path.join(here, protocolName), allowACorrelation: observationA1 });
+    protocolPath: path.join(here, protocolName), allowACorrelation: observationA1, allowRulerEntry: rulerEntry });
 }
 async function deltaTypecheck() {
   const diagnostics = directory => {
@@ -306,7 +335,8 @@ async function main() {
     const bindingInput = { meaning: 'pre-build-current-production-source-and-task-template-binding-not-bundle-bytes', mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
       productionHead: stdout.trim(), productionSourceSha256: sha(JSON.stringify(productionSourceBindings)), builderSha256, templateBindings,
       bridgePort, compiledBridgeOriginSha256: selectedOrigin.sha256,
-      ...(observationA1 ? { observationRevision: 'observe-a1', terrainWaitAction: 'gesture',
+      ...(observationA1 ? { observationRevision: 'observe-a1', terrainWaitAction: 'gesture', ...(rulerEntry ? { rulerEntry: nativeAdmission ? 'immediate-wide-time-v2' : 'immediate-wide-time-v1' } : {}),
+        ...(nativeAdmission ? { manualInput: 'legal-onPreview-start-delay-0-v1' } : {}),
         ...(reviewRevision > 1 ? { reviewRevision } : {}) } : {}) };
     const buildSourceSha256 = sha(JSON.stringify(bindingInput)), prepared = await preparedSources(productionSourceBindings, template, buildSourceSha256);
     const manifest = { scope, createdAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3, bridgePort,
@@ -357,7 +387,7 @@ async function main() {
     ...(observationA1 ? { observationRevision: 'observe-a1', diagnosticLabel: normalLabel, terrainWaitAction: 'gesture', protocol: protocolName,
       ...(reviewRevision > 1 ? { reviewRevision,
         historicalA1OwnerArchive: relative(path.join(work, `tmp/r17-normal-a1-owner-before-review-r${reviewRevision}-20261019/archive-bindings.json`)),
-        historicalA1Manifest: relative(path.join(work, reviewRevision === 3 ? 'tmp/r17-normal-a1-review-r2/manifest.json' : 'tmp/r17-normal-a1/manifest.json')) } : {}),
+        historicalA1Manifest: relative(path.join(work, reviewRevision >= 3 ? `tmp/r17-normal-a1-review-r${reviewRevision - 1}/manifest.json` : 'tmp/r17-normal-a1/manifest.json')) } : {}),
       historicalGen25OwnerArchive: relative(path.join(work, 'tmp/r17-normal-gen25-owner-before-a1-20261019/archive-bindings.json')) } : {}),
     preparedAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
     selection: 'UNACTIVATED_PREPARATION', sourceManifest: relative(manifestPath), sourceManifestSha256: sha(await fs.readFile(manifestPath)), sourceDirectory: relative(sourceRoot),

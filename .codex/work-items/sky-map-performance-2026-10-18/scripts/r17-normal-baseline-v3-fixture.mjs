@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 
-export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot, feature, ts, buildGeneration, protocolPath, expectedProbeVersion = 3, allowACorrelation = false }) {
+export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot, feature, ts, buildGeneration, protocolPath, expectedProbeVersion = 3, allowACorrelation = false, allowRulerEntry = false }) {
   assert.equal(expectedProbeVersion, 3, 'this materialized fixture is explicitly v3');
   const probeMode = 'normal';
   const read = name => fs.readFile(path.join(sourceRoot, feature, name), 'utf8').then(value => value.replaceAll('\r\n', '\n'));
@@ -111,8 +111,10 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   const fixtureDate = class extends Date { static now() { return fixtureEpochMs + clock; } };
   const environmentClock = { Date: fixtureDate, setTimeout: schedule, clearTimeout: id => timers.delete(id), performance: { now: () => clock } };
   const correlation = allowACorrelation ? load(await read('r17-a-correlation-runtime.ts'), undefined, environmentClock) : null;
+  const rulerEntry = allowRulerEntry ? load(await read('r17-ruler-entry-runtime.ts'), undefined, environmentClock) : null;
   const probe = load(await read('r17-phone-probe-runtime.ts'), name => {
     if (allowACorrelation && name === './r17-a-correlation-runtime') return correlation;
+    if (allowRulerEntry && name === './r17-ruler-entry-runtime') return rulerEntry;
     throw Error(name);
   }, environmentClock).r17Probe;
   const observer = load(await read('r17-page-bridge-observer.ts'), name => {
@@ -124,6 +126,7 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   const jsx = (type, props) => ({ type, props });
   const controls = load(await read('r17-phone-probe-controls.tsx'), name => {
     if (name === './r17-phone-probe-runtime') return { r17Probe: probe };
+    if (allowRulerEntry && name === './r17-ruler-entry-runtime') return rulerEntry;
     if (name === './r17-page-bridge-observer') return observer;
     if (name === './r17-normal-observations') return { r17NormalSceneStats: () => cpuStats, r17NormalTextStats: () => tmStats, r17ResetNormalObservation() {} };
     if (name === 'react') return { useEffect: effect => { if (effectIndex++ === 0) pageUnmount = effect(); else stopUnmount = effect(); },
@@ -270,5 +273,6 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
     exactSameRun20sOriginalPauseAndSeparateTerminalReceipt: true, hiddenUnmountReplacementRunAndExportFailureGuarded: true,
     sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay: true,
     lateMetricsAfterHideCannotSendRetiredTerminal: true, fixturesNotPhoneEvidence: true,
+    ...(allowRulerEntry ? { rulerEntryDisabledForPlayAndUsesExistingWideTimeCollector: true } : {}),
     ...(allowACorrelation ? { boundedACorrelationUsesActualPreparedRuntimeAndStrictDispatcher: true } : {}) };
 }
