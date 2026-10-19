@@ -1,6 +1,6 @@
 import { Button, View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { skyRetainedLayerStyle } from "./sky-retained-layer";
 import "./sky-overlay-motion.scss";
 
@@ -52,6 +52,26 @@ export function useSkyOverlayMotion(open: boolean, enabled: boolean, reducedMoti
     style: { "--sky-overlay-motion-ms": `${reducedMotion ? 0 : FADE_MS}ms` } as CSSProperties };
 }
 
+/** Viewport rects during the surface's scale transition are not native scroll
+ * units. Layout consumers wait for that surface's real transition endpoint;
+ * phase=open starts the transition and is not its completion. */
+export function useSkyOverlayLayoutReady(motion: SkyOverlayMotionState, reducedMotion: boolean) {
+  const token = useMemo(() => ({}), [motion.active, motion.phase, reducedMotion]);
+  const current = useRef<object | null>(token);
+  current.current = token;
+  const [settled, setSettled] = useState<object | null>(null);
+  useEffect(() => {
+    current.current = token;
+    return () => { if (current.current === token) current.current = null; };
+  }, [token]);
+  return {
+    ready: motion.active && motion.phase === "open" && (reducedMotion || settled === token),
+    finish: () => {
+      if (current.current === token && motion.active && motion.phase === "open") setSettled(token);
+    },
+  };
+}
+
 /** Retain the last visible content only for its exit. Pass active=false to its
  * resource consumers immediately; a fading surface cannot launch old actions. */
 export function SkyOverlayMotion({ motion, kind, children, keepMounted = false }: {
@@ -75,7 +95,7 @@ export function SkyOverlayMotion({ motion, kind, children, keepMounted = false }
 /** The four disclosures share one material and outside-tap boundary. A native
  * click after a drag must not dismiss the panel. The unpainted time backdrop
  * is omitted so the existing Canvas remains the owner of sky gestures. */
-export function SkyDisclosureSurface({ kind, onClose, children, className = "", style, id, label }: {
+export function SkyDisclosureSurface({ kind, onClose, children, className = "", style, id, label, onMotionEnd }: {
   kind: "search" | "object" | "time" | "layers";
   onClose: () => void;
   children: ReactNode;
@@ -83,6 +103,7 @@ export function SkyDisclosureSurface({ kind, onClose, children, className = "", 
   style?: CSSProperties;
   id?: string;
   label: string;
+  onMotionEnd?: () => void;
 }) {
   const outsideDrag = useRef(false);
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
@@ -94,6 +115,10 @@ export function SkyDisclosureSurface({ kind, onClose, children, className = "", 
       onClick={() => { if (!outsideDrag.current) onClose(); }} /> : null}
     <View {...(id ? { id } : {})} className={`sky-disclosure__surface sky-overlay-motion__surface ${className}`}
       {...(style ? { style } : {})} role="dialog" aria-label={label}
+      onTransitionEnd={event => {
+        // Child transitions (buttons, ticks) cannot qualify this surface.
+        if (id && event.target.id === id && event.currentTarget.id === id) onMotionEnd?.();
+      }}
       onClick={stop} onTouchStart={stop} onTouchMove={stop} onTouchEnd={stop}>
       {children}
     </View>

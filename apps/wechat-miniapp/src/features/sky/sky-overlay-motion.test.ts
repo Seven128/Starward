@@ -15,7 +15,7 @@ function harness(component = "useSkyOverlayMotion") {
   const timers = new Map<number, { at: number; callback: () => void }>();
   let cursor = 0, clock = 0, serial = 0, dirty = false, args: any[] = [];
   let hidden: (() => void) | undefined;
-  const names = component === "SkyTimeControls" ? "SkyTimeControls" : component === "SkyBrowseControl" ? "SkyBrowseControl" : "useSkyOverlayMotion,SkyOverlayMotion,SkyDisclosureSurface";
+  const names = component === "SkyTimeControls" ? "SkyTimeControls" : component === "SkyBrowseControl" ? "SkyBrowseControl" : "useSkyOverlayMotion,useSkyOverlayLayoutReady,SkyOverlayMotion,SkyDisclosureSurface";
   const memo = (create: () => any, deps: any[]) => {
     const index = cursor++, previous = slots[index];
     if (!previous || deps.some((value, i) => value !== previous.deps[i])) slots[index] = { deps, value: create() };
@@ -171,6 +171,30 @@ test("opening waits for a target commit; exit retains the surface while disablin
   assert.equal(ui.advance(1).present, false); assert.equal(ui.timers, 0);
 });
 
+test("layout readiness follows the real surface endpoint, including reversal, retirement and immediate motion", () => {
+  const ui = harness("useSkyOverlayLayoutReady");
+  const opening = { active: true, phase: "opening" };
+  let frame = ui.render(opening, false), oldEnd = frame.finish;
+  assert.equal(frame.ready, false); oldEnd(); assert.equal(ui.render().ready, false);
+  frame = ui.render({ active: true, phase: "open" }, false);
+  assert.equal(frame.ready, false, "open begins the existing 180ms CSS transition");
+  oldEnd(); assert.equal(ui.render().ready, false);
+  frame.finish(); assert.equal(ui.render().ready, true);
+  oldEnd = frame.finish;
+  assert.equal(ui.render({ active: false, phase: "closing" }, false).ready, false);
+  frame = ui.render({ active: true, phase: "open" }, false);
+  oldEnd(); assert.equal(ui.render().ready, false, "a reversed close requires its own endpoint");
+  frame.finish(); assert.equal(ui.render().ready, true);
+  assert.equal(ui.timers, 0, "no guessed animation delay or polling");
+  ui.unmount();
+  const retired = harness("useSkyOverlayLayoutReady");
+  const late = retired.render({ active: true, phase: "open" }, false).finish;
+  retired.unmount(); late(); assert.equal(retired.render().ready, false);
+  const immediate = harness("useSkyOverlayLayoutReady");
+  assert.equal(immediate.render({ active: true, phase: "open" }, true).ready, true);
+  assert.equal(immediate.render({ active: false, phase: "closed" }, true).ready, false);
+});
+
 test("outside drag and cancellation keep a disclosure open; internal controls stop bubbling and time leaves the sky usable", () => {
   const ui = harness("SkyDisclosureSurface"); let closes = 0, stopped = 0;
   const props = { kind: "object", label: "天体说明", onClose: () => closes++, children: "long-content" };
@@ -180,6 +204,37 @@ test("outside drag and cancellation keep a disclosure open; internal controls st
   outside.props.onTouchStart(); outside.props.onClick(); assert.equal(closes, 1);
   panel.props.onClick({ stopPropagation() { stopped++; } }); assert.equal(stopped, 1);
   assert.equal(ui.render({ ...props, kind: "time" }).children[0], null, "time adds no full-screen gesture interception");
+});
+
+test("only the disclosure surface's transition endpoint can qualify layout", () => {
+  const ui = harness("SkyDisclosureSurface"); let ends = 0;
+  const panel = ui.render({ kind: "time", label: "天空时间", id: "time-surface", onClose() {},
+    onMotionEnd: () => ends++, children: "ruler" }).children[1];
+  panel.props.onTransitionEnd({ target: { id: "tick" }, currentTarget: { id: "time-surface" } });
+  assert.equal(ends, 0);
+  panel.props.onTransitionEnd({ target: { id: "time-surface" }, currentTarget: { id: "time-surface" } });
+  assert.equal(ends, 1);
+});
+
+test("the retained time surface gates layout with live activity throughout its closing scale", () => {
+  const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "OrientationTimeRuler") {
+      const attribute = node.attributes.properties.find(value => ts.isJsxAttribute(value) && value.name.getText(source) === "layoutReady");
+      assert(attribute && ts.isJsxAttribute(attribute) && attribute.initializer && ts.isJsxExpression(attribute.initializer));
+      expression = attribute.initializer.expression!.getText(source);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert(expression, "actual time-surface layout admission");
+  const child = (timeLayout: { ready: boolean }) => (active: boolean) =>
+    vm.runInNewContext(`(${expression})`, { timeLayout, active });
+  const ui = harness("SkyOverlayMotion"), motion = { present: true, active: true, phase: "open", style: {} };
+  assert.equal(ui.render({ motion, kind: "time", children: child({ ready: true }) }).children[0], true);
+  assert.equal(ui.render({ motion: { ...motion, active: false, phase: "closing" }, kind: "time",
+    children: child({ ready: false }) }).children[0], false, "retained closure must consume its live inactive argument");
 });
 
 test("browse rotor locks repeated taps until its current endpoint and retires delayed unlock on hide", () => {

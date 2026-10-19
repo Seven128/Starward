@@ -7,6 +7,7 @@ import ts from 'typescript';
 import { createSkyObservationTime } from './sky-observation-time';
 import { skyRulerTime } from './sky-time-presentation';
 import { skyTimeInputAllowed } from './sky-time-input';
+import { createOrientationRulerLayout } from './orientation-ruler-layout';
 
 test('actual page previews the fractional public time and withholds fine target requests only during drag',()=>{
  const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -49,7 +50,7 @@ function render(saving=false, interactionLocked=false, isPreviewing=false) {
   const effects:Array<()=>void|(()=>void)>=[];let hide=()=>{};
   const component=vm.runInNewContext(ts.transpileModule(declaration.getText(source)+'\nOrientationTimeRuler;',{compilerOptions:{target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.React}}).outputText,{
     React:{createElement:(type:string,props:object,...children:unknown[])=>({type,props,children:children.flat()})},
-    useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createSkyTimeRulerSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
+    useDidShow:()=>{},useResize:()=>{},Taro:{nextTick:()=>{}},createOrientationRulerLayout,createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createSkyTimeRulerSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
     useState:(v:unknown)=>[v,()=>{}],useRef:(v:unknown)=>({current:v}),useCallback:(fn:unknown)=>fn,
     useEffect:(fn:()=>void|(()=>void))=>effects.push(fn),useDidHide:(fn:()=>void)=>{hide=fn;},
     clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),orientationRulerStepPx:()=>44,
