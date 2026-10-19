@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "starward-goal-nonphone-delivery-v1",
+  "date": "2026-10-19",
+  "goalStatus": "active",
+  "tokenBudget": null,
+  "branch": "codex/remote-main-20260908",
+  "productionRevision": "69401c097572799234e6b97478a4a1ddfe06c810",
+  "deliveryRevision": "ba4ea423cd7b55bfb184fa57557434d740081711",
+  "commits": [
+    {
+      "shortSha": "ab190539",
+      "scope": "Performance reference, six added lines"
+    },
+    {
+      "shortSha": "ba4ea423",
+      "scope": "99 reviewed task sources, bounded observations and evidence files"
+    }
+  ],
+  "review": "DELIVERY-OFFLINE-INDEPENDENT-REVIEW-20261019.json",
+  "checks": {
+    "existingSoftwareEvidenceReusedAtMatchingHashes": true,
+    "newProductionEdits": false,
+    "contextValidate": "passed",
+    "stagedDiffCheck": "passed after removing one trailing empty line from a report",
+    "stagedTaskFiles": 99,
+    "stagedJsonParsed": 37,
+    "stagedHighConfidenceSensitiveShapeFindings": 0,
+    "ignoredOrPrivateArtifactsAdded": false
+  },
+  "remote": {
+    "previousMain": "32ec61a4f5321e571d499be6430a09918d65242e",
+    "currentBranchPush": "success",
+    "mainPush": "success_non_force_fast_forward",
+    "bothRefsReadBack": "ba4ea423cd7b55bfb184fa57557434d740081711",
+    "branchSwitched": false,
+    "resetCleanOrNewWorktree": false,
+    "connectionMirror": "updated_existing_staging_secret_without_values",
+    "cdEnabled": true,
+    "lane": "operator-preview",
+    "productCi": {
+      "runId": 39257349519,
+      "event": "push",
+      "branch": "main",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "contextCi": {
+      "runId": 39257349405,
+      "event": "push",
+      "branch": "main",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "deployment": {
+      "runId": 39258892651,
+      "event": "workflow_run",
+      "revision": "ba4ea423cd7b55bfb184fa57557434d740081711",
+      "status": "completed",
+      "conclusion": "failure",
+      "lane": "operator-preview",
+      "failureStage": "Build and publish the immutable release image",
+      "failureCode": "REGISTRY_TAG_LIMIT_100",
+      "hostPreflightAndPromotion": "skipped_no_server_deployment"
+    },
+    "identityRuntime": {
+      "identityRunId": 39261198368,
+      "status": "observed",
+      "matchingContainerCount": 1,
+      "runningContainerCount": 0,
+      "stateCounts": {
+        "exited": 1
+      },
+      "selectedContainer": null,
+      "runtime": "not_dispatched_no_running_target",
+      "providers": "not_dispatched"
+    },
+    "operatorRecovery": {
+      "existingCloudLogin": "available",
+      "hostConsole": "MFA_required",
+      "smsSent": false,
+      "mfaChanged": false,
+      "remoteCommandExecuted": false,
+      "registryRead": "existing_personal_repository",
+      "tagsDeleted": 0,
+      "paidUpgrade": false,
+      "currentStoppedImageRevision": "unknown",
+      "candidateAudit": "REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md"
+    }
+  },
+  "localRuntimeReadback": {
+    "listenerQuerySucceeded": true,
+    "ports": {
+      "8787": 0,
+      "8791": 0,
+      "8798": 0,
+      "8799": 0
+    },
+    "serviceOrAccountRestarted": false,
+    "databaseOrDraftDeletionInferred": false,
+    "officialSkillVersion": "0.3.11",
+    "officialSkillSync": "current_no_reload",
+    "officialReadiness": "equal_logged_in",
+    "importedProjects": 2,
+    "oldR9WindowClose": "success_via_exact_feedback_generation_project_winId_s6",
+    "initialR9CloseFailure": "builder_source_path_was_not_actual_open_feedback_project",
+    "retiredR9AndDebugHandlesExist": false,
+    "oldR3RemovePendingTask": "confirmation_project_remove_e8857369-867c-4afe-af79-93472ef36eb0",
+    "oldR3RemoveStatus": "pending_native_confirmation_queried_once_on_user_continuation_not_reissued"
+  },
+  "retained": {
+    "phoneUnavailableNoNewDeviceActions": true,
+    "gen26": "UNKNOWN",
+    "n05": "UNKNOWN_preserved",
+    "r6ReminderResent": false,
+    "pairingVpnAccountStorageUntouched": true,
+    "fullB": "unverified_after_completed_offline_review",
+    "allRemainingRequirements": "REQUIREMENTS.md and INHERITED-REQUIREMENTS.md"
+  }
+}

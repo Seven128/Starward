@@ -2,13 +2,29 @@
 
 2026-10-19。沿同一 PLAN 复用已完成研究、软件检查与独审。当前执行状态只由 [HANDOFF](HANDOFF.md)拥有；本文件按实际源码批次区分检查、提交、远端CI和目标结果，不把历史“当前/未交付”复述成新指令。
 
-## 当前 r10、跨日修复与 Git 范围
+## 2026-10-19 无需手机的实际交付
 
-当前 HEAD `69401c097572799234e6b97478a4a1ddfe06c810`（`fix(sky): preserve accepted sky while time geometry loads`）已push并精确远端读回。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均实际success。此提交包含跨日pending连续性修复的2份生产文件、4份既有fixture及对应作者/独审记录；133/133、Miniapp TS5.9.3 noEmit0与独审无P1/P2保各自范围。r10完整构建、接入及整包独审已通过，一次官方preview明确success，实际非空Sky独有“A1 r10”label后绑定；新跨日等待/取消已取得[r10实际独审](R17-A1-R10-CROSSDAY-RESULT.md)；普通预览持续表现只有[部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)，完整B仍未验证。用户携手机离开，后续优先离线分析与Git/服务交付；CI和label绑定不替代目标结果。
+已将6行性能方法补充单独提交为`ab190539`，99份task脚本/MD/JSON/patch提交为`ba4ea423cd7b55bfb184fa57557434d740081711`；推当前分支后，从`32ec61a4`普通快进远端main，两ref读回一致，没有切分支、reset/clean或新worktree。生产字节仍是69401；[本次独立审查](DELIVERY-OFFLINE-INDEPENDENT-REVIEW-20261019.md)核18项已审绑定匹配、无新增P1/P2。两处P3已修，最终37份staged JSON可解析、99份task文本限定隐私/路径扫描无命中、diff检查与context结构检查通过。只修一份报告的EOF空行，未为未变产品重复测试。
+
+[r10普通播放离线独审](R17-A1-R10-ORDINARY-OFFLINE-REVIEW.md)已完成；第二片终图仍为04:30:12播放中、没有第二terminal和精确watch绝对锚点，完整B未关闭。H3三件原始输入已补保并独立读回，恢复布局和H6对象边界见[离线准备](H3-H6-OFFLINE-READINESS-20261019.md)。源代码、归档完整性、运行反馈与产品验收继续分开。
+
+精确main的CI/CD和远端诊断结果保存在[本次交付JSON](DELIVERY-RUN-20261019.json)，当前现场由HANDOFF拥有；原分支CI不能替代这次发布。旧r9实际feedback窗口现已官方关闭并核原句柄消失；旧r3导入移除仍是原生确认pending，不冒称全部清理。原账号/草稿/配对/VPN未动。
+
+## 2026-10-19 后续方法与观察工具批次
+
+原性能skill补充仅在决策需要合并观测时区分被测行为实际发生区间与记录覆盖，并保目标/操作关联和时钟不确定性；没有把播放窗口或新runId推广为统一门槛。[task-only watch锚点](R17-MEMORY-WATCH-ANCHOR.md)增加固定私有owner的首尾host读区间、工具源和成功行流绑定，原sample/ADB/PSS/次数/间隔/停止条件未改。[独立审查](R17-MEMORY-WATCH-ANCHOR-REVIEW.md)无阻断发现，5项fake host测试及语法检查通过，实际文件hash匹配审查输入；skill quick_validate通过。未运行watcher或新设备观察，实际写盘/权限/产品关联仍未验，旧r10缺口不回填。后续文档/Git检查只覆盖本批次，不重复未变产品测试。
+
+ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚未核实的current/rollback/backup引用是服务恢复的当前依赖，详见[H4](H4-REAL-WEATHER-READINESS.md)及[单tag审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)。本批次保留全部手机性能和真实接收义务；方法/工具/CI都不替代最终可见覆盖或顺畅播放结果。
+
+提交前本批次15份文本的index/工作区内容一致、1份JSON可解析、294个本地文件链接存在，限定凭据形状扫描无命中；Goal正文与提交前完全相同，无tmp/私有原件加入。staged diff与context结构检查通过。测试与独审复用精确未变字节，不把文件链接/结构检查当成内容真实性或产品验收。
+
+## 69401 生产修复、r10 及此前 Git 证据
+
+生产修复提交`69401c097572799234e6b97478a4a1ddfe06c810`（`fix(sky): preserve accepted sky while time geometry loads`）已push并精确远端读回。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均实际success。此提交包含跨日pending连续性修复的2份生产文件、4份既有fixture及对应作者/独审记录；133/133、Miniapp TS5.9.3 noEmit0与独审无P1/P2保各自范围。r10完整构建、接入及整包独审已通过，一次官方preview明确success，实际非空Sky独有“A1 r10”label后绑定；新跨日等待/取消已取得[r10实际独审](R17-A1-R10-CROSSDAY-RESULT.md)；普通预览持续表现只有[部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)，完整B仍未验证。用户携手机离开，后续优先离线分析与Git/服务交付；CI和label绑定不替代目标结果。
 
 此前 `3818b44009d53d4b27cb16a95904c42ed3723af7` 已push，[Product39232255739](https://github.com/Seven128/Starward/actions/runs/39232255739)与[Context39232264173](https://github.com/Seven128/Starward/actions/runs/39232264173)均success。r8在提交前以相同生产字节构建，r9基于3818只改任务观察；r9有效播放/退休证据继续复用，但旧包不含69401的新修复。
 
-更早 `c6bb28bc55b8b3e2ed2e32090f05512e233c4253` 已push并精确远端读回，[Product CI39222800554](https://github.com/Seven128/Starward/actions/runs/39222800554)与[Context CI39222915373](https://github.com/Seven128/Starward/actions/runs/39222915373)均success。上述CI为当前分支workflow_dispatch，非main推送/部署，各自只覆盖所绑定提交。main最后确认32ec61a4…、staging CD=true，最终main同步仍待收口。
+更早 `c6bb28bc55b8b3e2ed2e32090f05512e233c4253` 已push并精确远端读回，[Product CI39222800554](https://github.com/Seven128/Starward/actions/runs/39222800554)与[Context CI39222915373](https://github.com/Seven128/Starward/actions/runs/39222915373)均success。上述CI为当时分支workflow_dispatch，非main推送/部署，各自只覆盖所绑定提交。后续ba4已完成main同步，当前现场见HANDOFF，不沿此历史段重复交付。
 
 | 检查/证据 | 结果与适用范围 |
 | --- | --- |
@@ -53,7 +69,7 @@ warm-entry定向修改仅原共享sandbox：注入明确skill-sync成功/失败�
 
 官方preview/feedback共享修复的范围继续由 [A1/preview独审](A1-AND-PREVIEW-FIX-INDEPENDENT-REVIEW.md)和 [剩余仓库审阅](REMAINING-DELIVERY-AUDIT.md)拥有：两个ordinary caller保handle/原stdout再分类，load/preview/refresh/bind/stop沿同一UNKNOWN/pending保护；auth success不完成业务preview，显式原task结果记录不自行轮询或重发。Sky窗口/原生换算/共享motion、导航声明/构建和warm-entry测试各按原责任保留，历史“可提交清单”不再作为当前Git状态。
 
-跨日修复六份生产/fixture及四份作者/独审记录已随69401提交。2026-10-19本次接手核对：生产和设备工具/Context没有未提交改动；未提交范围为性能方法reference的6行补充、当前任务builder/observer及MD/JSON/patch证据。设备原片/profile继续在外部私有owner，不能加入Git。各组沿各自已有审阅和精确字节核对交付，不抹掉原审阅边界。69401当前分支CI已通过；授权Git/main收口继续按最终实际范围完成，历史绿灯不提前证明新行为。
+跨日修复六份生产/fixture及四份作者/独审记录已随69401提交，后续方法与99份task成果已随ab190539/ba4进入main。生产和设备工具/Context字节未变；当前后续范围是本文件上方的方法/watch辅助及事实文档批次。设备原片/profile与真实私有锚点继续留外部owner，不加入Git。各组沿自身已有审阅和精确字节核对交付，不抹掉原审阅边界；历史或当前软件绿灯都不提前证明未验产品结果。
 
 Terrain旧metadata2248ms/file98ms/native34ms保 [r6资产owner](TERRAIN-R6-ASSET-PATH-BINDING.md)的UNKNOWN限界。[r8新动作](TERRAIN-R8-IDENTITY-ACTION-RESULT.md)已取得桥metadata/实际PNG的SHA与proof关联，file_ready后仍gap；手机A5→SHA尚未闭合，暖缓存不算优化收益。[残余等待决策](TERRAIN-RESIDUAL-NEXT-DECISION.md)已确认旧匿名key本就未序列化SHA，不恢复旧连接追该映射。r10随既有file_ready导出owner已返回的实际SHA/bytes，缺SHA仍null；软件独审/整包接入通过，下一必要连续动作及现场读取仍未完成。r6单次59ms latest accepted复用 [manual结果](R17-A1-R6-MANUAL-RESULT.md)，不等于完整A。gen22/23阴性、正常CPU复用，gen24暂停。
 

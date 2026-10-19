@@ -1,17 +1,25 @@
 // Task-only, read-only Android memory observations. No raw dumpsys, process IDs,
-// endpoint/serial, user text, absolute instant or screen bytes leave this process.
+// endpoint/serial, user text or screen bytes leave this process. Absolute host
+// clock anchors stay in the existing private evidence owner, never stdout.
 import fs from 'node:fs/promises';
-import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { AdbDevice, findAdb, foregroundActivity } from '../../../../tools/miniapp/device-adb.mjs';
+import { createMemoryWatchAnchor, MEMORY_EVIDENCE_ROOT } from './r17-memory-watch-anchor.mjs';
 const [mode='once',label='observation',countText='7',intervalText='20000']=process.argv.slice(2);
 const count=Number(countText),interval=Number(intervalText);
 if(!['once','watch'].includes(mode)||!/^[a-z][a-z0-9-]{0,47}$/.test(label)||!Number.isInteger(count)||count<1||count>13||
   !Number.isInteger(interval)||interval<2000||interval>20000)throw Error('memory_probe_arguments_invalid');
-const root='E:/Dev/Starward-data/verification/sky-map-20261018/native-play-copy-trial';
-await fs.mkdir(root,{recursive:true});
+await fs.mkdir(MEMORY_EVIDENCE_ROOT,{recursive:true});
+const sourceBindings={};
+for(const [key,url] of [['watcherSha256',import.meta.url],['anchorSha256',new URL('./r17-memory-watch-anchor.mjs',import.meta.url)],
+  ['adbSha256',new URL('../../../../tools/miniapp/device-adb.mjs',import.meta.url)]])
+  sourceBindings[key]=createHash('sha256').update(await fs.readFile(new URL(url))).digest('hex');
 const device=new AdbDevice(await findAdb());await device.select({transport:'wireless'});
-const started=performance.now(),file=path.join(root,`${label}-${Date.now()}.ndjson`);
+const started=performance.now(),anchor=await createMemoryWatchAnchor({label,startedMonotonicMs:started,sourceBindings,io:fs,
+  clock:{monotonicNow:()=>performance.now(),wallNow:()=>Date.now()}}),file=anchor.file;
 let first=true, boundOwner=null;
+let sampleCount=0,outcome='observer_returned';
+const completedRowsHash=createHash('sha256');
 async function sample(){
   const sampleStartElapsedMs=Math.round(performance.now()-started);
   const finish=result=>({...result,sampleStartElapsedMs,sampleEndElapsedMs:Math.round(performance.now()-started),
@@ -62,7 +70,9 @@ async function sample(){
 try{
   for(let index=0;index<(mode==='watch'?count:1);index++){
     const result=await sample();
-    await fs.writeFile(file,JSON.stringify(result)+'\n',{flag:first?'wx':'a'});first=false;
+    const line=JSON.stringify(result)+'\n';
+    await fs.writeFile(file,line,{flag:first?'wx':'a'});first=false;
+    completedRowsHash.update(line);sampleCount++;
     console.log(JSON.stringify(result));
     if(result.state!=='miniapp_foreground'||mode==='once')break;
     if(index<count-1)await new Promise(resolve=>setTimeout(resolve,interval));
@@ -70,4 +80,8 @@ try{
   console.log(JSON.stringify({evidence:file,scope:'WECHAT_APPBRAND_PROCESS_MEMORY_ONLY',inputSent:false,
     timing:'sampleStartElapsedMs/sampleEndElapsedMs bracket sequential host/ADB observations, not one device instant; elapsedMs remains the end alias. Only the first bound foreground process is sampled; replacement ends the run.',
     limits:'foregroundActivityOwner=true binds the resumed Activity ProcessRecord to the sampled slot. Unknown/Private Other do not identify V8 or a particular allocator; no JS-heap or GPU-allocation claim.'}));
-}catch{console.log(JSON.stringify({state:'memory_probe_unavailable',inputSent:false}));process.exitCode=1;}
+}catch{outcome='observer_failed';console.log(JSON.stringify({state:'memory_probe_unavailable',inputSent:false}));process.exitCode=1;}
+finally{
+  try{await anchor.finish({outcome,sampleCount,completedRowsSha256:completedRowsHash.digest('hex')});}
+  catch{console.log(JSON.stringify({state:'memory_probe_anchor_unavailable',inputSent:false}));process.exitCode=1;}
+}

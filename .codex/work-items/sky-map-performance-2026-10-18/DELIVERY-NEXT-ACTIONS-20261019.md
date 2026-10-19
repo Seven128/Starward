@@ -66,4 +66,4 @@ R1 已明确要求推当前分支再推 main，且当前长期 owner 已采用 m
 - 未获本 Goal 自动扩大授权的边界：付费服务/采购、OSS 新目标/远端写入、正式 domain/public staging 资格、production、微信上传/审核/公开发布。保留其各自 owner 条件，不拿本人 IP 内测或 Git main 当替代。
 - 最终清理仍由原 owner 精确执行：先保全所需证据，再退役任务候选/窗口/feedback、LAN 桥和精确防火墙等；保留当前有效源码入口、8787/必要 watch、原账号/草稿/历史、R6 已送达事实、配对与 VPN。本文不授予路径级删除权限。
 
-main 同步和 H4 的第一条运行身份结果都仍未执行；本文及两个成功 branch CI 不关闭完整 Goal。
+以上是执行前形成的依据。随后ba4已普通快进main、精确main完整双CI通过；自动发布在registry标签额度失败，host preflight/promote未执行。一次identity已细分为1 exited/0 running，见[实际交付读回](DELIVERY-RUN-20261019.json)及[H4增量证据](H4-REAL-WEATHER-READINESS.md#2026-10-19-当前已取得的增量证据)。后续不按本文旧快照重发：当前现场及quota/MFA/引用核验依赖由[HANDOFF](HANDOFF.md)拥有；不关闭完整Goal。

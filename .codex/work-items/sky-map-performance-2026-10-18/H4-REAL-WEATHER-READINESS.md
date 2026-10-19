@@ -1,6 +1,16 @@
-# H4 真实天气入口核对 — 2026-10-18
+# H4 真实天气入口核对
 
-当前结论：存在已授权的 GitHub staging 固定诊断入口，但本次实际只读运行未越过 API 容器身份保护。operator-preview 与固定诊断使用同一个 `starward-staging` Compose project，不能将 lane 名称差异当作原因。已核对历史部署摘要和后续运行诊断，尚无当前 receipt、实际镜像与包含停止状态的容器集合读回；真实 QWeather v1 响应、当前资料时效、真实 Map 采样及手机 selected-hour 联动仍未验证。8791/8796 的 fixture 天气证据不改写为真供应证据。
+## 2026-10-19 当前已取得的增量证据
+
+固定identity实现及已审生产源码已随`ba4ea423cd7b55bfb184fa57557434d740081711`进入远端main，精确main的Product/Context CI均success。现有CD=true/operator-preview自动[发布39258892651](https://github.com/Seven128/Starward/actions/runs/39258892651)在镜像push遭TCR个人仓库100标签上限拒绝，host preflight和promote均skipped，未部署服务器。连接镜像已依现有owner刷新；不能将此次构建发布失败解释为它停止了API。
+
+现场稳定后只运行一次[identity39261198368](https://github.com/Seven128/Starward/actions/runs/39261198368)：固定`starward-staging`/`api`总1、running0、exited1、`selectedContainer=null`。这已细分此前`ambiguous`，未读到停止对象的revision/digest、停止原因或current receipt；未调度runtime/provider。真实QWeather v1、资料时效、Map及手机selected-hour联动仍未验。
+
+Chrome既有腾讯云会话可读原唯一TCR和主机；OrcaTerm主机登录实际停在MFA。未发送验证码、改MFA、执行远端命令、删tag或付费升级，不要求携手机外出的用户立即配合。[单个tag只读审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)已核历史push成功但promote skipped，不证明当前无引用；停止镜像、current pointer、回滚/备份引用及精确OCI恢复仍须现有operator能力核实。当前不重复相同发布/诊断失败。实际交付结果见[交付读回](DELIVERY-RUN-20261019.json)，当前现场及后续动作由[HANDOFF](HANDOFF.md)拥有。
+
+## 2026-10-18 历史只读调查
+
+当时结论：存在已授权的 GitHub staging 固定诊断入口，但该次实际只读运行未越过 API 容器身份保护。operator-preview 与固定诊断使用同一个 `starward-staging` Compose project，不能将 lane 名称差异当作原因。已核对历史部署摘要和后续运行诊断，当时尚无当前 receipt、实际镜像与包含停止状态的容器集合读回；真实 QWeather v1 响应、当前资料时效、真实 Map 采样及手机 selected-hour 联动仍未验证。8791/8796 的 fixture 天气证据不改写为真供应证据。
 
 本轮只更新此任务证据；没有修改生产代码、PLAN、INDEX、HANDOFF、配置、密钥、数据库、权限、手机或 DevTools。没有运行 worker、提醒、部署、operator-preview check 或 providers 模式，也没有更改诊断连接 mirror。后续身份审计仅读取 GitHub 元数据和在内存中提取白名单日志字段，没有再次调度 workflow。
 

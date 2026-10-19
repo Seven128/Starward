@@ -22,7 +22,7 @@
 11. [手机实际选点范围与居中](PHONE-FOCUS-VERIFICATION.md)：generation5临时只读诊断包的3.394km、0.7px与拖动接管结果；不替代未完成的连续双指、其它入口和最终普通候选。
 12. [当前山体遮挡接口摘要](HORIZON-CURRENT-API-SUMMARY.json)：现有手机API的真实COG模型及许可/假设读回，未包含站位坐标；接口读回不替代手机Canvas、缺测恢复或资料阅读验收。
 13. [叠层服务实测摘要](OVERLAY-SERVICE-MEASUREMENTS.json)保留三阶段的成功与较慢样本、输出哈希及最终源码指纹；[临时聚焦观察器源码](FOCUS-OBSERVATION-PROBE.txt)与探针回执逐字节匹配，只作为证据保存，不在生产源码或普通候选里。
-14. [历史远端检查点](REMOTE-CI-CHECKPOINT.json)保留9e5c75ef等旧结果；较新的581a5a9b完整Product CI39108911384/Context39108915196已通过，见[数据流程交付与CI](BACKEND-DATA-DELIVERY.json)。generation8/9手机证据保持各自范围；远端main仍在原整合提交，后续目标结果和main同步未完成。
+14. [历史远端检查点](REMOTE-CI-CHECKPOINT.json)保留9e5c75ef等旧结果；较新的581a5a9b完整Product CI39108911384/Context39108915196已通过，见[数据流程交付与CI](BACKEND-DATA-DELIVERY.json)。generation8/9手机证据保持各自范围；当时main尚在原整合提交，后续实际同步见64及HANDOFF，目标结果仍按各自证据保留未验。
 15. [当前候选的开发工具恢复证据](DEVTOOLS-RECOVERY.md)：受控退出重开后官方CLI已恢复，自动真机调试的实际手机连接与绑定见后续证据；旧MCP/SDK失败不能继续当成当前CLI不可用的依据。
 16. [generation6真机反馈](PHONE-GEN6-VERIFICATION.md)：普通候选已绑定Android，真实选点打开中面板；无UI探针的原生范围/中心读回成立。后续连续操作、资料/来源与实际性能仍沿原义务继续；[只读测量源码](NATIVE-FOCUS-READBACK.txt)保留方法，不进入产品。
 17. [云量时钟差修复](CLOUD-CLOCK-REPAIR.md)：手机与BFF约1秒时钟差导致新鲜格子被判为未来数据；保留来源时刻并统一查询与暂存层的有效期时钟，记录修复前失败、修复后检查及generation7真实云格/切时刻/拖动结果。当前手机定位拒绝与恢复、generation8空来源条修复及旧构建回收见[真机证据](PHONE-VERIFICATION.md#generation7-location-permission-recovery)。
@@ -113,6 +113,11 @@
 61. [当前交付独立审查](DELIVERY-OFFLINE-INDEPENDENT-REVIEW-20261019.md)：当前task及方法字节复用既有审查，隐私/结构/本地链接核对，历史快照与当前状态分开；后续实际交付仍由HANDOFF和CURRENT拥有。
 
 62. [H3/H6离线准备与补保](H3-H6-OFFLINE-READINESS-20261019.md)：三件H3原始照片输入补保与同级恢复路径；PLAN/N05及真实接收对象的资格边界，不改gen26 UNKNOWN或代替微信接收。归档定位沿[H3准备owner](H3-PHONE-PREPARATION.md#清理前的源材料保全)。
+
+63. [watch私有host锚点](R17-MEMORY-WATCH-ANCHOR.md)及[独立审查](R17-MEMORY-WATCH-ANCHOR-REVIEW.md)：只补task observer有限关联，5项fake host测试通过；不改产品/采样语义、不回填旧观察，实际写盘与设备关联未验。通用规则在原性能skill，不要求所有调查新建runId或重采样。
+
+64. [实际main交付/CI/CD读回](DELIVERY-RUN-20261019.json)及[registry quota单候选审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)：ba4完整CI通过，发布在100标签上限失败；identity实读1 exited/0 running。历史promote skipped不证明当前无引用，MFA/引用/精确OCI恢复条件未满足，不删tag或重试旧失败。当前执行状态仍由HANDOFF拥有。
+
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
 恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。本接手对话的明确继续指令已解除原暂停；恢复核源码/候选/在途状态和受影响的服务/窗口入口，历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。

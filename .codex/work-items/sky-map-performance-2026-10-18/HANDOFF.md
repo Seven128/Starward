@@ -6,17 +6,20 @@
 
 工作区E:/dev/worktrees/Starward/remote-main-20260908；保留codex/remote-main-20260908及全部未提交成果，不切分支/reset/clean/新worktree。用户此前统一允许Goal内候选预览/必要调试，但**手机现在不可用，停止新手机/ADB/预览/真机调试；不要反复连手机或要求立刻配合**。恢复时核实际候选与fresh capture/view，旧截图不提供输入授权。root独占运行现场；可新建agent做不冲突的离线工作，用完结束，不复用退休agent。
 
+用户在本轮状态追问中明确最关心两项：①地形/云层/光害从用户交互到最终可见覆盖的效率；②云观星基本播放与快速连续调整年/月/日/时/分/秒任意字段时的顺畅展示。已如实说明两项均部分完成，叠层2–3秒缺口未证消除，完整播放B及六字段快速输入未验。交付/CI/服务工作不能替代这两项产品结果；设备恢复后的优先路径仍是它们，不重做既有研究或资格。
+
 原gen26 t6aywi/generation-000026-JYgy2m仍UNKNOWN，app1ee545f0…/341文件、deviceSession=null，未重发/绑定；r3–r10是另行授权的新run。保护8791原账号/N05 UNKNOWN草稿/历史、已送达R6提醒、原配对/VPN；不reseed、不清账号、不重发提醒。夜间拟物、100m/cm/屏幕物理尺寸、读屏和大文字排除，B04只按真实规模触发。
 
 ## 当前现场
 
 | 责任 | 最新已确认事实 |
 | --- | --- |
-| Git / CI | HEAD69401c097572799234e6b97478a4a1ddfe06c810已push、精确远端读回；跨日修复133/133、TS5.9.3、独审通过。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均success，仅branch workflow_dispatch。main最后32ec61a4…，仍未同步；90份dirty/untracked是交接前只读计数，后续以实际status为准。 |
+| Git / CI | 已提交ab190539（方法）与ba4ea423cd7b55bfb184fa57557434d740081711（99份task/证据），推当前分支并从32ec61a4非强推快进远端main；两个远端ref精确读回一致，未切分支。生产仍为69401的已审字节。精确main push的[Product39257349519](https://github.com/Seven128/Starward/actions/runs/39257349519)及[Context39257349405](https://github.com/Seven128/Starward/actions/runs/39257349405)均success。自动[发布39258892651](https://github.com/Seven128/Starward/actions/runs/39258892651)在镜像push遭TCR个人仓库100标签上限拒绝；host preflight/promote均skipped，未部署服务器。连接镜像已刷新，CD=true/operator-preview未改。见[本次交付](DELIVERY-RUN-20261019.json)。 |
+| 远端恢复 | 发布失败后一次[identity39261198368](https://github.com/Seven128/Starward/actions/runs/39261198368)严格白名单实际读回：固定project/api总1、running0、exited1、selectedContainer=null。原ambiguous已细分，停止原因/current revision仍未知；未运行runtime/provider，不重试旧失败。Chrome现有腾讯云登录有效，已只读看到唯一既有私有仓库及原上海4核4GB主机。OrcaTerm免密登录实际停在平台MFA，未发送验证码/改MFA/输入远端命令；terminal与TCR标签页已markHandoff，中间LH页关闭。旧tag候选f4872ab6虽历史push成功、preflight失败/promote skipped，当前/回滚引用尚未核，不据此删除。未删标签/购买升级/恢复服务。 |
 | r10完整候选 | app077d3aeb3ffd874efabf9b2907cb7ef90b446305a9f029a64bf07400581c3094，337文件/5,003,601B；source e7e558d27d1b0c1c0b748bfd7c8bf56e0b33aa8270e5bdcd15edb57b1ada480e；main1,993,952B/余量103,200B；1,583物化源/1,573生产输入/25模板/31外置map绑定通过。[接入独审](R17-NORMAL-R10-INTEGRATION-REVIEW.md)、[整包独审](R17-NORMAL-R10-BUILD-REVIEW.md)无P1/P2。 |
 | 官方交付 / 保存session | exec67914一次官方preview明确success、无taskId，实际非空Sky独有r10 label后绑定；原gen26bytes不变。feedback C:/Users/777/AppData/Local/Temp/starward-device-feedback-ncOpxo，generation-000001-1GLGwG/project；保存session为其下starward-device-test-Klvb4h。r9 z6lbss、r10 prebinding4haboM及旧session退休输入。runtime AppID/手机整包字节未读回，development_feedback_only。现在无任何手机输入授权。 |
 | 在途收尾 | 第一轮普通Play已见60秒自身Pause终态与terminal。第二轮record-tap31772和memory92465的旧exec句柄不可恢复，但原件存在；5行watch末条miniapp_not_foreground，第二run仅metrics、未见terminal。实际本机对应采样/录屏进程数0；不重放，不归因崩溃/OOM。见[普通预览部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)。 |
-| IDE | 本接手会话官方skill0.3.11已sync=current、reloadRequired=false；MCP status equal/loginExpired=false。官方miniprogram列表为canonical+旧r3两项；实际主窗口226625804仍是r9。r10已完成完整同步且生产无新dirty，按精确r9路径官方close返回CLOSE_PROJECT_WINDOW_FAILED，窗口仍在；未重试/杀共享IDE。旧r3入口project_remove返回pendingTask `confirmation_project_remove_e8857369-867c-4afe-af79-93472ef36eb0`，等待工具原生确认，不轮询/不重发，用户方便后先查原task。源码/候选/账号未变；无preview/Profiler。 |
+| IDE | 官方skill0.3.11已sync=current/no reload；MCP equal/loginExpired=false。初次close误选builder源路径，实际旧窗属于feedback26UyKk的generation-000001-s2S6bX/project；核feedback明确路径后官方close success/winId s6，原r9句柄226625804及旧debug163252880均IsWindow=false。未重建旧包、杀共享IDE或输入手机。官方miniprogram列表仍canonical+旧r3两项；r3移除pendingTask `confirmation_project_remove_e8857369-867c-4afe-af79-93472ef36eb0`在用户继续后查询一次，仍pending原生确认；未重发，不连续轮询。未知辅助窗保留，未称全IDE窗口清空。 |
 | 服务 | 本接手会话实际Get-NetTCPConnection完整成功读回：8787/8791/8798/8799监听数全部0；未启动/重建/清理任何服务或账号。此前桥SHA d2ab53a59d805930ab31f65429631c8183e243c3d5c1338d974e4061f7d29f3e、恢复PG/r6/SAMPLE_DATA配置只保历史身份；旧exec94448/21018不可复用，不推断PG卷或N05已丢失。真实天气沿远端main发布owner恢复，不以fixture替代。 |
 | 证据保全 | r10全部feedback/prebinding/完整构建（排除node_modules/链接）、collector、3watch与r10报告共2,703文件/56,451,346B已逐件前/副本/后核对；外部normal-existing-resume-20261019/r10-handoff-phone-away-20261019/manifest.private.json SHA5e5f746bcebcecb7588763a2a7e5ac8b33fa45d0524034a6ec2e95a7398f3b82。r9的425件档案及可变session caveat、r8和原32collector继续复用；没有删除。 |
 
@@ -26,14 +29,16 @@
 
 **B仍未关闭，离线审查已完成。** [r10普通播放离线独审](R17-A1-R10-ORDINARY-OFFLINE-REVIEW.md)实际看12个原片帧与6张PNG、核20份原件及两metrics/第一terminal。第二片14.972356s/316编码帧，终PNG04:30:12仍播放中，不含60秒/Pause/Map/非前台事件。第二metrics有效窗14,768ms/319accepted；第二terminal缺失。同watch四行PSS首尾增加248,419KiB，末条非前台原因未知；watch缺absolute epoch/runId，67.018秒不是实际Play时长，不能精确跨时钟相减或计算每帧增长。第一轮错位watch仍只作准备/暂停观察。复用r7有效allocation与r9退休后没有明确错误退休、无限缓存或allocator证据，当前不能离线选择产品修复；不重复资格、不派生相邻disable，gen24继续暂停。完整正常路径尾段/Pause-drain/Cancel-Map资源回落待用户恢复设备。
 
+**关联方法与窄工具修复已审。** 用户要求避免播放特例，现有性能skill采用“被测行为实际发生的区间”和“各记录覆盖范围”，仅在决策需要合并观察时要求足够关联；不把Play/Pause、新runId或重采样推广为统一门槛。[watch锚点说明](R17-MEMORY-WATCH-ANCHOR.md)及[独审](R17-MEMORY-WATCH-ANCHOR-REVIEW.md)核task-only私有首尾host读区间、工具源/成功行流绑定，5项fake host测试与语法检查通过。未改变sample/ADB/PSS/停止条件，未运行watcher；不补写历史、不证明产品run或设备呈现关联，实际写盘/权限/设备效果未验。通用规则归原skill，r10特定缺口归task，不复制到产品Context。
+
 **地形已补观察能力，未跑新手机动作。** [当前窄决策](TERRAIN-RESIDUAL-NEXT-DECISION.md)已证旧key不含A5→SHA映射，停止追旧连接。r10 file_ready读取实际已准入RasterImageFile.bytes/sha256，缺失为null，不增stat/hash/I/O；17项owner检查、5条实际hook反例及整包独审通过。r6请求2248ms/file98ms/native34ms、r8ready-before-gap保原范围；未选blocks/prefetch/worker，未声称手机缺口缩短。新pan/zoom及回执待手机恢复。
 
 ## 当前责任顺序：优先无需手机
 
 1. **已完成r10离线解释，复用结论。** 当前记录已区分正常播放、计量、同watch增长与未对齐窗口；没有足以选择产品修复的新增owner证据。跨日r10结果直接复用，不因手机离开重采同一资格。
-2. **交付当前已审源码、任务观察和事实文档。** 复用当前独审和必要检查，按实际dirty责任组核隐私/链接/归档再提交推当前分支，保所有无关成果。不要仅靠忽略目录内源码或MD宣称可恢复交付。H3实物已归档，整理可复用入口可离线继续。
-3. **按既有授权推进Git main与真实天气服务恢复。** 具体只读核验与命令顺序见[DELIVERY-NEXT-ACTIONS](DELIVERY-NEXT-ACTIONS-20261019.md)。main可非强推快进但执行前重核远端；CD=true/operator-preview，真实main push成功会部署、停启writer、备份/恢复校验、迁移与供应smoke，不是仅同步代码。依release owner刷新既有连接镜像、选精确revision、核实际CI/CD，再一次identity→runtime按首个失败边界分支；不借8791/fixture、不反复旧失败、不擅改CD或绕guard。
-4. **完成其它独立准备与精确收尾。** H3山体/照片、真实天气服务、共享/文件接收对象准备、现有检查/包体/资料交付与当前有效IDE入口可推进；已完成EOG/Drive/r6不重哈希17GB或重产。只在证据充分后推进下一责任，不为计数重复测试。
+2. **交付当前已审方法、watch辅助及事实文档。** ba4批次已进入main并通过完整CI；当前后续改动沿[watch独审](R17-MEMORY-WATCH-ANCHOR-REVIEW.md)核实际字节和必要隐私/链接/结构后提交当前分支及普通快进main，不为未变产品重测。保所有无关成果，不加入ignored tmp/原片/私有锚点。仅task/方法的轻量CI不补造新的产品或部署资格。
+3. **沿真实失败边界恢复服务。** [本次交付JSON](DELIVERY-RUN-20261019.json)已核ba4发布的registry额度失败和一次identity的1 exited/0 running；不重发同样失败或先跑runtime/provider。控制台现有主机登录需MFA，当前不要求离开的用户配合。停止镜像/current pointer/回滚及备份引用、精确OCI恢复能力与单tag删除语义仍未核，见[quota只读审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)；不得据历史promote skipped直接删tag，不付费升级或绕guard。条件变化后先核这些引用与额度处置，再重试原精确main候选的release owner；发布含停启writer/备份恢复/迁移/供应smoke。身份唯一运行后才进入runtime及真实天气入口。
+4. **复用已完成的独立准备，精确收尾。** [H3/H6离线准备](H3-H6-OFFLINE-READINESS-20261019.md)已核三件照片输入补保、同级恢复路径和自然PLAN/SPOT接收资格；不重产、不转发已清理旧导出路径、不替N05造保存对象。旧r9窗口已关闭，r3移除待原生确认。已完成EOG/Drive/r6不重哈希17GB或重产。新增动作须解决尚未回答的问题，不为计数重复测试。
 5. **手机依赖集中后置。** 完整A/B目标验收、地形连续pan/zoom/配准和资源回落、H1/H3/定位/原生/iOS、真实微信接收/文件打开等保留未验。等待用户说明设备重新可用后核候选/官方结果/新鲜画面；必要动作合并，不要求现在配合、不擅选联系人。
 
 ## 复用成果及全部剩余义务
