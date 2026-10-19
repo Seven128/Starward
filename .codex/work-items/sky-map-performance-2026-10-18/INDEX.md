@@ -118,9 +118,11 @@
 
 64. [实际main交付/CI/CD读回](DELIVERY-RUN-20261019.json)及[registry quota单候选审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)：ba4完整CI通过，发布在100标签上限失败；identity实读1 exited/0 running。历史promote skipped不证明当前无引用，MFA/引用/精确OCI恢复条件未满足，不删tag或重试旧失败。当前执行状态仍由HANDOFF拥有。
 
-65. [唯一停止API的身份补齐](STOPPED-API-IDENTITY-OBSERVATION.md)、[独审](STOPPED-API-IDENTITY-REVIEW.md)及[实际读回](STOPPED-API-IDENTITY-REMOTE-20261019.json)：22项/生成模块fake边界5项通过，新main完整CI及实际identity已建立1ccd/de4b停止元数据，并与该revision旧发布的start-writers失败绑定；旧run不回填，仍不证明当前receipt/全部引用或允许删tag。下一项[发布引用观察边界](RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md)保既有SSH的可行窄入口，尚未实现新mode。
+65. [唯一停止API的身份补齐](STOPPED-API-IDENTITY-OBSERVATION.md)、[独审](STOPPED-API-IDENTITY-REVIEW.md)及[实际读回](STOPPED-API-IDENTITY-REMOTE-20261019.json)：22项/生成模块fake边界5项通过，新main完整CI及实际identity已建立1ccd/de4b停止元数据，并与该revision旧发布的start-writers失败绑定；旧run不回填，仍不证明当前receipt/全部引用或允许删tag。[发布引用观察边界](RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md)保留已核选择理由，后续实现见67。
 
-66. [本机任务资源精确收尾](LOCAL-RESOURCE-CLEANUP-20261019.json)：旧r9已退休feedback的381件均有原归档匹配后移入回收站，可恢复；当前r10/gen26及账号材料保留。r3列表确认和8798任务规则停用仍有原生/管理员依赖，不称全部清理完成。
+66. [本机任务资源精确收尾](LOCAL-RESOURCE-CLEANUP-20261019.json)：旧r9的381件有原归档匹配，旧r8的407件已补完整保全，两退役目录均核范围后移入回收站，可恢复；原归档和当前r10/gen26及账号材料保留。r3列表确认和8798任务规则停用仍有原生/管理员依赖，不称全部清理完成。
+
+67. [固定发布引用观察](RELEASE-REFERENCE-OBSERVATION.md)：既有main-only SSH下的固定四路径base/current/成功receipt/candidate及停止API匹配失败回执，43项诊断与52项实际消费者检查已通过；Linux、独审与远端结果按该owner记录。永远NON_ATOMIC/完整引用未验，不证明健康、精确OCI恢复或删tag资格。
 
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 

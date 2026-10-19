@@ -1,20 +1,18 @@
 import { readFile } from "node:fs/promises";
 
-function fail(code, field) {
-  throw new Error(field ? `${code}:${field}` : code);
-}
-
-function unquote(value, field) {
-  if (!value.startsWith('"') && !value.startsWith("'")) return value;
-  const quote = value[0];
-  if (!value.endsWith(quote) || value.length < 2)
-    fail("environment_file_quote_invalid", field);
-  const inner = value.slice(1, -1);
-  if (quote === "'") return inner;
-  return inner.replace(/\\n/gu, "\n").replace(/\\r/gu, "\r").replace(/\\t/gu, "\t").replace(/\\"/gu, '"').replace(/\\\\/gu, "\\");
-}
-
+// Keep this pure parser self-contained so fixed host diagnostics can embed the
+// same semantics without importing or executing a historical control checkout.
 export function parseEnvironmentText(text, source = "environment") {
+  const fail = (code, field) => { throw new Error(field ? `${code}:${field}` : code); };
+  const unquote = (value, field) => {
+    if (!value.startsWith('"') && !value.startsWith("'")) return value;
+    const quote = value[0];
+    if (!value.endsWith(quote) || value.length < 2)
+      fail("environment_file_quote_invalid", field);
+    const inner = value.slice(1, -1);
+    if (quote === "'") return inner;
+    return inner.replace(/\\n/gu, "\n").replace(/\\r/gu, "\r").replace(/\\t/gu, "\t").replace(/\\"/gu, '"').replace(/\\\\/gu, "\\");
+  };
   const result = Object.create(null);
   const lines = text.replace(/^\uFEFF/u, "").split(/\r?\n/u);
   for (let index = 0; index < lines.length; index += 1) {

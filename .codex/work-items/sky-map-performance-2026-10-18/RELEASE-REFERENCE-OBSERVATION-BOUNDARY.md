@@ -1,6 +1,6 @@
 # 服务恢复：发布引用的下一条观察边界
 
-2026-10-19。独立只读核对现有owner后保留的路径建议；尚未实现新mode或读取远端文件。本文件不改PLAN，不构成删除镜像或服务恢复结果。最新[停止API实读](STOPPED-API-IDENTITY-REMOTE-20261019.json)已闭合唯一停止对象的创建引用，不能替代下面的current/receipt/恢复引用。
+2026-10-19。独立只读核对现有owner后形成的边界及选择理由；后续已按此完成[固定mode实现与本地检查](RELEASE-REFERENCE-OBSERVATION.md)，实际远端结果由该证据owner持有。本文件不再拥有执行状态或另列下一方案，不构成删除镜像或服务恢复结果。既有[停止API实读](STOPPED-API-IDENTITY-REMOTE-20261019.json)已闭合唯一停止对象的创建引用，不能替代下面的current/receipt/恢复引用。
 
 既有main-only固定SSH owner已经实际可用，Console登录MFA不是所有只读观察的必然前提。`deployment-connection.mjs`提供的四个受保护路径中，第四个是`REMOTE_BASE_DEPLOY_ENV`，另有release/candidate根；可在原diagnostic owner增加有界固定观察，保持原identity不读文件的契约。没有现成更小命令直接完成这条链：preview check写锁/receipt并触服务，backup dispatcher执行维护，Sky retention的读取范围更大，不能冒充固定只读替代。
 

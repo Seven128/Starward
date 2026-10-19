@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { diagnoseHost, diagnosticSucceeded } from "./run-host-diagnostics.mjs";
 import { identityScript, runtimeScript } from "./runtime-diagnostics.mjs";
+import { releaseReferenceScript } from "./release-reference-diagnostics.mjs";
 
 const env = {
   SSH_HOST: "host.example.invalid", SSH_PORT: "22", SSH_USER: "operator",
@@ -18,6 +19,17 @@ const protectedEnv = (values = env) => ({
   SSH_PRIVATE_KEY: values.SSH_PRIVATE_KEY,
   SSH_KNOWN_HOSTS: values.SSH_KNOWN_HOSTS,
 });
+function referenceReport() {
+  const hash = "a".repeat(64), revision = "a".repeat(40), digest = `sha256:${hash}`;
+  return { status: "observed", evidenceScope: "STAGING_RELEASE_REFERENCES_ONLY", snapshot: "NON_ATOMIC", referenceCompleteness: "UNVERIFIED",
+    base: { status: "observed", code: null, sha256: hash, environmentMatches: true, projectMatches: true },
+    current: { status: "observed", code: null, pointerSha256: hash, receiptSha256: hash, candidateSha256: hash,
+      schemaVersion: "starward-operator-preview-operation-v1", operation: "deploy", receiptStatus: "succeeded", revision, imageDigest: digest,
+      identityMatches: true, approvedRepositoryMatches: true, sourceRootMatches: true, backupManifestDeclared: false },
+    stoppedApi: { status: "observed", code: null, matchingContainerCount: 1, runningContainerCount: 0, revision, imageDigest: digest, state: "exited" },
+    failedDeployReceipts: { status: "observed", code: null, observedFileCount: 1, matchingCount: 0, revision, imageDigest: digest, matches: [] },
+    observation: { status: "observed", code: null } };
+}
 
 test("diagnostics sends only the existing preflight with pinned trust and cleans ephemeral credentials", () => {
   let keyPath;
@@ -89,7 +101,9 @@ test("runtime mode sends only the fixed staging probe and arbitrary modes cannot
     return { status: 0, stdout: JSON.stringify({ ...report, secret: env.SSH_PRIVATE_KEY }) };
   });
   assert.deepEqual(result, report);
-  assert.deepEqual(diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "anything else" }, () => assert.fail("must not execute")), { status: "failed", code: "diagnostic_configuration_invalid" });
+  for (const DIAGNOSTIC_MODE of ["anything else", "constructor", "__proto__", "toString", "release-reference --path /private",
+    { toString() { assert.fail("must not coerce mode"); } }])
+    assert.deepEqual(diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE }, () => assert.fail("must not execute")), { status: "failed", code: "diagnostic_configuration_invalid" });
 });
 
 test("identity mode reuses protected SSH and returns only the fixed aggregate projection", () => {
@@ -121,6 +135,53 @@ test("identity failures discard remote stdout, errors and invalid projected valu
     const report = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "identity" }, () => result);
     assert.deepEqual(report, { status: "failed", code });
     assert.doesNotMatch(JSON.stringify(report), /test-private-key|\/srv\//u);
+  }
+});
+
+test("release-reference uses fixed protected paths and returns only bounded metadata", () => {
+  const report = referenceReport();
+  let directory;
+  const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "release-reference" }, (command, args, options) => {
+    assert.equal(command, "ssh");
+    directory = dirname(args[1]);
+    assert.equal(args.at(-1), "sh -s -- '/srv/inbox' '/srv/releases' '/srv/candidates' '/srv/private/base.env'");
+    assert.equal(options.input, releaseReferenceScript);
+    assert.equal(options.timeout, 60000);
+    assert.equal(options.maxBuffer, 64 * 1024);
+    assert.equal(options.env.SSH_CONNECTION, undefined);
+    assert.equal(options.env.REMOTE_BASE_DEPLOY_ENV, undefined);
+    assert.equal(options.env.SSH_PRIVATE_KEY, undefined);
+    return { status: 0, stdout: JSON.stringify({ ...report, secret: env.SSH_PRIVATE_KEY,
+      current: { ...report.current, sourceRoot: env.REMOTE_RELEASE_ROOT, deployEnvPath: env.REMOTE_BASE_DEPLOY_ENV } }) };
+  });
+  assert.deepEqual(actual, report);
+  assert.equal(diagnosticSucceeded(actual), true); // Metadata observation, no availability or complete-reference claim.
+  assert.equal(actual.stoppedApi.runningContainerCount, 0);
+  assert.equal(actual.referenceCompleteness, "UNVERIFIED");
+  assert.equal(existsSync(directory), false);
+});
+
+test("release-reference preserves partial observations without claiming completion", () => {
+  const report = referenceReport();
+  report.current = { ...report.current, status: "unknown", code: "missing" };
+  const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "release-reference" }, () => ({ status: 0, stdout: JSON.stringify(report) }));
+  assert.deepEqual(actual, report);
+  assert.equal(diagnosticSucceeded(actual), false);
+  assert.deepEqual(actual.stoppedApi, report.stoppedApi);
+  assert.equal(diagnosticSucceeded({ evidenceScope: "STAGING_RELEASE_REFERENCES_ONLY" }), false);
+});
+
+test("release-reference failures and forged report fields cannot export private strings", () => {
+  const forged = referenceReport();
+  forged.current.code = env.SSH_PRIVATE_KEY;
+  for (const [result, expected] of [
+    [{ status: 65, stderr: `release_reference_failed:${env.REMOTE_BASE_DEPLOY_ENV}`, stdout: env.SSH_PRIVATE_KEY }, "release_reference_failed"],
+    [{ status: 65, stderr: "release_reference_invented:private", stdout: env.SSH_PRIVATE_KEY }, "diagnostic_ssh_failed"],
+    [{ status: 0, stdout: JSON.stringify(forged) }, "diagnostic_execution_failed"],
+  ]) {
+    const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "release-reference" }, () => result);
+    assert.deepEqual(actual, { status: "failed", code: expected });
+    assert.doesNotMatch(JSON.stringify(actual), /test-private-key|\/srv\//u);
   }
 });
 

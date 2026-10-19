@@ -24,9 +24,15 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 基于95b73d61的[窄修复](STOPPED-API-IDENTITY-OBSERVATION.md)只为原固定identity报告增加`singleMatchingContainer`；整个匹配集唯一时保含停止态的合法revision/digest，原`selectedContainer`与运行准入保持，旧缺失不补造。先在旧实现上取得聚焦回归失败，修后两份既有测试22/22；[独审](STOPPED-API-IDENTITY-REVIEW.md)复核22项及实际生成模块fake边界5/5，无P1/P2，源码hash相同。context结构与diff检查通过。未增加Docker命令或读取配置/DB/current receipt，未运行远端、服务或设备；远端结果要由新main代码的实际run单独建立，不由本地测试关闭。
 
-随后已提交fde9049f并普通推当前分支/main，精确读回一致；完整[Product39266613880](https://github.com/Seven128/Starward/actions/runs/39266613880)含OCI构建success、Context39266613824 success。root在任何镜像push或主机步骤前取消本批自动发布39268074761，终态cancelled且三个后续步骤skipped，CD/guard不改。现场稳定后一次[identity39269225549实读](STOPPED-API-IDENTITY-REMOTE-20261019.json)绑定该源码hash与停止1ccd/de4b元数据；运行准入仍failure。只核该revision历史run36039611583，push digest相同、start-writers失败；不重扫32条历史，也不推断当前receipt/停止原因。新current链观察仍待实现，见[边界](RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md)。
+随后已提交fde9049f并普通推当前分支/main，精确读回一致；完整[Product39266613880](https://github.com/Seven128/Starward/actions/runs/39266613880)含OCI构建success、Context39266613824 success。root在任何镜像push或主机步骤前取消本批自动发布39268074761，终态cancelled且三个后续步骤skipped，CD/guard不改。现场稳定后一次[identity39269225549实读](STOPPED-API-IDENTITY-REMOTE-20261019.json)绑定该源码hash与停止1ccd/de4b元数据；运行准入仍failure。只核该revision历史run36039611583，push digest相同、start-writers失败；不重扫32条历史，也不推断当前receipt/停止原因。后续固定current链已有[实现与本地检查](RELEASE-REFERENCE-OBSERVATION.md)，原[边界核对](RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md)保选择理由；实际执行只看新证据，不覆盖本段历史。
 
 等待期间完成[旧r9本机清理](LOCAL-RESOURCE-CLEANUP-20261019.json)：381文件/25,661,884B逐件匹配既有425件归档后移入回收站，源不存在、归档保留。当前r10/gen26/账号材料未动，r3确认和8798任务规则仍未完成；不称全部资源或完整Goal关闭。
+
+## 2026-10-19 固定发布引用及退役r8保全
+
+[固定引用实现](RELEASE-REFERENCE-OBSERVATION.md)复用原main-only SSH/四条受保护路径，root诊断43/43、实际parser消费者/发布入口52/52及context结构通过。[独审](RELEASE-REFERENCE-INDEPENDENT-REVIEW.md)无P1/P2，独立43项及精确生成模块4项对抗检查通过。Linux原生及实际远端观察尚待记录。它不读lane secrets/backup payload/DB、不部署或清理，输出始终保NON_ATOMIC/完整引用未验；Map/Sky字节未改。
+
+旧r8 cnbWtR原82件档案不能覆盖完整feedback，因此先新增外部完整保全：407文件/32,790,429B，源/副本/源后逐件相同，manifest967999117475550d45994091d95c39be1866b113dee290b6d7c1fc4dd0f8618a。核绝对命名范围、无链接及动作前完整性后移入回收站，源absent、原归档和新增归档保留，可恢复；未动当前r10、gen26或账号材料。详见[清理读回](LOCAL-RESOURCE-CLEANUP-20261019.json)。
 
 ## 69401 生产修复、r10 及此前 Git 证据
 

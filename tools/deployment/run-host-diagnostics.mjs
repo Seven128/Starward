@@ -5,18 +5,22 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { identityScript, runtimeScript, providerScript, imageryScript, sanitizeIdentityReport, sanitizeRuntimeReport, sanitizeProviderSimulationReport } from "./runtime-diagnostics.mjs";
 import { sanitizeImageryReport, imageryProbeSucceeded } from "./imagery-runtime-probe.mjs";
+import { releaseReferenceScript, sanitizeReleaseReferenceReport, releaseReferenceSucceeded } from "./release-reference-diagnostics.mjs";
 import { connectionKeys, parseDeploymentConnection } from "./deployment-connection.mjs";
 
 const preflight = readFileSync(new URL("../../infrastructure/deployment/host-preflight.sh", import.meta.url), "utf8");
-const failureCodes = new Set([...`${preflight}\n${identityScript}\n${runtimeScript}\n${imageryScript}`.matchAll(/(?:host_preflight|runtime_diagnostic)_[a-z0-9_]+/gu)].map(([code]) => code));
+const programs = Object.freeze({ host: preflight, identity: identityScript, runtime: runtimeScript,
+  providers: providerScript, imagery: imageryScript, "release-reference": releaseReferenceScript });
+const failureCodes = new Set([...Object.values(programs).join("\n").matchAll(/(?:host_preflight|runtime_diagnostic|release_reference)_[a-z0-9_]+/gu)].map(([code]) => code));
 
 // Only these repository-owned fixed programs may run. Imagery invokes normal
 // product reads (provider/cache/usage side effects); SQL probes remain read-only.
-// No arbitrary command, remote file, credential export or deployment.
+// Release-reference reads only its fixed deployment metadata chain. No arbitrary
+// command/path, credential export or deployment is accepted.
 export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir()) {
   const invalid = { status: "failed", code: "diagnostic_configuration_invalid" };
   const mode = env.DIAGNOSTIC_MODE ?? "host";
-  if (!["host", "identity", "runtime", "providers", "imagery"].includes(mode)) return invalid;
+  if (typeof mode !== "string" || !Object.hasOwn(programs, mode)) return invalid;
   try {
     env = { ...env, ...parseDeploymentConnection(env.SSH_CONNECTION ?? "") };
   } catch { return invalid; }
@@ -37,13 +41,14 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
       "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=10", "-o", "ServerAliveCountMax=2",
       "-p", env.SSH_PORT, `${env.SSH_USER}@${env.SSH_HOST}`,
       `sh -s -- ${paths.map((value) => `'${value}'`).join(" ")}`,
-    ], { input: mode === "imagery" ? imageryScript : mode === "providers" ? providerScript : mode === "runtime" ? runtimeScript : mode === "identity" ? identityScript : preflight, encoding: "utf8", timeout: 60_000, maxBuffer: 64 * 1024, env: childEnv, windowsHide: true });
+    ], { input: programs[mode], encoding: "utf8", timeout: 60_000, maxBuffer: 64 * 1024, env: childEnv, windowsHide: true });
     if (result.error || result.signal) return { status: "failed", code: "diagnostic_transport_interrupted" };
     if (result.status !== 0) {
       const code = String(result.stderr ?? "").trim().split(":")[0];
       return { status: "failed", code: result.status === 65 && failureCodes.has(code) ? code : "diagnostic_ssh_failed" };
     }
     const report = JSON.parse(result.stdout);
+    if (mode === "release-reference") return sanitizeReleaseReferenceReport(report);
     if (mode === "imagery") return sanitizeImageryReport(report);
     if (mode === "providers") return sanitizeProviderSimulationReport(report);
     if (mode === "runtime") return sanitizeRuntimeReport(report);
@@ -65,6 +70,7 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
 }
 
 export function diagnosticSucceeded(report) {
+  if (report.evidenceScope === "STAGING_RELEASE_REFERENCES_ONLY") return releaseReferenceSucceeded(report);
   if (report.evidenceScope === "STAGING_CONTAINER_IDENTITY_ONLY") return report.status === "observed" && report.runningContainerCount === 1 &&
     report.selectedContainer?.state === "running" && report.selectedContainer.running === true && report.selectedContainer.userMatches === true;
   if (report.evidenceScope === "SERVER_BFF_NOT_DEVICE") return imageryProbeSucceeded(report);

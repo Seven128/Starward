@@ -6,7 +6,7 @@ on:
       mode:
         description: Fixed check (imagery calls real BFF and records normal provider usage)
         type: choice
-        options: [host, identity, runtime, providers, imagery]
+        options: [host, identity, runtime, providers, imagery, release-reference]
         default: host
         required: true
 

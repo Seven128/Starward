@@ -37,5 +37,28 @@
   },
   "phoneOrAdbOperation": false,
   "serviceOrDatabaseMutation": false,
-  "allResourceCleanupComplete": false
+  "allResourceCleanupComplete": false,
+  "retiredR8Feedback": {
+    "target": "starward-device-feedback-cnbWtR under the known user Temp directory",
+    "inputAuthority": "retired_before_r9_and_r10",
+    "ownershipCheck": "feedback metadata contains historical r8 candidate fingerprint",
+    "resolvedAbsoluteTargetCheckedWithinExactNamedTempScope": true,
+    "priorArchiveRetained": true,
+    "priorArchiveFiles": 82,
+    "priorArchiveDidNotCoverCompleteTempFeedback": true,
+    "liveFiles": 407,
+    "liveBytes": 32790429,
+    "completionArchiveOwner": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/retired-feedback-preservation-20261019/r8-cnbWtR",
+    "archiveManifest": "manifest.private.json",
+    "archiveManifestSha256": "967999117475550d45994091d95c39be1866b113dee290b6d7c1fc4dd0f8618a",
+    "beforeCopyAfterEqual": true,
+    "unsafeOrReparseEntries": 0,
+    "countBytesAndManifestRecheckedBeforeAction": true,
+    "action": "Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory SendToRecycleBin",
+    "result": "recycled",
+    "sourceAbsentAfterAction": true,
+    "archiveRetained": true,
+    "recovery": "Windows Recycle Bin or complete external preservation archive",
+    "permanentDeleteOrFallback": false
+  }
 }
