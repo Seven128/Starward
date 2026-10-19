@@ -123,6 +123,7 @@ function officialDriver({ fail = false } = {}) {
       calls.push({ project, infoOutput, port });
       await writeFile(infoOutput, "private-scan-material");
       if (fail) throw new Error("private official failure detail");
+      return { success: true };
     },
   };
 }
@@ -183,6 +184,11 @@ test("development start waits for confirmed phone delivery before binding a sess
   assert.equal(bound.officialInvocation, "operator_confirmed");
   assert.ok(!bound.unverified.includes("phone_visible_generation"));
   assert.match(bound.phoneHandoff, /fresh screenshot/u);
+  // An ordinary QR must not silently replace a bound generation while its
+  // existing device session still carries input authority.
+  await assert.rejects(main(["preview", "--feedback", bound.feedbackRun],
+    { official, emit: () => {} }), /preview_not_available/u);
+  assert.equal((await loadFeedbackRun(bound.feedbackRun)).deviceSession, bound.deviceSession);
 });
 
 test("physical-device generation rejects a compiled loopback API origin before official delivery", async (t) => {
@@ -422,7 +428,7 @@ test("continual source drift fails boundedly and preserves the source project", 
   await access(source);
 });
 
-test("official failure stops at a redacted manual boundary and exact confirmation binds it", async (t) => {
+test("official transport failure stays unresolved and confirmation cannot bind it", async (t) => {
   const source = await fixture(t);
   const official = officialDriver({ fail: true });
   const output = collect();
@@ -435,10 +441,11 @@ test("official failure stops at a redacted manual boundary and exact confirmatio
   t.after(() => rm(manual.feedbackRun, { recursive: true, force: true }));
 
   assertDevelopmentOnly(manual);
-  assert.equal(manual.officialInvocation, "manual_required");
+  assert.equal(manual.officialInvocation, "error");
   assert.equal(manual.officialBoundary, "failed");
   assert.equal(manual.deviceSession, null);
-  assert.match(manual.manualInstruction, /ordinary-preview QR/u);
+  assert.equal(manual.manualInstruction, undefined);
+  assert.equal(manual.officialResult.status, "unknown");
   await access(manual.preparedProject);
   await assert.rejects(access(official.calls[0].infoOutput));
   await assert.rejects(
@@ -455,11 +462,7 @@ test("official failure stops at a redacted manual boundary and exact confirmatio
     /manual_confirmation_invalid/u,
   );
 
-  const bound = await bindFeedback(manual.feedbackRun);
-  assertDevelopmentOnly(bound);
-  assert.equal(bound.officialInvocation, "operator_confirmed");
-  assert.ok(bound.deviceSession.startsWith(bound.feedbackRun));
-  assert.equal((await loadFeedbackRun(bound.feedbackRun)).deviceSession, bound.deviceSession);
-  await main(["stop", "--feedback", bound.feedbackRun], { emit: () => {} });
+  await assert.rejects(bindFeedback(manual.feedbackRun), /official_outcome_unknown_no_replay/u);
+  assert.equal((await loadFeedbackRun(manual.feedbackRun)).deviceSession, null);
   await access(source);
 });

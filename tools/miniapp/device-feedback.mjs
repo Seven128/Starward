@@ -4,11 +4,14 @@ import { AdbDevice, findAdb } from "./device-adb.mjs";
 import { bindConfirmedGeneration } from "./device-feedback-binding.mjs";
 import { errorCode, parseArguments } from "./device-feedback-command.mjs";
 import {
+  assertOfficialOutcomeResolved,
   invokeOfficial,
   manualBoundary,
   officialDriver,
+  officialPreviewError,
 } from "./device-feedback-official.mjs";
 import {
+  assertOrdinaryPreviewAvailable,
   createOrdinaryPreview,
   previewQrPath,
 } from "./device-feedback-preview.mjs";
@@ -32,9 +35,17 @@ export {
 } from "./device-feedback-official.mjs";
 
 function generationOutput(run, { invalidated = false } = {}) {
-  const manual = run.official.disposition === "manual_required";
+  const manual = ["manual_required", "failed", "cancelled", "expired", "authorization_ready"].includes(run.official.disposition);
   const qrReady = run.official.disposition === "qr_ready";
   const operatorConfirmed = run.official.disposition === "operator_confirmed";
+  const unresolved = ["pending", "unknown", "error", "invoking"].includes(run.official.disposition);
+  const pendingTask = unresolved && run.official.result?.taskId ? {
+    taskId: run.official.result.taskId,
+    taskType: run.official.result.taskType,
+    tool: run.official.result.tool,
+    project: run.generation.project,
+    lastStatus: run.official.result.status,
+  } : undefined;
   return {
     mode: "development_feedback",
     feedbackRun: run.directory,
@@ -47,12 +58,14 @@ function generationOutput(run, { invalidated = false } = {}) {
     },
     officialInvocation: run.official.disposition,
     officialBoundary: run.official.boundary,
+    officialResult: run.official.result,
+    pendingTask,
     qrCode: qrReady ? previewQrPath(run.generation) : undefined,
     observedProductBehavior: "not_observed",
     verified: [
       "stable_private_snapshot",
       ...(run.official.disposition === "completed"
-        ? ["official_auto_preview_command_completed"]
+        ? ["official_auto_preview_terminal_success"]
         : run.official.disposition === "operator_confirmed"
           ? ["operator_confirmed_official_update"]
           : qrReady
@@ -60,6 +73,7 @@ function generationOutput(run, { invalidated = false } = {}) {
           : []),
     ],
     unverified: [
+      ...(unresolved || run.official.disposition === "authorization_ready" ? ["official_terminal_result"] : []),
       ...(!operatorConfirmed ? ["phone_visible_generation"] : []),
       "phone_bundle_bytes",
       "product_behavior",
@@ -72,11 +86,17 @@ function generationOutput(run, { invalidated = false } = {}) {
     cleanup: run.staleGenerationCleanupPending
       ? "owned_stale_generation_pending"
       : "owned_run_pending",
-    phoneHandoff: operatorConfirmed
+    phoneHandoff: run.official.disposition === "authorization_ready"
+      ? "Authorization completed; the original preview was not invoked. Keep this generation and explicitly continue its official preview before confirming phone visibility."
+      : operatorConfirmed
       ? "Phone visibility for this generation was operator-confirmed. Take a fresh screenshot before every input."
+      : unresolved
+        ? pendingTask
+          ? "Retain the original task. Complete any requested confirmation in DevTools; on explicit continuation query this exact task once before proceeding. Do not bind, refresh, or send another preview while its outcome is unresolved."
+          : "The original official outcome is unknown. Recover its retained result or task handle before proceeding; a completed callback or confirmation flag cannot authorize binding or another preview."
       : "Confirm this generation is visible on the intended phone/account. If automatic delivery selected another account or device, use preview for an official ordinary-preview QR; inspect and choose 信任并运行 if prompted.",
     manualInstruction: manual
-      ? "Run npm run miniapp:device:feedback -- preview --feedback <feedbackRun> for an official ordinary-preview QR, or use the version-visible official Preview action for preparedProject; then run bind with --confirm official_update_completed."
+      ? "On an explicit retry, run npm run miniapp:device:feedback -- preview --feedback <feedbackRun> for an official ordinary-preview QR. Bind only after that generation is visibly running on the intended phone/account."
       : qrReady
         ? "Scan qrCode from the intended authorized WeChat account, keep this generation visible, then run bind with --confirm official_update_completed."
         : run.official.disposition === "completed"
@@ -100,11 +120,14 @@ async function prepareGeneration(run, options, dependencies, invalidated) {
     run.official = await invokeOfficial(generation, options, dependencies.official);
   } else {
     try {
-      await createOrdinaryPreview(run, options, dependencies.official);
-      run.official = { disposition: "qr_ready", boundary: null };
+      run.official = await createOrdinaryPreview(run, options, dependencies.official, async (official) => {
+        run.official = official;
+        await saveFeedbackRun(run);
+      });
     } catch (error) {
       await assertGenerationCurrent(run);
-      run.official = { disposition: "manual_required", boundary: manualBoundary(error) };
+      if (run.official.disposition === "invoking")
+        run.official = officialPreviewError(error, "create_preview_qrcode");
     }
   }
   await saveFeedbackRun(run);
@@ -207,6 +230,7 @@ export async function main(
   }
   if (action === "refresh") {
     const output = await withFeedbackRun(options.feedback, async (run) => {
+      assertOfficialOutcomeResolved(run.official);
       const invalidated = await invalidateDeviceSession(run);
       return prepareGeneration(
         run,
@@ -220,8 +244,21 @@ export async function main(
   }
   if (action === "preview") {
     const output = await withFeedbackRun(options.feedback, async (run) => {
-      await createOrdinaryPreview(run, options, official);
-      run.official = { disposition: "qr_ready", boundary: null };
+      assertOrdinaryPreviewAvailable(run);
+      await assertGenerationCurrent(run);
+      run.official = { disposition: "invoking", boundary: null };
+      await saveFeedbackRun(run);
+      try {
+        run.official = await createOrdinaryPreview(run, options, official, async (result) => {
+          run.official = result;
+          await saveFeedbackRun(run);
+        });
+      } catch (error) {
+        if (run.official.disposition === "invoking")
+          run.official = officialPreviewError(error, "create_preview_qrcode");
+        await saveFeedbackRun(run);
+        throw error;
+      }
       await saveFeedbackRun(run);
       return generationOutput(run);
     });

@@ -8,7 +8,9 @@ import { main } from "./device-feedback.mjs";
 import { runOfficialProcess } from "./device-feedback-official.mjs";
 import {
   loadFeedbackRun,
+  recordOfficialTaskResult,
   saveFeedbackRun,
+  withFeedbackRun,
 } from "./device-feedback-session.mjs";
 import { startSession, withSession } from "./device-session.mjs";
 
@@ -24,7 +26,7 @@ function assertDevelopmentOnly(value) {
   assert.doesNotMatch(serialized, /private-device|private qr|private account/iu);
 }
 
-async function completedFeedback(t) {
+async function completedFeedback(t, autoPreview = async () => ({ success: true })) {
   const fixtureOutput = collect();
   await fixtureMain(["create", "--variant", "A"], {
     emit: fixtureOutput.emit,
@@ -33,7 +35,7 @@ async function completedFeedback(t) {
   t.after(() => fixtureMain(["stop", "--project", project], { emit: () => {} }));
   const output = collect();
   await main(["start", "--project", project, "--delivery", "auto"], {
-    official: { autoPreview: async () => {} },
+    official: { autoPreview },
     snapshotOptions: { settleMilliseconds: 0 },
     emit: output.emit,
   });
@@ -210,4 +212,150 @@ test("failed replacement of a legacy pre-confirmation session remains retryable"
   await main(bindArguments(run.feedbackRun), { emit: rebound.emit });
   assert.equal(rebound.values[0].officialInvocation, "operator_confirmed");
   assert.ok(rebound.values[0].deviceSession.startsWith(run.feedbackRun));
+});
+
+test("pending official preview retains its task and blocks binding or replacement", async (t) => {
+  let pushes = 0;
+  const autoPreview = async () => {
+    pushes += 1;
+    return { success: true, status: "pending", taskId: "preview-task-1", taskType: "preview",
+      message: "private account", token: "private qr" };
+  };
+  const run = await completedFeedback(t, autoPreview);
+  assert.equal(run.officialInvocation, "pending");
+  assert.deepEqual(run.pendingTask, { taskId: "preview-task-1", taskType: "preview",
+    tool: "auto_preview", project: run.preparedProject, lastStatus: "pending" });
+  const before = await readFile(path.join(run.feedbackRun, "feedback.json"), "utf8");
+  const state = await loadFeedbackRun(run.feedbackRun);
+  assert.equal(state.official.result.taskId, "preview-task-1");
+  assert.equal(state.official.result.taskType, "preview");
+  assert.doesNotMatch(before, /private account|private qr|token/u);
+  assertDevelopmentOnly(run);
+  for (const args of [bindArguments(run.feedbackRun),
+    ["refresh", "--feedback", run.feedbackRun, "--delivery", "auto"],
+    ["preview", "--feedback", run.feedbackRun],
+    ["stop", "--feedback", run.feedbackRun]]) {
+    await assert.rejects(main(args, {
+      official: { autoPreview, preview: async () => { throw Error("must not invoke"); } },
+      emit: () => {},
+    }), /official_pending_no_replay/u);
+  }
+  assert.equal(pushes, 1);
+  assert.equal(await readFile(path.join(run.feedbackRun, "feedback.json"), "utf8"), before);
+});
+
+test("only the retained original task can resolve pending and a poll success flag is insufficient", async (t) => {
+  let pushes = 0;
+  const run = await completedFeedback(t, async () => {
+    pushes += 1;
+    return { success: true, status: "pending", taskId: "original-task", taskType: "preview" };
+  });
+  const record = (taskId, result) => withFeedbackRun(run.feedbackRun,
+    state => recordOfficialTaskResult(state, taskId, result));
+  await assert.rejects(record("another-task", { status: "success" }), /official_task_binding_required/u);
+  await assert.rejects(record("original-task", { status: "success", taskId: "another-task" }),
+    /official_task_mismatch/u);
+  let state = await loadFeedbackRun(run.feedbackRun);
+  assert.equal(state.official.disposition, "pending");
+  await record("original-task", { ok: true, result: { success: true } });
+  state = await loadFeedbackRun(run.feedbackRun);
+  assert.equal(state.official.disposition, "unknown");
+  assert.equal(state.official.result.taskId, "original-task");
+  assert.equal(state.official.result.taskType, "preview");
+  await assert.rejects(main(bindArguments(run.feedbackRun), { emit: () => {} }),
+    /official_outcome_unknown_no_replay/u);
+  await record("original-task", { ok: true, result: { status: "pending" } });
+  assert.equal((await loadFeedbackRun(run.feedbackRun)).official.disposition, "pending");
+  await record("original-task", { ok: true, result: { status: "success", result: { token: "private qr" } } });
+  state = await loadFeedbackRun(run.feedbackRun);
+  assert.equal(state.official.disposition, "completed");
+  assert.equal(state.official.result.taskId, "original-task");
+  assert.doesNotMatch(JSON.stringify(state), /private qr|token/u);
+  const bound = collect();
+  await main(bindArguments(run.feedbackRun), { emit: bound.emit });
+  assert.equal(bound.values[0].officialInvocation, "operator_confirmed");
+  assert.equal(pushes, 1);
+  await assert.rejects(record("original-task", { status: "failed" }), /official_task_already_terminal/u);
+});
+
+test("a recovered poll result cannot invent a lost handle or outlive its generation", async (t) => {
+  const unknown = await completedFeedback(t, async () => {});
+  assert.equal(unknown.officialInvocation, "unknown");
+  await assert.rejects(withFeedbackRun(unknown.feedbackRun,
+    state => recordOfficialTaskResult(state, "invented-task", { status: "success" })),
+  /official_task_binding_required/u);
+  const pending = await completedFeedback(t,
+    async () => ({ status: "pending", taskId: "original-task" }));
+  await writeFile(path.join(pending.preparedProject, "weapp", "pages", "index", "index.js"),
+    'Page({data:{label:"drifted"}});\n');
+  await assert.rejects(withFeedbackRun(pending.feedbackRun,
+    state => recordOfficialTaskResult(state, "original-task", { status: "success" })),
+  /generation_changed_start_new_preview/u);
+  assert.equal((await loadFeedbackRun(pending.feedbackRun)).official.disposition, "pending");
+});
+
+test("authorization-task success does not complete the preview or permit binding", async (t) => {
+  let pushes = 0;
+  const run = await completedFeedback(t, async () => {
+    pushes += 1;
+    return { status: "pending", taskId: "auth-prerequisite", taskType: "auth" };
+  });
+  await withFeedbackRun(run.feedbackRun, state =>
+    recordOfficialTaskResult(state, "auth-prerequisite", { status: "success" }));
+  const state = await loadFeedbackRun(run.feedbackRun);
+  assert.equal(state.official.disposition, "authorization_ready");
+  assert.equal(state.official.boundary, "authorization_completed_preview_not_invoked");
+  assert.equal(state.official.result.taskId, "auth-prerequisite");
+  assert.equal(state.official.result.tool, "auto_preview");
+  await assert.rejects(main(bindArguments(run.feedbackRun), { emit: () => {} }), /manual_binding_not_available/u);
+  assert.equal(pushes, 1, "recording authorization never issues the business preview");
+  // Normalize the erroneous summary written by an earlier implementation too.
+  state.official.disposition = "completed";
+  await saveFeedbackRun(state);
+  assert.equal((await loadFeedbackRun(run.feedbackRun)).official.disposition, "authorization_ready");
+});
+
+test("a preview task handle survives post-invocation semantic config drift", async (t) => {
+  const fixtureOutput = collect();
+  await fixtureMain(["create", "--variant", "A"], { emit: fixtureOutput.emit });
+  const source = fixtureOutput.values[0].project;
+  t.after(() => fixtureMain(["stop", "--project", source], { emit: () => {} }));
+  let feedbackRun;
+  let calls = 0;
+  await assert.rejects(main(["start", "--project", source], {
+    official: { preview: async (project) => {
+      calls += 1;
+      feedbackRun = path.dirname(path.dirname(project));
+      const configPath = path.join(project, "project.config.json");
+      const config = JSON.parse(await readFile(configPath, "utf8"));
+      config.setting = { ...config.setting, es6: !config.setting?.es6 };
+      await writeFile(configPath, JSON.stringify(config));
+      return { status: "pending", taskId: "preview-before-drift", taskType: "preview" };
+    } }, snapshotOptions: { settleMilliseconds: 0 }, emit: () => {},
+  }), /generation_config_changed_start_new_preview/u);
+  t.after(() => rm(feedbackRun, { recursive: true, force: true }));
+  const saved = await loadFeedbackRun(feedbackRun);
+  assert.equal(saved.official.disposition, "unknown");
+  assert.equal(saved.official.result.status, "pending");
+  assert.equal(saved.official.result.taskId, "preview-before-drift");
+  await assert.rejects(main(bindArguments(feedbackRun), { emit: () => {} }), /official_outcome_unknown_no_replay/u);
+  assert.equal(calls, 1);
+});
+
+test("discarded legacy completed results remain unknown without changing saved evidence", async (t) => {
+  const run = await completedFeedback(t);
+  const state = await loadFeedbackRun(run.feedbackRun);
+  state.official = { disposition: "completed", boundary: null };
+  await saveFeedbackRun(state);
+  const before = await readFile(path.join(run.feedbackRun, "feedback.json"), "utf8");
+  const loaded = await loadFeedbackRun(run.feedbackRun);
+  assert.equal(loaded.official.disposition, "unknown");
+  assert.equal(loaded.official.boundary, "legacy_result_unretained");
+  assert.equal(loaded.official.result.status, "unknown");
+  for (const args of [bindArguments(run.feedbackRun),
+    ["refresh", "--feedback", run.feedbackRun, "--delivery", "auto"],
+    ["preview", "--feedback", run.feedbackRun]]) {
+    await assert.rejects(main(args, { emit: () => {} }), /official_outcome_unknown_no_replay/u);
+  }
+  assert.equal(await readFile(path.join(run.feedbackRun, "feedback.json"), "utf8"), before);
 });

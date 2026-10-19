@@ -13,12 +13,16 @@ import os from "node:os";
 import path from "node:path";
 import {
   OfficialWechatDevtools,
+  classifyOfficialPreviewResult,
+  invokeOfficial,
   parseOfficialLoginState,
   resolveOfficialCli,
 } from "./device-feedback-official.mjs";
 import {
   loadFeedbackRun,
+  recordOfficialTaskResult,
   stopFeedbackRun,
+  withFeedbackRun,
 } from "./device-feedback-session.mjs";
 import { main } from "./device-feedback.mjs";
 
@@ -57,7 +61,8 @@ function officialDriver({ automaticFailure = true } = {}) {
     calls,
     autoPreview: async () => {
       if (automaticFailure)
-        throw new Error("redacted automatic failure");
+        return { success: false, status: "failed", message: "redacted automatic failure" };
+      return { success: true };
     },
     preview: async (project, qrOutput, infoOutput, port) => {
       calls.push({ project, qrOutput, infoOutput, port });
@@ -66,6 +71,7 @@ function officialDriver({ automaticFailure = true } = {}) {
       ]);
       await writeFile(qrOutput, Buffer.concat([header, Buffer.alloc(120)]));
       await writeFile(infoOutput, "private preview material");
+      return { success: true };
     },
   };
 }
@@ -181,6 +187,60 @@ test("official driver forwards installation cwd and Electron environment", async
   );
 });
 
+test("official result classification distinguishes acknowledgement, terminal result and failure", () => {
+  const cases = [
+    [undefined, "unknown", "unknown"],
+    [Buffer.alloc(0), "unknown", "unknown"],
+    [{ ok: true }, "unknown", "unknown"],
+    [{ success: true }, "completed", "success"],
+    [{ status: "success" }, "completed", "success"],
+    [{ status: "success", success: false }, "unknown", "unknown"],
+    [{ status: "unknown", success: true }, "unknown", "unknown"],
+    [{ status: 123, success: true }, "unknown", "unknown"],
+    [{ success: true, status: "pending", taskId: "original-task" }, "pending", "pending"],
+    [{ success: true, status: "pending" }, "unknown", "pending"],
+    [{ success: false }, "failed", "failed"],
+    [{ status: "failed" }, "failed", "failed"],
+    [{ status: "cancelled" }, "cancelled", "cancelled"],
+    [{ status: "expired" }, "expired", "expired"],
+    [{ ok: false, message: "private preview material" }, "error", "unknown"],
+    [{ ok: true, result: { isError: true, content: [] } }, "error", "unknown"],
+    [{ ok: true, result: { structuredContent: { status: "pending", taskId: "original-task" } } }, "pending", "pending"],
+  ];
+  for (const [input, disposition, status] of cases) {
+    const actual = classifyOfficialPreviewResult(input);
+    assert.equal(actual.disposition, disposition);
+    assert.equal(actual.result.status, status);
+    assert.doesNotMatch(JSON.stringify(actual), /private preview material|message|content/u);
+  }
+});
+
+test("the default CLI driver returns its actual stdout and invokeOfficial preserves its result", async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "starward-feedback-cli-result-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const generation = { directory, project: directory };
+  const invocation = { file: "never-executed", prefix: [] };
+  for (const [stdout, disposition] of [
+    [Buffer.from('progress\n{\n"ok":true,"result":{"success":true,"status":"pending","taskId":"original-task","taskType":"preview","token":"private preview material"}\n}\nfinished'), "pending"],
+    [Buffer.from('{"ok":true,"result":{"success":true}}'), "completed"],
+    [Buffer.from('auto-preview command exited 0'), "unknown"],
+  ]) {
+    let calls = 0;
+    const driver = new OfficialWechatDevtools(invocation, async () => {
+      calls += 1;
+      return stdout;
+    });
+    const result = await invokeOfficial(generation, {}, driver);
+    assert.equal(calls, 1);
+    assert.equal(result.disposition, disposition);
+    if (disposition === "pending") {
+      assert.equal(result.result.taskId, "original-task");
+      assert.equal(result.result.taskType, "preview");
+    }
+    assert.doesNotMatch(JSON.stringify(result), /private preview material|token/u);
+  }
+});
+
 function collect() {
   const values = [];
   return { values, emit: (value) => values.push(value) };
@@ -204,7 +264,7 @@ test("default start and refresh generate QR without pushing to the IDE account",
   const source = await fixture(t);
   const official = officialDriver({ automaticFailure: false });
   let pushes = 0;
-  official.autoPreview = async () => { pushes += 1; };
+  official.autoPreview = async () => { pushes += 1; return { success: true }; };
   const output = collect();
   const dependencies = { official, snapshotOptions: { settleMilliseconds: 0 }, emit: output.emit };
   await main(["start", "--project", source], dependencies);
@@ -239,12 +299,48 @@ test("failed default QR delivery preserves the candidate without falling back to
     official, snapshotOptions: { settleMilliseconds: 0 }, emit: output.emit,
   });
   const run = output.values[0];
-  t.after(() => stopFeedbackRun(run.feedbackRun));
-  assert.equal(run.officialInvocation, "manual_required");
+  t.after(() => rm(run.feedbackRun, { recursive: true, force: true }));
+  assert.equal(run.officialInvocation, "error");
   assert.equal(run.officialBoundary, "timeout");
   assert.equal(pushes, 0);
   await access(run.preparedProject);
   assert.equal(run.qrCode, undefined);
+});
+
+test("pending QR preview retains the original task instead of permitting a second preview", async (t) => {
+  const source = await fixture(t);
+  const driver = officialDriver();
+  const createQr = driver.preview;
+  driver.preview = async (...args) => {
+    await createQr(...args);
+    return { status: "pending", taskId: "qr-task", taskType: "preview" };
+  };
+  const output = collect();
+  await main(["start", "--project", source], {
+    official: driver, snapshotOptions: { settleMilliseconds: 0 }, emit: output.emit,
+  });
+  const run = output.values[0];
+  t.after(() => rm(run.feedbackRun, { recursive: true, force: true }));
+  assert.equal(run.officialInvocation, "pending");
+  assert.equal(run.pendingTask.tool, "create_preview_qrcode");
+  assert.equal(run.pendingTask.taskId, "qr-task");
+  assert.equal(run.qrCode, undefined);
+  await access(driver.calls[0].qrOutput);
+  await assert.rejects(main(["preview", "--feedback", run.feedbackRun], {
+    official: driver, emit: () => {},
+  }), /official_pending_no_replay/u);
+  assert.equal(driver.calls.length, 1);
+  await withFeedbackRun(run.feedbackRun,
+    state => recordOfficialTaskResult(state, "qr-task", { status: "success" }));
+  assert.equal((await loadFeedbackRun(run.feedbackRun)).official.disposition, "qr_ready");
+  assert.equal(driver.calls.length, 1);
+});
+
+test("a terminal failure requires an actual new preview before phone binding", async (t) => {
+  const { run } = await manualRun(t);
+  assert.equal(run.officialInvocation, "failed");
+  await assert.rejects(main(["bind", "--feedback", run.feedbackRun, "--confirm", "official_update_completed"],
+    { emit: () => {} }), /manual_binding_not_available/u);
 });
 
 test("default QR start and refresh reject configuration drift instead of claiming a stable manual handoff", async (t) => {

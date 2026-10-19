@@ -1,4 +1,5 @@
 import { errorCode } from "./device-feedback-command.mjs";
+import { assertOfficialOutcomeResolved } from "./device-feedback-official.mjs";
 import { removePreviewQr } from "./device-feedback-preview.mjs";
 import { feedbackFail as fail } from "./device-feedback-paths.mjs";
 import {
@@ -28,6 +29,7 @@ export async function bindConfirmedGeneration(
     stopDeviceSession = stopSession,
   } = {},
 ) {
+  run.official = assertOfficialOutcomeResolved(run.official);
   if (
     !run.generation ||
     !["completed", "manual_required", "qr_ready"].includes(
@@ -57,7 +59,7 @@ export async function bindConfirmedGeneration(
       fail("generation_changed_start_new_session");
     run.deviceSession = session.directory;
     await removePreviewQr(run.generation);
-    run.official = { disposition: "operator_confirmed", boundary: null };
+    run.official = { ...run.official, disposition: "operator_confirmed", boundary: null };
     await saveFeedbackRun(run);
     return { invalidated };
   } catch (error) {
