@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, access } from "node:fs/promise
 import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { PNG } from "pngjs";
 import { AdbDevice, deviceSummary, foregroundActivity, verifyFocusedWindow, normalizedPoint, pngSize, runTool } from "./device-adb.mjs";
 import { startSession, withSession, stopSession, loadSession, deviceBinding, assertCapture, externalDirectory } from "./device-session.mjs";
@@ -47,6 +48,46 @@ function adbDriver({ changed = false, permissions = false, osLocation = false, l
   });
   return { driver, calls };
 }
+
+test("captures preserve immutable image paths and receipts even at the same timestamp", async (t) => {
+  const state = await session(t), { driver } = adbDriver(), output = [];
+  const image = new PNG({ width: 2, height: 2 }); image.data.fill(0xff);
+  const firstBytes = PNG.sync.write(image); image.data[0] = 0;
+  const secondBytes = PNG.sync.write(image), originalCommand = driver.command.bind(driver);
+  let bytes = firstBytes;
+  driver.command = (args, options) => args.join(" ") === "exec-out screencap -p" ? Promise.resolve(bytes) : originalCommand(args, options);
+  const fixedAt = 1_800_000_000_000;
+  t.mock.method(Date, "now", () => fixedAt);
+  const context = { adb: driver, emit: value => output.push(value) };
+  const legacy = path.join(state.directory, "screen.png"); await writeFile(legacy, "old private capture");
+  await main(["capture", "--session", state.directory], context);
+  bytes = secondBytes;
+  await main(["capture", "--session", state.directory], context);
+  await main(["capture", "--session", state.directory], context);
+  assert.equal(new Set(output.map(value => value.screenshot)).size, 3);
+  assert.equal(new Set(output.map(value => value.captureId)).size, 3);
+  assert.deepEqual(await readFile(output[0].screenshot), firstBytes);
+  assert.deepEqual(await readFile(output[1].screenshot), secondBytes);
+  assert.equal(await readFile(legacy, "utf8"), "old private capture");
+  assert.notEqual(output[0].screenshotSha256, output[1].screenshotSha256);
+  assert.equal(output[1].screenshotSha256, output[2].screenshotSha256);
+  for (const value of output) {
+    const saved = await readFile(value.screenshot), receipt = JSON.parse(await readFile(value.screenshotMetadata, "utf8"));
+    assert.equal(value.capturedAt, new Date(fixedAt).toISOString());
+    assert.equal(value.screenshotSha256, createHash("sha256").update(saved).digest("hex"));
+    assert.equal(receipt.captureId, value.captureId); assert.equal(receipt.capturedAt, value.capturedAt);
+    assert.equal(receipt.sha256, value.screenshotSha256); assert.equal(receipt.bytes, saved.length);
+    assert.equal(receipt.file, path.basename(value.screenshot)); assert.equal(receipt.screenScope, "miniapp");
+    assert.ok(!JSON.stringify(receipt).includes("private-serial"));
+  }
+  const current = await loadSession(state.directory);
+  assert.equal(current.capture.file, output[2].screenshot); assert.equal(current.capture.at, fixedAt);
+  assertCapture(current, "private-serial", fixedAt + 60_000);
+  assert.throws(() => assertCapture(current, "private-serial", fixedAt + 60_001), /recent_capture_required/);
+  await stopSession(state.directory);
+  for (const value of output) await assert.rejects(access(value.screenshot));
+  await access(state.binding.project);
+});
 
 test("recording failure consumes the reviewed screenshot authority without publishing media or replaying input", async (t) => {
   for (const action of ["record-tap","record"]) {
@@ -93,6 +134,11 @@ test("read-only recording command stores guarded private media and explicitly re
   assert.equal(output[1].actionSent,undefined);
   assert.deepEqual(await readFile(output[1].video),video);
   assert.equal(path.dirname(output[1].video),state.directory);
+  assert.notEqual(output[0].screenshot,output[1].screenshot);
+  assert.deepEqual(await readFile(output[0].screenshot),png());
+  const receipt=JSON.parse(await readFile(output[1].screenshotMetadata,"utf8"));
+  assert.equal(receipt.sha256,createHash("sha256").update(await readFile(output[1].screenshot)).digest("hex"));
+  assert.equal((await loadSession(state.directory)).capture.file,output[1].screenshot);
   assert.equal((await loadSession(state.directory)).capture.permissionScope,"none");
   assert.ok(!calls.some(args=>args.includes("input")));
 });

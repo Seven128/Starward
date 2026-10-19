@@ -1,4 +1,5 @@
 import { writeFile, rm } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { AdbDevice, findAdb, runTool, fail } from "./device-adb.mjs";
@@ -28,7 +29,31 @@ Authorized Mini Program permission tests require inspecting the actual prompt be
 Unknown system windows, unrelated permissions and account-security dialogs remain blocked.
 Open the intended external project in official DevTools with automation enabled before remote.
 Remote QR is rendered privately from official SDK output; raw QR stdout is suppressed.
-Screenshots are private. Stop deletes this tool's session, not the phone bundle or WeChat data.`;
+Each capture returns its own immutable screenshot path, capture time and SHA-256 receipt.
+Review the returned path; do not assume screen.png. Screenshots are private.
+Stop deletes this tool's session, not the phone bundle or WeChat data.`;
+
+async function saveCapture(state, serial, screenshot, at = Date.now()) {
+  // Distinct paths keep historical viewers from rereading a later overwritten
+  // frame. Equal bytes still represent distinct observations/input grants.
+  const captureId = randomUUID();
+  const file = `screen-${captureId}.png`;
+  const screenshotPath = path.join(state.directory, file);
+  const screenshotMetadata = `${screenshotPath}.json`;
+  const capturedAt = new Date(at).toISOString();
+  const sha256 = createHash("sha256").update(screenshot.bytes).digest("hex");
+  const permissionScope = screenshot.permissionScope ?? "none";
+  const screenScope = permissionScope === "none" ? "miniapp" : permissionScope;
+  const receipt = { schema: "starward-miniapp-screenshot-v1", captureId, capturedAt, file,
+    sha256, bytes: screenshot.bytes.length, size: screenshot.size, screenScope };
+  await writeFile(screenshotPath, screenshot.bytes, { mode: 0o600, flag: "wx" });
+  await writeFile(screenshotMetadata, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600, flag: "wx" });
+  state.capture = { at, device: deviceBinding(state, serial), activity: screenshot.activity, size: screenshot.size,
+    permissionScope, file: screenshotPath, captureId, sha256 };
+  await saveSession(state);
+  return { screenshot: screenshotPath, screenshotMetadata, captureId, capturedAt,
+    screenshotSha256: sha256, screenshotBytes: screenshot.bytes.length, screenScope };
+}
 
 export function parseArguments(argv) {
   const [action = "help", ...rest] = argv;
@@ -90,11 +115,8 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
       await saveSession(state);
       const permissionScope = action === "capture-permissions" ? "settings" : action === "capture-location" ? "location-prompt" : action === "capture-location-picker" ? "location-picker" : "none";
       const screenshot = await device.screenshot({ permissionScope });
-      const screenshotPath = path.join(state.directory, "screen.png");
-      await writeFile(screenshotPath, screenshot.bytes, { mode: 0o600 });
-      state.capture = { at: Date.now(), device: deviceBinding(state, serial), activity: screenshot.activity, size: screenshot.size, permissionScope: screenshot.permissionScope ?? "none" };
-      await saveSession(state);
-      return { screenshot: screenshotPath, size: screenshot.size, screenScope: state.capture.permissionScope === "none" ? "miniapp" : state.capture.permissionScope, actualScreen: true, runtimeAppIdVerified: false, acceptance: "not_evaluated" };
+      const saved = await saveCapture(state, serial, screenshot);
+      return { ...saved, size: screenshot.size, actualScreen: true, runtimeAppIdVerified: false, acceptance: "not_evaluated" };
     } else {
       assertCapture(state, serial);
       const inputAction = action.startsWith("record-") ? action.slice(7) : action;
@@ -107,14 +129,11 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
         const recordOptions = options.seconds === undefined ? {} : { seconds: Number(options.seconds) };
         const record = action === "record" ? await recordDeviceScreen(device, capture, recordOptions)
           : await recordDeviceGesture(device, inputAction, values, capture, recordOptions);
+        const capturedAt = Date.now();
         const video = path.join(state.directory, `recording-${Date.now()}.mp4`);
         await writeFile(video, record.bytes, { mode: 0o600, flag: "wx" });
-        const screenshot = path.join(state.directory, "screen.png");
-        await writeFile(screenshot, record.screenshot.bytes, { mode: 0o600 });
-        state.capture = { at: Date.now(), device: deviceBinding(state, serial), activity: record.screenshot.activity,
-          size: record.screenshot.size, permissionScope: "none" };
-        await saveSession(state);
-        return { video, screenshot, size: record.screenshot.size, requestedSeconds: record.requestedSeconds,
+        const saved = await saveCapture(state, serial, record.screenshot, capturedAt);
+        return { video, ...saved, size: record.screenshot.size, requestedSeconds: record.requestedSeconds,
           ...(action === "record" ? { inputSent: false } : { actionSent: inputAction }),
           actualScreen: true, runtimeAppIdVerified: false, acceptance: "not_evaluated",
           next: "inspect_actual_video_and_screenshot" };
