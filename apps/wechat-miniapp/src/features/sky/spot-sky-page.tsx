@@ -808,6 +808,24 @@ function OrientationTimeRuler({
   }
   const positionRevision = useRef(0);
   const pendingAlignment = useRef<{ revision: number; index: number; rows: string; reading: boolean } | null>(null);
+  const layoutRef = useRef<ReturnType<typeof createOrientationRulerLayout> | null>(null);
+  const positionLayout = useRef({ ready: layoutReady, revision: 0 });
+  if (positionLayout.current.ready !== layoutReady) {
+    positionLayout.current = { ready: layoutReady, revision: positionLayout.current.revision + 1 };
+    // Preparation's offset does not certify the native geometry after the
+    // surface reveal. Retire it before effects, including a quick ready ->
+    // opening -> ready reversal with a queued native callback.
+    positionRevision.current++;
+    nativePosition.cancel();
+    pendingAlignment.current = null;
+    // The queued geometry read owns a separate revision. Returning to ready
+    // must not revive its preparation sample before the new effects run.
+    layoutRef.current?.invalidate(settlement.active);
+    if (!settlement.active) {
+      nativeRows.current = null;
+      alignmentRequired.current = true;
+    }
+  }
   const observePosition = useRef<(left: number | null, finished?: boolean) => void>(() => {});
   const cancelPosition = useCallback(() => {
     positionRevision.current++;
@@ -817,7 +835,6 @@ function OrientationTimeRuler({
   const targetIndex = useRef(safeActiveIndex);
   if (!settlement.active) targetIndex.current = safeActiveIndex;
   const positionResolved = useRef<() => void>(() => {});
-  const layoutRef = useRef<ReturnType<typeof createOrientationRulerLayout> | null>(null);
   if (!layoutRef.current) layoutRef.current = createOrientationRulerLayout((accept, current) => {
     Taro.nextTick(() => {
       if (!current()) return;
@@ -832,6 +849,7 @@ function OrientationTimeRuler({
     });
   }, () => visible.current && layoutAllowed.current && !settlement.active, () => positionResolved.current());
   const layout = layoutRef.current;
+  const measuredLayoutRevision = useRef(positionLayout.current.revision);
   const positionIndex = useCallback((index: number, afterNativeUpdate = false) => {
     targetIndex.current = index;
     cancelPosition();
@@ -871,7 +889,7 @@ function OrientationTimeRuler({
     const pending = pendingAlignment.current;
     if (!pending || pending.revision !== positionRevision.current || pending.rows !== currentRows.current ||
       pending.rows !== nativeRows.current ||
-      !visible.current || !selectionAllowed.current || !interactionAllowed.current || settlement.active) return;
+      !visible.current || !layoutAllowed.current || !selectionAllowed.current || !interactionAllowed.current || settlement.active) return;
     if (left !== null && layout.aligned(left, pending.index)) {
       pendingAlignment.current = null;
       alignmentRequired.current = false;
@@ -952,20 +970,20 @@ function OrientationTimeRuler({
     }
   }, []);
   useEffect(() => {
-    // Preparation's real offset remains in the same native units while the
-    // reveal scales. Keep its pending receipt, but closing/locking still
-    // retires commands immediately through the live interaction boundary.
-    if (layoutReady || interactionDisabled) cancelPosition();
-    // A different set of times preserves this surface's measured cadence and
-    // origin. Keep them while the replacement nodes are being read; unlike a
-    // resize or scale transition, row identity does not change their geometry.
-    // A CSS scale changes viewport rects, not the native scroll coordinate
-    // system already read during transparent preparation. Retire late reads
-    // but retain that valid projection until an actual resize invalidates it.
-    layout.invalidate(true);
+    // Preparation cannot certify the surface after reveal. Its own transition
+    // endpoint permits a new layout read, not reuse of the earlier receipt.
+    // The current hidden native position must be observed before showing ticks.
+    cancelPosition();
+    // A row replacement alone keeps cadence/origin. A surface geometry gate
+    // change requires a fresh projection; a failed endpoint read must not
+    // certify entry using the former transparent preparation. As on resize,
+    // keep a held drag's conversion until its existing settlement finishes.
+    const sameGeometry = measuredLayoutRevision.current === positionLayout.current.revision;
+    measuredLayoutRevision.current = positionLayout.current.revision;
+    layout.invalidate(sameGeometry || settlement.active);
     layout.measure();
     return () => layout.retire();
-  }, [rowIdentity, layoutReady]);
+  }, [rowIdentity, layoutReady, positionLayout.current.revision]);
   useEffect(cancelInteraction, [committedIndex, rowIdentity, interactionDisabled]);
   useEffect(() => {
     // Missing time coverage is handled by the existing six fields/recovery.
@@ -1027,7 +1045,7 @@ function OrientationTimeRuler({
   );
   const previewValue = rows.length ? clampIndex(Math.round(visualIndex), rows.length) : 0;
   const ticksVisible = !alignmentRequired.current && alignedRows === rowIdentity && nativeRows.current === rowIdentity &&
-    (layoutReady || settlement.active || positionedIndex.current === previewValue);
+    (layoutReady || settlement.active);
   const currentLabel = presentedAt
     ? formatTimeWithSeconds(presentedAt, timezone)
     : requirePaintedTime ? "暂无已绘时刻"

@@ -127,14 +127,17 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
       onPreview: (index: number) => previews.push(index), onCommit: (index: number) => commits.push(index),
       onCancel: () => { cancels++; }, onScrubChange: (active: boolean) => scrubs.push(active) });
   };
+  const commitEffects = () => {
+    for (const effect of effects) slots[effect.index].cleanup?.();
+    for (const effect of effects) slots[effect.index].cleanup = effect.create();
+  };
   const flush = () => {
     let renders = 0;
     do {
       do {
         assert(++renders < 20, "component effects converge");
         renderComponent();
-        for (const effect of effects) slots[effect.index].cleanup?.();
-        for (const effect of effects) slots[effect.index].cleanup = effect.create();
+        commitEffects();
       } while (dirty);
       if (!deferNative) nativeReady();
     } while (dirty);
@@ -153,6 +156,7 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
     render(next: Props) { props = next; flush(); }, flush, nativeReady,
     renderBeforeEffects(next: Props) { props = next; renderComponent();
       return tree.children.find(child => child?.type === "scroll")!.props; },
+    commitEffects() { commitEffects(); flush(); },
     arrive(left: number) { nativeLeft = left; nativeAnimationTarget = null;
       tree.children.find(child => child?.type === "scroll")!.props.onScroll({ detail: { scrollLeft: left } }); flush(); },
     readOffset(values?: any[]) { offsetReads.shift()?.(values ?? [{ scrollLeft: nativeLeft }]); },
@@ -274,8 +278,95 @@ test("entry observes its selected native position before its first ticks become 
   assert.deepEqual(ready, [true], "six fields can be revealed even if the ruler offset is still pending");
   r.render({ ...props, layoutReady: false, onEntryReady: value => ready.push(value) });
   r.arrive(561.4222412109375);
-  assert.equal(r.scroll.style.visibility, "visible", "the native event can qualify measured indicator overlap during the reveal");
+  assert.equal(r.scroll.style.visibility, "hidden", "a preparation receipt cannot qualify the surface during its reveal");
+  r.render({ ...props, onEntryReady: value => ready.push(value) });
+  assert.equal(r.scroll.style.visibility, "hidden", "the actual endpoint allows a new layout read, not immediate visibility");
+  r.takeLayoutRead()!(nativeSample); r.flush();
+  assert.equal(r.nativeCommands.at(-1)!.animated, false);
+  assert.equal(r.scroll.style.visibility, "visible", "current stable layout and actual offset can qualify the ruler");
   assert.deepEqual(r.previews, []); assert.deepEqual(r.commits, [], "program positioning is not a time intention");
+  r.unmount();
+});
+
+test("a native offset reset during reveal cannot expose unrelated times or animate a visible correction", () => {
+  const props = windowProps(original, original[33]!.at, original[33]!.at);
+  const r = rulerFixture({ ...props, preparing: true }, 390, false, true);
+  const r6ZeroOffsetLayout = [{ left: 191.5, width: 1 }, { left: 184, width: 17 },
+    { left: 201, width: 17 }, { scrollLeft: 0 }];
+  r.takeLayoutRead()!(r6ZeroOffsetLayout); r.flush();
+  r.arrive(561.4222412109375);
+  assert.equal(r.scroll.style.visibility, "visible", "transparent preparation has a valid real offset");
+  const preparedCommands = r.nativeCommands.length;
+  r.render({ ...props, layoutReady: false });
+  assert.equal(r.scroll.style.visibility, "hidden", "opening retires the earlier native admission before revealing the surface");
+  r.arrive(0);
+  assert.equal(r.scroll.style.visibility, "hidden", "the unrelated noon/afternoon window must remain hidden");
+  assert.equal(r.nativeCommands.length, preparedCommands, "the changing scale is not a positioning boundary");
+  r.render(props);
+  assert.equal(r.scroll.style.visibility, "hidden", "a transition endpoint alone is not native alignment");
+  r.takeLayoutRead()!(r6ZeroOffsetLayout); r.flush();
+  assert.equal(r.nativeCommands.length, preparedCommands + 1, "one fresh layout schedules one correction");
+  near(r.nativeCommands.at(-1)!.left, 561.5);
+  assert.equal(r.nativeCommands.at(-1)!.animated, false, "a reset after entry cannot turn into visible travel through unrelated times");
+  assert.equal(r.scroll.style.visibility, "hidden", "native command return with an old offset remains unqualified");
+  r.arrive(561.4222412109375);
+  assert.equal(r.scroll.style.visibility, "visible");
+  assert.deepEqual(r.previews, []); assert.deepEqual(r.commits, []);
+  r.unmount();
+});
+
+test("missing endpoint geometry cannot reuse preparation and a later retry restores the selected native tick", () => {
+  const props = windowProps(original, original[33]!.at, original[33]!.at);
+  const r = rulerFixture({ ...props, preparing: true }, 390);
+  r.takeLayoutRead()!(nativeSample); r.flush();
+  const preparedCommands = r.nativeCommands.length;
+  r.render({ ...props, layoutReady: false }); r.arrive(0); r.render(props);
+  r.takeLayoutRead()!([]); r.takeLayoutRead()!([]); r.flush();
+  assert.equal(r.scroll.style.visibility, "hidden", "a former unscaled projection is not a current layout read");
+  assert.equal(r.nativeCommands.length, preparedCommands, "missing geometry cannot send an unverified correction");
+  assert.equal(r.positionState?.children[0], "时间尺暂不可用，重试");
+  r.positionState!.props.onClick(); r.flush();
+  r.takeLayoutRead()!(nativeSample); r.flush();
+  assert.equal(r.nativeCommands.at(-1)!.animated, false);
+  assert.equal(r.scroll.style.visibility, "visible", "the normal bounded recovery can qualify the ruler");
+  r.unmount();
+});
+
+test("a reveal readiness reversal retires queued native work before passive effects", () => {
+  const props = windowProps(original, original[33]!.at, original[33]!.at);
+  const r = rulerFixture({ ...props, preparing: true }, 390, true);
+  r.nativeReady(); r.takeLayoutRead()!(nativeSample);
+  const late = r.takeNodeRead()!;
+  assert(late, "the preparation's native node callback is queued");
+  r.renderBeforeEffects({ ...props, layoutReady: false });
+  const reopened = r.renderBeforeEffects(props);
+  assert.equal(reopened.style.visibility, "hidden");
+  let writes = 0;
+  late([{ node: { scrollTo() { writes++; } } }]);
+  assert.equal(writes, 0, "returning to ready cannot revive a preparation's retired command");
+  r.commitEffects();
+  r.takeLayoutRead()!([]); r.takeLayoutRead()!([]); r.nativeReady(); r.flush();
+  assert.equal(r.positions.length, 0, "a readiness reversal still requires fresh geometry, even when its final boolean matches preparation");
+  assert.equal(r.scroll.style.visibility, "hidden");
+  r.unmount();
+});
+
+test("a preparation geometry callback cannot certify a reveal reversal before passive effects", () => {
+  const props = windowProps(original, original[33]!.at, original[33]!.at);
+  const r = rulerFixture({ ...props, preparing: true }, 390, true);
+  r.nativeReady();
+  const staleGeometry = r.takeLayoutRead()!;
+  assert(staleGeometry);
+  r.renderBeforeEffects({ ...props, layoutReady: false });
+  r.renderBeforeEffects(props);
+  staleGeometry([{ left: 191.5, width: 1 }, { left: 184, width: 17 },
+    { left: 201, width: 17 }, { scrollLeft: 0 }]);
+  let writes = 0;
+  r.takeNodeRead()?.([{ node: { scrollTo() { writes++; } } }]);
+  r.readOffset([{ scrollLeft: 561.5 }]);
+  const current = r.renderBeforeEffects(props);
+  assert.equal(writes, 0, "late preparation geometry cannot create a new native write");
+  assert.equal(current.style.visibility, "hidden", "returning to ready cannot revive preparation's layout");
   r.unmount();
 });
 
