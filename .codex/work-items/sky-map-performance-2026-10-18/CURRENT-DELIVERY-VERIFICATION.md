@@ -24,6 +24,10 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 基于95b73d61的[窄修复](STOPPED-API-IDENTITY-OBSERVATION.md)只为原固定identity报告增加`singleMatchingContainer`；整个匹配集唯一时保含停止态的合法revision/digest，原`selectedContainer`与运行准入保持，旧缺失不补造。先在旧实现上取得聚焦回归失败，修后两份既有测试22/22；[独审](STOPPED-API-IDENTITY-REVIEW.md)复核22项及实际生成模块fake边界5/5，无P1/P2，源码hash相同。context结构与diff检查通过。未增加Docker命令或读取配置/DB/current receipt，未运行远端、服务或设备；远端结果要由新main代码的实际run单独建立，不由本地测试关闭。
 
+随后已提交fde9049f并普通推当前分支/main，精确读回一致；完整[Product39266613880](https://github.com/Seven128/Starward/actions/runs/39266613880)含OCI构建success、Context39266613824 success。root在任何镜像push或主机步骤前取消本批自动发布39268074761，终态cancelled且三个后续步骤skipped，CD/guard不改。现场稳定后一次[identity39269225549实读](STOPPED-API-IDENTITY-REMOTE-20261019.json)绑定该源码hash与停止1ccd/de4b元数据；运行准入仍failure。只核该revision历史run36039611583，push digest相同、start-writers失败；不重扫32条历史，也不推断当前receipt/停止原因。新current链观察仍待实现，见[边界](RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md)。
+
+等待期间完成[旧r9本机清理](LOCAL-RESOURCE-CLEANUP-20261019.json)：381文件/25,661,884B逐件匹配既有425件归档后移入回收站，源不存在、归档保留。当前r10/gen26/账号材料未动，r3确认和8798任务规则仍未完成；不称全部资源或完整Goal关闭。
+
 ## 69401 生产修复、r10 及此前 Git 证据
 
 生产修复提交`69401c097572799234e6b97478a4a1ddfe06c810`（`fix(sky): preserve accepted sky while time geometry loads`）已push并精确远端读回。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均实际success。此提交包含跨日pending连续性修复的2份生产文件、4份既有fixture及对应作者/独审记录；133/133、Miniapp TS5.9.3 noEmit0与独审无P1/P2保各自范围。r10完整构建、接入及整包独审已通过，一次官方preview明确success，实际非空Sky独有“A1 r10”label后绑定；新跨日等待/取消已取得[r10实际独审](R17-A1-R10-CROSSDAY-RESULT.md)；普通预览持续表现只有[部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)，完整B仍未验证。用户携手机离开，后续优先离线分析与Git/服务交付；CI和label绑定不替代目标结果。

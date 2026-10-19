@@ -2,6 +2,8 @@
 
 ## 2026-10-19 当前已取得的增量证据
 
+最新受审identity补齐已作为fde9049f进入main，完整Product39266613880（含OCI）与Context39266613824 success。本批仅诊断改动、quota未变，root在release-owner重检期间取消自动发布39268074761，实际cancelled、镜像push/host preflight/promote全skipped；没有为新观察重复同样额度失败或修改CD。现场稳定后的[identity39269225549](STOPPED-API-IDENTITY-REMOTE-20261019.json)已读到固定唯一exited API的合法1ccd/de4b创建引用，running0、原准入仍failure。该revision的旧发布36039611583实际push/preflight成功、start-writers失败，push digest吻合；具体停止原因/current receipt未知，未跑runtime/provider。Console MFA不阻止现有获权SSH固定观察；下一窄current链入口的[只读边界](RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md)已核，但新文件读取mode尚未实现，不能当已观察或删tag依据。
+
 固定identity实现及已审生产源码已随`ba4ea423cd7b55bfb184fa57557434d740081711`进入远端main，精确main的Product/Context CI均success。现有CD=true/operator-preview自动[发布39258892651](https://github.com/Seven128/Starward/actions/runs/39258892651)在镜像push遭TCR个人仓库100标签上限拒绝，host preflight和promote均skipped，未部署服务器。连接镜像已依现有owner刷新；不能将此次构建发布失败解释为它停止了API。
 
 现场稳定后只运行一次[identity39261198368](https://github.com/Seven128/Starward/actions/runs/39261198368)：固定`starward-staging`/`api`总1、running0、exited1、`selectedContainer=null`。这已细分此前`ambiguous`，未读到停止对象的revision/digest、停止原因或current receipt；未调度runtime/provider。真实QWeather v1、资料时效、Map及手机selected-hour联动仍未验。

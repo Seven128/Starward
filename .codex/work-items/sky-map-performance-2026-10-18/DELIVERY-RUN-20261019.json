@@ -154,7 +154,8 @@
       "enabledAfterReadback": true,
       "ruleMutated": false,
       "otherFirewallPairingOrVpnMutated": false
-    }
+    },
+    "retiredR9FeedbackCleanup": "LOCAL-RESOURCE-CLEANUP-20261019.json"
   },
   "retained": {
     "phoneUnavailableNoNewDeviceActions": true,
@@ -164,5 +165,49 @@
     "pairingVpnAccountStorageUntouched": true,
     "fullB": "unverified_after_completed_offline_review",
     "allRemainingRequirements": "REQUIREMENTS.md and INHERITED-REQUIREMENTS.md"
+  },
+  "stoppedIdentityFollowup": {
+    "revision": "fde9049f1bbe09677cc351a5253c4c249b7fd5e9",
+    "bothRefsReadBack": "fde9049f1bbe09677cc351a5253c4c249b7fd5e9",
+    "scope": "fixed identity metadata projection; Map/Sky behavior unchanged",
+    "softwareReview": "STOPPED-API-IDENTITY-REVIEW.md",
+    "ownerTestsPassed": 22,
+    "generatedModuleFakeCasesPassed": 5,
+    "contextValidate": "passed",
+    "stagedFiles": 11,
+    "localFileLinksChecked": 282,
+    "connectionMirror": "existing_staging_secret_refreshed_without_values",
+    "productCi": {
+      "runId": 39266613880,
+      "status": "completed",
+      "conclusion": "success",
+      "ociConstruction": "success"
+    },
+    "contextCi": {
+      "runId": 39266613824,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "automaticRelease": {
+      "runId": 39268074761,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "cancelledByRootAt": "Recheck release owners at the promoted revision",
+      "purpose": "diagnostic_only_change_with_unchanged_registry_quota_do_not_repeat_known_failed_push",
+      "imagePush": "skipped",
+      "hostPreflight": "skipped",
+      "promotion": "skipped",
+      "cdSettingOrGuardChanged": false
+    },
+    "identityRunId": 39269225549,
+    "identityEvidence": "STOPPED-API-IDENTITY-REMOTE-20261019.json",
+    "identityStatus": "observed_stopped_api_not_available",
+    "runtimeOrProvidersDispatched": false,
+    "historicalSingleRevisionRun": 36039611583,
+    "historicalFailureStep": "start-writers",
+    "historicalPublishedDigestMatchesStoppedMetadata": true,
+    "nextUnverifiedBoundary": "RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md",
+    "serviceRecovered": false,
+    "tagsDeleted": 0
   }
 }

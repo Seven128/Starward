@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "starward-stopped-api-identity-readback-v1",
+  "date": "2026-10-19",
+  "runId": 39269225549,
+  "headSha": "fde9049f1bbe09677cc351a5253c4c249b7fd5e9",
+  "runStatus": "completed",
+  "runConclusion": "failure",
+  "observerSourceSha256": "37ebd6c5f4bdc80ab24afe05c588263661dbb5dc6698ede5f445401613b680b3",
+  "report": {
+    "status": "observed",
+    "evidenceScope": "STAGING_CONTAINER_IDENTITY_ONLY",
+    "matchingContainerCount": 1,
+    "runningContainerCount": 0,
+    "stateCounts": {
+      "created": 0,
+      "restarting": 0,
+      "running": 0,
+      "removing": 0,
+      "paused": 0,
+      "exited": 1,
+      "dead": 0
+    },
+    "selectedContainer": null,
+    "singleMatchingContainer": {
+      "state": "exited",
+      "running": false,
+      "userMatches": true,
+      "projectMatches": true,
+      "serviceMatches": true,
+      "revision": "1ccdbecd8ead24250bf75e8fd4319f17f403f688",
+      "imageReferenceDigest": "sha256:de4bcfb09bb74e99b43df9d8cce993741bce93c59b3b67bcca604bdc57a80f8f"
+    }
+  },
+  "diagnosticSucceeded": false,
+  "runtimeOrProviderDispatched": false,
+  "remoteFileOrConfigurationRead": false,
+  "serviceMutation": false,
+  "registryTagDeleted": false,
+  "limits": "Creation/config metadata for one fixed-label API only; not current pointer, health, all container/host/rollback/backup references or exact OCI recovery. A stopped observation intentionally does not pass availability.",
+  "historicalRelease": {
+    "runId": 36039611583,
+    "revision": "1ccdbecd8ead24250bf75e8fd4319f17f403f688",
+    "buildPush": "success",
+    "hostPreflight": "success",
+    "promotion": "failure",
+    "boundedFailureSummaries": [
+      {
+        "failedStep": "start-writers",
+        "code": "operator_preview_unexpected_failure"
+      }
+    ],
+    "publishedDigestCount": 1,
+    "publishedDigestMatchesStoppedMetadata": true,
+    "currentReceiptRead": false,
+    "stopCauseDirectlyObserved": false
+  }
+}

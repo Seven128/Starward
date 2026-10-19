@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "starward-task-local-cleanup-v1",
+  "date": "2026-10-19",
+  "revision": "fde9049f1bbe09677cc351a5253c4c249b7fd5e9",
+  "retiredR9Feedback": {
+    "target": "starward-device-feedback-26UyKk under the known user Temp directory",
+    "generation": "generation-000001-s2S6bX",
+    "inputAuthority": "retired_before_r10",
+    "officialWindowAlreadyClosed": true,
+    "resolvedAbsoluteTargetCheckedWithinExactNamedTempScope": true,
+    "liveFiles": 381,
+    "liveBytes": 25661884,
+    "archiveOwner": "E:/Dev/Starward-data/verification/sky-map-20261018/normal-existing-resume-20261019/r9-before-r10-20261019",
+    "archiveManifest": "runtime-manifest.private.json",
+    "archiveManifestSha256": "a40f027c2405b3bfa9534d7ef8cc24412a55c50b0304d0429e81223754d67e9e",
+    "archiveManifestEntries": 425,
+    "unmappedLiveFiles": 0,
+    "uncoveredLiveChanges": 0,
+    "unsafeOrReparseEntries": 0,
+    "eachLiveFileMatchedDeclaredArchiveBytesAndSha256": true,
+    "countBytesAndManifestRecheckedBeforeAction": true,
+    "action": "Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory SendToRecycleBin",
+    "result": "recycled",
+    "sourceAbsentAfterAction": true,
+    "archiveRetained": true,
+    "recovery": "Windows Recycle Bin or verified external archive",
+    "permanentDeleteOrFallback": false
+  },
+  "retained": {
+    "r10CurrentFeedbackAndEvidence": true,
+    "gen26Unknown": true,
+    "original8791AccountAndN05Draft": true,
+    "deliveredR6Reminder": true,
+    "pairingVpnOtherWindowsAndDirectories": true,
+    "oldR3ImportRemoval": "pending_native_confirmation",
+    "owned8798FirewallRule": "still_enabled_admin_cache_unavailable_attempt_cancelled"
+  },
+  "phoneOrAdbOperation": false,
+  "serviceOrDatabaseMutation": false,
+  "allResourceCleanupComplete": false
+}
