@@ -16,6 +16,7 @@ export function apiIdentityProbe(execute) {
   if (running.some(id => !all.includes(id))) throw new Error("runtime_diagnostic_identity_changed");
   const stateCounts = Object.fromEntries(states.map(state => [state, 0]));
   let selectedContainer = null;
+  let singleMatchingContainer = null;
   if (all.length) {
     const format = '{"id":{{json .Id}},"state":{{json .State.Status}},"running":{{json .State.Running}},"userMatches":{{eq .Config.User "node"}},"projectMatches":{{eq (index .Config.Labels "com.docker.compose.project") "starward-staging"}},"serviceMatches":{{eq (index .Config.Labels "com.docker.compose.service") "api"}},"revision":{{json (index .Config.Labels "org.opencontainers.image.revision")}},"imageReference":{{json .Config.Image}}}';
     const rows = execute(["inspect", "--format", format, ...all]).trim().split(/\r?\n/u).map(line => JSON.parse(line));
@@ -29,16 +30,18 @@ export function apiIdentityProbe(execute) {
       if (row.running !== ["running", "paused", "restarting"].includes(row.state)) throw new Error("runtime_diagnostic_identity_response_invalid");
       if (!row.projectMatches || !row.serviceMatches) throw new Error("runtime_diagnostic_identity_mismatch");
       stateCounts[row.state] += 1;
-      if (running.length === 1 && running[0] === row.id) selectedContainer = {
-        state: row.state, running: true, userMatches: row.userMatches,
+      const projected = {
+        state: row.state, running: row.running, userMatches: row.userMatches,
         projectMatches: row.projectMatches, serviceMatches: row.serviceMatches,
         revision: typeof row.revision === "string" && /^[a-f0-9]{40}$/u.test(row.revision) ? row.revision : null,
         imageReferenceDigest: typeof row.imageReference === "string" ? row.imageReference.match(/^[a-z0-9][a-z0-9./:_-]*@(sha256:[a-f0-9]{64})$/u)?.[1] ?? null : null,
       };
+      if (all.length === 1) singleMatchingContainer = projected;
+      if (running.length === 1 && running[0] === row.id) selectedContainer = projected;
     }
   }
   return { status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: all.length,
-    runningContainerCount: running.length, stateCounts, selectedContainer };
+    runningContainerCount: running.length, stateCounts, selectedContainer, singleMatchingContainer };
 }
 
 export const identityScript = `#!/bin/sh
@@ -66,17 +69,32 @@ export function sanitizeIdentityReport(report) {
   if (Object.values(stateCounts).some(value => !Number.isSafeInteger(value) || value < 0) ||
       Object.values(stateCounts).reduce((sum, value) => sum + value, 0) !== report.matchingContainerCount ||
       stateCounts.running + stateCounts.paused + stateCounts.restarting !== report.runningContainerCount) fail();
-  let selectedContainer = null;
-  if (report.runningContainerCount === 1) {
-    const row = report.selectedContainer;
-    if (!row || !["running", "paused", "restarting"].includes(row.state) || stateCounts[row.state] < 1 || row.running !== true ||
+  const project = row => {
+    if (!row || !states.includes(row.state) || stateCounts[row.state] < 1 || typeof row.running !== "boolean" ||
+        row.running !== ["running", "paused", "restarting"].includes(row.state) ||
         typeof row.userMatches !== "boolean" || row.projectMatches !== true || row.serviceMatches !== true ||
         (row.revision !== null && (typeof row.revision !== "string" || !/^[a-f0-9]{40}$/u.test(row.revision))) ||
         (row.imageReferenceDigest !== null && (typeof row.imageReferenceDigest !== "string" || !/^sha256:[a-f0-9]{64}$/u.test(row.imageReferenceDigest)))) fail();
-    selectedContainer = Object.fromEntries(["state", "running", "userMatches", "projectMatches", "serviceMatches", "revision", "imageReferenceDigest"].map(name => [name, row[name]]));
+    return Object.fromEntries(["state", "running", "userMatches", "projectMatches", "serviceMatches", "revision", "imageReferenceDigest"].map(name => [name, row[name]]));
+  };
+  let selectedContainer = null;
+  if (report.runningContainerCount === 1) {
+    selectedContainer = project(report.selectedContainer);
+    if (!selectedContainer.running) fail();
   } else if (report.selectedContainer !== null) fail();
+  // Older saved reports lack this additive observation; never reconstruct it.
+  const matching = {};
+  if (Object.hasOwn(report, "singleMatchingContainer")) {
+    matching.singleMatchingContainer = null;
+    if (report.matchingContainerCount === 1) {
+      const row = project(report.singleMatchingContainer);
+      if (row.running !== (report.runningContainerCount === 1) ||
+          (selectedContainer && JSON.stringify(row) !== JSON.stringify(selectedContainer))) fail();
+      matching.singleMatchingContainer = row;
+    } else if (report.singleMatchingContainer !== null) fail();
+  }
   return { status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: report.matchingContainerCount,
-    runningContainerCount: report.runningContainerCount, stateCounts, selectedContainer };
+    runningContainerCount: report.runningContainerCount, stateCounts, selectedContainer, ...matching };
 }
 
 // Fixed staging API inspection. This function is sent over SSH stdin, then Docker

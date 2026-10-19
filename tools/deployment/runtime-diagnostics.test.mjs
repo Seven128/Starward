@@ -62,6 +62,7 @@ test("identity observation separates absent, stopped and multiple running fixed-
     assert.equal(report.matchingContainerCount, rows.length);
     assert.equal(report.runningContainerCount, runningCount);
     assert.equal(report.selectedContainer, null);
+    assert.equal(report.singleMatchingContainer?.state ?? null, rows.length === 1 ? rows[0].state : null);
     assert.equal(Object.values(report.stateCounts).reduce((sum, value) => sum + value, 0), rows.length);
     assert.equal(diagnosticSucceeded(report), false);
     assert.ok(f.calls.every(args => ["ps", "inspect"].includes(args[0])));
@@ -85,6 +86,33 @@ test("unique running identity projects only expected-user matches and validated 
   const absentMetadata = sanitizeIdentityReport(apiIdentityProbe(identityFixture([identityRow(1, { revision: "private value", imageReference: "private-registry.invalid/mutable:latest" })]).execute));
   assert.equal(absentMetadata.selectedContainer.revision, null);
   assert.equal(absentMetadata.selectedContainer.imageReferenceDigest, null);
+  assert.equal(absentMetadata.singleMatchingContainer.revision, null);
+  assert.equal(absentMetadata.singleMatchingContainer.imageReferenceDigest, null);
+});
+
+test("single matching stopped identity preserves its release metadata without admitting runtime work", () => {
+  const report = sanitizeIdentityReport(apiIdentityProbe(identityFixture([identityRow(1, { state: "exited", running: false })]).execute));
+  assert.deepEqual(report.singleMatchingContainer, { state: "exited", running: false, userMatches: true, projectMatches: true, serviceMatches: true,
+    revision: "a".repeat(40), imageReferenceDigest: `sha256:${"b".repeat(64)}` });
+  assert.equal(report.selectedContainer, null);
+  assert.equal(diagnosticSucceeded(report), false);
+  assert.doesNotMatch(JSON.stringify(report), /private-|never output|"id":/u);
+});
+
+test("single matching projection rejects contradictions and preserves legacy unknowns", () => {
+  const report = apiIdentityProbe(identityFixture([identityRow(1, { state: "exited", running: false })]).execute);
+  for (const patch of [{ state: "created" }, { running: true }, { projectMatches: false }, { userMatches: "secret" },
+    { revision: "secret" }, { imageReferenceDigest: "private-image" }])
+    assert.throws(() => sanitizeIdentityReport({ ...report, singleMatchingContainer: { ...report.singleMatchingContainer, ...patch } }), /runtime_identity_report_invalid/u);
+  assert.throws(() => sanitizeIdentityReport({ ...report, matchingContainerCount: 2,
+    stateCounts: { ...report.stateCounts, exited: 2 } }), /runtime_identity_report_invalid/u);
+  const running = apiIdentityProbe(identityFixture([identityRow(1)]).execute);
+  assert.throws(() => sanitizeIdentityReport({ ...running, singleMatchingContainer: { ...running.singleMatchingContainer, revision: "c".repeat(40) } }), /runtime_identity_report_invalid/u);
+  const clean = sanitizeIdentityReport({ ...report, singleMatchingContainer: { ...report.singleMatchingContainer, id: "secret", imageReference: "private-repo" } });
+  assert.deepEqual(clean, report);
+  const { singleMatchingContainer: _missing, ...legacy } = report;
+  assert.deepEqual(sanitizeIdentityReport(legacy), legacy);
+  assert.equal(Object.hasOwn(sanitizeIdentityReport(legacy), "singleMatchingContainer"), false);
 });
 
 test("identity changes and invalid Docker projections fail without exposing raw identifiers or strings", () => {

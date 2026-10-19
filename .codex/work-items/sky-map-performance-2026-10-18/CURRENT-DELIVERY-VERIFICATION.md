@@ -20,6 +20,10 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 本批次已提交为`4505a761246a11bce5fe5b746f793fd7d99c3735`，普通推当前分支并快进main，两远端ref精确一致。[Product39263935667](https://github.com/Seven128/Starward/actions/runs/39263935667)/[Context39263935705](https://github.com/Seven128/Starward/actions/runs/39263935705)均success；Product只跑scope及基础步骤，产品/OCI步骤skipped。[发布39263994942](https://github.com/Seven128/Starward/actions/runs/39263994942)只有qualify success、publish-and-deploy skipped，未恢复ba4的registry失败或远端API。后续状态文字不改该源码范围，不为记录自身SHA不断追加提交。
 
+## 2026-10-19 停止 API 身份补齐
+
+基于95b73d61的[窄修复](STOPPED-API-IDENTITY-OBSERVATION.md)只为原固定identity报告增加`singleMatchingContainer`；整个匹配集唯一时保含停止态的合法revision/digest，原`selectedContainer`与运行准入保持，旧缺失不补造。先在旧实现上取得聚焦回归失败，修后两份既有测试22/22；[独审](STOPPED-API-IDENTITY-REVIEW.md)复核22项及实际生成模块fake边界5/5，无P1/P2，源码hash相同。context结构与diff检查通过。未增加Docker命令或读取配置/DB/current receipt，未运行远端、服务或设备；远端结果要由新main代码的实际run单独建立，不由本地测试关闭。
+
 ## 69401 生产修复、r10 及此前 Git 证据
 
 生产修复提交`69401c097572799234e6b97478a4a1ddfe06c810`（`fix(sky): preserve accepted sky while time geometry loads`）已push并精确远端读回。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均实际success。此提交包含跨日pending连续性修复的2份生产文件、4份既有fixture及对应作者/独审记录；133/133、Miniapp TS5.9.3 noEmit0与独审无P1/P2保各自范围。r10完整构建、接入及整包独审已通过，一次官方preview明确success，实际非空Sky独有“A1 r10”label后绑定；新跨日等待/取消已取得[r10实际独审](R17-A1-R10-CROSSDAY-RESULT.md)；普通预览持续表现只有[部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)，完整B仍未验证。用户携手机离开，后续优先离线分析与Git/服务交付；CI和label绑定不替代目标结果。

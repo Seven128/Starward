@@ -94,7 +94,9 @@ test("runtime mode sends only the fixed staging probe and arbitrary modes cannot
 
 test("identity mode reuses protected SSH and returns only the fixed aggregate projection", () => {
   const report = { status: "observed", evidenceScope: "STAGING_CONTAINER_IDENTITY_ONLY", matchingContainerCount: 1, runningContainerCount: 0,
-    stateCounts: { created: 0, restarting: 0, running: 0, removing: 0, paused: 0, exited: 1, dead: 0 }, selectedContainer: null };
+    stateCounts: { created: 0, restarting: 0, running: 0, removing: 0, paused: 0, exited: 1, dead: 0 }, selectedContainer: null,
+    singleMatchingContainer: { state: "exited", running: false, userMatches: true, projectMatches: true, serviceMatches: true,
+      revision: "a".repeat(40), imageReferenceDigest: `sha256:${"b".repeat(64)}` } };
   let directory;
   const result = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "identity" }, (_command, args, options) => {
     directory = dirname(args[1]);

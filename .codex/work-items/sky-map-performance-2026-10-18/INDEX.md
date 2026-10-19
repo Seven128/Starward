@@ -118,6 +118,8 @@
 
 64. [实际main交付/CI/CD读回](DELIVERY-RUN-20261019.json)及[registry quota单候选审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)：ba4完整CI通过，发布在100标签上限失败；identity实读1 exited/0 running。历史promote skipped不证明当前无引用，MFA/引用/精确OCI恢复条件未满足，不删tag或重试旧失败。当前执行状态仍由HANDOFF拥有。
 
+65. [唯一停止API的身份补齐](STOPPED-API-IDENTITY-OBSERVATION.md)及[独立审查](STOPPED-API-IDENTITY-REVIEW.md)：复用原固定Docker读取保唯一matching对象的合法revision/digest，运行准入及旧报告unknown保持；22项检查、生成模块fake边界5项通过。远端实际证据沿HANDOFF的新run，不由本地软件回填旧结果；仍不证明全部引用或允许删tag。
+
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
 恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。本接手对话的明确继续指令已解除原暂停；恢复核源码/候选/在途状态和受影响的服务/窗口入口，历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。

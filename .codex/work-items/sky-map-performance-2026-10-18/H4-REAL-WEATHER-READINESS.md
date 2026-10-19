@@ -6,6 +6,8 @@
 
 现场稳定后只运行一次[identity39261198368](https://github.com/Seven128/Starward/actions/runs/39261198368)：固定`starward-staging`/`api`总1、running0、exited1、`selectedContainer=null`。这已细分此前`ambiguous`，未读到停止对象的revision/digest、停止原因或current receipt；未调度runtime/provider。真实QWeather v1、资料时效、Map及手机selected-hour联动仍未验。
 
+随后核实现有probe已读停止对象的revision/Config.Image但未投影，完成[窄补齐](STOPPED-API-IDENTITY-OBSERVATION.md)与[独审](STOPPED-API-IDENTITY-REVIEW.md)：唯一匹配对象可保合法身份，原运行准入保持，无配置/receipt读取或新远端入口。22/22及实际生成模块fake边界5/5通过；旧run的未知仍保留，新证据须沿main-only固定owner实际取得，现场由HANDOFF拥有。
+
 Chrome既有腾讯云会话可读原唯一TCR和主机；OrcaTerm主机登录实际停在MFA。未发送验证码、改MFA、执行远端命令、删tag或付费升级，不要求携手机外出的用户立即配合。[单个tag只读审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)已核历史push成功但promote skipped，不证明当前无引用；停止镜像、current pointer、回滚/备份引用及精确OCI恢复仍须现有operator能力核实。当前不重复相同发布/诊断失败。实际交付结果见[交付读回](DELIVERY-RUN-20261019.json)，当前现场及后续动作由[HANDOFF](HANDOFF.md)拥有。
 
 ## 2026-10-18 历史只读调查
