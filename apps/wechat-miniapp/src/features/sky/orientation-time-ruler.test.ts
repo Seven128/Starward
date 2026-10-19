@@ -46,11 +46,11 @@ function render(saving=false, interactionLocked=false, isPreviewing=false) {
   const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
   const declaration=source.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='OrientationTimeRuler');
   assert.ok(declaration);
-  const positions:number[]=[];
+  const positions:number[]=[],nextTicks:Array<()=>void>=[];
   const effects:Array<()=>void|(()=>void)>=[];let hide=()=>{};
   const component=vm.runInNewContext(ts.transpileModule(declaration.getText(source)+'\nOrientationTimeRuler;',{compilerOptions:{target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.React}}).outputText,{
     React:{createElement:(type:string,props:object,...children:unknown[])=>({type,props,children:children.flat()})},
-    useDidShow:()=>{},useResize:()=>{},Taro:{nextTick:()=>{}},createOrientationRulerLayout,createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createSkyTimeRulerSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
+    useDidShow:()=>{},useResize:()=>{},Taro:{nextTick:(callback:()=>void)=>nextTicks.push(callback)},createOrientationRulerLayout,createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{},readOffset:(accept:(left:number)=>void)=>accept(0)}),createSkyTimeRulerSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
     useState:(v:unknown)=>[v,()=>{}],useRef:(v:unknown)=>({current:v}),useCallback:(fn:unknown)=>fn,
     useEffect:(fn:()=>void|(()=>void))=>effects.push(fn),useDidHide:(fn:()=>void)=>{hide=fn;},
     clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),orientationRulerStepPx:()=>44,
@@ -59,7 +59,7 @@ function render(saving=false, interactionLocked=false, isPreviewing=false) {
   const previews:number[]=[],commits:number[]=[],scrubs:boolean[]=[];let cancels=0;
   const tree=component({rows:[{at:'2026-09-06T13:00:00Z',opportunityBlockers:[]},{at:'2026-09-06T13:20:00Z',opportunityBlockers:[]}],activeIndex:0,committedIndex:0,timezone:'UTC',isPreviewing,saving,interactionLocked,reducedMotion:false,onPreview:(i:number)=>previews.push(i),onCommit:(i:number)=>commits.push(i),onCancel:()=>{cancels++;},onScrubChange:(active:boolean)=>scrubs.push(active)});
   const cleanups=effects.map(fn=>fn());
-  return {positions,tree,scroll:tree.children.find((n:any)=>n?.type==='scroll').props,previews,commits,scrubs,hide:()=>hide(),unmount:()=>cleanups.forEach(fn=>fn?.()),changeInputs:()=>effects.at(-2)?.(),get cancels(){return cancels;}};
+  return {positions,tree,scroll:tree.children.find((n:any)=>n?.type==='scroll').props,previews,commits,scrubs,nativeReady:()=>{while(nextTicks.length)nextTicks.shift()!();},hide:()=>hide(),unmount:()=>cleanups.forEach(fn=>fn?.()),changeInputs:()=>effects.at(-2)?.(),get cancels(){return cancels;}};
 }
 const one={touches:[{identifier:1}]},two={touches:[{identifier:1},{identifier:2}]},scroll={detail:{scrollLeft:44}};
 test('sky drag preserves fractional time intention while settlement still commits a supplied tick',t=>{
@@ -128,5 +128,5 @@ test('sky hide cancels the pending release timer',t=>{
 test('sky short drag commands the original native tick again',t=>{
  t.mock.timers.enable({apis:['setTimeout']});const r=render();
  r.scroll.onTouchStart(one);r.scroll.onScroll({detail:{scrollLeft:15}});r.scroll.onTouchEnd();
- t.mock.timers.tick(150);assert.deepEqual(r.commits,[0]);assert.equal(r.positions.at(-1),0);
+ t.mock.timers.tick(150);assert.deepEqual(r.commits,[0]);r.nativeReady();assert.equal(r.positions.at(-1),0);
 });

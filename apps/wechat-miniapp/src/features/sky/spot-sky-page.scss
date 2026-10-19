@@ -1805,6 +1805,21 @@
   height: 0;
 }
 
+.sky-orientation-time-ruler__position-state {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  min-height: 44Px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--type-metadata-size);
+}
+.sky-orientation-time-ruler__position-state::after { border: 0; }
+
 .sky-orientation-time-ruler__track {
   min-width: max-content;
   height: 72Px;

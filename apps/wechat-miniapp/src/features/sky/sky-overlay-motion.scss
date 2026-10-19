@@ -16,6 +16,8 @@
   .sky-overlay-motion__backdrop { opacity: 0; }
 }
 .sky-overlay-motion--closing .sky-overlay-motion__surface { pointer-events: none; transition-timing-function: cubic-bezier(.4, 0, 1, 1); }
+.sky-overlay-motion--opening .sky-overlay-motion__surface { transition: none; }
+.sky-overlay-motion--preparing .sky-overlay-motion__surface { opacity: 0; transform: none; transition: none; pointer-events: none; }
 .sky-overlay-motion__shield { position: absolute; inset: 0; z-index: 99; pointer-events: auto; }
 
 .sky-orientation-page {

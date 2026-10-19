@@ -738,6 +738,9 @@ function OrientationTimeRuler({
   saving,
   interactionLocked = false,
   layoutReady = true,
+  selectionReady = true,
+  preparing = false,
+  onEntryReady,
   reducedMotion,
   onPreview,
   onCommit,
@@ -757,6 +760,9 @@ function OrientationTimeRuler({
   saving: boolean;
   interactionLocked?: boolean;
   layoutReady?: boolean;
+  selectionReady?: boolean;
+  preparing?: boolean;
+  onEntryReady?: (ready: boolean) => void;
   reducedMotion: boolean;
   onPreview: (index: number) => void;
   onCommit: (index: number) => void;
@@ -764,12 +770,16 @@ function OrientationTimeRuler({
   onScrubChange?: (active: boolean) => void;
 }) {
   const interactionDisabled = saving || interactionLocked;
+  const interactionAllowed = useRef(!interactionDisabled);
+  interactionAllowed.current = !interactionDisabled;
   const safeActiveIndex = clampIndex(activeIndex, rows.length);
   const safeCommittedIndex = clampIndex(committedIndex, rows.length);
+  const rowIdentity = rows.map(row => row.at).join("|");
   const [visualIndex, setVisualIndex] = useState(safeActiveIndex);
-  const [scrollLeft, setScrollLeft] = useState(
-    safeActiveIndex * orientationRulerStepPx(),
-  );
+  const [alignedRows, setAlignedRows] = useState<string | null>(null);
+  const [positionFailed, setPositionFailed] = useState(false);
+  const entryReady = useRef(onEntryReady);
+  entryReady.current = onEntryReady;
   const settleCallback = useRef<(offset: number) => void>(() => {});
   const interactionFinished = useRef<() => void>(() => {});
   const scrubChangeRef = useRef(onScrubChange);
@@ -778,10 +788,32 @@ function OrientationTimeRuler({
   if (!settlementRef.current) settlementRef.current = createSkyTimeRulerSettlement(offset => settleCallback.current(offset),
     active => { scrubChangeRef.current?.(active); if (!active) interactionFinished.current(); });
   const settlement = settlementRef.current;
-  const nativePosition = useRef(createRulerScrollPosition("sky-orientation-time-ruler-scroll")).current;
+  const nativePositionRef = useRef<ReturnType<typeof createRulerScrollPosition> | null>(null);
+  if (!nativePositionRef.current) nativePositionRef.current = createRulerScrollPosition("sky-orientation-time-ruler-scroll");
+  const nativePosition = nativePositionRef.current;
   const visible = useRef(true);
   const layoutAllowed = useRef(layoutReady);
   layoutAllowed.current = layoutReady;
+  const selectionAllowed = useRef(selectionReady);
+  selectionAllowed.current = selectionReady;
+  const nativeRows = useRef<string | null>(null);
+  const positionedIndex = useRef<number | null>(null);
+  const alignmentRequired = useRef(true);
+  const currentRows = useRef(rowIdentity);
+  if (currentRows.current !== rowIdentity) {
+    // Even A -> B -> A must cross the latest native child update. A retained
+    // identity from A cannot certify that its replacement is installed yet.
+    nativeRows.current = null;
+    currentRows.current = rowIdentity;
+  }
+  const positionRevision = useRef(0);
+  const pendingAlignment = useRef<{ revision: number; index: number; rows: string; reading: boolean } | null>(null);
+  const observePosition = useRef<(left: number | null, finished?: boolean) => void>(() => {});
+  const cancelPosition = useCallback(() => {
+    positionRevision.current++;
+    pendingAlignment.current = null;
+    nativePosition.cancel();
+  }, [nativePosition]);
   const targetIndex = useRef(safeActiveIndex);
   if (!settlement.active) targetIndex.current = safeActiveIndex;
   const positionResolved = useRef<() => void>(() => {});
@@ -800,13 +832,78 @@ function OrientationTimeRuler({
     });
   }, () => visible.current && layoutAllowed.current && !settlement.active, () => positionResolved.current());
   const layout = layoutRef.current;
-  const positionIndex = useCallback((index: number) => {
+  const positionIndex = useCallback((index: number, afterNativeUpdate = false) => {
     targetIndex.current = index;
+    cancelPosition();
+    if (!layoutAllowed.current && positionedIndex.current !== index) alignmentRequired.current = true;
+    if (!visible.current || !layoutAllowed.current || !selectionAllowed.current || !interactionAllowed.current || settlement.active) return;
+    // Entry must use the actual unscaled layout. A nominal rpx estimate can
+    // put the first visible selected tick several native pixels off center.
+    if (preparing && !layout.measured) return;
+    const expected = positionRevision.current;
     const left = layout.left(index, orientationRulerStepPx());
-    setScrollLeft(left);
-    nativePosition.move(left);
-  }, [layout, nativePosition]);
-  positionResolved.current = () => positionIndex(targetIndex.current);
+    const verify = alignmentRequired.current || preparing || alignedRows !== rowIdentity || nativeRows.current !== rowIdentity;
+    if (verify) {
+      alignmentRequired.current = true;
+      setAlignedRows(null);
+      setPositionFailed(false);
+      pendingAlignment.current = { revision: expected, index, rows: rowIdentity, reading: false };
+    }
+    // React effects precede Taro's native update. Replacing all row keys can
+    // reset that native position. Target installed rows, not their predecessor.
+    const move = () => {
+      if (expected !== positionRevision.current || !visible.current ||
+        !layoutAllowed.current || !selectionAllowed.current || !interactionAllowed.current || settlement.active ||
+        currentRows.current !== rowIdentity) return;
+      nativeRows.current = rowIdentity;
+      positionedIndex.current = index;
+      // There is one positioning writer. Newly installed windows jump while
+      // hidden; an established window keeps native motion and direct input.
+      nativePosition.move(left, !verify && !reducedMotion,
+        verify ? observed => observePosition.current(observed) : undefined);
+    };
+    // Already installed rows (including short-drag snapping) need no new
+    // nextTick wait. A completed layout read has crossed that same boundary.
+    if (afterNativeUpdate || nativeRows.current === rowIdentity) move();
+    else Taro.nextTick(move);
+  }, [layout, nativePosition, cancelPosition, settlement, rowIdentity, preparing, alignedRows, reducedMotion]);
+  observePosition.current = (left, finished = false) => {
+    const pending = pendingAlignment.current;
+    if (!pending || pending.revision !== positionRevision.current || pending.rows !== currentRows.current ||
+      pending.rows !== nativeRows.current ||
+      !visible.current || !selectionAllowed.current || !interactionAllowed.current || settlement.active) return;
+    if (left !== null && layout.aligned(left, pending.index)) {
+      pendingAlignment.current = null;
+      alignmentRequired.current = false;
+      setAlignedRows(pending.rows);
+      setPositionFailed(false);
+    } else if (left === null || finished) {
+      pendingAlignment.current = null;
+      setPositionFailed(true);
+    }
+    // A first valid but not-yet-matching offset is pending, not unavailable.
+    // Reveal the existing six fields with an honest recoverable ruler state;
+    // later native scroll events can qualify the ticks without a poll loop.
+    entryReady.current?.(true);
+  };
+  const readPendingPosition = (finished = false) => {
+    const pending = pendingAlignment.current;
+    if (!pending || pending.reading || pending.rows !== nativeRows.current) return;
+    pending.reading = true;
+    nativePosition.readOffset(left => {
+      if (pending !== pendingAlignment.current) return;
+      pending.reading = false;
+      observePosition.current(left, finished);
+    });
+  };
+  positionResolved.current = () => {
+    if (!layout.measured) {
+      setPositionFailed(true);
+      entryReady.current?.(true);
+      return;
+    }
+    positionIndex(targetIndex.current, true);
+  };
   // Resize already marks the layout for measurement while retaining the held
   // drag's projection. Keep it through this drag's final offset conversion;
   // the nextTick measurement replaces it only after settlement has finished.
@@ -819,19 +916,26 @@ function OrientationTimeRuler({
     // A new geometry window is not a cancelled time preview. Its committed
     // instant may be outside the supplied rows; only a pending drag retracts
     // the observation-time intention to that committed instant.
+    if (!selectionAllowed.current || pending && committedIndex < 0) {
+      if (pending) cancelRef.current();
+      return;
+    }
     const nextIndex = pending ? safeCommittedIndex : safeActiveIndex;
     setVisualIndex(nextIndex);
     positionIndex(nextIndex);
     if (pending) cancelRef.current();
   };
   useDidHide(() => {
-    visible.current = false; layout.invalidate(); cancelInteraction(); nativePosition.cancel();
+    visible.current = false; nativeRows.current = null;
+    setAlignedRows(null); entryReady.current?.(false);
+    layout.invalidate(); cancelInteraction(); cancelPosition();
   });
   useDidShow(() => {
     visible.current = true; layout.invalidate(); positionIndex(safeActiveIndex); layout.measure();
   });
   useResize(() => {
-    nativePosition.cancel();
+    cancelPosition();
+    if (!settlement.active) setAlignedRows(null);
     // Keep the held drag's conversion until its existing owner finishes. A
     // resized measurement must never seize the finger or rebase its preview.
     layout.invalidate(settlement.active);
@@ -839,26 +943,44 @@ function OrientationTimeRuler({
   });
   useEffect(() => () => {
     visible.current = false;
+    entryReady.current?.(false);
     layout.invalidate();
-    nativePosition.cancel();
+    cancelPosition();
     if (settlement.active) {
       settlement.cancel();
       cancelRef.current();
     }
   }, []);
-  const rowIdentity = rows.map(row => row.at).join("|");
   useEffect(() => {
-    layout.invalidate(); layout.measure();
+    // Preparation's real offset remains in the same native units while the
+    // reveal scales. Keep its pending receipt, but closing/locking still
+    // retires commands immediately through the live interaction boundary.
+    if (layoutReady || interactionDisabled) cancelPosition();
+    // A different set of times preserves this surface's measured cadence and
+    // origin. Keep them while the replacement nodes are being read; unlike a
+    // resize or scale transition, row identity does not change their geometry.
+    // A CSS scale changes viewport rects, not the native scroll coordinate
+    // system already read during transparent preparation. Retire late reads
+    // but retain that valid projection until an actual resize invalidates it.
+    layout.invalidate(true);
+    layout.measure();
     return () => layout.retire();
   }, [rowIdentity, layoutReady]);
   useEffect(cancelInteraction, [committedIndex, rowIdentity, interactionDisabled]);
+  useEffect(() => {
+    // Missing time coverage is handled by the existing six fields/recovery.
+    // Preparing a ruler must not hide those controls while supply is pending.
+    if (preparing && (!selectionReady || !rows.length)) entryReady.current?.(true);
+  }, [preparing, selectionReady, rows.length]);
 
   useEffect(() => {
-    if (settlement.active) return;
+    // The selected civil time may arrive before its geometry window. Neither
+    // the old row zero nor its final row represents that pending intention.
+    if (settlement.active || !selectionReady) return;
     const nextIndex = clampIndex(activeIndex, rows.length);
     setVisualIndex(nextIndex);
     positionIndex(nextIndex);
-  }, [activeIndex, rows.length, rowIdentity]);
+  }, [activeIndex, rows.length, rowIdentity, selectionReady]);
 
   const maxIndex = Math.max(0, rows.length - 1);
   const activeRow = rows[safeActiveIndex];
@@ -904,6 +1026,8 @@ function OrientationTimeRuler({
     [safeActiveIndex, selectTick],
   );
   const previewValue = rows.length ? clampIndex(Math.round(visualIndex), rows.length) : 0;
+  const ticksVisible = !alignmentRequired.current && alignedRows === rowIdentity && nativeRows.current === rowIdentity &&
+    (layoutReady || settlement.active || positionedIndex.current === previewValue);
   const currentLabel = presentedAt
     ? formatTimeWithSeconds(presentedAt, timezone)
     : requirePaintedTime ? "暂无已绘时刻"
@@ -943,14 +1067,16 @@ function OrientationTimeRuler({
           </Text>
         ) : null}
       </View>
-      <View id="sky-orientation-time-ruler-axis" className="sky-orientation-time-ruler__axis" aria-hidden="true" />
+      <View id="sky-orientation-time-ruler-axis" className="sky-orientation-time-ruler__axis" aria-hidden="true"
+        style={{ visibility: ticksVisible ? "visible" : "hidden" }} />
+      {/* Ticks keep their layout while hidden, so a real native read can
+          qualify their first visible selected instant before the reveal. */}
       <ScrollView
         scrollX={!interactionDisabled}
         enhanced
         fastDeceleration
         showScrollbar={false}
-        scrollLeft={scrollLeft}
-        scrollWithAnimation={!reducedMotion}
+        style={{ visibility: ticksVisible ? "visible" : "hidden" }}
         className="sky-orientation-time-ruler__viewport"
         id="sky-orientation-time-ruler-scroll"
         data-od-id="sky-orientation-time-ruler-scroll"
@@ -964,7 +1090,7 @@ function OrientationTimeRuler({
             cancelInteraction();
             return;
           }
-          nativePosition.cancel();
+          cancelPosition();
           layout.retire();
           settlement.begin();
         }}
@@ -975,14 +1101,19 @@ function OrientationTimeRuler({
         onDragEnd={() => settlement.release()}
         onTouchCancel={cancelInteraction}
         onScroll={(event) => {
-          if (interactionDisabled || !settlement.active) return;
           const nextScrollLeft = Number(event.detail.scrollLeft);
+          const pending = pendingAlignment.current;
+          // An event can be queued by a preceding command. It is only a cue
+          // for a current read, never the receipt of a replacement window.
+          if (!settlement.active && pending && layout.aligned(nextScrollLeft, pending.index)) readPendingPosition();
+          if (interactionDisabled || !settlement.active) return;
           if (Number.isFinite(nextScrollLeft)) {
             settlement.update(nextScrollLeft);
             setPreviewFromScroll(nextScrollLeft);
           }
         }}
         onScrollEnd={() => {
+          readPendingPosition(true);
           if (interactionDisabled || !settlement.active) return;
           settlement.end();
         }}
@@ -1017,6 +1148,14 @@ function OrientationTimeRuler({
           })}
         </View>
       </ScrollView>
+      {!ticksVisible ? <Button className="sky-orientation-time-ruler__position-state"
+        disabled={interactionDisabled || !layoutReady}
+        onClick={() => {
+          cancelPosition(); setPositionFailed(false);
+          layout.invalidate(true); layout.measure();
+        }}>
+        {positionFailed ? "时间尺暂不可用，重试" : "时间尺定位中，重试"}
+      </Button> : null}
       <View className="sky-orientation-time-ruler__assistive" role="group" aria-label="观测时刻辅助操作">
         <Button
           className="sky-orientation-time-ruler__step"
@@ -1043,8 +1182,10 @@ function OrientationTimeRuler({
           disabled={interactionDisabled}
           onClick={() => {
             settlement.cancel();
-            setVisualIndex(safeCommittedIndex);
-            positionIndex(safeCommittedIndex);
+            if (committedIndex >= 0) {
+              setVisualIndex(safeCommittedIndex);
+              positionIndex(safeCommittedIndex);
+            }
             onCancel();
           }}
         >
@@ -3061,7 +3202,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const overlayEnabled = pageVisible && !alignmentEditing;
   const searchMotion = useSkyOverlayMotion(searchSurfaceOpen, overlayEnabled, reducedMotion);
   const objectMotion = useSkyOverlayMotion(objectSurfaceOpen, overlayEnabled, reducedMotion);
-  const timeMotion = useSkyOverlayMotion(skyControlPanel === "time" && !objectSurfaceOpen, overlayEnabled, reducedMotion);
+  const [timeEntryReady, setTimeEntryReady] = useState(false);
+  const timeMotion = useSkyOverlayMotion(skyControlPanel === "time" && !objectSurfaceOpen, overlayEnabled, reducedMotion, timeEntryReady);
   const timeLayout = useSkyOverlayLayoutReady(timeMotion, reducedMotion);
   const layersMotion = useSkyOverlayMotion(skyControlPanel === "layers" && !objectSurfaceOpen, overlayEnabled, reducedMotion);
   const closingOverlay = objectMotion.present && !objectMotion.active ||
@@ -4001,7 +4143,10 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             isPreviewing={isPreviewing}
             saving={timeSaving}
             interactionLocked={!active || alignmentEditing || datePickerOpen}
-            layoutReady={active && timeLayout.ready}
+            layoutReady={active && (timeMotion.phase === "preparing" || timeLayout.ready)}
+            preparing={timeMotion.phase === "preparing"}
+            onEntryReady={setTimeEntryReady}
+            selectionReady={timeGeometryReady}
             reducedMotion={reducedMotion}
             onPreview={onPreview}
             onCommit={settleTimeIndex}

@@ -171,6 +171,29 @@ test("opening waits for a target commit; exit retains the surface while disablin
   assert.equal(ui.advance(1).present, false); assert.equal(ui.timers, 0);
 });
 
+test("time preparation is unscaled and transparent before the original center scale/fade begins", () => {
+  const ui = harness();
+  const preparing = ui.render(true, true, false, false);
+  assert.equal(preparing.phase, "preparing"); assert.equal(preparing.active, true);
+  ui.tick(); ui.advance(1000);
+  assert.equal(ui.render().phase, "preparing", "elapsed time is not a native-position receipt");
+  assert.equal(ui.timers, 0);
+  assert.equal(ui.render(true, true, false, true).phase, "opening");
+  ui.tick(); assert.equal(ui.advance(16).phase, "open", "the original reveal begins after prepared content is installed");
+  ui.render(false, true, false, true); ui.advance(90);
+  assert.equal(ui.render(true, true, false, true).phase, "open", "a retained close reverses from its live presentation without preparation");
+  const css = readFileSync(new URL("./sky-overlay-motion.scss", import.meta.url), "utf8");
+  assert.match(css, /--preparing[^\n]*opacity: 0; transform: none; transition: none/);
+  assert.match(css, /--opening[^\n]*transition: none/, "preparation cannot tween the invisible starting scale before its reveal");
+  assert.match(css, /transform-origin: center center/);
+  assert.match(css, /transform: scale\(\.76\)/);
+  ui.unmount();
+  const reduced = harness();
+  assert.equal(reduced.render(true, true, true, false).phase, "preparing");
+  assert.equal(reduced.render(true, true, true, true).phase, "open");
+  assert.equal(reduced.timers, 0);
+});
+
 test("layout readiness follows the real surface endpoint, including reversal, retirement and immediate motion", () => {
   const ui = harness("useSkyOverlayLayoutReady");
   const opening = { active: true, phase: "opening" };
@@ -230,7 +253,7 @@ test("the retained time surface gates layout with live activity throughout its c
   };
   visit(source); assert(expression, "actual time-surface layout admission");
   const child = (timeLayout: { ready: boolean }) => (active: boolean) =>
-    vm.runInNewContext(`(${expression})`, { timeLayout, active });
+    vm.runInNewContext(`(${expression})`, { timeLayout, timeMotion: { phase: "open" }, active });
   const ui = harness("SkyOverlayMotion"), motion = { present: true, active: true, phase: "open", style: {} };
   assert.equal(ui.render({ motion, kind: "time", children: child({ ready: true }) }).children[0], true);
   assert.equal(ui.render({ motion: { ...motion, active: false, phase: "closing" }, kind: "time",

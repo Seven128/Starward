@@ -28,6 +28,9 @@ test("programmatic positions and drag fractions use the same measured projection
   near(layout.left(33, 17.68), 583.44);
   layout.measure(); callbacks.shift()!(nativeSample);
   near(layout.left(33, 17.68), 561.500012);
+  assert.equal(layout.measured, true);
+  assert.equal(layout.aligned(561.4222412109375, 33), true, "the selected center falls inside the measured axis width");
+  assert.equal(layout.aligned(583.44, 33), false, "the nominal cadence's displaced center cannot qualify entry");
   near(layout.index(565.750012, 17.68), 33.25);
   near(layout.left(layout.index(565.750012, 17.68), 17.68), 565.750012);
   assert.equal(layout.left(-1, 17.68), 0, "native offsets remain nonnegative");

@@ -1,6 +1,7 @@
 export type OrientationRulerProjection = {
   stepPx: number;
   zeroOffsetPx: number;
+  axisHalfWidthPx: number;
 };
 
 type Rect = { left: number; width: number };
@@ -22,7 +23,7 @@ export function orientationRulerProjection(values: readonly unknown[]): Orientat
   const stepPx = second.left + second.width / 2 - firstCenter;
   const zeroOffsetPx = scrollLeft + firstCenter - (axis.left + axis.width / 2);
   return Number.isFinite(stepPx) && stepPx > 0 && Number.isFinite(zeroOffsetPx)
-    ? { stepPx, zeroOffsetPx } : null;
+    ? { stepPx, zeroOffsetPx, axisHalfWidthPx: axis.width / 2 } : null;
 }
 
 /** Sky's native layout only; selection/time/scroll settlement stay with their
@@ -37,10 +38,17 @@ export function createOrientationRulerLayout(
   let projection: OrientationRulerProjection | null = null;
   const retire = () => { revision++; pending = false; };
   return {
+    get measured() { return projection !== null; },
+    aligned(left: number, index: number) {
+      // The selected tick's center must fall inside the actual axis. This is
+      // the measured indicator width, not a guessed offset/rounding tolerance.
+      return projection !== null && Number.isFinite(left) &&
+        Math.abs(left - projection.zeroOffsetPx - index * projection.stepPx) <= projection.axisHalfWidthPx;
+    },
     retire,
-    invalidate(retainForDrag = false) {
+    invalidate(retainProjection = false) {
       retire(); needsMeasure = true;
-      if (!retainForDrag) projection = null;
+      if (!retainProjection) projection = null;
     },
     measure() {
       if (!needsMeasure || pending || !canAccept()) return;
