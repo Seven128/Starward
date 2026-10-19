@@ -122,7 +122,7 @@
 
 66. [本机任务资源精确收尾](LOCAL-RESOURCE-CLEANUP-20261019.json)：旧r9的381件有原归档匹配，旧r8的407件已补完整保全，两退役目录均核范围后移入回收站，可恢复；原归档和当前r10/gen26及账号材料保留。r3列表确认和8798任务规则停用仍有原生/管理员依赖，不称全部清理完成。
 
-67. [固定发布引用观察](RELEASE-REFERENCE-OBSERVATION.md)：既有main-only SSH下的固定四路径base/current/成功receipt/candidate及停止API匹配失败回执，43项诊断与52项实际消费者检查已通过；Linux、独审与远端结果按该owner记录。永远NON_ATOMIC/完整引用未验，不证明健康、精确OCI恢复或删tag资格。
+67. [固定发布引用观察](RELEASE-REFERENCE-OBSERVATION.md)、[首版独审](RELEASE-REFERENCE-INDEPENDENT-REVIEW.md)、[首轮远端](RELEASE-REFERENCE-REMOTE-20261019.json)及[部分结果修复独审](RELEASE-REFERENCE-PARTIAL-REVIEW.md)：首版完整CI已通过，实读base/停止API后目录枚举触限；固定链与批量耦合已修，4条原失败、修后43项及独立5场景通过，安全顺序P2已关闭。新版本交付/远端以该owner和HANDOFF为准。永远NON_ATOMIC/完整引用未验，不证明健康、精确OCI恢复或删tag资格。
 
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "starward-release-reference-readback-v1",
+  "date": "2026-10-19",
+  "runId": 39274956661,
+  "headSha": "18c2cac106aa84dc7fe8d9e93e6249d2311b610b",
+  "runStatus": "completed",
+  "runConclusion": "failure",
+  "observerSourceSha256": "3cb5e29a18a1f386592f6f8b9f914a255b48bd43cb4fb215fc2a08062923184b",
+  "report": {
+    "status": "observed",
+    "evidenceScope": "STAGING_RELEASE_REFERENCES_ONLY",
+    "snapshot": "NON_ATOMIC",
+    "referenceCompleteness": "UNVERIFIED",
+    "base": {
+      "status": "observed",
+      "code": null,
+      "sha256": "8dd8ddc602f84087582b38ffe4d1d8b51d21015337f121209cc8696b93760f20",
+      "environmentMatches": true,
+      "projectMatches": true
+    },
+    "current": {
+      "status": "unknown",
+      "code": "budget_exceeded",
+      "pointerSha256": null,
+      "receiptSha256": null,
+      "candidateSha256": null,
+      "schemaVersion": null,
+      "operation": null,
+      "receiptStatus": null,
+      "revision": null,
+      "imageDigest": null,
+      "identityMatches": null,
+      "approvedRepositoryMatches": null,
+      "sourceRootMatches": null,
+      "backupManifestDeclared": null
+    },
+    "stoppedApi": {
+      "status": "observed",
+      "code": null,
+      "matchingContainerCount": 1,
+      "runningContainerCount": 0,
+      "revision": "1ccdbecd8ead24250bf75e8fd4319f17f403f688",
+      "imageDigest": "sha256:de4bcfb09bb74e99b43df9d8cce993741bce93c59b3b67bcca604bdc57a80f8f",
+      "state": "exited"
+    },
+    "failedDeployReceipts": {
+      "status": "unknown",
+      "code": "budget_exceeded",
+      "observedFileCount": null,
+      "matchingCount": null,
+      "revision": null,
+      "imageDigest": null,
+      "matches": []
+    },
+    "observation": {
+      "status": "observed",
+      "code": null
+    }
+  },
+  "diagnosticSucceeded": false,
+  "serviceMutation": false,
+  "registryTagDeleted": false,
+  "runtimeOrProviderDispatched": false,
+  "rawLogsPersisted": false,
+  "limits": "Fixed historical success pointer chain and matching failed receipts for the unique stopped API; NON_ATOMIC, all references and exact OCI recovery unverified."
+}

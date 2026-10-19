@@ -237,8 +237,16 @@ test("receipt directory changes and changing API identity invalidate correlation
   const f = fixture();
   f.mutations.push({ method: "opendir", path: receipts, call: 2, target: `${receipts}/new-private-state`, replace: { type: "file", text: "PRIVATE_NEW" } });
   const changedDirectory = (await observe(f)).report;
-  assert.equal(changedDirectory.current.status, "unknown"); assert.equal(changedDirectory.failedDeployReceipts.matchingCount, null);
+  assert.equal(changedDirectory.current.status, "observed"); assert.equal(changedDirectory.failedDeployReceipts.matchingCount, null);
   assert.equal(changedDirectory.observation.code, "changed"); assert.equal(changedDirectory.base.status, "observed");
+  const unsafeReports = [];
+  for (const patch of [{ mode: 0o40777 }, { ino: 55555 }]) {
+    const unsafe = fixture(); unsafe.mutations.push({ method: "opendir", path: receipts, call: 2, patch });
+    unsafeReports.push((await observe(unsafe)).report);
+  }
+  assert.deepEqual(unsafeReports.map(report => report.current.status), ["unknown", "unknown"]);
+  assert.deepEqual(unsafeReports.map(report => report.current.code), ["permissions_invalid", "changed"]);
+  assert.ok(unsafeReports.every(report => report.failedDeployReceipts.matchingCount === null));
   const g = fixture(); g.secondIdentityRows = [{ ...g.identityRows[0], revision: "e".repeat(40) }];
   const changedIdentity = (await observe(g)).report;
   assert.equal(changedIdentity.current.status, "observed"); assert.equal(changedIdentity.stoppedApi.code, "identity_changed");
@@ -255,7 +263,8 @@ test("size, file count and directory budgets produce partial unknown rather than
   assert.equal(report.failedDeployReceipts.matchingCount, null); assert.deepEqual(report.failedDeployReceipts.matches, []);
   const crowded = fixture(); for (let index = 0; index < 512; index += 1) crowded.entries[`${receipts}/unselected-${index}`] = { type: "file", text: "" };
   const crowdedReport = (await observe(crowded)).report;
-  assert.equal(crowdedReport.current.code, "budget_exceeded"); assert.equal(crowdedReport.failedDeployReceipts.matchingCount, null);
+  assert.equal(crowdedReport.current.status, "observed"); assert.equal(crowdedReport.failedDeployReceipts.code, "budget_exceeded");
+  assert.equal(crowdedReport.failedDeployReceipts.matchingCount, null); assert.equal(releaseReferenceSucceeded(crowdedReport), false);
 });
 
 test("total byte budget caps actual reads, including final byte rechecks", async () => {
@@ -264,6 +273,7 @@ test("total byte budget caps actual reads, including final byte rechecks", async
   for (let index = 4; index <= 125; index += 1) f.entries[`${receipts}/operator-preview-00000000-0000-4000-8000-${String(index).padStart(12, "0")}.json`] = { type: "file", text: JSON.stringify(value) };
   const { report, boundary } = await observe(f);
   assert.equal(report.failedDeployReceipts.status, "unknown"); assert.equal(report.failedDeployReceipts.matchingCount, null);
+  assert.equal(report.base.status, "observed"); assert.equal(report.current.status, "observed");
   assert.equal(report.observation.code, "budget_exceeded");
   assert.equal(boundary.events.filter(event => event.method === "read").reduce((sum, event) => sum + event.bytesRead, 0), 8388608);
 });
@@ -275,7 +285,7 @@ test("unreadable or malformed unrelated receipts preserve a valid match but make
     if (mode === "permission") f.mutations.push({ method: "open", path: target, call: 1, patch: {}, error: "EACCES" });
     if (mode === "missing") f.mutations.push({ method: "open", path: target, call: 1, remove: true });
     const { report } = await observe(f);
-    assert.equal(report.current.status, mode === "missing" ? "unknown" : "observed");
+    assert.equal(report.current.status, "observed");
     assert.equal(report.failedDeployReceipts.status, "unknown"); assert.equal(report.failedDeployReceipts.matchingCount, null);
     assert.equal(report.failedDeployReceipts.matches.length, 1);
     assert.doesNotMatch(JSON.stringify(report), privateNeedles);

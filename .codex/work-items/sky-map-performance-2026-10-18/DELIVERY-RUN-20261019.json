@@ -209,5 +209,55 @@
     "nextUnverifiedBoundary": "RELEASE-REFERENCE-OBSERVATION-BOUNDARY.md",
     "serviceRecovered": false,
     "tagsDeleted": 0
+  },
+  "releaseReferenceFollowup": {
+    "revision": "18c2cac106aa84dc7fe8d9e93e6249d2311b610b",
+    "bothRefsReadBack": "18c2cac106aa84dc7fe8d9e93e6249d2311b610b",
+    "scope": "fixed staging release-reference observation; Map/Sky behavior unchanged",
+    "softwareReview": "RELEASE-REFERENCE-INDEPENDENT-REVIEW.md",
+    "ownerTestsPassed": 43,
+    "parserConsumersPassed": 52,
+    "generatedModuleIndependentCasesPassed": 4,
+    "contextValidate": "passed",
+    "connectionMirror": "existing_staging_secret_refreshed_without_values",
+    "productCi": {
+      "runId": 39274103102,
+      "status": "completed",
+      "conclusion": "success",
+      "linuxDeploymentNativeCheck": "success",
+      "ociConstruction": "success"
+    },
+    "contextCi": {
+      "runId": 39274103071,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "automaticRelease": {
+      "runId": 39276326341,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "cancelledByRootAt": "Recheck release owners at the promoted revision",
+      "purpose": "diagnostic_only_change_with_unchanged_registry_quota_do_not_repeat_known_failed_push",
+      "imagePush": "skipped",
+      "hostPreflight": "skipped",
+      "promotion": "skipped",
+      "cdSettingOrGuardChanged": false
+    },
+    "diagnosticRunId": 39274956661,
+    "diagnosticEvidence": "RELEASE-REFERENCE-REMOTE-20261019.json",
+    "diagnosticResult": "base_and_stopped_observed_current_and_batch_unknown_budget_exceeded",
+    "partialFix": {
+      "review": "RELEASE-REFERENCE-PARTIAL-REVIEW.md",
+      "oldImplementationRegressionFailures": 4,
+      "ownerTestsPassed": 43,
+      "generatedModuleIndependentCasesPassed": 5,
+      "reviewP2": "fixed_and_reverified_before_delivery",
+      "sourceSha256": "fd9fd43061d8a5ff05b1c8de9d9bbad69882c6fbb70141018313ae8cc97d3a25",
+      "newCiAndRemoteObserved": false
+    },
+    "serviceRecovered": false,
+    "runtimeOrProvidersDispatched": false,
+    "tagsDeleted": 0,
+    "phoneOrAdbOperation": false
   }
 }

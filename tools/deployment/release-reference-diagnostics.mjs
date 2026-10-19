@@ -43,7 +43,7 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
   };
   const files = new Map(), directories = new Map();
   const currentDependencies = new Set(), receiptDependencies = new Set();
-  let readBytes = 0, basePath, receiptDirectory, directoryNames, directoryFingerprint, firstIdentity;
+  let readBytes = 0, readLimit = budgets.totalReadBytes, basePath, receiptDirectory, directoryNames, directoryFingerprint, firstIdentity;
   const secureDirectories = async selected => {
     let directory = "/", parent;
     for (const component of ["", ...selected.split("/").slice(1)]) {
@@ -85,7 +85,7 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
       const buffer = Buffer.alloc(Number(opened.size) + 1);
       let offset = 0;
       while (offset < buffer.length) {
-        const length = Math.min(buffer.length - offset, budgets.totalReadBytes - readBytes);
+        const length = Math.min(buffer.length - offset, readLimit - readBytes);
         if (length <= 0) fail("budget_exceeded");
         const { bytesRead } = await handle.read(buffer, offset, length, offset);
         if (!Number.isSafeInteger(bytesRead) || bytesRead < 0 || bytesRead > length) fail("read_failed");
@@ -168,38 +168,41 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
     Object.assign(report.base, { status: "observed", code: null, sha256: value.sha256, environmentMatches: true, projectMatches: true });
   } catch (error) { mark(report.base, failure(error)); }
   if (report.base.status === "observed") {
+    // A fixed pointer chain does not require enumerating unrelated receipts.
+    // Keep its observation independent of the optional historical batch.
     try {
-      const result = await names(receiptDirectory);
-      directoryNames = result.entries; directoryFingerprint = result.stat;
-    } catch (error) {
-      mark(report.current, failure(error)); mark(report.failedDeployReceipts, failure(error));
-    }
-    if (directoryNames) {
+      currentDependencies.add(basePath);
+      const pointerPath = path.join(receiptDirectory, "operator-preview-current.json"); currentDependencies.add(pointerPath);
+      const pointerRecord = await read(pointerPath), pointer = json(pointerRecord.bytes);
+      if (!validRevision(pointer.revision) || !validDigest(pointer.imageDigest) || !canonical(pointer.receiptPath) ||
+          path.dirname(pointer.receiptPath) !== receiptDirectory || !receiptNamePattern.test(path.basename(pointer.receiptPath)) ||
+          !canonical(pointer.deployEnvPath) ||
+          !pointer.deployEnvPath.startsWith(candidateRoot + "/") || path.basename(pointer.deployEnvPath) !== "deploy.env" ||
+          pointer.sourceRoot !== path.join(releaseRoot, "control", pointer.revision)) fail("pointer_invalid");
+      currentDependencies.add(pointer.receiptPath); currentDependencies.add(pointer.deployEnvPath);
+      const receiptRecord = await read(pointer.receiptPath), receipt = parseReceipt(json(receiptRecord.bytes), "succeeded");
+      if (receipt.revision !== pointer.revision || receipt.imageDigest !== pointer.imageDigest || receipt.writersStopped !== false) fail("receipt_invalid");
+      const candidateRecord = await read(pointer.deployEnvPath), candidate = environment(candidateRecord.bytes);
+      if (candidate.STARWARD_ENVIRONMENT !== "staging" || candidate.COMPOSE_PROJECT_NAME !== "starward-staging" ||
+          candidate.STARWARD_RECEIPT_DIRECTORY !== receiptDirectory || candidate.STARWARD_RELEASE_REVISION !== pointer.revision ||
+          candidate.STARWARD_IMAGE_DIGEST !== pointer.imageDigest || candidate.STARWARD_IMAGE_REPOSITORY !== base.STARWARD_IMAGE_REPOSITORY ||
+          candidate.STARWARD_IMAGE_REF !== `${base.STARWARD_IMAGE_REPOSITORY}@${pointer.imageDigest}` ||
+          !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u.test(candidate.STARWARD_RELEASED_AT ?? "") || !Number.isFinite(Date.parse(candidate.STARWARD_RELEASED_AT))) fail("candidate_invalid");
+      await secureDirectories(pointer.sourceRoot);
+      Object.assign(report.current, { status: "observed", code: null, pointerSha256: pointerRecord.sha256, receiptSha256: receiptRecord.sha256, candidateSha256: candidateRecord.sha256,
+        schemaVersion: receipt.schemaVersion, operation: "deploy", receiptStatus: "succeeded", revision: receipt.revision, imageDigest: receipt.imageDigest,
+        identityMatches: true, approvedRepositoryMatches: true, sourceRootMatches: true, backupManifestDeclared: Object.hasOwn(receipt, "backupManifestPath") });
+    } catch (error) { mark(report.current, failure(error)); }
+    // Reserve the existing fixed-chain byte rechecks before the batch can
+    // consume the shared budget. EOF headroom is included; no limit grows.
+    readLimit -= [...currentDependencies].reduce((total, selected) => total + (files.has(selected) ? files.get(selected).bytes.length + 1 : 0), 0);
+    if (report.stoppedApi.status !== "observed") mark(report.failedDeployReceipts, "stopped_identity_unavailable");
+    else {
       try {
-        currentDependencies.add(basePath);
-        const pointerPath = path.join(receiptDirectory, "operator-preview-current.json"); currentDependencies.add(pointerPath);
-        const pointerRecord = await read(pointerPath), pointer = json(pointerRecord.bytes);
-        if (!validRevision(pointer.revision) || !validDigest(pointer.imageDigest) || !canonical(pointer.receiptPath) ||
-            path.dirname(pointer.receiptPath) !== receiptDirectory || !receiptNamePattern.test(path.basename(pointer.receiptPath)) ||
-            !directoryNames.includes(path.basename(pointer.receiptPath)) || !canonical(pointer.deployEnvPath) ||
-            !pointer.deployEnvPath.startsWith(candidateRoot + "/") || path.basename(pointer.deployEnvPath) !== "deploy.env" ||
-            pointer.sourceRoot !== path.join(releaseRoot, "control", pointer.revision)) fail("pointer_invalid");
-        currentDependencies.add(pointer.receiptPath); currentDependencies.add(pointer.deployEnvPath);
-        const receiptRecord = await read(pointer.receiptPath), receipt = parseReceipt(json(receiptRecord.bytes), "succeeded");
-        if (receipt.revision !== pointer.revision || receipt.imageDigest !== pointer.imageDigest || receipt.writersStopped !== false) fail("receipt_invalid");
-        const candidateRecord = await read(pointer.deployEnvPath), candidate = environment(candidateRecord.bytes);
-        if (candidate.STARWARD_ENVIRONMENT !== "staging" || candidate.COMPOSE_PROJECT_NAME !== "starward-staging" ||
-            candidate.STARWARD_RECEIPT_DIRECTORY !== receiptDirectory || candidate.STARWARD_RELEASE_REVISION !== pointer.revision ||
-            candidate.STARWARD_IMAGE_DIGEST !== pointer.imageDigest || candidate.STARWARD_IMAGE_REPOSITORY !== base.STARWARD_IMAGE_REPOSITORY ||
-            candidate.STARWARD_IMAGE_REF !== `${base.STARWARD_IMAGE_REPOSITORY}@${pointer.imageDigest}` ||
-            !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u.test(candidate.STARWARD_RELEASED_AT ?? "") || !Number.isFinite(Date.parse(candidate.STARWARD_RELEASED_AT))) fail("candidate_invalid");
-        await secureDirectories(pointer.sourceRoot);
-        Object.assign(report.current, { status: "observed", code: null, pointerSha256: pointerRecord.sha256, receiptSha256: receiptRecord.sha256, candidateSha256: candidateRecord.sha256,
-          schemaVersion: receipt.schemaVersion, operation: "deploy", receiptStatus: "succeeded", revision: receipt.revision, imageDigest: receipt.imageDigest,
-          identityMatches: true, approvedRepositoryMatches: true, sourceRootMatches: true, backupManifestDeclared: Object.hasOwn(receipt, "backupManifestPath") });
-      } catch (error) { mark(report.current, failure(error)); }
-      if (report.stoppedApi.status !== "observed") mark(report.failedDeployReceipts, "stopped_identity_unavailable");
-      else {
+        const result = await names(receiptDirectory);
+        directoryNames = result.entries; directoryFingerprint = result.stat;
+      } catch (error) { mark(report.failedDeployReceipts, failure(error)); }
+      if (directoryNames) {
         const selected = directoryNames.filter(name => receiptNamePattern.test(name));
         report.failedDeployReceipts.observedFileCount = selected.length;
         report.failedDeployReceipts.revision = report.stoppedApi.revision; report.failedDeployReceipts.imageDigest = report.stoppedApi.imageDigest;
@@ -239,19 +242,27 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
   }
   let observationFailure = null;
   const changedFiles = new Map();
+  readLimit = budgets.totalReadBytes;
   for (const [selected, previous] of files) {
     try { const after = await read(selected, true); if (!same(previous.stat, after.stat, true) || !previous.bytes.equals(after.bytes)) fail("changed"); }
     catch (error) { changedFiles.set(selected, failure(error)); observationFailure ??= failure(error); }
   }
+  if (directoryNames) {
+    try {
+      const after = await names(receiptDirectory);
+      if (!same(directoryFingerprint, after.stat, true) || JSON.stringify(directoryNames) !== JSON.stringify(after.entries)) fail("changed");
+    } catch (error) {
+      observationFailure ??= failure(error);
+      mark(report.failedDeployReceipts, failure(error)); report.failedDeployReceipts.matchingCount = null;
+    }
+  }
+  // Recheck shared safety after enumeration as well: an unrelated new name
+  // leaves fixed files valid, but replaced or writable directories do not.
   try {
     for (const [selected, previous] of directories) {
       const after = await fs.lstat(selected, { bigint: true }); check(after, "directory");
       const held = await previous.handle.stat({ bigint: true }); check(held, "directory");
       if (!same(previous.stat, after) || !same(previous.stat, held)) fail("changed");
-    }
-    if (directoryNames) {
-      const after = await names(receiptDirectory);
-      if (!same(directoryFingerprint, after.stat, true) || JSON.stringify(directoryNames) !== JSON.stringify(after.entries)) fail("changed");
     }
   } catch (error) {
     observationFailure ??= failure(error);

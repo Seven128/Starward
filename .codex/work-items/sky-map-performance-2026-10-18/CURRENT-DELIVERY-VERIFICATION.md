@@ -30,7 +30,9 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 ## 2026-10-19 固定发布引用及退役r8保全
 
-[固定引用实现](RELEASE-REFERENCE-OBSERVATION.md)复用原main-only SSH/四条受保护路径，root诊断43/43、实际parser消费者/发布入口52/52及context结构通过。[独审](RELEASE-REFERENCE-INDEPENDENT-REVIEW.md)无P1/P2，独立43项及精确生成模块4项对抗检查通过。Linux原生及实际远端观察尚待记录。它不读lane secrets/backup payload/DB、不部署或清理，输出始终保NON_ATOMIC/完整引用未验；Map/Sky字节未改。
+[固定引用实现](RELEASE-REFERENCE-OBSERVATION.md)首版18c2cac1普通推当前分支/main并精确读回一致，完整Product39274103102含Linux owner/native/OCI success、Context39274103071 success；一次自动release39276326341在owner重检期间由root取消，实际completed/cancelled、push/preflight/promote全skipped、CD/guard不改。root诊断43/43、实际parser消费者52/52和首版独审保各自输入效力；Map/Sky字节未改。
+
+一次首版[远端观察](RELEASE-REFERENCE-REMOTE-20261019.json)保有效base/停止API，目录枚举触限使current/batch同时unknown。固定链/批量耦合已窄修，原上限不增、同8MiB内预留固定链重核；四条旧实现失败后43/43通过。[新独审](RELEASE-REFERENCE-PARTIAL-REVIEW.md)发现的中间目录安全顺序P2已用两反例修复并复核，独立43项及生成模块5场景通过，无剩余P1/P2，最终source/test/Context hash一致。新版本Linux/远端未验，不覆盖首轮失败、未称服务恢复或完整引用。
 
 旧r8 cnbWtR原82件档案不能覆盖完整feedback，因此先新增外部完整保全：407文件/32,790,429B，源/副本/源后逐件相同，manifest967999117475550d45994091d95c39be1866b113dee290b6d7c1fc4dd0f8618a。核绝对命名范围、无链接及动作前完整性后移入回收站，源absent、原归档和新增归档保留，可恢复；未动当前r10、gen26或账号材料。详见[清理读回](LOCAL-RESOURCE-CLEANUP-20261019.json)。
 
