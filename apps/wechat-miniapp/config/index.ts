@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { applyContractReexportRule, type ContractReexportChain } from "./contracts-reexports.cjs";
 import { releaseBundleLocation } from "../../../tools/miniapp/release-bundle-location.cjs";
 import mainBIcons from "../src/components/main-b-icon-files.json";
+import primaryNavigationDayIcons from "../src/navigation/primary-navigation-day-icons.json";
 import {
   defineConfig,
   type UserConfigExport,
@@ -28,10 +29,9 @@ const adoptedBTabBarIconRoot = path.resolve(
 );
 const mainBIconVariants = new Set(mainBIcons.mainOnlyVariants);
 const sharedMainBIcons = new Set(mainBIcons.files.filter(file => !mainBIconVariants.has(file)));
-const bTabBarIconFiles = [
-  "map--day--default.png", "map--day--selected.png",
-  "account-user--day--default.png", "account-user--day--selected.png",
-] as const;
+const bTabBarIconFiles = [...new Set(Object.values(primaryNavigationDayIcons).flatMap(paths =>
+  Object.values(paths).map(iconPath => path.posix.basename(iconPath)),
+))];
 const retainedLegacyIconFiles = [
   "account-user-night.svg", "account-user-observation.svg",
   "arrow-left-light.png", "bulb-night.svg", "bulb-observation.svg",

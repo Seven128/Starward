@@ -1,5 +1,6 @@
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { NATIVE_CHROME_THEME } from "../theme/design-tokens";
+import primaryNavigationDayIcons from "./primary-navigation-day-icons.json";
 
 export const PRIMARY_NAVIGATION_ITEMS = [
   { pagePath: "pages/map/index", text: "地图", icon: "primary-map" },
@@ -16,8 +17,7 @@ export function primaryNavigationIconPath(icon: PrimaryNavigationIcon, mode: Dis
   const map = icon === "primary-map";
   if (mode === "DAY") {
     // The current Map source retains the default map bitmap when selected.
-    const state = selected && !map ? "selected" : "default";
-    return `assets/b-icons/weapp-tabbar/${map ? "map" : "account-user"}--day--${state}.png`;
+    return primaryNavigationDayIcons[icon][selected ? "selected" : "default"];
   }
   return `assets/icons/tab-${map ? "map" : "my"}${selected ? "-selected" : ""}${NATIVE_CHROME_THEME[mode].suffix}.png`;
 }

@@ -1,0 +1,10 @@
+{
+  "primary-map": {
+    "default": "assets/b-icons/weapp-tabbar/map--day--default.png",
+    "selected": "assets/b-icons/weapp-tabbar/map--day--default.png"
+  },
+  "primary-my": {
+    "default": "assets/b-icons/weapp-tabbar/account-user--day--default.png",
+    "selected": "assets/b-icons/weapp-tabbar/account-user--day--selected.png"
+  }
+}
