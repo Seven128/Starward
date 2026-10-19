@@ -136,6 +136,8 @@
 
 73. [OCI本地复制契约试验](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.md)、[结构化结果](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.json)及[必要证据保全/回收](OCI-OFFLINE-TRIAL-PRESERVATION-20261020.json)：ORAS1.3.5三正例、四故障、两边界已实际执行并由root读回55条bytes检查；fresh目标及root descriptor不可省。122件必要证据留原外部owner，248件临时目录已回收，可恢复。不证明真实私有传输、OCI备份或registry恢复，不重跑toy。
 
+74. [主机构建缓存边界](STAGING-CACHE-RECOVERY-BOUNDARY.md)：聚合不提供项目归属；固定上游history也不能映射到完整cache ID且可能Boot。无归属不新建probe/cleaner或prune；INBOX总量低于当次差额且旧副本保全资格未立，不承诺容量恢复。主机容量与TCR/私有OCI恢复仍分开。
+
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
 恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。本接手对话的明确继续指令已解除原暂停；恢复核源码/候选/在途状态和受影响的服务/窗口入口，历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。

@@ -395,8 +395,46 @@
       "hostSteps": "not_executed"
     },
     "currentGitStateOwner": "git_status_and_git_ls_remote",
-    "storageNextResponsibility": "bounded_build_cache_filesystem_ownership_and_precise_operation_capability_not_global_prune",
+    "storageNextResponsibility": "retain_unknown_cache_until_positive_project_mapping_or_qualified_retirement_and_recovery_evidence_no_redundant_probe",
     "currentAvailableBytes": 10417971200,
-    "guardChanged": false
+    "guardChanged": false,
+    "evidenceOnlyDelivery": {
+      "headSha": "8bb9a87c0d2274438ead24b364af651534b4ca61",
+      "remoteRefsAtReadback": [
+        "refs/heads/main",
+        "refs/heads/codex/remote-main-20260908"
+      ],
+      "productCi": {
+        "runId": 39289384616,
+        "jobId": 118185741249,
+        "status": "completed",
+        "conclusion": "success",
+        "scope": "task_documents_only_product_and_oci_steps_skipped"
+      },
+      "contextCi": {
+        "runId": 39289384596,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "automaticRelease": {
+        "runId": 39289439320,
+        "status": "completed",
+        "conclusion": "success",
+        "qualify": "success",
+        "publicationJobId": 118185981127,
+        "publication": "skipped",
+        "publicationSteps": 0
+      },
+      "sourceChanged": false
+    },
+    "storageCacheBoundary": {
+      "evidence": "STAGING-CACHE-RECOVERY-BOUNDARY.md",
+      "projectOwnership": "UNVERIFIED",
+      "buildHistoryCacheIdMapping": "not_supplied_by_reviewed_fixed_upstream_APIs_host_versions_unknown",
+      "newProbeOrCleaner": false,
+      "cacheOrImageOrVolumeDeleted": false,
+      "hostGuardChanged": false,
+      "inboxCapacityAloneSufficient": false
+    }
   }
 }
