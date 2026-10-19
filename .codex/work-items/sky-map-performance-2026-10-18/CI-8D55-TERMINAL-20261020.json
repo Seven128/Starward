@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "starward-ci-terminal-readback-v1",
+  "runId": 39277233795,
+  "headSha": "8d55e50e04a043b60698fa4562246c92c0ec966b",
+  "status": "completed",
+  "conclusion": "success",
+  "job": {
+    "id": 118144672796,
+    "startedAt": "2026-10-19T15:21:54Z",
+    "completedAt": "2026-10-19T15:31:16Z",
+    "conclusion": "success"
+  },
+  "steps": [
+    {
+      "name": "Test deployment owners",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-19T15:22:52Z",
+      "completedAt": "2026-10-19T15:22:59Z"
+    },
+    {
+      "name": "Check release code",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-19T15:22:59Z",
+      "completedAt": "2026-10-19T15:29:26Z"
+    },
+    {
+      "name": "Construct production OCI image",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-19T15:30:30Z",
+      "completedAt": "2026-10-19T15:31:13Z"
+    }
+  ],
+  "contracts": {
+    "start": "2026-10-19T15:23:21.0529094Z",
+    "nextWorkspaceTest": "2026-10-19T15:23:23.5366372Z",
+    "passedTestOutputs": 84
+  },
+  "withdrawnInference": "partial_rendered_log_did_not_establish_contract_execution_stall",
+  "rawLogsSaved": false
+}

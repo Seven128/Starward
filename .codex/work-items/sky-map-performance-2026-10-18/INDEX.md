@@ -130,7 +130,11 @@
 
 70. [精确OCI私有保全路径核对](OCI-RECOVERY-PATH-REVIEW.md)：沿原owner-only Drive和批准registry；当前Actions→私有落点桥缺失，不默认公开artifact、低空间主机或新凭据中转。固定离线恢复契约可独立准备，实际导出/私有保全/registry恢复仍未验。
 
-71. [当前CI异常边界核对](CI-CURRENT-BOUNDARY-REVIEW.md)：同源前轮contracts84项约3.47秒，本轮首批后长停顿；异常执行已成立但owner未知，不按最后日志归因产品或改并发/timeout。必要新源码由原工作流接替，完整CI仍须实际通过。
+71. [CI局部观察及更正](CI-CURRENT-BOUNDARY-REVIEW.md)与[实际终态](CI-8D55-TERMINAL-20261020.json)：8d55完整CI/OCI已success，contracts84项约2.48秒；原页面停顿推断撤回，不改产品/并发/timeout。新源码仍按其实际CI检查。
+
+72. [既有本机私有传输边界](EXISTING-PRIVATE-TRANSFER-BOUNDARY.md)：限定owner内尚无明确本机SSH key/agent入口，仅相关变量存在性和agent服务状态；没有读key或全机扫描，保UNKNOWN，不推断所有路径不可用。
+
+73. [OCI本地复制契约试验](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.md)、[结构化结果](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.json)及[必要证据保全/回收](OCI-OFFLINE-TRIAL-PRESERVATION-20261020.json)：ORAS1.3.5三正例、四故障、两边界已实际执行并由root读回55条bytes检查；fresh目标及root descriptor不可省。122件必要证据留原外部owner，248件临时目录已回收，可恢复。不证明真实私有传输、OCI备份或registry恢复，不重跑toy。
 
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 

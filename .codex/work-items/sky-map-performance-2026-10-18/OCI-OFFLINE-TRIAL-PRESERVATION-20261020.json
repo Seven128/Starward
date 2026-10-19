@@ -1,0 +1,13 @@
+{
+  "sourceRoot": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\tmp\\oci-recovery-contract-trial-20261020",
+  "sourceFiles": 248,
+  "sourceBytes": 17735296,
+  "archiveRoot": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\normal-existing-resume-20261019\\oci-offline-contract-20261020",
+  "archivedFiles": 122,
+  "archivedBytes": 115653,
+  "manifestSha256": "c8e9e71ae7660e89cadb278c4c5a9af464e1608c56d9068a7633f660f5fa9c5e",
+  "verifiedOutputAndBlobChecks": 55,
+  "sourceRecycled": true,
+  "sourceAbsentAfter": true,
+  "recovery": "Windows_Recycle_Bin_or_retained_necessary_evidence_archive"
+}

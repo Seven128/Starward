@@ -17,4 +17,4 @@
 
 作者与 root 本地合计 44/44 通过，涵盖实际生成程序 fake builtins、FD3 传递参数、非法/变化路径、独立局部失败、缺/重复 Docker 类、超时/输出界和严格 runner 投影。低于旧 guard 的 2 GB fixture 仍可完成聚合，显式区分观察与 readiness。Windows 只验证平台 fail-closed 和 fake 边界；Linux 原生 fd3/df/du/shell 分支已纳入测试，当前尚未实跑，不计作已通过的 Linux 或真实主机证据。没有调用实际 Docker、SSH、手机或服务。
 
-[独立审查](HOST-STORAGE-INDEPENDENT-REVIEW.md)已完成，无尚存P1/P2，独立44项、4条精确生成程序反例与原runtime15项通过。当前 Git/CI 和第一次实际主机结果仍待完成；以对应实际回执及[HANDOFF](HANDOFF.md)更新，不用本地成功替代。实际结果只用于选择一个有必要的下一 owner；具体退休仍要核该对象的消费者、保全与恢复条件，不进入全盘扫描或全局 prune。
+[独立审查](HOST-STORAGE-INDEPENDENT-REVIEW.md)已完成，无尚存P1/P2，独立44项、4条精确生成程序反例与原runtime15项通过。已作为0a855654普通推当前分支/main、两ref精确读回；新Linux/完整CI和第一次实际主机结果仍待完成；以对应实际回执及[HANDOFF](HANDOFF.md)更新，不用本地成功替代。实际结果只用于选择一个有必要的下一 owner；具体退休仍要核该对象的消费者、保全与恢复条件，不进入全盘扫描或全局 prune。

@@ -1,0 +1,18 @@
+{
+  "runId": 39280890796,
+  "headSha": "8d55e50e04a043b60698fa4562246c92c0ec966b",
+  "status": "completed",
+  "conclusion": "success",
+  "qualify": "success",
+  "publicationJob": {
+    "id": 118165724092,
+    "name": "publish-and-deploy",
+    "status": "completed",
+    "conclusion": "skipped",
+    "steps": []
+  },
+  "initialQueuedCancelResponse": 409,
+  "cancelSucceeded": false,
+  "observerEnded": true,
+  "cdOrGuardChanged": false
+}

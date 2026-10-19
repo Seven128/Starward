@@ -253,7 +253,7 @@
       "generatedModuleIndependentCasesPassed": 5,
       "reviewP2": "fixed_and_reverified_before_delivery",
       "sourceSha256": "fd9fd43061d8a5ff05b1c8de9d9bbad69882c6fbb70141018313ae8cc97d3a25",
-      "newCiAndRemoteObserved": false,
+      "newCiAndRemoteObserved": true,
       "revision": "8d55e50e04a043b60698fa4562246c92c0ec966b",
       "bothRefsReadBack": "8d55e50e04a043b60698fa4562246c92c0ec966b",
       "contextCi": {
@@ -263,11 +263,12 @@
       },
       "productCi": {
         "runId": 39277233795,
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "linuxDeploymentNativeCheck": "success",
-        "executionBoundary": "abnormal_contract_test_execution_owner_unknown",
-        "review": "CI-CURRENT-BOUNDARY-REVIEW.md"
+        "ociConstruction": "success",
+        "terminalEvidence": "CI-8D55-TERMINAL-20261020.json",
+        "earlierStallInference": "withdrawn_partial_rendered_log_not_execution_tail"
       },
       "diagnosticRunId": 39277333313,
       "diagnosticEvidence": "RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json",
@@ -284,7 +285,20 @@
         "evidence": "CURRENT-HOST-PREFLIGHT-20261019.json",
         "guardChanged": false
       },
-      "serviceRecovered": false
+      "serviceRecovered": false,
+      "automaticRelease": {
+        "runId": 39280890796,
+        "status": "completed",
+        "conclusion": "success",
+        "qualify": "success",
+        "publishAndDeploy": "skipped",
+        "publicationJobId": 118165724092,
+        "initialQueuedCancelResponse": 409,
+        "cancelSucceeded": false,
+        "observerEnded": true,
+        "cdSettingOrGuardChanged": false,
+        "evidence": "CI-QUEUED-RELEASE-CONTROL-20261020.json"
+      }
     },
     "serviceRecovered": false,
     "runtimeOrProvidersDispatched": false,
@@ -305,6 +319,34 @@
     "ociPrivateTransfer": "unavailable_interface_not_public_artifact_or_low_space_host",
     "independentReviewOutcome": "no_remaining_P1_P2",
     "independentGeneratedModuleCasesPassed": 4,
-    "unchangedRuntimeTestsPassed": 15
+    "unchangedRuntimeTestsPassed": 15,
+    "revision": "0a855654cf288b33091e39f513bf98910c4a635d",
+    "bothRefsReadBack": "0a855654cf288b33091e39f513bf98910c4a635d",
+    "productCi": {
+      "runId": 39281927954,
+      "status": "queued",
+      "conclusion": null
+    },
+    "contextCi": {
+      "runId": 39281928030,
+      "status": "queued",
+      "conclusion": null
+    },
+    "existingLocalPrivateTransfer": "UNKNOWN_NOT_READY_FOR_LOCAL_READBACK",
+    "privateTransferEvidence": "EXISTING-PRIVATE-TRANSFER-BOUNDARY.md",
+    "ociOfflineContract": {
+      "evidence": "OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.md",
+      "results": "OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.json",
+      "actualCliVersion": "1.3.5",
+      "positiveCases": 3,
+      "failuresRejected": 4,
+      "successfulExitButIncompleteCounterexamples": 2,
+      "rootActualBlobChecks": 55,
+      "necessaryEvidenceFiles": 122,
+      "temporaryTrialRecycled": true,
+      "preservation": "OCI-OFFLINE-TRIAL-PRESERVATION-20261020.json",
+      "actualPrivateBackupOrRegistryRestore": false
+    },
+    "deliveryEvidencePlan": "followup_documents_to_current_branch_first_main_after_required_0a855654_CI_to_avoid_canceling_queued_product_run"
   }
 }

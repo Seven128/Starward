@@ -4,6 +4,8 @@
 
 结论：复用现有 staging Actions 凭据读取一个固定 digest，再由原 owner-only Drive 接收，是合适的窄路线；**目前缺少 Actions 到该私有落点的可用传输能力**。当前 Drive tools 不提供 resumable session 签发入口，不能把本机连接器可上传文件说成 CI 已能上传。公开仓库 artifact 不能直接承载原 OCI；也不能默认为“公开密文”已经满足不扩共享。现有主机实际空间预检失败，不应默认用它中转。
 
+后续第1步已取得[ORAS本地契约试验](OCI-OFFLINE-RECOVERY-CONTRACT-TRIAL.md)，并有root实际字节核对、必要证据保全和临时目录回收。此研究形成时的下一动作不再要求重复toy；当前执行顺序由[HANDOFF](HANDOFF.md)拥有，私有桥和真实恢复仍未验。
+
 ## 本次范围与事实
 
 - 仅读取仓库 owner、两个 GitHub metadata endpoint、已声明的唯一 Drive 数据 folder metadata，以及必要官方文档。未下载 OCI、读取 credential/旧交接 key/OAuth、查询其他账号、创建 session/file/Secret/artifact、改变分享、执行 Docker/SSH/服务/浏览器/IDE/ADB/手机操作或 Git 写入。

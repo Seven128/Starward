@@ -14,7 +14,7 @@
 
 原性能skill补充仅在决策需要合并观测时区分被测行为实际发生区间与记录覆盖，并保目标/操作关联和时钟不确定性；没有把播放窗口或新runId推广为统一门槛。[task-only watch锚点](R17-MEMORY-WATCH-ANCHOR.md)增加固定私有owner的首尾host读区间、工具源和成功行流绑定，原sample/ADB/PSS/次数/间隔/停止条件未改。[独立审查](R17-MEMORY-WATCH-ANCHOR-REVIEW.md)无阻断发现，5项fake host测试及语法检查通过，实际文件hash匹配审查输入；skill quick_validate通过。未运行watcher或新设备观察，实际写盘/权限/产品关联仍未验，旧r10缺口不回填。后续文档/Git检查只覆盖本批次，不重复未变产品测试。
 
-ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚未核实的current/rollback/backup引用是服务恢复的当前依赖，详见[H4](H4-REAL-WEATHER-READINESS.md)及[单tag审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)。本批次保留全部手机性能和真实接收义务；方法/工具/CI都不替代最终可见覆盖或顺畅播放结果。
+ba4当时的完整CI及发布/identity已实读；当时registry额度、主机MFA与current/rollback/backup引用缺口保原快照，后续固定链及SSH已建立部分事实，当前依赖由HANDOFF拥有，详见[H4](H4-REAL-WEATHER-READINESS.md)及[单tag审计](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)。本批次保留全部手机性能和真实接收义务；方法/工具/CI都不替代最终可见覆盖或顺畅播放结果。
 
 提交前本批次15份文本的index/工作区内容一致、1份JSON可解析、294个本地文件链接存在，限定凭据形状扫描无命中；Goal正文与提交前完全相同，无tmp/私有原件加入。staged diff与context结构检查通过。测试与独审复用精确未变字节，不把文件链接/结构检查当成内容真实性或产品验收。
 
@@ -32,9 +32,9 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 [固定引用实现](RELEASE-REFERENCE-OBSERVATION.md)首版18c2cac1普通推当前分支/main并精确读回一致，完整Product39274103102含Linux owner/native/OCI success、Context39274103071 success；一次自动release39276326341在owner重检期间由root取消，实际completed/cancelled、push/preflight/promote全skipped、CD/guard不改。root诊断43/43、实际parser消费者52/52和首版独审保各自输入效力；Map/Sky字节未改。
 
-一次首版[远端观察](RELEASE-REFERENCE-REMOTE-20261019.json)保有效base/停止API，目录枚举触限使current/batch同时unknown。固定链/批量耦合已窄修，原上限不增、同8MiB内预留固定链重核；四条旧实现失败后43/43通过。[新独审](RELEASE-REFERENCE-PARTIAL-REVIEW.md)发现的中间目录安全顺序P2已用两反例修复并复核，独立43项及生成模块5场景通过，无剩余P1/P2，最终source/test/Context hash一致。新版本Linux/远端未验，不覆盖首轮失败、未称服务恢复或完整引用。
+一次首版[远端观察](RELEASE-REFERENCE-REMOTE-20261019.json)保有效base/停止API，目录枚举触限使current/batch同时unknown。固定链/批量耦合已窄修，原上限不增、同8MiB内预留固定链重核；四条旧实现失败后43/43通过。[新独审](RELEASE-REFERENCE-PARTIAL-REVIEW.md)发现的中间目录安全顺序P2已用两反例修复并复核，独立43项及生成模块5场景通过，无剩余P1/P2，最终source/test/Context hash一致。该次本地修复形成时Linux/远端未验，后续实读见下一段，不覆盖首轮失败、未称服务恢复或完整引用。
 
-该修复后已提交8d55e50e并普通推当前分支/main、两ref精确读回；Context39277233426 success，Product39277233795的Linux owner/native检查success，完整CI在途。一次[修后真实观察](RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json)39277333313实际current链observed=262d/824b，与停止1ccd/de4b分开；batch预算unknown，run仍failure、无健康/全引用结论。随后一次[host预检](CURRENT-HOST-PREFLIGHT-20261019.json)39277770300完整failure，明确当前disk仍低于10GiB guard；没有推断具体量或执行清理/部署，平台waiting已自然结束。首轮记录保留，后续不重复未变观察。
+该修复后已提交8d55e50e并普通推当前分支/main、两ref精确读回；Context39277233426 success，Product39277233795完整success含Linux/native/OCI，见[终态读回](CI-8D55-TERMINAL-20261020.json)。一次[修后真实观察](RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json)39277333313实际current链observed=262d/824b，与停止1ccd/de4b分开；batch预算unknown，run仍failure、无健康/全引用结论。随后一次[host预检](CURRENT-HOST-PREFLIGHT-20261019.json)39277770300完整failure，明确当前disk仍低于10GiB guard；没有推断具体量或执行清理/部署，平台waiting已自然结束。首轮记录保留，后续不重复未变观察。
 
 旧r8 cnbWtR原82件档案不能覆盖完整feedback，因此先新增外部完整保全：407文件/32,790,429B，源/副本/源后逐件相同，manifest967999117475550d45994091d95c39be1866b113dee290b6d7c1fc4dd0f8618a。核绝对命名范围、无链接及动作前完整性后移入回收站，源absent、原归档和新增归档保留，可恢复；未动当前r10、gen26或账号材料。详见[清理读回](LOCAL-RESOURCE-CLEANUP-20261019.json)。
 
@@ -42,7 +42,7 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 [实现与边界](HOST-STORAGE-OBSERVATION.md)复用原SSH owner及共享Linux目录factory，固定df/三根du/Docker分类，不读base载荷、不增加清理/部署入口。作者31项与root整合后的44/44通过，实际生成模块/fake、runner投影与部分结果保留已核；Linux原生fd3/df/du/shell及实际主机未验。[独审](HOST-STORAGE-INDEPENDENT-REVIEW.md)无尚存P1/P2，复核44项、4条精确生成模块反例和原runtime15项。原10GiB guard不改，2GB fixture可完成观察但不表示readiness。
 
-8d55完整CI的contracts停顿已有[有界独立核对](CI-CURRENT-BOUNDARY-REVIEW.md)：产品源码、依赖锁及launcher/workflow与上次成功相同，前轮84项约3.47秒，本轮约25分钟仍无后续。责任未知，末条日志不确定实际阻塞owner；必要新源码提交沿原concurrency接替，不额外并行重跑或改timeout。8完整CI不计成功，新版本仍须完成必要检查。[OCI私有保全](OCI-RECOVERY-PATH-REVIEW.md)缺传输桥，未创建artifact/secret/session、未复制镜像或执行清理。
+8d55完整CI已实际success：[有界核对及更正](CI-CURRENT-BOUNDARY-REVIEW.md)保源码相同等事实，撤回由页面局部日志推断25分钟contracts异常；完成日志明确84项约2.48秒。新源码0a855654已普通推两ref，自己的Linux/完整CI及第一次主机观察仍待验。旧自动release39280890796在queued阶段一次cancel409未成功；随后实际completed/success、qualify success与publish-and-deploy skipped已由页面及job118165724092确认，observer终止，不称root取消，不改CD/guard。[OCI私有保全](OCI-RECOVERY-PATH-REVIEW.md)及[本机入口补核](EXISTING-PRIVATE-TRANSFER-BOUNDARY.md)仍没有可直接消费的传输桥，未创建artifact/secret/session、复制镜像或执行清理。
 
 ## 69401 生产修复、r10 及此前 Git 证据
 

@@ -1,0 +1,678 @@
+{
+  "schemaVersion": 1,
+  "scope": "OFFLINE_TOY_LAYOUT_CONTRACT_ONLY",
+  "createdAtUtc": "2026-10-19T16:09:43.2047108Z",
+  "tool": {
+    "name": "ORAS",
+    "version": "1.3.5",
+    "osArch": "windows/amd64",
+    "gitCommit": "d6e7b583b9afc7fa3798de77181c53c94418d727",
+    "releaseUrl": "https://github.com/oras-project/oras/releases/tag/v1.3.5",
+    "archiveUrl": "https://github.com/oras-project/oras/releases/download/v1.3.5/oras_1.3.5_windows_amd64.zip",
+    "checksumUrl": "https://github.com/oras-project/oras/releases/download/v1.3.5/oras_1.3.5_checksums.txt",
+    "archiveBytes": 4973091,
+    "archiveSha256": "3e72bf9f4361625d68dc96a10f485c4bf9973f9f9b170652ab78220a0bc7092c",
+    "checksumFileSha256": "bc682611bd982a0cef94a53bbae37ea09f271fb32c40c1373dfd81eb9aefa36e",
+    "executableSha256": "d821f17729ba7b438435daed0838aa08022708c417e3c7dc1ffa1038f9d70d61",
+    "officialChecksumMatched": true,
+    "githubAssetDigestMatched": true,
+    "pgpSignatureVerified": false
+  },
+  "command": {
+    "argvTemplate": [
+      "cp",
+      "--from-oci-layout",
+      "--to-oci-layout",
+      "--no-tty",
+      "--concurrency",
+      "1",
+      "--from-registry-config",
+      "<task-owned-empty-auth>",
+      "--to-registry-config",
+      "<task-owned-empty-auth>",
+      "<source>@<fixed-root-digest>",
+      "<fresh-destination>:restored"
+    ],
+    "platformFilterUsed": false,
+    "recursiveReferrerFlagUsed": false,
+    "timeoutMs": 15000,
+    "concurrency": 1,
+    "credentialsRead": false,
+    "remoteOciAccess": false
+  },
+  "fixture": {
+    "root": {
+      "mediaType": "application/vnd.oci.image.index.v1+json",
+      "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "size": 851
+    },
+    "images": [
+      {
+        "architecture": "amd64",
+        "layer": {
+          "mediaType": "application/vnd.oci.image.layer.v1.tar",
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "size": 2048
+        },
+        "config": {
+          "mediaType": "application/vnd.oci.image.config.v1+json",
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "size": 262
+        },
+        "manifest": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "size": 576
+        }
+      },
+      {
+        "architecture": "arm64",
+        "layer": {
+          "mediaType": "application/vnd.oci.image.layer.v1.tar",
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "size": 2048
+        },
+        "config": {
+          "mediaType": "application/vnd.oci.image.config.v1+json",
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "size": 262
+        },
+        "manifest": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "size": 576
+        }
+      }
+    ],
+    "blobCount": 7,
+    "totalBlobBytes": 6623,
+    "graph": [
+      {
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+        "size": 851
+      },
+      {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+        "size": 262
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar",
+        "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+        "size": 2048
+      },
+      {
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+        "size": 576
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar",
+        "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+        "size": 2048
+      },
+      {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+        "size": 262
+      },
+      {
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+        "size": 576
+      }
+    ],
+    "sourceMetadata": [
+      {
+        "name": "oci-layout",
+        "sha256": "142e3047a9996f0171021c76de7741f079ec75ff579e51ac61decef0fa69c2a6",
+        "bytes": 34
+      },
+      {
+        "name": "index.json",
+        "sha256": "8cebcc92a4e6e85b17a725719b46bcec7408d565b9c6c1f26141f20ec8da5366",
+        "bytes": 315
+      }
+    ]
+  },
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "cases": [
+    {
+      "name": "image-fresh",
+      "exitCode": 0,
+      "rootDigest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+      "requestedDigest": null,
+      "rootTagged": true,
+      "graphNodes": 3,
+      "exactGraph": true,
+      "errorCode": null,
+      "stdoutSha256": "ea9961b38ed0fe0e36616d9ca5b7961385eaa00c35629fb5b1a5812a1130f6ba",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks": [
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        }
+      ]
+    },
+    {
+      "name": "index-fresh",
+      "exitCode": 0,
+      "rootDigest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "requestedDigest": null,
+      "rootTagged": true,
+      "graphNodes": 7,
+      "exactGraph": true,
+      "errorCode": null,
+      "stdoutSha256": "dbbd1d598622d819df698e712014254779c4515f0534e5061155ce0e478ee1ef",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        }
+      ]
+    },
+    {
+      "name": "index-second-fresh",
+      "exitCode": 0,
+      "rootDigest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "requestedDigest": null,
+      "rootTagged": true,
+      "graphNodes": 7,
+      "exactGraph": true,
+      "errorCode": null,
+      "stdoutSha256": "30edca6bc890f9e099a89bdd9ed4078683abedbd31b178a1a02a987b3d70f84c",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        }
+      ]
+    },
+    {
+      "name": "missing-blob",
+      "exitCode": 1,
+      "rootDigest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "requestedDigest": null,
+      "rootTagged": false,
+      "graphNodes": 7,
+      "exactGraph": false,
+      "errorCode": "source_blob_not_found",
+      "stdoutSha256": "e9e61924a64b0551b673a555f9edac8a923e4598b31005ad686cfe2cb566b871",
+      "stderrSha256": "63da5218d2ffef985bce5bfdf8ea24d02a4dc4d69ea50e9bbb3c5adb20187167",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        }
+      ]
+    },
+    {
+      "name": "changed-blob",
+      "exitCode": 1,
+      "rootDigest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "requestedDigest": null,
+      "rootTagged": false,
+      "graphNodes": 7,
+      "exactGraph": false,
+      "errorCode": "destination_ingest_mismatched_digest",
+      "stdoutSha256": "e9e61924a64b0551b673a555f9edac8a923e4598b31005ad686cfe2cb566b871",
+      "stderrSha256": "e2dec6f5ddfc3855bc6c21c9553d6bbee6e71917a281d2f21d0a29a819212900",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        }
+      ]
+    },
+    {
+      "name": "short-blob",
+      "exitCode": 1,
+      "rootDigest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "requestedDigest": null,
+      "rootTagged": false,
+      "graphNodes": 7,
+      "exactGraph": false,
+      "errorCode": "destination_ingest_unexpected_eof",
+      "stdoutSha256": "e9e61924a64b0551b673a555f9edac8a923e4598b31005ad686cfe2cb566b871",
+      "stderrSha256": "afa5ee30241bcd3410906c266a622ccd4ab6126ac6fdd03678ba54423cc5d971",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        }
+      ]
+    },
+    {
+      "name": "wrong-root",
+      "exitCode": 1,
+      "rootDigest": null,
+      "requestedDigest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "rootTagged": false,
+      "graphNodes": 7,
+      "exactGraph": false,
+      "errorCode": "requested_root_not_found",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "2d58543aa22172f57166f59c8c7217abac275c23406923cebd4813fbb9c5ba28",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        }
+      ]
+    },
+    {
+      "name": "unregistered-child",
+      "exitCode": 0,
+      "rootDigest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+      "requestedDigest": null,
+      "rootTagged": true,
+      "graphNodes": 3,
+      "exactGraph": false,
+      "errorCode": null,
+      "stdoutSha256": "90a2466e4472d3bf28841f5f909c16140d74a5f703d1e495d6ecf5e82b534777",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks": [
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": false,
+          "sizeMatches": false,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        }
+      ]
+    },
+    {
+      "name": "preexisting-poisoned",
+      "exitCode": 0,
+      "rootDigest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+      "requestedDigest": null,
+      "rootTagged": true,
+      "graphNodes": 7,
+      "exactGraph": false,
+      "errorCode": null,
+      "stdoutSha256": "7896fd5e02acfabc97d469d4cc57066a6842c3a76de103b429bde72c75510f26",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks": [
+        {
+          "digest": "sha256:37df35eebde8b852f0bfbce052565907953c25f6b27380234e94e66ec87bf0e3",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:5970813e7c1063a5653a34212f4b96bdbf668f96530e4e18c182f3fa1f7b93cf",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:61e94729b684dd6144cc0d2c949509d4f6cb5b2e8faef2b466a3e25b8801640d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:76bd0d29f1ff7aaf98099ea0ec15429ec6372e30d0e416609259fba1e80e1d28",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:bfceec31af61e8b0e95dfe172082e7e3491388a66aa4b26e8a3880155b0834dc",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": false,
+          "bytesEqual": false
+        },
+        {
+          "digest": "sha256:e5fdb39756fa47f68a49b6ea5afcc0dfda5399119de29e4058e5707882efeb2d",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        },
+        {
+          "digest": "sha256:e89659236153bd671255e038c36b07b30ceddbbc1e57aed377dd16dcf049a457",
+          "present": true,
+          "sizeMatches": true,
+          "digestMatches": true,
+          "bytesEqual": true
+        }
+      ]
+    }
+  ],
+  "scratchEvidence": {
+    "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\tmp\\oci-recovery-contract-trial-20261020",
+    "recipeSha256": "8447638e086b43c06d45764418eae43dcf48ef5bf7f5f8aa1dcd0c14b8cab3e7",
+    "rawResultsSha256": "40d1fb1e61947c3132d90e811785191eea26135573776f9447d04e213241652a",
+    "officialReleaseMetadataSha256": "357e04d25e32daacf2dc594bdb05015aae3fd557cb1a0bca995ca31063c00c30",
+    "sourceLayout": "fixtures-r3/source",
+    "standaloneSourceLayout": "fixtures-r3/standalone-image-source",
+    "priorScratchAttempts": [
+      "fixtures",
+      "fixtures-r2"
+    ],
+    "cleanupOwner": "root",
+    "cleanupDone": false
+  },
+  "limitations": [
+    "Toy local layouts only; no registry export, private transfer, or registry/application restoration",
+    "No platform filtering or referrer requirement inferred",
+    "A failed copy may leave partial blobs; exit failure is not rollback",
+    "Copy success into preexisting destination is not full graph validation",
+    "Expected descriptor/mediaType and full graph must remain bound to intended root",
+    "No SIGKILL, network interruption, power loss, concurrency, or large data trial performed"
+  ]
+}
