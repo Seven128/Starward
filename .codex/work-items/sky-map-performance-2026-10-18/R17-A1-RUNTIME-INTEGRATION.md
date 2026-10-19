@@ -35,3 +35,11 @@ open与CLI的路径拼写不一致可能涉及既有raw-path/scene边界；当�
 在fresh目标窗口状态下，只发一次针对原r3窗口的Alt+F4。紧随枚举一度还显示它，随后原id已不存在，新枚举确认r3已关闭，其他原窗口保留；未全局quit、杀IDE、清缓存或改账号。关闭后尝试一次官方只读status，仍未取得结果，已终止本地等待；这不证明服务端取消或通道恢复，没有继而重开窗口或再次auto。同步原回执在已有私有owner的`a1-r3-pre-window-retirement.private.json`，public preparation只保存范围/指纹摘要。gen26和目标运行缺口保持原状态。
 
 鉴于注册MCP等待无结果，再使用项目现有`development-observer.mjs status --official-ide ... --project <同一r3外层项目>`走已允许的官方CLI只读入口。原exec19776终态为exit1、`development_observer_official_timeout_no_replay`，使用owner既有40秒期限；没有收到可用readiness，没有项目动作、预览、登录或新automation scene。两条当前传输路线仍未恢复，不把它们的失败当作平台不支持采样，也不再对相同状态发请求。
+
+## 后续 GUI 项目入口恢复
+
+原r2窗口的accessibility标题与实际截图仍不一致，激活后也未解决；一次菜单输入被工具拦截为实际点在memo窗口，未派发到产品。纯文字入口在实际前台memo窗口上也出现cached app state错误。随后只把该已匹配的前台窗口用作开发工具菜单入口，原生坐标可以打开菜单和文件夹选择器；没有运行gen24 Play或输入旧产品会话。控件focus文字读回与视觉焦点也有不一致，目录输入依实际地址栏选中画面，随后文件夹选择器完整地址再次确认了同一r3外层项目。
+
+已通过GUI导入现成`tmp/r17-normal-a1-review-r3/project`，保原AppID与小程序类型，后端选“不使用云服务”；没有创建账号、云环境、分支、worktree或新源码副本。项目列表实际新增r3条目并保原canonical条目，共2项。选择r3后出现“打开”，只确认一次该按钮；后续仍未出现可确认的r3运行窗口或正常Sky，不把项目列表的卡片、旧Map画面或打开请求当作运行成功，也不重发打开请求。
+
+GUI导入后实际应用仍为338文件/5,011,516B与原a2839caa...完整指纹一致，仓库工作树当时干净。原件摘要位于既有私有owner的`a1-r3-gui-entry.private.json`；public preparation保入口当前状态。当前GUI可操作项目登记，但目标打开/readiness仍未完成，MCP/CLI未恢复；gen26仍UNKNOWN、未预览/绑定，A/B及目标验收缺口保留。

@@ -676,9 +676,16 @@
     "canonicalBindingsVerified": 1572,
     "candidateBindingsVerified": 1580,
     "applicationUnchanged": true,
-    "projectWindow": "OWNED_R3_WINDOW_CLOSED_AFTER_SYNC_VERIFICATION",
+    "projectWindow": "ORIGINAL_OWNED_R3_WINDOW_CLOSED; GUI_ENTRY_OPEN_REQUESTED_RUNTIME_UNVERIFIED",
     "normalSkyRuntime": "UNVERIFIED",
     "officialPreview": "NOT_ISSUED_FOR_R3; GEN26_REMAINS_UNKNOWN",
-    "privateReceiptOwner": "E:/Dev/Starward-data/development/r17-normal-profile/resume-20261019/a1-r3-pre-window-retirement.private.json"
+    "privateReceiptOwner": "E:/Dev/Starward-data/development/r17-normal-profile/resume-20261019/a1-r3-pre-window-retirement.private.json",
+    "guiEntryRegistered": true,
+    "guiProjectEntries": 2,
+    "canonicalEntryPreserved": true,
+    "wechatCloudServiceSelected": false,
+    "guiOpenRequestedOnce": true,
+    "guiRuntimeEstablished": false,
+    "guiReceiptOwner": "E:/Dev/Starward-data/development/r17-normal-profile/resume-20261019/a1-r3-gui-entry.private.json"
   }
 }
