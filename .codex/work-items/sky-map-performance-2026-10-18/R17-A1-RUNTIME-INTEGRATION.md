@@ -33,3 +33,5 @@ open与CLI的路径拼写不一致可能涉及既有raw-path/scene边界；当�
 随后为退役这一个已拥有的卡住窗口，核对全部1572仓库输入和1580候选文件，均与原构建manifest匹配。当前`project`已是外层wrapper，配置`miniprogramRoot=weapp/`；其339文件/5,012,424B指纹为`0432b913f678bec774091f9686da68bab411d943566824f1e7b74a0661d73261`。实际嵌套应用`project/weapp`仍为338文件/5,011,516B，逐字匹配原完整build `a2839caade3245fb9ec2cfcec172ce23ad3995ab08b774c6d7d714e68c0c6445`。最初对整个wrapper套应用指纹检查失败，后续已分清这两个对象；不把它报告为应用代码漂移，也不推定目录调整的发起方或灰窗原因。未重新构建、移动或改写任何候选。
 
 在fresh目标窗口状态下，只发一次针对原r3窗口的Alt+F4。紧随枚举一度还显示它，随后原id已不存在，新枚举确认r3已关闭，其他原窗口保留；未全局quit、杀IDE、清缓存或改账号。关闭后尝试一次官方只读status，仍未取得结果，已终止本地等待；这不证明服务端取消或通道恢复，没有继而重开窗口或再次auto。同步原回执在已有私有owner的`a1-r3-pre-window-retirement.private.json`，public preparation只保存范围/指纹摘要。gen26和目标运行缺口保持原状态。
+
+鉴于注册MCP等待无结果，再使用项目现有`development-observer.mjs status --official-ide ... --project <同一r3外层项目>`走已允许的官方CLI只读入口。原exec19776终态为exit1、`development_observer_official_timeout_no_replay`，使用owner既有40秒期限；没有收到可用readiness，没有项目动作、预览、登录或新automation scene。两条当前传输路线仍未恢复，不把它们的失败当作平台不支持采样，也不再对相同状态发请求。
