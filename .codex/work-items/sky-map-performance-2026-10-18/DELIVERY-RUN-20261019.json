@@ -87,6 +87,43 @@
       "candidateAudit": "REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md"
     }
   },
+  "followupDelivery": {
+    "revision": "4505a761246a11bce5fe5b746f793fd7d99c3735",
+    "scope": "generic observation association method, task-only private host anchors and reviewed state documents",
+    "productionBytesChanged": false,
+    "bothRefsReadBack": "4505a761246a11bce5fe5b746f793fd7d99c3735",
+    "productCi": {
+      "runId": 39263935667,
+      "status": "completed",
+      "conclusion": "success",
+      "scope": "lightweight_scope_only_product_and_OCI_steps_skipped"
+    },
+    "contextCi": {
+      "runId": 39263935705,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "deployment": {
+      "runId": 39263994942,
+      "status": "completed",
+      "conclusion": "success",
+      "qualify": "success",
+      "publishAndDeploy": "skipped",
+      "newDeploymentQualification": false
+    },
+    "checks": {
+      "independentReview": "R17-MEMORY-WATCH-ANCHOR-REVIEW.md",
+      "fakeHostTestsPassed": 5,
+      "skillQuickValidate": "passed",
+      "stagedFiles": 15,
+      "jsonParsed": 1,
+      "localFileLinksChecked": 294,
+      "goalBodyUnchanged": true,
+      "sensitiveShapeFindings": 0,
+      "stagedDiffAndContextValidate": "passed",
+      "deviceOrWatcherRun": false
+    }
+  },
   "localRuntimeReadback": {
     "listenerQuerySucceeded": true,
     "ports": {
@@ -105,7 +142,19 @@
     "initialR9CloseFailure": "builder_source_path_was_not_actual_open_feedback_project",
     "retiredR9AndDebugHandlesExist": false,
     "oldR3RemovePendingTask": "confirmation_project_remove_e8857369-867c-4afe-af79-93472ef36eb0",
-    "oldR3RemoveStatus": "pending_native_confirmation_queried_once_on_user_continuation_not_reissued"
+    "oldR3RemoveStatus": "pending_native_confirmation_queried_once_on_user_continuation_not_reissued",
+    "ownedFirewallCleanup": {
+      "name": "Starward-R17-Normal-Profile-8798",
+      "intendedAction": "disable_only_named_rule_and_retain_definition",
+      "portListenerCount": 0,
+      "scopeConfirmed": "TCP_8798_Public_Inbound_Allow",
+      "windowsSudo": "disabled_no_mutation",
+      "explicitGsudo": "cache_unavailable_not_elevated_attempt_cancelled",
+      "ownedCommandPendingProcesses": 0,
+      "enabledAfterReadback": true,
+      "ruleMutated": false,
+      "otherFirewallPairingOrVpnMutated": false
+    }
   },
   "retained": {
     "phoneUnavailableNoNewDeviceActions": true,

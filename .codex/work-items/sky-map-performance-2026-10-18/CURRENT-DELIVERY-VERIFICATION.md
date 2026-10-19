@@ -18,6 +18,8 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 提交前本批次15份文本的index/工作区内容一致、1份JSON可解析、294个本地文件链接存在，限定凭据形状扫描无命中；Goal正文与提交前完全相同，无tmp/私有原件加入。staged diff与context结构检查通过。测试与独审复用精确未变字节，不把文件链接/结构检查当成内容真实性或产品验收。
 
+本批次已提交为`4505a761246a11bce5fe5b746f793fd7d99c3735`，普通推当前分支并快进main，两远端ref精确一致。[Product39263935667](https://github.com/Seven128/Starward/actions/runs/39263935667)/[Context39263935705](https://github.com/Seven128/Starward/actions/runs/39263935705)均success；Product只跑scope及基础步骤，产品/OCI步骤skipped。[发布39263994942](https://github.com/Seven128/Starward/actions/runs/39263994942)只有qualify success、publish-and-deploy skipped，未恢复ba4的registry失败或远端API。后续状态文字不改该源码范围，不为记录自身SHA不断追加提交。
+
 ## 69401 生产修复、r10 及此前 Git 证据
 
 生产修复提交`69401c097572799234e6b97478a4a1ddfe06c810`（`fix(sky): preserve accepted sky while time geometry loads`）已push并精确远端读回。[Product39246751994](https://github.com/Seven128/Starward/actions/runs/39246751994)与[Context39246759692](https://github.com/Seven128/Starward/actions/runs/39246759692)均实际success。此提交包含跨日pending连续性修复的2份生产文件、4份既有fixture及对应作者/独审记录；133/133、Miniapp TS5.9.3 noEmit0与独审无P1/P2保各自范围。r10完整构建、接入及整包独审已通过，一次官方preview明确success，实际非空Sky独有“A1 r10”label后绑定；新跨日等待/取消已取得[r10实际独审](R17-A1-R10-CROSSDAY-RESULT.md)；普通预览持续表现只有[部分证据](R17-A1-R10-ORDINARY-PARTIAL.md)，完整B仍未验证。用户携手机离开，后续优先离线分析与Git/服务交付；CI和label绑定不替代目标结果。

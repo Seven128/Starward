@@ -11,10 +11,10 @@
 接手优先推进：
 
 1. r10普通Play的离线解释已完成，先读R17-A1-R10-ORDINARY-OFFLINE-REVIEW，不重新录同一资格。两原片与metrics/第一terminal严格核对成立；第二片只到约15秒且终图仍播放。第二同watch有增长但缺absolute epoch/runId，不能把67秒称实际Play、算精确增长率或归因OOM。复用r7存活allocation/映射和r9退休；目前没有能离线选择具体修复的owner证据，完整B与正常路径尾段/Pause-drain/Cancel-Map保留未验。gen24继续暂停，不连续派生相邻disable。
-2. 方法补充和99份task/证据已提交并推当前分支，远端main已非强推快进至ba4ea423、精确main双CI success；后续方法/watch辅助及文档交付核HANDOFF。R17-MEMORY-WATCH-ANCHOR和独审已核5项fake host测试、语法与有限关联边界；通用规则归原performance skill，用“被测行为实际发生的区间”而非播放特例，不把runId/新采样变成统一门槛。复用生产69401的133/133、TS5.9.3、独审/完整r10绑定，只为新变更跑必要检查。
+2. ba4方法/99份task批次及后续4505a761通用关联方法/watch辅助/文档均已进入当前分支和main，精确main双CI success；ba4是完整产品路径，4505仅轻量scope且publish-and-deploy skipped。最终文档交付核实际Git与HANDOFF，不重复自引用提交。R17-MEMORY-WATCH-ANCHOR和独审已核5项fake host测试、语法与有限关联边界；通用规则归原performance skill，用“被测行为实际发生的区间”而非播放特例，不把runId/新采样变成统一门槛。复用生产69401的133/133、TS5.9.3、独审/完整r10绑定，只为新变更跑必要检查。
 3. ba4自动发布39258892651实际在TCR个人仓库100标签上限失败，host preflight/promote skipped；一次identity39261198368实际为固定api总1、exited1/running0。控制台主机登录停MFA，未发SMS/改设置/执行命令。先读DELIVERY-RUN-20261019.json和REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019；停止对象/current pointer/回滚/备份引用与精确OCI恢复仍未知，不因旧tag那次promote skipped直接删tag、不付费升级、不要求用户立刻配合。不重复同一失败，不在无running目标时跑runtime/provider。条件恢复后沿既有CD=true/operator-preview的release owner和首个失败边界继续；部署包含停启writer、备份恢复校验、迁移与供应smoke。不得绕guard、任取容器、导出远端凭据或借8791/SAMPLE_DATA补真实QWeather。
 4. H3三件原始照片输入的归档缺项已补保并独立读回，见H3-H6-OFFLINE-READINESS及H3-PHONE-PREPARATION；复用原safe JPEG/模型/HTTP，不重产。H6原N05是本机未保存草稿，PLAN须原身份的真实保存对象；旧账户导出文件已清理，不能转发旧路径。接收身份未知，先按当前owner准备具体对象，必要人类动作集中后置，不擅选联系人。
-5. 继续其它独立服务/数据/代码交付和精确资源收尾。旧r9实际feedback窗口已通过官方关闭并核句柄消失；r3导入移除在用户继续后仅查询一次仍pending，保HANDOFF原task，不连续轮询、重发或假称已移除。不要重开旧快照或杀共享IDE。手机恢复后的首要结果仍是三叠层交互到最终覆盖，以及基本播放/快速调整任意年月至秒字段的顺畅展示；CI、观察能力与文档不替代它们。
+5. 继续其它独立服务/数据/代码交付和精确资源收尾。旧r9实际feedback窗口已官方关闭并核句柄消失；r3移除在用户继续后仅查询一次仍pending，保HANDOFF原task，不连续轮询/重发。旧8798专属入站规则停用尝试遇实际gsudo缓存不可用，已取消、owned命令pending进程0、规则仍开启；不反复提权或要求现在配合。管理员条件恢复后仅停用这一规则、保定义，不动配对/VPN或其它规则。不要重开旧快照或杀共享IDE。手机恢复后的首要结果仍是三叠层交互到最终覆盖，以及基本播放/快速调整任意年月至秒字段的顺畅展示；CI、观察能力与文档不替代它们。
 
 保护边界：
 
