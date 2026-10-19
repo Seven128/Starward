@@ -77,3 +77,11 @@ window proof 是原 `NightLightView`：`publicationId/methodVersion/styleVersion
 随后 root 将 `map-static-bundle.mjs` 的纯 manifest/index/source identity 准入 ownership 窄移交给 `nightlight_prepared_consumer`，抽到 runtime `map-static-manifest.ts` 并仍由既有 tsImport 复用，要求封存格式/已有产物不变。本代理不再改该文件或跑它的测试；上述55项是提取前的历史执行事实。root 已报告 consumer 的27项/tsc与两项真实 PNG 本地 reader 读回，详情由该 owner 持有，不重复记为本代理独测。fresh `map_publication_consumer_review` 正在独审共同边界。
 
 后续 root 已合批 consumer 并配置当前8796 API，沿既有环境mapper接上原r6和实际恢复DB；四个目标的八项地形/夜光 metadata与PNG均匹配封存身份和不可变headers，见[NIGHTLIGHT-PREPARED-CONSUMER](NIGHTLIGHT-PREPARED-CONSUMER.md)与[当前运行态](MAP-CURRENT-RUNTIME-CHECK.json)。fresh独审实际读一个窗口、原6个proof并禁用encoder仍成功，见[R17-INDEPENDENT-REVIEW](R17-INDEPENDENT-REVIEW.md)。真实object/ESA/TLS/缓存/回滚及native/容量仍保持各自未验边界。本代理的publisher独审不能替代别人对本代理新增代码的独立审查。本文不宣布整个Goal完成。
+
+## 2026-10-20 实际目标入口与剩余接线
+
+一次新鲜独立只读审计复核现有 Map 封存、对象计划/不可覆盖上传、恢复与真实 prepared-window 消费者，未发现可在缺少实际目标时补齐的必需本地边界。现有完整读回继续复用，不重跑同一 HTTP/恢复批次。[Map 图片地址](../../../apps/wechat-miniapp/src/services/map-raster-files.ts)仍由 API origin 派生；独立 Sky resource origin 不覆盖 Map。Map adapter 也未接入远端 release activation/rollback，不能把准备成功记为云端已上线。
+
+root 随后仅核现有授权入口：既有 Chrome 没有阿里云标签；新建一个任务自有标签打开官方 OSS 控制台，导航等待超时后只读同一 handle，实际显示登录表单而非 Bucket 控制台，没有提交登录、短信或创建资源。该临时标签已关闭，原 TCR 与终端标签均保留。对本机固定入口的存在性检查：aliyun/ossutil CLI、用户目录下两个默认配置文件，以及五个明确 OSS 环境键均未出现；没有读取凭据内容、列出其它账号或全盘搜索。这只证明这些入口当前不可直接使用，不能推成用户没有账号/资源。
+
+下一实施仍先取得已授权账号的实际 bucket/region、never-enabled versioning、限定身份/额度和域名/ESA路由事实，再按既有 owner 决定同域路径分流或 Map origin 与未知窗口兼容 API，完成实际上传/读回及发布恢复绑定。不新增未选中的配置分支、虚构 target 或购买资源，也不要求用户现在登录。该资格变化后再重开；当前 source/API兼容路径和全部设备性能义务保持。

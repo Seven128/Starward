@@ -2,7 +2,7 @@
 
 ## 阶段、方案与保护边界
 
-2026-10-19用户携手机外出后，已在本接手对话明确要求继续完整Goal。首次get_goal为null，现已按[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)“Goal 正文”全部创建，工具状态 **active**，无token预算、未完成。优先完成不需要手机的工作，手机依赖保留未验。沿同一[PLAN](PLAN.md)，不重开已完成研究或同轮方案审查。[REQUIREMENTS](REQUIREMENTS.md)、[INHERITED-REQUIREMENTS](INHERITED-REQUIREMENTS.md)的全部R/H/A/N未撤销义务保留。
+2026-10-19用户携手机外出后，已在本接手对话明确要求继续完整Goal。首次get_goal为null，现已按[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)“Goal 正文”全部创建，无token预算、未完成；实际Goal状态由get_goal读回，不把本文的跨轮状态当工具事实。优先完成不需要手机的工作，手机依赖保留未验。沿同一[PLAN](PLAN.md)，不重开已完成研究或同轮方案审查。[REQUIREMENTS](REQUIREMENTS.md)、[INHERITED-REQUIREMENTS](INHERITED-REQUIREMENTS.md)的全部R/H/A/N未撤销义务保留。
 
 工作区E:/dev/worktrees/Starward/remote-main-20260908；保留codex/remote-main-20260908及全部未提交成果，不切分支/reset/clean/新worktree。用户此前统一允许Goal内候选预览/必要调试，但**手机现在不可用，停止新手机/ADB/预览/真机调试；不要反复连手机或要求立刻配合**。恢复时核实际候选与fresh capture/view，旧截图不提供输入授权。root独占运行现场；可新建agent做不冲突的离线工作，用完结束，不复用退休agent。
 
@@ -43,6 +43,8 @@
 4. **复用已完成的独立准备，保留精确收尾缺口。** [H3/H6离线准备](H3-H6-OFFLINE-READINESS-20261019.md)已核三件照片输入补保、同级恢复路径和自然PLAN/SPOT接收资格；不重产、不转发已清理旧导出路径、不替N05造保存对象。旧r9窗口已关闭，r3移除待原生确认；旧8798任务入站规则仍开，提权缓存实际不可用且本次已取消，不反复弹UAC或要求现在操作。管理员条件恢复后仅停用这条已核专属规则，保定义可恢复，不能扩大到原配对/VPN。EOG/Drive/r6不重哈希17GB或重产。新增动作须解决尚未回答的问题，不为计数重复测试。
 5. **手机依赖集中后置。** 完整A/B目标验收、地形连续pan/zoom/配准和资源回落、H1/H3/定位/原生/iOS、真实微信接收/文件打开等保留未验。等待用户说明设备重新可用后核候选/官方结果/新鲜画面；必要动作合并，不要求现在配合、不擅选联系人。
 
+最近连续三个Goal执行轮均保留同一外部依赖：测试手机不可用，服务容量/精确OCI私有保全与恢复未就绪，Map真实云端目标缺可用授权入口；原生确认/管理员条件及真实接收身份保留此前未验状态。本轮补核个人版临时登录与OSS入口后，没有发现可改变这些判断的剩余本地实现或有必要重复的观察。全部未验/失败义务保留；完成本批Git/CI后按工具阻塞审计收口，条件变化后沿同一PLAN恢复，不要求现在配合。
+
 ## 复用成果及全部剩余义务
 
 | 模块 | 已完成且复用 | 保留的结果与边界 |
@@ -50,7 +52,7 @@
 | 合并、资源、分支（R1–R3/R7） | 原合并32ec61a4、957份设计迁移/Stitch一致性、当前采用源、两条合资格祖先分支精确删除；见 [SOURCE-AND-MERGE-AUDIT](SOURCE-AND-MERGE-AUDIT.md)。 | 全部授权dirty成果、独审/证据与最终Git收口/main同步；不机械覆盖、不重复迁移或删分支。 |
 | Map/Sky与包体（R4–R6/R10/R17） | 卸载/重建、身份限定状态和阅读位置、generation4双向转场已有独立结果；去重、Sky client下沉、Wi-Fi分包预载、导航副本修复及r9精确字节成立。地景/恒星/时间owner生产合批及独审复用。 | 正常地景跨越/背面灰cue/反向与重抓、六字段/ruler/播放/取消/Apply的完整目标结果；A/B与资源退休；当前源码→完整产物→必要窗口最终同步。r10主包余量103,200B是本地静态事实，非官方运行预算保证。无证据要求现在加云幕降级。 |
 | 选点（H1） | generation5/6中面板、3,394×3,148m、0.0/0.7logical-px中心与拖动接管复用。 | 约4km较长维度保细视角；快速改选、布局、私有/提交入口、连续双指及原桌面差异未整体关闭。 |
-| 三类叠层（R13/H2/H4/N07–N09） | stable-window/共享源、13PNG有限地形、524PNG immutable seal、prepared/static消费者、恢复r6和局部手机云格结果复用。 | 连续双指/反向/回访的native配准、细节、实际空白缩短及资源回落；年度夜光版本/数值/五档/质量，云格位置/所选时刻/来源/部分缺失；SAMPLE_DATA不是真实QWeather。真实运行identity/main-only发布边界未验，见 [H4 readiness](H4-REAL-WEATHER-READINESS.md)。未确认OSS目标，不远端写入或采购。 |
+| 三类叠层（R13/H2/H4/N07–N09） | stable-window/共享源、13PNG有限地形、524PNG immutable seal、prepared/static消费者、恢复r6和局部手机云格结果复用。 | 连续双指/反向/回访的native配准、细节、实际空白缩短及资源回落；年度夜光版本/数值/五档/质量，云格位置/所选时刻/来源/部分缺失；SAMPLE_DATA不是真实QWeather。真实运行identity/main-only发布边界未验，见 [H4 readiness](H4-REAL-WEATHER-READINESS.md)。[Map静态目标补核](MAP-STATIC-ADAPTER.md#2026-10-20-实际目标入口与剩余接线)确认现有本地边界已齐；Map origin及远端activation/rollback仍待实际目标。OSS页面停在登录表单，本机固定CLI/默认配置/明确环境键均无入口，未提交登录或读取凭据；只关闭自建临时页。资格改变前不重复同一验证、不虚构target，不远端写入或采购。 |
 | 山体与照片（H3） | 真北360×1°/20km COG、许可可读已有范围；Commons真实同点照片/EXIF安全副本、窄adapter、精确HTTP及组件检查复用。 | 缺测/失败不侵害独立地图照片；真实时间/方位正值、阅读返回、native与iOS待验。DATA_INSUFFICIENT不能冒充FORMAL_SPOT；gen26 UNKNOWN不代表H3已送达。 |
 | 原生与业务（H5/A01–A15/N01–N06） | 用户声明N01–N06实现/真实业务/独审已完成；三档面板、阅读、收藏、表单、审核、账户及generation7定位拒绝/恢复局部证据复用，不重做全矩阵。 | 定位精度、首次允许/系统恢复、原生选址、私有点缩放、触摸/媒体/必要窄屏和iOS明确缺口保留。N05不在PG dump，原计划列表空不等于草稿已删除；不得重建账号来补。 |
 | 分享与文件（H6） | generation9真实SPOT海报显示并原生保存1张、R6提醒一次真实送达复用。 | 自然PLAN/SPOT真实授权接收身份、公开内容/失效，海报/导出文件实际微信交接/打开或保存；未知联系人不擅选。完成旅程后只精确清理那1张任务海报。 |
