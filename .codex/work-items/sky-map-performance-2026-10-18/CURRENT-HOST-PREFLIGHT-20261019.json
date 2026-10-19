@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "starward-host-preflight-readback-v1",
+  "date": "2026-10-19",
+  "runId": 39277770300,
+  "headSha": "8d55e50e04a043b60698fa4562246c92c0ec966b",
+  "runStatus": "completed",
+  "runConclusion": "failure",
+  "jobId": 118146391700,
+  "jobConclusion": "failure",
+  "observerSourceSha256": "ffee02ff5731b229c9bb29eb11009e87b4e7576a8d5ad418120e29e506cef36e",
+  "report": {
+    "status": "failed",
+    "code": "host_preflight_disk_below_10_gib"
+  },
+  "diagnosticSucceeded": false,
+  "serviceMutation": false,
+  "registryTagDeleted": false,
+  "rawLogsPersisted": false,
+  "guardChanged": false,
+  "scope": "Existing read-only host preflight; failure has no inferred disk amount or cleanup authorization."
+}

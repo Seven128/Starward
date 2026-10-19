@@ -63,6 +63,8 @@
 
 后续[停止身份](STOPPED-API-IDENTITY-REMOTE-20261019.json)及[固定引用首轮](RELEASE-REFERENCE-REMOTE-20261019.json)已证明既有Actions受限SSH可用，Console MFA不再是这些只读观察的前置条件。首轮base与1ccd/de4b停止API observed，receipt目录枚举触限，current/历史批量仍unknown；没有补造引用集合或删tag。旧32条成功史不重扫。
 
+固定链/批量耦合窄修后，[新实际投影](RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json)的39277333313/head8d55e50e已读回成功current为262d7531/824bc03e，与原历史成功身份一致；唯一停止API仍1ccd/de4b，失败回执batch保持超预算unknown。current声明backup manifest不等于备份已读/可恢复。此结果只更新这两处已观察引用；f487候选的完整已知消费者、回滚/备份/精确OCI保全与实际同内容tag集合仍未验，不据此删除。
+
 只针对未决删除语义核腾讯官方[个人版DeleteImagePersonal](https://cloud.tencent.com/document/api/1141/41593)：输入是RepoName和Tag，文档没有给出同digest其他tag保留或GC时点的保证。[DescribeImageFilterPersonal](https://cloud.tencent.com/document/api/1141/41587)提供同内容tag列表，可用于后续明确实际影响集合；本次未调用删除或该实际账号API，不能从接口名直接把动作影响断言为一条tag。
 
 精确OCI备份的成熟候选是[ORAS copy](https://oras.land/docs/commands/oras_cp/)：支持按digest选择源，在registry与OCI image layout间复制，默认image index会复制其全部子manifest。官方[当前v1.3.5发行](https://github.com/oras-project/oras/releases/tag/v1.3.5)已核Windows amd64二进制/校验和条目，未下载安装或加入项目依赖；不采用experimental backup/restore作为前置方案。后续仍需实际目标manifest/blob完整性、同digest恢复读回及目标访问资格，工具文档不提供本候选已备份/可恢复证明。

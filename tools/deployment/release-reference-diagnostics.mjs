@@ -1,11 +1,12 @@
 import { parseEnvironmentText } from "./env-file.mjs";
 import { apiIdentityProbe } from "./runtime-diagnostics.mjs";
+import { createProtectedDirectoryBoundary } from "./protected-directory.mjs";
 
 // This is a bounded observation of an existing preview lane, not a release
 // validator, backup inspector, OCI retention inventory or recovery action.
 // Dependencies are explicit so the exact emitted host program can be exercised
 // through fake filesystem/Docker boundaries without invoking either service.
-export async function releaseReferenceProbe(paths, { fs, constants, path, createHash, parseEnvironmentText: parseEnv, apiIdentityProbe: identityProbe, execute, platform, uid }) {
+export async function releaseReferenceProbe(paths, { fs, constants, path, createHash, parseEnvironmentText: parseEnv, apiIdentityProbe: identityProbe, createProtectedDirectoryBoundary: directoryBoundary, execute, platform, uid }) {
   const budgets = { fileBytes: 262144, directoryEntries: 512, receiptFiles: 128, totalReadBytes: 8388608 };
   const revisionPattern = /^[a-f0-9]{40}$/u;
   const digestPattern = /^sha256:[a-f0-9]{64}$/u;
@@ -29,48 +30,22 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
   };
   const mark = (target, code, status = "unknown") => { target.status = status; target.code = code; };
   const hash = bytes => createHash("sha256").update(bytes).digest("hex");
-  const canonical = selected => typeof selected === "string" && selected.length <= 4096 && /^\/[A-Za-z0-9._/-]+$/u.test(selected) && selected !== "/" && path.normalize(selected) === selected && selected.split("/").length <= 64 && !selected.split("/").some(part => part === "." || part === "..");
+  const directories = directoryBoundary({ fs, constants, path, uid });
+  const { canonical, hold: secureDirectories } = directories;
   const record = value => value !== null && typeof value === "object" && !Array.isArray(value);
   const same = (first, second, file = false) => {
-    const keys = file ? ["dev", "ino", "mode", "uid", "gid", "nlink", "size", "mtimeNs", "ctimeNs"] : ["dev", "ino", "mode", "uid", "gid", "nlink"];
-    return keys.every(key => first[key] === second[key]);
+    return file ? ["dev", "ino", "mode", "uid", "gid", "nlink", "size", "mtimeNs", "ctimeNs"].every(key => first[key] === second[key]) : directories.same(first, second);
   };
   const check = (stat, type) => {
-    if (stat.isSymbolicLink() || !(type === "file" ? stat.isFile() : stat.isDirectory()) || (type === "file" && stat.nlink !== 1n)) fail(`${type}_invalid`);
+    if (type === "directory") return directories.check(stat);
+    if (stat.isSymbolicLink() || !stat.isFile() || stat.nlink !== 1n) fail("file_invalid");
     if (stat.uid !== 0n && stat.uid !== BigInt(uid)) fail("ownership_invalid");
     if ((stat.mode & 0o022n) !== 0n) fail("permissions_invalid");
     if (type === "file" && (stat.size < 0n || stat.size > BigInt(budgets.fileBytes))) fail("budget_exceeded");
   };
-  const files = new Map(), directories = new Map();
+  const files = new Map();
   const currentDependencies = new Set(), receiptDependencies = new Set();
   let readBytes = 0, readLimit = budgets.totalReadBytes, basePath, receiptDirectory, directoryNames, directoryFingerprint, firstIdentity;
-  const secureDirectories = async selected => {
-    let directory = "/", parent;
-    for (const component of ["", ...selected.split("/").slice(1)]) {
-      if (component) directory = path.join(directory, component);
-      const before = await fs.lstat(directory, { bigint: true });
-      check(before, "directory");
-      const old = directories.get(directory);
-      if (old) {
-        const held = await old.handle.stat({ bigint: true }); check(held, "directory");
-        if (!same(old.stat, before) || !same(old.stat, held)) fail("changed");
-        parent = old;
-      } else {
-        // Each last component is opened without following links through a held
-        // directory descriptor. /proc/self/fd is a fixed Linux descriptor alias,
-        // not another caller-selected root or a fallback to pathname traversal.
-        const anchored = parent ? `/proc/self/fd/${parent.handle.fd}/${component}` : "/";
-        const handle = await fs.open(anchored, constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
-        try {
-          const stat = await handle.stat({ bigint: true }); check(stat, "directory");
-          const after = await fs.lstat(directory, { bigint: true }); check(after, "directory");
-          if (!Number.isInteger(handle.fd) || handle.fd < 0 || !same(before, stat) || !same(stat, after)) fail("changed");
-          parent = { stat, handle }; directories.set(directory, parent);
-        } catch (error) { await handle.close(); throw error; }
-      }
-    }
-    return parent;
-  };
   const read = async (selected, final = false) => {
     if (!canonical(selected)) fail("path_invalid");
     if (!final && files.has(selected)) return files.get(selected);
@@ -259,11 +234,7 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
   // Recheck shared safety after enumeration as well: an unrelated new name
   // leaves fixed files valid, but replaced or writable directories do not.
   try {
-    for (const [selected, previous] of directories) {
-      const after = await fs.lstat(selected, { bigint: true }); check(after, "directory");
-      const held = await previous.handle.stat({ bigint: true }); check(held, "directory");
-      if (!same(previous.stat, after) || !same(previous.stat, held)) fail("changed");
-    }
+    await directories.recheckAll();
   } catch (error) {
     observationFailure ??= failure(error);
     if (report.current.status === "observed") mark(report.current, failure(error));
@@ -285,10 +256,8 @@ export async function releaseReferenceProbe(paths, { fs, constants, path, create
   mark(report.observation, observationFailure, observationFailure ? "unknown" : "observed");
   return report;
   } finally {
-    for (const { handle } of [...directories.values()].reverse()) {
-      try { await handle.close(); }
-      catch { mark(report.observation, "read_failed"); }
-    }
+    try { await directories.close(); }
+    catch { mark(report.observation, "read_failed"); }
   }
 }
 
@@ -349,7 +318,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 try {
   const report = await (${releaseReferenceProbe.toString()})(process.argv.slice(2), {
-    fs, constants, path: path.posix, createHash, parseEnvironmentText: (${parseEnvironmentText.toString()}), apiIdentityProbe: (${apiIdentityProbe.toString()}),
+    fs, constants, path: path.posix, createHash, parseEnvironmentText: (${parseEnvironmentText.toString()}), apiIdentityProbe: (${apiIdentityProbe.toString()}), createProtectedDirectoryBoundary: (${createProtectedDirectoryBoundary.toString()}),
     execute: args => execFileSync('docker', args, {encoding:'utf8',timeout:10000,maxBuffer:32768,stdio:['ignore','pipe','pipe']}),
     platform: process.platform, uid: process.geteuid?.(),
   });

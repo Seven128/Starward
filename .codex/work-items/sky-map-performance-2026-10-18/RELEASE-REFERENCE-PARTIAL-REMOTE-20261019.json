@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "starward-release-reference-readback-v1",
+  "date": "2026-10-19",
+  "runId": 39277333313,
+  "headSha": "8d55e50e04a043b60698fa4562246c92c0ec966b",
+  "runStatus": "completed",
+  "runConclusion": "failure",
+  "observerSourceSha256": "fd9fd43061d8a5ff05b1c8de9d9bbad69882c6fbb70141018313ae8cc97d3a25",
+  "report": {
+    "status": "observed",
+    "evidenceScope": "STAGING_RELEASE_REFERENCES_ONLY",
+    "snapshot": "NON_ATOMIC",
+    "referenceCompleteness": "UNVERIFIED",
+    "base": {
+      "status": "observed",
+      "code": null,
+      "sha256": "8dd8ddc602f84087582b38ffe4d1d8b51d21015337f121209cc8696b93760f20",
+      "environmentMatches": true,
+      "projectMatches": true
+    },
+    "current": {
+      "status": "observed",
+      "code": null,
+      "pointerSha256": "7e2da5af614b57a31fbad1d7683ce94a6ba5e848af682a60450dc985c0b167f9",
+      "receiptSha256": "e5de1060c966017722260236270855c7216aedefcf5821aa92fc9c716da3db0b",
+      "candidateSha256": "42fefb76ad42c9ef36576c886b17e899947e748e66b037de4ea194a9627f09af",
+      "schemaVersion": "starward-operator-preview-operation-v1",
+      "operation": "deploy",
+      "receiptStatus": "succeeded",
+      "revision": "262d7531916c0b1b995fe8937321c044c9fb9ca5",
+      "imageDigest": "sha256:824bc03eaac9c2b2afe63e61767b3cc50c571e5ffdead65bc29de0b9605e5ba5",
+      "identityMatches": true,
+      "approvedRepositoryMatches": true,
+      "sourceRootMatches": true,
+      "backupManifestDeclared": true
+    },
+    "stoppedApi": {
+      "status": "observed",
+      "code": null,
+      "matchingContainerCount": 1,
+      "runningContainerCount": 0,
+      "revision": "1ccdbecd8ead24250bf75e8fd4319f17f403f688",
+      "imageDigest": "sha256:de4bcfb09bb74e99b43df9d8cce993741bce93c59b3b67bcca604bdc57a80f8f",
+      "state": "exited"
+    },
+    "failedDeployReceipts": {
+      "status": "unknown",
+      "code": "budget_exceeded",
+      "observedFileCount": null,
+      "matchingCount": null,
+      "revision": null,
+      "imageDigest": null,
+      "matches": []
+    },
+    "observation": {
+      "status": "observed",
+      "code": null
+    }
+  },
+  "diagnosticSucceeded": false,
+  "serviceMutation": false,
+  "registryTagDeleted": false,
+  "runtimeOrProviderDispatched": false,
+  "rawLogsPersisted": false,
+  "previousRunRetained": 39274956661,
+  "limits": "Independent fixed historical success pointer chain; historical receipt batch remains bounded/unknown where incomplete. NON_ATOMIC, all references, health and exact OCI recovery unverified."
+}

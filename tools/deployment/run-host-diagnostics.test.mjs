@@ -6,6 +6,7 @@ import test from "node:test";
 import { diagnoseHost, diagnosticSucceeded } from "./run-host-diagnostics.mjs";
 import { identityScript, runtimeScript } from "./runtime-diagnostics.mjs";
 import { releaseReferenceScript } from "./release-reference-diagnostics.mjs";
+import { hostStorageScript } from "./host-storage-diagnostics.mjs";
 
 const env = {
   SSH_HOST: "host.example.invalid", SSH_PORT: "22", SSH_USER: "operator",
@@ -29,6 +30,17 @@ function referenceReport() {
     stoppedApi: { status: "observed", code: null, matchingContainerCount: 1, runningContainerCount: 0, revision, imageDigest: digest, state: "exited" },
     failedDeployReceipts: { status: "observed", code: null, observedFileCount: 1, matchingCount: 0, revision, imageDigest: digest, matches: [] },
     observation: { status: "observed", code: null } };
+}
+
+function storageReport() {
+  const ok = { status: "observed", code: null };
+  const directory = { ...ok, allocatedBytes: 4096, sameFilesystemAsRelease: true };
+  const category = { ...ok, total: 0, active: 0, size: "0B", reclaimable: "0B (0%)" };
+  return { status: "observed", evidenceScope: "HOST_STORAGE_AGGREGATES_ONLY", snapshot: "NON_ATOMIC", referenceCompleteness: "UNVERIFIED", cleanupAuthorization: "NONE",
+    filesystem: { ...ok, totalBytes: 42949672960, usedBytes: 39000000000, availableBytes: 2000000000 },
+    directories: { INBOX: { ...directory }, RELEASE: { ...directory }, CANDIDATE: { ...directory } },
+    docker: { ...ok, Images: { ...category }, Containers: { ...category }, LocalVolumes: { ...category }, BuildCache: { ...category } },
+    observation: { ...ok } };
 }
 
 test("diagnostics sends only the existing preflight with pinned trust and cleans ephemeral credentials", () => {
@@ -189,4 +201,53 @@ test("a completed observation cannot make an unavailable readiness endpoint gree
   const report = { status: "observed", runtimeEnvironment: "staging", configState: "ready", databaseState: "ready", healthStatus: 200 };
   assert.equal(diagnosticSucceeded(report), true);
   for (const healthStatus of [null, 503]) assert.equal(diagnosticSucceeded({ ...report, healthStatus }), false);
+});
+
+test("host-storage reuses bounded trusted SSH and projects aggregates without capacity readiness", () => {
+  const report = storageReport();
+  let directory;
+  const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "host-storage" }, (command, args, options) => {
+    assert.equal(command, "ssh");
+    directory = dirname(args[1]);
+    assert.equal(options.input, hostStorageScript);
+    assert.equal(args.at(-1), "sh -s -- '/srv/inbox' '/srv/releases' '/srv/candidates' '/srv/private/base.env'");
+    assert.ok(args.includes("StrictHostKeyChecking=yes"));
+    assert.equal(options.timeout, 60000);
+    assert.equal(options.maxBuffer, 64 * 1024);
+    for (const key of ["SSH_CONNECTION", "SSH_PRIVATE_KEY", "SSH_KNOWN_HOSTS", "REMOTE_BASE_DEPLOY_ENV"])
+      assert.equal(options.env[key], undefined);
+    return { status: 0, stdout: JSON.stringify({ ...report, privateExtra: env.SSH_PRIVATE_KEY,
+      filesystem: { ...report.filesystem, device: env.REMOTE_RELEASE_ROOT },
+      docker: { ...report.docker, repository: env.SSH_PRIVATE_KEY } }) };
+  });
+  assert.deepEqual(actual, report);
+  assert.equal(diagnosticSucceeded(actual), true); // Aggregate completion, with only 2 GB available.
+  assert.equal(actual.cleanupAuthorization, "NONE");
+  assert.equal(actual.referenceCompleteness, "UNVERIFIED");
+  assert.equal(existsSync(directory), false);
+});
+
+test("host-storage partial failures preserve independent numbers without completing the observation", () => {
+  const report = storageReport();
+  report.directories.CANDIDATE = { status: "unknown", code: "tool_timeout", allocatedBytes: null, sameFilesystemAsRelease: null };
+  const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "host-storage" }, () => ({ status: 0, stdout: JSON.stringify(report) }));
+  assert.deepEqual(actual, report);
+  assert.deepEqual(actual.filesystem, storageReport().filesystem);
+  assert.equal(diagnosticSucceeded(actual), false);
+  assert.equal(diagnosticSucceeded({ evidenceScope: "HOST_STORAGE_AGGREGATES_ONLY" }), false);
+});
+
+test("host-storage normalizes shell boundaries and rejects arbitrary remote report values", () => {
+  const forged = storageReport();
+  forged.docker.Images.size = env.SSH_PRIVATE_KEY;
+  for (const [result, code] of [
+    ...["host_storage_timeout_unavailable", "host_storage_deadline_exceeded", "host_storage_failed"].map(code =>
+      [{ status: 65, stderr: `${code}:${env.REMOTE_INBOX}`, stdout: env.SSH_PRIVATE_KEY }, code]),
+    [{ status: 65, stderr: "host_storage_invented:private", stdout: env.SSH_PRIVATE_KEY }, "diagnostic_ssh_failed"],
+    [{ status: 0, stdout: JSON.stringify(forged) }, "diagnostic_execution_failed"],
+  ]) {
+    const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "host-storage" }, () => result);
+    assert.deepEqual(actual, { status: "failed", code });
+    assert.doesNotMatch(JSON.stringify(actual), /test-private-key|\/srv\//u);
+  }
 });

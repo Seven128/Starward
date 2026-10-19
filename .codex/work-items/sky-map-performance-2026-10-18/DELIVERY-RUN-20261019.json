@@ -253,11 +253,58 @@
       "generatedModuleIndependentCasesPassed": 5,
       "reviewP2": "fixed_and_reverified_before_delivery",
       "sourceSha256": "fd9fd43061d8a5ff05b1c8de9d9bbad69882c6fbb70141018313ae8cc97d3a25",
-      "newCiAndRemoteObserved": false
+      "newCiAndRemoteObserved": false,
+      "revision": "8d55e50e04a043b60698fa4562246c92c0ec966b",
+      "bothRefsReadBack": "8d55e50e04a043b60698fa4562246c92c0ec966b",
+      "contextCi": {
+        "runId": 39277233426,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "productCi": {
+        "runId": 39277233795,
+        "status": "in_progress",
+        "conclusion": null,
+        "linuxDeploymentNativeCheck": "success",
+        "executionBoundary": "abnormal_contract_test_execution_owner_unknown",
+        "review": "CI-CURRENT-BOUNDARY-REVIEW.md"
+      },
+      "diagnosticRunId": 39277333313,
+      "diagnosticEvidence": "RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json",
+      "fixedCurrentObserved": true,
+      "currentRevision": "262d7531916c0b1b995fe8937321c044c9fb9ca5",
+      "currentImageDigest": "sha256:824bc03eaac9c2b2afe63e61767b3cc50c571e5ffdead65bc29de0b9605e5ba5",
+      "historicalBatch": "unknown_budget_exceeded",
+      "diagnosticSucceeded": false,
+      "hostPreflight": {
+        "runId": 39277770300,
+        "status": "completed",
+        "conclusion": "failure",
+        "code": "host_preflight_disk_below_10_gib",
+        "evidence": "CURRENT-HOST-PREFLIGHT-20261019.json",
+        "guardChanged": false
+      },
+      "serviceRecovered": false
     },
     "serviceRecovered": false,
     "runtimeOrProvidersDispatched": false,
     "tagsDeleted": 0,
     "phoneOrAdbOperation": false
+  },
+  "hostStoragePreparation": {
+    "scope": "fixed_read_only_aggregates_shared_directory_boundary_and_existing_runner",
+    "evidence": "HOST-STORAGE-OBSERVATION.md",
+    "localTestsPassed": 44,
+    "contextValidate": "passed",
+    "independentReview": "HOST-STORAGE-INDEPENDENT-REVIEW.md",
+    "linuxNative": "unverified",
+    "remoteObservation": "not_dispatched",
+    "hostGuardChanged": false,
+    "cleanupAuthorization": "NONE",
+    "phoneActions": false,
+    "ociPrivateTransfer": "unavailable_interface_not_public_artifact_or_low_space_host",
+    "independentReviewOutcome": "no_remaining_P1_P2",
+    "independentGeneratedModuleCasesPassed": 4,
+    "unchangedRuntimeTestsPassed": 15
   }
 }

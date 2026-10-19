@@ -8,6 +8,7 @@ import path from "node:path";
 import test from "node:test";
 import { parseEnvironmentText } from "./env-file.mjs";
 import { apiIdentityProbe } from "./runtime-diagnostics.mjs";
+import { createProtectedDirectoryBoundary } from "./protected-directory.mjs";
 import { releaseReferenceProbe, releaseReferenceScript, sanitizeReleaseReferenceReport, releaseReferenceSucceeded } from "./release-reference-diagnostics.mjs";
 
 const currentRevision = "a".repeat(40), currentDigest = `sha256:${"b".repeat(64)}`;
@@ -125,7 +126,7 @@ function fakeBoundary(configuration) {
 
 async function observe(configuration = fixture(), patch = {}) {
   const boundary = fakeBoundary(configuration);
-  const report = sanitizeReleaseReferenceReport(await releaseReferenceProbe(configuration.paths, { ...boundary, path: path.posix, createHash, parseEnvironmentText, apiIdentityProbe, platform: "linux", uid: 1000, ...patch }));
+  const report = sanitizeReleaseReferenceReport(await releaseReferenceProbe(configuration.paths, { ...boundary, path: path.posix, createHash, parseEnvironmentText, apiIdentityProbe, createProtectedDirectoryBoundary, platform: "linux", uid: 1000, ...patch }));
   return { report, boundary };
 }
 const updateJson = (f, selected, patch) => { f.entries[selected].text = JSON.stringify({ ...JSON.parse(f.entries[selected].text), ...patch }); };
@@ -389,7 +390,7 @@ test("native filesystem smoke distinguishes Linux enforcement from Windows unsup
   const file = path.join(directory, "base.env"); await nativeFs.writeFile(file, "STARWARD_ENVIRONMENT=production\n", { mode: 0o600 });
   const identity = () => ({ matchingContainerCount: 0, runningContainerCount: 0, singleMatchingContainer: null });
   const report = sanitizeReleaseReferenceReport(await releaseReferenceProbe([directory, directory, directory, file], {
-    fs: nativeFs, constants, path: path.posix, createHash, parseEnvironmentText, apiIdentityProbe: identity, execute: () => assert.fail("Docker forbidden"), platform: "linux", uid: process.geteuid(),
+    fs: nativeFs, constants, path: path.posix, createHash, parseEnvironmentText, apiIdentityProbe: identity, createProtectedDirectoryBoundary, execute: () => assert.fail("Docker forbidden"), platform: "linux", uid: process.geteuid(),
   }));
   assert.equal(report.base.code, "base_invalid"); assert.equal(report.current.code, "base_unavailable");
 });

@@ -34,7 +34,15 @@ ba4的完整CI及发布/identity已经实读；registry额度、主机MFA与尚�
 
 一次首版[远端观察](RELEASE-REFERENCE-REMOTE-20261019.json)保有效base/停止API，目录枚举触限使current/batch同时unknown。固定链/批量耦合已窄修，原上限不增、同8MiB内预留固定链重核；四条旧实现失败后43/43通过。[新独审](RELEASE-REFERENCE-PARTIAL-REVIEW.md)发现的中间目录安全顺序P2已用两反例修复并复核，独立43项及生成模块5场景通过，无剩余P1/P2，最终source/test/Context hash一致。新版本Linux/远端未验，不覆盖首轮失败、未称服务恢复或完整引用。
 
+该修复后已提交8d55e50e并普通推当前分支/main、两ref精确读回；Context39277233426 success，Product39277233795的Linux owner/native检查success，完整CI在途。一次[修后真实观察](RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json)39277333313实际current链observed=262d/824b，与停止1ccd/de4b分开；batch预算unknown，run仍failure、无健康/全引用结论。随后一次[host预检](CURRENT-HOST-PREFLIGHT-20261019.json)39277770300完整failure，明确当前disk仍低于10GiB guard；没有推断具体量或执行清理/部署，平台waiting已自然结束。首轮记录保留，后续不重复未变观察。
+
 旧r8 cnbWtR原82件档案不能覆盖完整feedback，因此先新增外部完整保全：407文件/32,790,429B，源/副本/源后逐件相同，manifest967999117475550d45994091d95c39be1866b113dee290b6d7c1fc4dd0f8618a。核绝对命名范围、无链接及动作前完整性后移入回收站，源absent、原归档和新增归档保留，可恢复；未动当前r10、gen26或账号材料。详见[清理读回](LOCAL-RESOURCE-CLEANUP-20261019.json)。
+
+## 2026-10-19 主机空间聚合的本地准备
+
+[实现与边界](HOST-STORAGE-OBSERVATION.md)复用原SSH owner及共享Linux目录factory，固定df/三根du/Docker分类，不读base载荷、不增加清理/部署入口。作者31项与root整合后的44/44通过，实际生成模块/fake、runner投影与部分结果保留已核；Linux原生fd3/df/du/shell及实际主机未验。[独审](HOST-STORAGE-INDEPENDENT-REVIEW.md)无尚存P1/P2，复核44项、4条精确生成模块反例和原runtime15项。原10GiB guard不改，2GB fixture可完成观察但不表示readiness。
+
+8d55完整CI的contracts停顿已有[有界独立核对](CI-CURRENT-BOUNDARY-REVIEW.md)：产品源码、依赖锁及launcher/workflow与上次成功相同，前轮84项约3.47秒，本轮约25分钟仍无后续。责任未知，末条日志不确定实际阻塞owner；必要新源码提交沿原concurrency接替，不额外并行重跑或改timeout。8完整CI不计成功，新版本仍须完成必要检查。[OCI私有保全](OCI-RECOVERY-PATH-REVIEW.md)缺传输桥，未创建artifact/secret/session、未复制镜像或执行清理。
 
 ## 69401 生产修复、r10 及此前 Git 证据
 

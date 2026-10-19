@@ -40,3 +40,13 @@ Linux通过持有目录fd、固定`/proc/self/fd`逐分量no-follow读取；核�
 当前修复源SHA-256：`fd9fd43061d8a5ff05b1c8de9d9bbad69882c6fbb70141018313ae8cc97d3a25`；测试`1124c77f5d46211f43c6333bf8e36e2f413c4a529abaa58c384ae047e26b1d7b`。旧独审只保首版输入效力，后续以本次窄审查为准。完整引用、失败原因、精确OCI恢复和服务结果仍未验；[quota后续核对](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md#后续-root-核对实际入口及精确-oci-保全)保已核官方API/成熟工具及本机credential-entry缺失，不将本机路径未就绪扩大为所有授权能力不可用。
 
 本批提交前12份staged文本与工作区一致（仅规范换行）、2份JSON可解析、300个本地文件链接存在、3份新独审输入hash一致，首轮远端再过严格投影；限定凭据形状扫描无命中，Goal正文未改、Context结构及staged diff通过。未重复未变parser消费者或手机检查。
+
+## 修复后实际固定链读回
+
+修复已提交`8d55e50e04a043b60698fa4562246c92c0ec966b`并普通推当前分支/main；原连接镜像刷新。一次[新观察39277333313](https://github.com/Seven128/Starward/actions/runs/39277333313)明确绑定新head/observer SHA，[独立保存的严格投影](RELEASE-REFERENCE-PARTIAL-REMOTE-20261019.json)已实际读回：base/current/stopped/末端observation均observed；current为v1成功deploy，revision`262d7531916c0b1b995fe8937321c044c9fb9ca5`、digest`sha256:824bc03eaac9c2b2afe63e61767b3cc50c571e5ffdead65bc29de0b9605e5ba5`，pointer/receipt/candidate字节hash及批准仓库/环境/project/source位置匹配；声明有backup manifest，但未读取/验证备份。
+
+该成功指针与先前已核的9月13日实际成功发布身份一致；唯一停止API仍为1ccd/de4b。此处已闭合固定链，不重扫32条历史或再跑未变观察。失败回执batch仍因枚举预算unknown、matchingCount=null，所以run仍failure，`releaseReferenceSucceeded=false`；未变完整诊断成功语义，未提高上限。当前文件身份不证明当前运行/停止原因、全部回滚/备份引用或精确OCI恢复，首版报告保留。
+
+[Context39277233426](https://github.com/Seven128/Starward/actions/runs/39277233426)success；新[Product39277233795](https://github.com/Seven128/Starward/actions/runs/39277233795)的Linux deployment/native检查已success，完整CI仍在途。没有服务/registry/手机变更。
+
+之后一次既有[host预检39277770300](https://github.com/Seven128/Starward/actions/runs/39277770300)完整failure，[严格固定码读回](CURRENT-HOST-PREFLIGHT-20261019.json)为`host_preflight_disk_below_10_gib`，与历史guard失败一致但属于本次新观察；不推断具体可用量或清理对象，没有调低guard。平台曾短暂waiting，实际main分支规则允许且没有人工reviewer/timer，后来正常运行；未改Environment或重复dispatch。当前恢复同时受registry额度及主机空间约束，下一步需最小只读归属/私有精确保全条件，不以广泛prune替代。
