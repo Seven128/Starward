@@ -40,6 +40,33 @@ test("staging privilege follows only a successful trusted main push", async () =
   assert.match(source, /Construct production OCI image/u);
 });
 
+test("staging admits the host before publishing and rechecks before remote transfer", async () => {
+  const source = await workflow("backend-staging.yml");
+  const steps = source.split(/(?=^      - )/mu);
+  const admission = steps.find((step) => step.includes("name: Check staging host before image publication"));
+  assert.ok(admission, "host readiness must gate image publication");
+  assert.match(admission, /DIAGNOSTIC_MODE: host/u);
+  for (const [field, secret] of [
+    ["SSH_CONNECTION", "STARWARD_DIAGNOSTIC_CONNECTION"],
+    ["SSH_PRIVATE_KEY", "STARWARD_SSH_PRIVATE_KEY"],
+    ["SSH_KNOWN_HOSTS", "STARWARD_SSH_KNOWN_HOSTS"],
+  ]) assert.ok(admission.includes(`${field}: \${{ secrets.${secret} }}`));
+  assert.match(admission, /^        run: node tools\/deployment\/run-host-diagnostics\.mjs\s*$/mu);
+  assert.doesNotMatch(admission, /^\s+(?:if|continue-on-error):/mu,
+    "an unavailable host must fail both manual and automatic publication");
+  const orderedSteps = [
+    "Validate deployment configuration inputs",
+    "Check staging host before image publication",
+    "Prepare current resource versions",
+    "Build and publish the immutable release image",
+    "Preflight staging host without mutation",
+    "Promote exact image to staging",
+  ].map((name) => source.indexOf(`name: ${name}`));
+  assert.ok(orderedSteps.every((position, index) => position >= 0 &&
+    (index === 0 || orderedSteps[index - 1] < position)),
+  "early host admission must precede publication; the final preflight must still precede transfer");
+});
+
 test("production is a manual exact-digest promotion and never rebuilds", async () => {
   const source = await workflow("backend-production.yml");
   assert.match(source, /workflow_dispatch:/u);

@@ -924,7 +924,12 @@ Configure the GitHub `staging` and `production` environments independently:
 
 `backend-staging.yml` runs automatically after a successful Product CI run caused
 by a trusted `main` push in this repository, or manually on `main` with the same
-release-product checks. It rebuilds the exact revision once as
+release-product checks. Before resource preparation or image publication, it
+runs the existing fixed `host` diagnostic through the protected staging
+connection. Failure stops publication and removes that check's temporary SSH
+inputs. The original host preflight runs again before remote transfer because
+host conditions can change during the build; neither check repairs capacity
+or grants registry-retention authority. After early admission it rebuilds the exact revision once as
 the release image, publishes it to the configured TCR repository, removes the
 runner login, transfers a SHA-256-bound non-secret control package and
 automatically promotes the resulting immutable digest.

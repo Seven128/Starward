@@ -102,6 +102,13 @@ jobs:
           for selected in "$REMOTE_INBOX" "$REMOTE_RELEASE_ROOT" "$REMOTE_BASE_DEPLOY_ENV" "$REMOTE_CANDIDATE_ROOT"; do
             [[ "$selected" =~ ^/[A-Za-z0-9._/-]+$ ]]
           done
+      - name: Check staging host before image publication
+        env:
+          DIAGNOSTIC_MODE: host
+          SSH_CONNECTION: ${{ secrets.STARWARD_DIAGNOSTIC_CONNECTION }}
+          SSH_PRIVATE_KEY: ${{ secrets.STARWARD_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STARWARD_SSH_KNOWN_HOSTS }}
+        run: node tools/deployment/run-host-diagnostics.mjs
       - name: Restore LFS object cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:

@@ -1,0 +1,39 @@
+{
+  "schema": "starward-task-receiver-v1",
+  "handoffCommit": "60bdd46e300b08f969386ed4d419f35f260e1409",
+  "checkout": "D:/dev/Starward",
+  "branch": "codex/remote-main-20260908",
+  "transferOwner": "CROSS-COMPUTER-TRANSFER.json",
+  "privateParent": "%USERPROFILE%/.starward-private/sky-map-20261020",
+  "restoredDirectory": "restored",
+  "receivedParts": 2,
+  "partHashesMatched": true,
+  "archiveSha256": "532b205f8154d4bb5b4c37fc66ac5eb12d7c1c877d6a81701cbe11dab62b6039",
+  "manifestSha256": "c4f651cda9617e4adac11cdee6213bcba532136634d07584b05b4345938c0423",
+  "restoredFiles": 9234,
+  "restoredBytes": 194055608,
+  "everyRestoredFileSha256Matched": true,
+  "receiver": "scripts/restore-cross-computer-evidence.py",
+  "windowsPathMode": "EXTENDED_ABSOLUTE_PATH",
+  "firstAttempt": {
+    "status": "FAILED_WINDOWS_PATH_LENGTH",
+    "code": "WinError 206",
+    "partialDirectory": "restored.incomplete-7w7vbm6k",
+    "usableEvidence": false,
+    "cleanup": "RETAINED_AUTOMATIC_APPROVAL_REJECTED_DELETION"
+  },
+  "runtimeData": {
+    "owner": "data-pipelines/runtime-data/current.lock.json",
+    "status": "LOCKED_PUBLIC_FILES_VERIFIED",
+    "files": 1544,
+    "bytes": 234624578,
+    "databaseVerified": false
+  },
+  "sourceDownloadsPreserved": true,
+  "privateParentAccess": "CURRENT_USER_SYSTEM_ADMINISTRATORS",
+  "deviceOperation": false,
+  "startedService": false,
+  "databaseRestored": false,
+  "rebuildSourcesDownloaded": false,
+  "performanceAcceptance": "UNCHANGED_UNVERIFIED"
+}

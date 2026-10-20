@@ -140,6 +140,8 @@
 
 75. [本次跨电脑必要输入交接](CROSS-COMPUTER-TRANSFER.md)、[精确传输与读回状态](CROSS-COMPUTER-TRANSFER.json)及[标准库接收入口](scripts/restore-cross-computer-evidence.py)：当前性能原件、对应冻结源码/maps和H3必要输入的有限私有包；公开运行/重建/Map数据继续沿原runtime lock/LFS/Drive治理，不建第二版本库存。每次提交的必要输入责任由global→资源Context→开发skill承接；资料到达不等于性能修复或手机验收。
 
+76. [接收机实际恢复](RECEIVER-20261020.json)及[发布前主机准入修复](STAGING-EARLY-HOST-ADMISSION.md)：同一私有包9,234文件已在本机逐件恢复验证；当前staging在镜像发布前复用既有host预检，保promotion前复检及原guard。恢复、代码检查、远端执行与服务健康分别记录；两项性能目标仍未整体验收。
+
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
 恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。本接手对话的明确继续指令已解除原暂停；恢复核源码/候选/在途状态和受影响的服务/窗口入口，历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。

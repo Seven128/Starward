@@ -2,9 +2,9 @@
 
 ## 阶段、方案与保护边界
 
-2026-10-19用户携手机外出后，已在本接手对话明确要求继续完整Goal。首次get_goal为null，现已按[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)“Goal 正文”全部创建，无token预算、未完成；实际Goal状态由get_goal读回，不把本文的跨轮状态当工具事实。优先完成不需要手机的工作，手机依赖保留未验。沿同一[PLAN](PLAN.md)，不重开已完成研究或同轮方案审查。[REQUIREMENTS](REQUIREMENTS.md)、[INHERITED-REQUIREMENTS](INHERITED-REQUIREMENTS.md)的全部R/H/A/N未撤销义务保留。
+2026-10-20用户在接收电脑明确要求继续完整Goal。首次get_goal为null，已按[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)“Goal 正文”全部创建active、无token预算、未完成；实际Goal状态仍由get_goal读回，不继承发送端blocked状态。优先完成不需要手机的工作，手机依赖保留未验。沿同一[PLAN](PLAN.md)，不重开已完成研究或同轮方案审查。[REQUIREMENTS](REQUIREMENTS.md)、[INHERITED-REQUIREMENTS](INHERITED-REQUIREMENTS.md)的全部R/H/A/N未撤销义务保留。
 
-工作区E:/dev/worktrees/Starward/remote-main-20260908；保留codex/remote-main-20260908及全部未提交成果，不切分支/reset/clean/新worktree。用户此前统一允许Goal内候选预览/必要调试，但**手机现在不可用，停止新手机/ADB/预览/真机调试；不要反复连手机或要求立刻配合**。恢复时核实际候选与fresh capture/view，旧截图不提供输入授权。root独占运行现场；可新建agent做不冲突的离线工作，用完结束，不复用退休agent。
+本机复用D:/dev/Starward，已普通fetch并跟踪已有codex/remote-main-20260908；交接提交60bdd46e与两个远端ref一致。原main checkout里的未跟踪`.codex/task-notes/`全部保留，未reset/clean或创建worktree；发送端E盘路径仅为历史定位。用户此前统一允许Goal内候选预览/必要调试，但**手机现在不可用，停止新手机/ADB/预览/真机调试；不要反复连手机或要求立刻配合**。恢复时核实际候选与fresh capture/view，旧截图不提供输入授权。root独占运行现场；可新建agent做不冲突的离线工作，用完结束，不复用退休agent。
 
 用户在本轮状态追问中明确最关心两项：①地形/云层/光害从用户交互到最终可见覆盖的效率；②云观星基本播放与快速连续调整年/月/日/时/分/秒任意字段时的顺畅展示。已如实说明两项均部分完成，叠层2–3秒缺口未证消除，完整播放B及六字段快速输入未验。交付/CI/服务工作不能替代这两项产品结果；设备恢复后的优先路径仍是它们，不重做既有研究或资格。
 
@@ -14,7 +14,17 @@
 
 2026-10-20用户要求提交并通过一份纯文本交给另一电脑Codex，随后明确补充：两项性能问题继续解决，必要原件通过Google Drive交接；每次提交将代码、Context、Harness和必须的开发数据绑定为同一恢复点。本轮沿该范围完成私有输入交接、资源Context/开发skill规则修正与Git交付，实际远端状态由[传输回执](CROSS-COMPUTER-TRANSFER.json)拥有；不改服务或设备现场。发送端本次get_goal为blocked、无预算、未完成，全部义务保留。接收端收到明确继续指令后按[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)核交接SHA、已有分支和本机路径；按[接收说明](CROSS-COMPUTER-TRANSFER.md)恢复有限必要证据，运行数据沿原lock/README按需恢复，私有数据库另走原恢复owner。新机尚未取得的原件不能冒充亲自读过，原机账号、N05、R6、配对/VPN和必要档案均保留。
 
-## 当前现场
+## 接收机当前现场
+
+| 责任 | 本机实际结果 |
+| --- | --- |
+| 恢复 | 两片Drive元数据、原目录及owner-only权限核对后实际下载；同一接收脚本验证两片/ZIP/manifest和9,234文件/194,055,608B全部通过。位置为`%USERPROFILE%/.starward-private/sky-map-20261020/restored`，Windows长路径需`\\?\`前缀。见[接收回执](RECEIVER-20261020.json)。 |
+| 本机数据 | 原lock的1,544公共文件/234,624,578B已验证；数据库未验证、未恢复或启动。未下载17GB重建源，未重产r6。 |
+| 发布修复 | [早期主机准入](STAGING-EARLY-HOST-ADMISSION.md)已接入同一staging workflow，复用fixed host runner；保原10GiB guard及promotion前再次检查。新增回归修前失败、修后通过，37项相关检查及Context结构检查通过；独审无P1/P2，另证无npm依赖可加载及无连接CLI退出1。本批交付的准确SHA/CI/CD按实际Git和job读回，不将本地结果当远端执行。 |
+| 运行边界 | 本轮无手机/ADB/IDE/预览/服务/数据库操作，无远端diagnostic或release dispatch。下表发送端session、PID、临时路径、listener及权限均不当本机事实。服务容量、registry及停止API仍沿原证据保留未解决。 |
+| 精确清理 | 本轮失败解包`restored.incomplete-7w7vbm6k`因自动审批拒绝删除而保留，不作为恢复结果；原下载和完整恢复均保留。本机shell实读未提权，不对发送端旧8798规则或r3 task作操作。 |
+
+## 交接前已核事实（历史现场，不是本机连接状态）
 
 | 责任 | 最新已确认事实 |
 | --- | --- |
@@ -45,11 +55,11 @@
 
 1. **已完成r10离线解释，复用结论。** 当前记录已区分正常播放、计量、同watch增长与未对齐窗口；没有足以选择产品修复的新增owner证据。跨日r10结果直接复用，不因手机离开重采同一资格。
 2. **已交付方法与固定identity补齐，复用检查。** 4505的watch/方法与fde的停止元数据各保自己的独审、软件检查、CI和实际观察范围；Map/Sky行为字节未变，不为这些非手机改动重建或重测旧候选。最后状态文档的交付以实际Git HEAD/远端读回为准，不制造无限自引用提交。
-3. **沿真实失败边界恢复服务。** 固定current已实读262d/824b，与停止1ccd/de4b分开；历史batch超预算unknown，不提高界或重复观察。host39277770300已failure=host_preflight_disk_below_10_gib，不再等原waiting或重复dispatch。空间聚合完整CI/Context及三项Linux实际分支已success，原host-storage39285085395实读完成，不重发。新0自动release39286309198已实际cancelled且pub job无步骤，保CD/guard。本轮事实文档沿既有分支/普通main快进，恢复查实际Git，已包含不重复交付。这次空间实际available9.7025GiB，cache物理关联/归属及精确能力已作有界核对，见STAGING-CACHE-RECOVERY-BOUNDARY；缺项目→完整ID/专属builder证据，history也不能补，先保留cache，不新建同类probe/cleaner或全局prune。INBOX整根小于当次差额且具体旧传输尚未获保全资格，不能冒充容量修复。下一次重开须出现真实归属/合格退休与恢复条件，沿现有owner办理。原10GiB guard保持，cache准备不关闭TCR100标签或真实OCI保全/恢复缺口。精确OCI私有保全的Actions→Drive桥仍缺，不默认低空间主机作OCI中转或公开Actions artifact为私有落点。见[固定引用owner](RELEASE-REFERENCE-OBSERVATION.md)及[quota后续核对](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)。Console MFA、本机registry entry缺失不代表所有能力不可用；旧f487未promote或已见两处身份不同不是全引用证明。未满足实际条件前不删tag、付费、绕guard、广泛prune或重复额度失败；成立后按既有release owner部署，保停启writer/备份恢复/迁移/供应smoke，唯一运行后再进runtime/真实天气。
+3. **沿真实失败边界恢复服务。** 接收机已完成发布前host准入的实现、37项检查和独审，沿授权完成同批Git交付并按实际job核结果；该修复避免已知host不准入时继续新增镜像，不等于服务恢复。固定current已实读262d/824b，与停止1ccd/de4b分开；历史batch超预算unknown，不提高界或重复观察。host39277770300已failure=host_preflight_disk_below_10_gib，不再等原waiting或重复dispatch。空间聚合完整CI/Context及三项Linux实际分支已success，原host-storage39285085395实读完成，不重发。新0自动release39286309198已实际cancelled且pub job无步骤，保CD开关/guard。上次空间实际available9.7025GiB，cache物理关联/归属及精确能力已作有界核对，见STAGING-CACHE-RECOVERY-BOUNDARY；缺项目→完整ID/专属builder证据，history也不能补，先保留cache，不新建同类probe/cleaner或全局prune。INBOX整根小于当次差额且具体旧传输尚未获保全资格，不能冒充容量修复。下一次重开须出现真实归属/合格退休与恢复条件，沿现有owner办理。原10GiB guard保持，cache准备不关闭TCR100标签或真实OCI保全/恢复缺口。精确OCI私有保全的Actions→Drive桥仍缺，不默认低空间主机作OCI中转或公开Actions artifact为私有落点。见[固定引用owner](RELEASE-REFERENCE-OBSERVATION.md)及[quota后续核对](REGISTRY-QUOTA-CANDIDATE-AUDIT-20261019.md)。Console MFA、发送端registry entry缺失不代表本机或所有能力不可用；旧f487未promote或已见两处身份不同不是全引用证明。未满足实际条件前不删tag、付费、绕guard、广泛prune或重复额度失败；成立后按既有release owner部署，保停启writer/备份恢复/迁移/供应smoke，唯一运行后再进runtime/真实天气。
 4. **复用已完成的独立准备，保留精确收尾缺口。** [H3/H6离线准备](H3-H6-OFFLINE-READINESS-20261019.md)已核三件照片输入补保、同级恢复路径和自然PLAN/SPOT接收资格；不重产、不转发已清理旧导出路径、不替N05造保存对象。旧r9窗口已关闭，r3移除待原生确认；旧8798任务入站规则仍开，提权缓存实际不可用且本次已取消，不反复弹UAC或要求现在操作。管理员条件恢复后仅停用这条已核专属规则，保定义可恢复，不能扩大到原配对/VPN。EOG/Drive/r6不重哈希17GB或重产。新增动作须解决尚未回答的问题，不为计数重复测试。
 5. **手机依赖集中后置。** 完整A/B目标验收、地形连续pan/zoom/配准和资源回落、H1/H3/定位/原生/iOS、真实微信接收/文件打开等保留未验。等待用户说明设备重新可用后核候选/官方结果/新鲜画面；必要动作合并，不要求现在配合、不擅选联系人。
 
-最近连续三个Goal执行轮均保留同一外部依赖：测试手机不可用，服务容量/精确OCI私有保全与恢复未就绪，Map真实云端目标缺可用授权入口；原生确认/管理员条件及真实接收身份保留此前未验状态。本轮补核个人版临时登录与OSS入口后，没有发现可改变这些判断的剩余本地实现或有必要重复的观察。全部未验/失败义务保留；完成本批Git/CI后按工具阻塞审计收口，条件变化后沿同一PLAN恢复，不要求现在配合。
+发送端的连续三轮阻塞审计不自动迁移到接收机。测试手机不可用、服务容量/精确OCI私有保全与恢复、Map真实云端目标、原生确认及真实接收身份仍保原缺口；本机已推进必要数据恢复和上述发布代码修复。后续依据本机实际可用入口和新证据继续，不能仅凭换电脑重复相同失败，也不能据发送端旧结论跳过可独立完成的实现。
 
 ## 复用成果及全部剩余义务
 
