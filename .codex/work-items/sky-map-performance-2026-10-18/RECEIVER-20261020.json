@@ -20,7 +20,13 @@
     "code": "WinError 206",
     "partialDirectory": "restored.incomplete-7w7vbm6k",
     "usableEvidence": false,
-    "cleanup": "RETAINED_AUTOMATIC_APPROVAL_REJECTED_DELETION"
+    "permanentDeletionRejectedByAutomaticApproval": true,
+    "cleanup": "VERIFIED_DUPLICATES_SENT_TO_RECYCLE_BIN",
+    "partialFilesVerified": 20,
+    "partialBytesVerified": 3712648,
+    "matchingRestoredCopiesVerified": true,
+    "reparsePoints": 0,
+    "originalPartialPathAbsent": true
   },
   "runtimeData": {
     "owner": "data-pipelines/runtime-data/current.lock.json",
