@@ -20,6 +20,7 @@
 | --- | --- |
 | 恢复 | 两片Drive元数据、原目录及owner-only权限核对后实际下载；同一接收脚本验证两片/ZIP/manifest和9,234文件/194,055,608B全部通过。位置为`%USERPROFILE%/.starward-private/sky-map-20261020/restored`，Windows长路径需`\\?\`前缀。见[接收回执](RECEIVER-20261020.json)。 |
 | 本机数据 | 原lock的1,544公共文件/234,624,578B已验证；数据库未验证、未恢复或启动。未下载17GB重建源，未重产r6。 |
+| 同步规则 | 用户明确采用skill/Context驱动：拉取/同步代码时按当前lock补齐消费者必需数据；本地运行再发现缺项时定位、取得、校验后继续。规则已写global→资源Context→开发skill；复用既有脚本和授权Drive入口，不新增同步脚本或自定义Git/npm钩子。技能校验、4项现有skill引用检查与Context结构检查通过。 |
 | 发布修复 | [早期主机准入](STAGING-EARLY-HOST-ADMISSION.md)已接入同一staging workflow，复用fixed host runner；保原10GiB guard及promotion前再次检查。新增回归修前失败、修后通过，37项相关检查及Context结构检查通过；独审无P1/P2，另证无npm依赖可加载及无连接CLI退出1。本批交付的准确SHA/CI/CD按实际Git和job读回，不将本地结果当远端执行。 |
 | 运行边界 | 本轮无手机/ADB/IDE/预览/服务/数据库操作，无远端diagnostic或release dispatch。下表发送端session、PID、临时路径、listener及权限均不当本机事实。服务容量、registry及停止API仍沿原证据保留未解决。 |
 | 精确清理 | 本轮失败解包`restored.incomplete-7w7vbm6k`因自动审批拒绝删除而保留，不作为恢复结果；原下载和完整恢复均保留。本机shell实读未提权，不对发送端旧8798规则或r3 task作操作。 |

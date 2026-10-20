@@ -36,6 +36,36 @@ Runtime delivery continues through the existing publication/export and static-se
 
 The user-selected development mechanism is one Git-versioned data index with bounded public products in LFS and large source/recovery objects in private Google Drive. [`current.lock.json`](../../data-pipelines/runtime-data/current.lock.json) owns exact data roles, version identities, file-index hashes, actual remote locations and unavailable inputs. Follow the [executable workflow](../../data-pipelines/runtime-data/README.md); do not add a second inventory in Context or rely on a chat handoff. Reuse the same selected Drive data folder where practical; keys remain in their separate private owner.
 
+### Receive required data with code and recover missing inputs
+
+Agent-assisted development uses the existing data commands and authenticated
+transfer tools, directed by this Context and the development skill. Keep the
+standard Git LFS hooks; do not add a separate synchronization script or custom
+Git/npm lifecycle hook for this workflow. This choice avoids another installed,
+platform-dependent trigger and recovery path. Reassess only if unattended
+operation becomes an explicit requirement.
+
+After an authorized code pull or synchronization, inspect the selected
+commit's lock and the current task's consumers, then actually prepare their
+required data. Backend runtime testing normally needs the public runtime
+group: run `backend:data:status` and, if missing or still represented by LFS
+pointers, `backend:data:prepare`. Reuse valid local bytes. If LFS cannot supply
+them, use the lock's exact Drive objects through the existing authorized
+connector and verified importer. Include the optional Map distribution group
+when that run consumes it; large rebuild sources are needed only for actual
+rebuilding. A successful Git operation alone is not completed data synchronization.
+
+If local startup or use later exposes a missing input, identify its exact
+consumer, version and failure boundary, acquire that required input through
+the same owner, verify it, then retry the affected operation. Do not repeat
+unchanged failed downloads or replace missing published data with fixtures.
+Check for a compatible existing database first; restore only through the
+private recovery owner into a fresh owned target when needed, preserving
+existing accounts and drafts. Missing credentials, authorization or remote
+objects remain named dependencies while independent work continues.
+File preparation, database verification and actual service readiness remain
+separate results; Context/skill directs the agent, not an unattended Git hook.
+
 ### Each commit binds the required development inputs
 
 Treat each code commit as a recovery point for its code, Context, Harness and required development inputs. Before committing and delivering a change, inspect its actual consumers and the unfinished work it must support: runtime/distribution products, genuinely needed rebuild inputs, private recovery state and the finite raw evidence still required for diagnosis. Keep runtime identities in the existing lock, private recovery in its existing manifest, and task evidence in its task owner; commit the relevant records with the code. Do not create a parallel inventory or make every cache, historical log or global source file a required input.
