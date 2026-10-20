@@ -53,8 +53,14 @@ export async function resolveOfficialCli(explicit, environment = process.env) {
       if (legacyRuntime) fail("official_cli_unavailable");
       if (path.extname(cli).toLowerCase() === ".bat") {
         const directory = path.dirname(cli);
+        const executable = await physicalFile(path.join(directory, "微信开发者工具.exe"));
+        const skillEntry = path.join(directory, "resources", "app.asar.unpacked", "js", "common", "cli", "skill-index.js");
+        const hasSkillEntry = await access(skillEntry).then(() => true, error => {
+          if (error.code === "ENOENT") return false;
+          throw error;
+        });
         return {
-          file: await physicalFile(path.join(directory, "微信开发者工具.exe")),
+          file: executable,
           prefix: [
             "-e",
             electronCliBootstrap,
@@ -76,6 +82,18 @@ export async function resolveOfficialCli(explicit, environment = process.env) {
             ELECTRON: "",
             ELECTRON_RUN_AS_NODE: "1",
           },
+          ...(hasSkillEntry ? {
+            autoPreviewInvocation: {
+              file: executable,
+              prefix: [
+                "-e",
+                "const e=process.argv[1],a=process.argv.slice(2);process.argv=[process.execPath,e,'--electron'].concat(a);require(e)",
+                await physicalFile(skillEntry), "-c", "Codex",
+              ],
+              cwd: directory,
+              env: { cwd: process.cwd(), ELECTRON: executable, ELECTRON_RUN_AS_NODE: "1" },
+            },
+          } : {}),
         };
       }
       if (path.extname(cli).toLowerCase() === ".js")
@@ -175,19 +193,24 @@ export class OfficialWechatDevtools {
   }
 
   async doctor() {
-    const probe = async (command) => {
+    const probe = async (command, invocation = this.invocation) => {
       try {
         await this.run(
-          this.invocation.file,
-          this.args([command, "--help", "--lang", "zh"]),
-          this.options({ timeout: 15_000, maxBytes: 32 * 1024 }),
+          invocation.file,
+          [...invocation.prefix, command, "--help",
+            ...(invocation === this.invocation ? ["--lang", "zh"] : [])],
+          { timeout: 15_000, maxBytes: 32 * 1024,
+            ...(invocation.cwd ? { cwd: invocation.cwd } : {}),
+            ...(invocation.env ? { env: invocation.env } : {}) },
         );
         return "available";
       } catch {
         return "unavailable";
       }
     };
-    const automaticUpdate = await probe("auto-preview");
+    const automaticUpdate = this.invocation.autoPreviewInvocation
+      ? await probe("auto_preview", this.invocation.autoPreviewInvocation)
+      : await probe("auto-preview");
     const ordinaryPreview = await probe("preview");
     if (automaticUpdate === "unavailable" && ordinaryPreview === "unavailable")
       throw new Error("device_feedback_official_unavailable");
@@ -204,6 +227,16 @@ export class OfficialWechatDevtools {
   }
 
   async autoPreview(project, infoOutput, port) {
+    if (this.invocation.autoPreviewInvocation) {
+      // The current official skill returns a business result/task handle.
+      // Its legacy auto-preview CLI only prints spinner text on success.
+      // Never fall back or replay after a current-tool call has started.
+      if (port !== undefined) fail("official_skill_port_not_supported");
+      const invocation = this.invocation.autoPreviewInvocation;
+      return this.run(invocation.file, [...invocation.prefix, "auto_preview", "--project", project], {
+        cwd: invocation.cwd, env: invocation.env,
+      });
+    }
     const args = [
       "auto-preview", "--project", project, "--info-output", infoOutput, "--lang", "zh",
     ];
@@ -378,7 +411,11 @@ export async function invokeOfficial(generation, options, injected) {
     );
     return classifyOfficialPreviewResult(result);
   } catch (error) {
-    return officialPreviewError(error);
+    return officialPreviewError(error, "auto_preview", {
+      // This exact driver guard runs before launching the official process.
+      // All failures after invocation retain the unresolved/no-replay state.
+      notInvoked: errorCode(error) === "device_feedback_official_skill_port_not_supported",
+    });
   } finally {
     await rm(infoOutput, { force: true });
   }

@@ -27,8 +27,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--parts-directory', type=Path, required=True)
     parser.add_argument('--destination', type=Path, required=True)
+    parser.add_argument('--receipt', type=Path,
+                        default=Path(__file__).resolve().parent.parent / 'CROSS-COMPUTER-TRANSFER.json',
+                        help='Explicit receipt for a later task evidence packet; the original handoff remains the default.')
     args = parser.parse_args()
-    receipt = json.loads((Path(__file__).resolve().parent.parent / 'CROSS-COMPUTER-TRANSFER.json').read_text(encoding='utf-8-sig'))
+    receipt = json.loads(args.receipt.read_text(encoding='utf-8-sig'))
     packet = receipt['packet']
     destination = args.destination.resolve()
     if destination.exists() or args.destination.is_symlink():

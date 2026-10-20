@@ -1,0 +1,78 @@
+{
+  "schema": "starward-task-transfer-v1",
+  "state": "REMOTE_BYTES_READ_BACK_AND_FRESH_RESTORE_VERIFIED",
+  "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+  "visibility": "OWNER_ONLY",
+  "packet": {
+    "name": "starward-receiver-20261020.zip",
+    "bytes": 18926665,
+    "sha256": "a9eb4658932e6728df48d3dc6c7a4d6afeb54a078c5a091159fe73a2fedf57b9",
+    "manifestName": "private-manifest.json",
+    "manifestSha256": "99d8a3f7a7bf5018c1b07b1a03b2dee7f1de56eea21999f108a913c057f55b74",
+    "files": 2642,
+    "uncompressedBytes": 38886377,
+    "parts": [
+      {
+        "order": 1,
+        "name": "starward-receiver-20261020.zip",
+        "bytes": 18926665,
+        "sha256": "a9eb4658932e6728df48d3dc6c7a4d6afeb54a078c5a091159fe73a2fedf57b9",
+        "fileId": "1gZTX34tBTTomvFUkqb9knsjLMLrP69o1",
+        "remoteName": "starward-receiver-20261020-a9eb4658932e.zip",
+        "url": "https://drive.google.com/file/d/1gZTX34tBTTomvFUkqb9knsjLMLrP69o1/view?usp=drivesdk"
+      }
+    ]
+  },
+  "scope": [
+    "Current complete USB normal-r10 source, build and external source maps",
+    "Generation-2 feedback with the original unrecognized push result preserved",
+    "Task-only public bridge and readonly Postgres SAMPLE_DATA bootstrap",
+    "Public API preflight and unbound phone screenshot for the unfinished delivery decision"
+  ],
+  "excluded": [
+    "Credentials and private environment configuration",
+    "Private databases and phone storage",
+    "Node modules, active service logs and QR material",
+    "Unchanged original evidence packet and runtime products, which retain their existing recovery owners"
+  ],
+  "candidate": {
+    "mode": "normal",
+    "transport": "usb-reverse",
+    "scope": "development_feedback_only",
+    "bundleSha256": "669e8ee3ee2b5af0eac7807b15e5db57a582c5c705d61da150900da390a2ca4c",
+    "buildSourceSha256": "09dca55e3c5f9421812d4602ce2ccedf53534b61b4bf4e9889122b98c57e6ca9",
+    "files": 337,
+    "bytes": 5003598,
+    "phoneBound": false
+  },
+  "remoteReadback": {
+    "fileId": "1gZTX34tBTTomvFUkqb9knsjLMLrP69o1",
+    "mimeType": "application/zip",
+    "parentVerified": true,
+    "permissions": [
+      { "type": "user", "role": "owner" }
+    ],
+    "bytes": 18926665,
+    "sha256": "a9eb4658932e6728df48d3dc6c7a4d6afeb54a078c5a091159fe73a2fedf57b9",
+    "independentRawDownload": true,
+    "inlineBase64": false
+  },
+  "freshRestore": {
+    "verified": true,
+    "files": 2642,
+    "bytes": 38886377,
+    "allPayloadHashesReadBack": true,
+    "serviceStarted": false,
+    "deviceOperation": false
+  },
+  "restoreOwner": {
+    "script": ".codex/work-items/sky-map-performance-2026-10-18/scripts/restore-cross-computer-evidence.py",
+    "receipt": ".codex/work-items/sky-map-performance-2026-10-18/RECEIVER-DEVICE-TRANSFER-20261020.json",
+    "instructions": "Download the declared Drive file and save it as parts[].name in a private directory. Pass this receipt with --receipt and use a fresh private --destination. Existing files are not overlaid."
+  },
+  "limits": [
+    "Does not establish phone delivery or performance acceptance.",
+    "Does not upgrade generation 2 or historical gen26 UNKNOWN.",
+    "Restoration does not start services, recover credentials or reuse device input authority."
+  ]
+}

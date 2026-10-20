@@ -10,6 +10,13 @@ Export/import does not configure authorization. MCP uses its own token; `wechati
 
 Use the official initializer/compiler/automator/debugger/previewer scenes for project windows, runtime reads, element/page actions, screenshots, filtered Console/Network and preview. [The development observer](../../tools/miniapp/development-observer.md) exposes the current official CLI adapter; its older SDK adapter is optional only for an already owned, demonstrably compatible connection. No fixed port or historical RPC route is a prerequisite for current official tools, and a retired route must not be revived to diagnose another boundary. Page/Element commands depend on the actual current runtime capability; unsupported queries must not become fabricated input or repeated cold launches. Do not use Computer Use for Mini Program development or testing unless the user explicitly requests it. Physical-device feedback remains required for device-owned behavior.
 
+The device-feedback push adapter uses the public `wechatide -c Codex auto_preview`
+entrance when the explicitly selected Electron installation provides it. Retain
+its business result or pending task before binding a phone generation. The legacy
+CLI's spinner/exit code cannot supply that result. Do not fall back after an
+invocation with unknown effects; a local option rejection before any invocation
+must remain recoverable as `not_invoked`, rather than stranding a run as unknown.
+
 ### Project source, snapshots and windows
 
 The canonical DevTools project is `apps/wechat-miniapp`: its `miniprogramRoot` selects the generated `dist/weapp`, not the authoring TypeScript. Importing registers a directory; it does not copy code or synchronize another directory. A prepared phone/candidate or isolated-service project is a separate snapshot whose API/configuration may intentionally differ. Refreshing that window does not pull repository changes into it. Update it through its existing build/generation owner and verify the resulting bytes and runtime identity; never edit the snapshot as a second source or overwrite an active frozen candidate in place.

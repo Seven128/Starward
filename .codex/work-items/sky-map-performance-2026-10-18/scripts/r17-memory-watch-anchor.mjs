@@ -1,8 +1,16 @@
 // Task-only host-clock association. This module never imports or contacts a device.
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 
-export const MEMORY_EVIDENCE_ROOT = 'E:/Dev/Starward-data/verification/sky-map-20261018/native-play-copy-trial';
+const configuredRoot = process.env.STARWARD_R17_MEMORY_ROOT;
+if (configuredRoot && !path.isAbsolute(configuredRoot)) throw Error('memory_probe_absolute_private_root_required');
+export const MEMORY_EVIDENCE_ROOT = configuredRoot ?? path.join(os.homedir(), '.starward-private', 'sky-map-performance-2026-10-18', 'memory');
+const repositoryRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const relativeRoot = path.relative(repositoryRoot, MEMORY_EVIDENCE_ROOT);
+if (!relativeRoot || (!relativeRoot.startsWith('..' + path.sep) && !path.isAbsolute(relativeRoot)))
+  throw Error('memory_probe_root_must_be_outside_checkout');
 const sourceKeys = ['watcherSha256', 'anchorSha256', 'adbSha256'];
 const finite = value => Number.isFinite(value) ? value : null;
 

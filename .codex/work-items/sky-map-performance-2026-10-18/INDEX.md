@@ -1,6 +1,6 @@
 # Starward 收口任务索引
 
-2026-10-19已收到本接手对话的明确继续指令，完整正文Goal无预算、未完成；实际工具状态由get_goal核对，不沿用索引中的历史active描述。2026-10-20用户要求提交并通过一份文本交给另一电脑Codex；跨机仓库恢复、路径适配及未随Git迁移的资料边界见[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)，当前状态仍只由[HANDOFF](HANDOFF.md)拥有。优先推进无需手机的工作，复用r10跨日pending白昼连续性及取消终态独审；普通Play/内存离线解读后仍保完整B缺口。原gen26仍UNKNOWN，手机依赖保持未验。唯一方案见[PLAN](PLAN.md)，不以交接摘要替代完整目标或全部剩余义务。
+2026-10-19已收到本接手对话的明确继续指令，完整正文Goal无预算、未完成；实际工具状态由get_goal核对，不沿用索引中的历史active描述。跨机仓库恢复、路径适配及未随Git迁移的资料边界见[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)，当前状态仍只由[HANDOFF](HANDOFF.md)拥有。接收机用户已恢复设备工作，优先三类叠层、正常播放和六字段连续调时；当前准备/传输边界见[本机设备恢复](RECEIVER-DEVICE-RESUME-20261020.md)。复用r10跨日pending白昼连续性及取消终态独审；普通Play/内存离线解读后仍保完整B缺口。原gen26仍UNKNOWN。唯一方案见[PLAN](PLAN.md)，不以交接摘要替代完整目标或全部剩余义务。
 
 [Sky研究与实际基线](SKY-INTERACTION-RESEARCH.md)、[包含SAO的CPU样本](SKY-TIME-CPU-BASELINE.json)、[向量局部试验](SKY-VECTOR-RESEARCH.json)、[拖动边界](SKY-DRAG-BASELINE.json)、[几何窗口](SKY-TIME-WINDOW-PROBE.json)保留结论和限制。生产合批与独审见[R17审查](R17-INDEPENDENT-REVIEW.md)、[恒星集成](SKY-STELLAR-INTEGRATION.md)、[地景修复](R17-LANDSCAPE-REPAIR.md)、[稳定地形请求](OVERLAY-STABLE-WINDOW.md)；当前手机generation和剩余证据见HANDOFF。
 

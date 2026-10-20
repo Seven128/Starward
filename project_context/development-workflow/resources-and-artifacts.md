@@ -32,6 +32,13 @@ GitHub Free is the selected hosting tier; no paid overage is authorized. Its doc
 
 Runtime delivery continues through the existing publication/export and static-service owners; LFS is development storage, not the application image CDN. Reassess external object storage/DVC only when verified volume, collaborators, processing or delivery requirements justify it.
 
+The current Mini API also consumes the `catalogs` and `images` profiles.
+Verify those selected groups before starting its real Map/Sky consumers; hydrate
+missing groups through `assets:prepare`. The separate backend runtime lock covers
+its declared map products, not every API asset or npm dependency. Reuse the
+repository lockfile when a required package is missing, without adding a new
+dependency or changing unrelated package versions.
+
 ## Commit-bound backend data
 
 The user-selected development mechanism is one Git-versioned data index with bounded public products in LFS and large source/recovery objects in private Google Drive. [`current.lock.json`](../../data-pipelines/runtime-data/current.lock.json) owns exact data roles, version identities, file-index hashes, actual remote locations and unavailable inputs. Follow the [executable workflow](../../data-pipelines/runtime-data/README.md); do not add a second inventory in Context or rely on a chat handoff. Reuse the same selected Drive data folder where practical; keys remain in their separate private owner.

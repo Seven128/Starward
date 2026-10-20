@@ -5,16 +5,16 @@ import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { AdbDevice, findAdb, foregroundActivity } from '../../../../tools/miniapp/device-adb.mjs';
 import { createMemoryWatchAnchor, MEMORY_EVIDENCE_ROOT } from './r17-memory-watch-anchor.mjs';
-const [mode='once',label='observation',countText='7',intervalText='20000']=process.argv.slice(2);
+const [mode='once',label='observation',countText='7',intervalText='20000',transport='wireless',...extra]=process.argv.slice(2);
 const count=Number(countText),interval=Number(intervalText);
-if(!['once','watch'].includes(mode)||!/^[a-z][a-z0-9-]{0,47}$/.test(label)||!Number.isInteger(count)||count<1||count>13||
+if(extra.length||!['usb','wireless'].includes(transport)||!['once','watch'].includes(mode)||!/^[a-z][a-z0-9-]{0,47}$/.test(label)||!Number.isInteger(count)||count<1||count>13||
   !Number.isInteger(interval)||interval<2000||interval>20000)throw Error('memory_probe_arguments_invalid');
 await fs.mkdir(MEMORY_EVIDENCE_ROOT,{recursive:true});
 const sourceBindings={};
 for(const [key,url] of [['watcherSha256',import.meta.url],['anchorSha256',new URL('./r17-memory-watch-anchor.mjs',import.meta.url)],
   ['adbSha256',new URL('../../../../tools/miniapp/device-adb.mjs',import.meta.url)]])
   sourceBindings[key]=createHash('sha256').update(await fs.readFile(new URL(url))).digest('hex');
-const device=new AdbDevice(await findAdb());await device.select({transport:'wireless'});
+const device=new AdbDevice(await findAdb());await device.select({transport});
 const started=performance.now(),anchor=await createMemoryWatchAnchor({label,startedMonotonicMs:started,sourceBindings,io:fs,
   clock:{monotonicNow:()=>performance.now(),wallNow:()=>Date.now()}}),file=anchor.file;
 let first=true, boundOwner=null;

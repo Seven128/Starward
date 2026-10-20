@@ -13,6 +13,7 @@ import os from "node:os";
 import path from "node:path";
 import {
   OfficialWechatDevtools,
+  assertOfficialOutcomeResolved,
   classifyOfficialPreviewResult,
   invokeOfficial,
   parseOfficialLoginState,
@@ -111,6 +112,51 @@ test("official login parsing tolerates current CLI progress output", () => {
   assert.equal(parseOfficialLoginState("progress only"), "unknown");
 });
 
+test("current official push retains business success or task identity without a legacy replay", async () => {
+  const current = { file: "current", prefix: ["skill-entry", "-c", "Codex"],
+    cwd: "installation", env: { ELECTRON_RUN_AS_NODE: "1" } };
+  for (const value of [
+    { success: true },
+    { status: "pending", taskId: "original-task", taskType: "preview" },
+    { status: "unrecognized" },
+  ]) {
+    const calls = [], output = Buffer.from(JSON.stringify({ ok: true, result: { structuredContent: value } }));
+    const driver = new OfficialWechatDevtools({ file: "legacy", prefix: [],
+      autoPreviewInvocation: current }, async (file, args, options) => {
+      calls.push({ file, args, options }); return output;
+    });
+    const result = await driver.autoPreview("prepared-project", "unused-private-info");
+    assert.equal(result, output);
+    assert.deepEqual(calls, [{ file: "current",
+      args: ["skill-entry", "-c", "Codex", "auto_preview", "--project", "prepared-project"],
+      options: { cwd: current.cwd, env: current.env } }]);
+    assert.equal(classifyOfficialPreviewResult(result).disposition,
+      value.success ? "completed" : value.taskId ? "pending" : "unknown");
+  }
+  let calls = 0;
+  const driver = new OfficialWechatDevtools({ file: "legacy", prefix: [],
+    autoPreviewInvocation: current }, async () => { calls++; throw Error("device_feedback_official_timeout"); });
+  await assert.rejects(driver.autoPreview("prepared-project", "unused-private-info"), /official_timeout/);
+  assert.equal(calls, 1);
+  await assert.rejects(driver.autoPreview("prepared-project", "unused-private-info", 9420), /skill_port_not_supported/);
+  assert.equal(calls, 1);
+});
+
+test("a pre-invocation current-tool port rejection remains recoverable", async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "starward-feedback-port-rejection-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  let calls = 0;
+  const driver = new OfficialWechatDevtools({
+    file: "legacy", prefix: [],
+    autoPreviewInvocation: { file: "current", prefix: ["-c", "Codex"] },
+  }, async () => { calls++; return { success: true }; });
+  const result = await invokeOfficial({ directory, project: directory }, { port: 9420 }, driver);
+  assert.equal(calls, 0);
+  assert.equal(result.disposition, "manual_required");
+  assert.equal(result.result.status, "not_invoked");
+  assert.equal(assertOfficialOutcomeResolved(result).disposition, "manual_required");
+});
+
 test("official CLI rejects a legacy NW installation instead of starting its bundled Node", async (t) => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "starward-wechat-node-cli-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
@@ -148,6 +194,8 @@ test("official CLI resolves the current Electron installation layout", async (t)
     writeFile(executable, "fixture"),
     writeFile(entry, "fixture"),
   ]);
+  const skillEntry = path.join(path.dirname(entry), "skill-index.js");
+  await writeFile(skillEntry, "fixture");
 
   const invocation = await resolveOfficialCli(cli, {});
   assert.equal(invocation.file, await realpath(executable));
@@ -157,6 +205,9 @@ test("official CLI resolves the current Electron installation layout", async (t)
   assert.equal(invocation.cwd, await realpath(directory));
   assert.equal(invocation.env.cwd, process.cwd());
   assert.equal(invocation.env.ELECTRON_RUN_AS_NODE, "1");
+  assert.equal(invocation.autoPreviewInvocation.file, await realpath(executable));
+  assert.equal(invocation.autoPreviewInvocation.prefix[2], await realpath(skillEntry));
+  assert.deepEqual(invocation.autoPreviewInvocation.prefix.slice(-2), ["-c", "Codex"]);
   const fallbackEnvironment = { PATH: directory };
   assert.equal((await resolveOfficialCli(undefined, fallbackEnvironment)).file, await realpath(executable));
   await assert.rejects(resolveOfficialCli(path.join(directory, "missing.bat"), fallbackEnvironment), /official_cli_unavailable/);

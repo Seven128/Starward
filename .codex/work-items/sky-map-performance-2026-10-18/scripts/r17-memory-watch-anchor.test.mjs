@@ -40,7 +40,7 @@ test('private association binds source and exact observations; public handles co
   const publicReceipt = JSON.stringify({ evidence: anchor.file });
   for (const privateValue of ['10000', '11020', bindings.watcherSha256, 'wallEpochMs', 'startedMonotonicMs'])
     assert.equal(publicReceipt.includes(privateValue), false);
-  assert.ok(e.writes.every(write => write.file.replaceAll('\\', '/').startsWith(MEMORY_EVIDENCE_ROOT + '/')
+  assert.ok(e.writes.every(write => write.file.replaceAll('\\', '/').startsWith(MEMORY_EVIDENCE_ROOT.replaceAll('\\', '/') + '/')
     && write.file.endsWith('.anchor.private.ndjson') && write.options.mode === 0o600));
   assert.deepEqual(e.writes.map(write => write.options.flag), ['wx', 'a']);
   await assert.rejects(anchor.finish({ outcome: 'observer_returned', sampleCount: 1, completedRowsSha256: sha(observations) }),

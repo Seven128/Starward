@@ -15,18 +15,19 @@ import { terrainWaitSourceFiles, transformTerrainWaitSources } from './inject-te
 
 const here = path.dirname(fileURLToPath(import.meta.url)), work = path.resolve(here, '..'), root = path.resolve(here, '../../../..');
 const revisionArgs = process.argv.slice(3), observationA1 = revisionArgs.includes('--observe-a1');
+const usbReverse = revisionArgs.includes('--usb-reverse');
 const reviewRevision = revisionArgs.includes('--review-r10') ? 10 : revisionArgs.includes('--review-r9') ? 9 : revisionArgs.includes('--review-r8') ? 8 : revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;
 const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6, retirementReceipt = reviewRevision >= 9;
-if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10', '--observe-a1'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
+if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10', '--observe-a1', '--usb-reverse'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
     revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)
   throw Error('finite_normal_revision_required');
 const reviewSuffix = reviewRevision > 1 ? '-review-r' + reviewRevision : '';
-const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix;
+const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix + (usbReverse ? '-usb' : '');
 const trial = path.join(work, 'tmp/' + trialName), sourceRoot = path.join(trial, 'source'), projectRoot = path.join(trial, 'project');
 const feature = 'apps/wechat-miniapp/src/features/sky/', pagePath = feature + 'spot-sky-page.tsx';
 const slot = observationA1 ? trialName : reviewRevision === 2 ? 'r17-normal-v3-r2' : trialName;
 const buildGeneration = observationA1 ? 27 : 25, bridgePort = 8798;
-const normalLabel = observationA1 ? '正常Sky关联 A1' + (reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3';
+const normalLabel = (observationA1 ? '正常Sky关联 A1' + (reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3') + (usbReverse ? ' USB' : '');
 const protocolName = nativeAdmission ? 'r17-normal-input-protocol.mjs' : rulerEntry ? 'r17-ruler-entry-protocol.mjs' : observationA1 ? 'r17-a-correlation-protocol.mjs' : 'r17-phone-probe-v3-protocol.mjs';
 const preparationName = observationA1 ? 'R17-NORMAL-A1-PREPARATION.json' : 'R17-NORMAL-BASELINE-V3-PREPARATION.json';
 const bundleRoot = path.join(sourceRoot, 'apps/wechat-miniapp/dist/weapp-check-' + slot), manifestPath = path.join(trial, 'manifest.json');
@@ -234,6 +235,9 @@ export function normalPage(source, requestedPreparation = source.includes('  con
   return one(source, '  </SkyNavigationMenu>;', '    <R17PhoneProbeControls onPrepareFov={fov => { if (!skyDisplayCurrent()) return; stopBrowsingAnimation(); setVerticalFovDeg(fov); setSkyControlPanel(null); }} onStart={key => setSkyControlPanel(key.endsWith("-camera") ? null : "time")} />\n  </SkyNavigationMenu>;', 'task_only_menu');
 }
 export async function preparedSources(normal, template, binding) {
+  // Keep manifest hashes on the exact checked-out template bytes; normalize only
+  // the transformation input so Windows CRLF checkouts use the same boundaries.
+  template = Object.fromEntries(Object.entries(template).map(([name, value]) => [name, value.replaceAll('\r\n', '\n')]));
   const output = {}, instrumentation = {};
   for (const file of Object.keys(normal)) output[file] = await fs.readFile(path.join(root, file));
   const edit = (name, transform) => { const file = feature + name, original = output[file]; const result = transform(original.toString('utf8').replaceAll('\r\n', '\n')); output[file] = result; instrumentation[file] = { beforeSha256: sha(original), afterSha256: sha(result) }; };
@@ -342,9 +346,14 @@ async function verifyBindings(directory, bindings) {
 async function absent(file) { try { await fs.lstat(file); throw Error('output_already_exists:' + relative(file)); } catch (error) { if (error.code !== 'ENOENT') throw error; } }
 async function origin() {
   // Only the existing apiOrigin is read, in memory. No runtime JSON is copied.
-  const runtime = await readJson('C:/Users/777/AppData/Local/Temp/starward-sky-phone-runtime-SWXIAP/runtime.json');
+  const runtimeFile = process.env.STARWARD_R17_RUNTIME_CONFIG;
+  if (!runtimeFile || !path.isAbsolute(runtimeFile)) throw Error('absolute_private_runtime_config_required');
+  const runtime = await readJson(runtimeFile);
   const selected = new URL(runtime.apiOrigin);
-  if (selected.protocol !== 'http:' || !['8797', '8798'].includes(selected.port) || !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(selected.hostname) || selected.hostname.startsWith('127.') || selected.hostname === '0.0.0.0' || selected.username || selected.password || selected.search || selected.hash || selected.pathname !== '/') throw Error('physical_runtime_origin_boundary_changed');
+  const hostAllowed = usbReverse
+    ? runtime.transport === 'usb-reverse' && selected.hostname === '127.0.0.1' && selected.port === '8798'
+    : runtime.transport !== 'usb-reverse' && !selected.hostname.startsWith('127.') && selected.hostname !== '0.0.0.0';
+  if (selected.protocol !== 'http:' || !['8797', '8798'].includes(selected.port) || !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(selected.hostname) || !hostAllowed || selected.username || selected.password || selected.search || selected.hash || selected.pathname !== '/') throw Error('physical_runtime_origin_boundary_changed');
   const inherited = selected.origin; selected.port = String(bridgePort);
   return { value: selected.origin, inheritedSha256: sha(inherited), sha256: sha(selected.origin) };
 }
@@ -431,7 +440,7 @@ async function main() {
     const { stdout } = await run('git', ['rev-parse', 'HEAD'], { cwd: root, windowsHide: true });
     const bindingInput = { meaning: 'pre-build-current-production-source-and-task-template-binding-not-bundle-bytes', mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
       productionHead: stdout.trim(), productionSourceSha256: sha(JSON.stringify(productionSourceBindings)), builderSha256, templateBindings,
-      bridgePort, compiledBridgeOriginSha256: selectedOrigin.sha256,
+      bridgePort, transport: usbReverse ? 'usb-reverse' : 'lan', compiledBridgeOriginSha256: selectedOrigin.sha256,
       ...(observationA1 ? { observationRevision: 'observe-a1', terrainWaitAction: 'gesture', ...(rulerEntry ? { rulerEntry: nativeAdmission ? 'immediate-wide-time-v2' : 'immediate-wide-time-v1' } : {}),
         ...(nativeAdmission ? { manualInput: 'legal-onPreview-start-delay-0-v1' } : {}),
         ...(retirementReceipt ? { surfaceRetirement: 'single-source-bound-ready-retire-v1', normalPlayTrialMs: 60000 } : {}),
