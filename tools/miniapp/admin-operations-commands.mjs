@@ -19,9 +19,22 @@ async function dashboard({ request, output }) {
   output({
     spots: data.spots.length,
     moderation: data.moderation.map(moderationSummary),
-    providerHealthRows: data.providerHealth.length,
+    providerHealthRows: data.providerHealth?.length ?? 0,
     pendingJobs: data.jobs,
   });
+}
+
+function revision(option, name) {
+  const value = Number(option(name));
+  if (!Number.isSafeInteger(value) || value < 1) throw new Error(`admin_${name}_required`);
+  return value;
+}
+
+function idempotency(option) {
+  const key = option("idempotency-key");
+  if (typeof key !== "string" || !key.trim() || key.length > 200)
+    throw new Error("admin_idempotency_key_required");
+  return key.trim();
 }
 
 async function moderation({ request, output }) {
@@ -69,16 +82,19 @@ async function resolveCase({ positional, option, request, output }) {
   if (!reason) throw new Error("admin_reason_missing");
   if (!new Set(["APPROVED", "REJECTED"]).has(resolution))
     throw new Error("admin_resolution_invalid");
+  const expectedRevision = revision(option, "revision");
+  const key = idempotency(option);
   const result = await request(
     `/v2/admin/moderation/cases/${encodeURIComponent(caseId)}/resolve`,
-    { method: "POST", body: JSON.stringify({ resolution, reason }) },
+    { method: "POST", headers: { "idempotency-key": key }, body: JSON.stringify({ resolution, reason, expectedRevision }) },
   );
   output({
     caseId,
-    resolution: result.case.state,
-    contributionState: result.contribution?.state ?? null,
+    receipt: result.receipt,
+    resolution: result.readback.state,
+    contributionState: result.readback.submission?.state ?? null,
     canonicalMergeRequired:
-      result.case.payload?.canonicalMergeRequired ?? null,
+      result.readback.canonicalMergeRequired ?? null,
   });
 }
 
@@ -92,19 +108,21 @@ async function mergeCase({ positional, option, request, output }) {
   const reason = option("reason");
   if (!reason || !confirmedClaims.length)
     throw new Error("admin_merge_input_missing");
+  const expectedSubmissionRevision = revision(option, "submission-revision");
+  const expectedSpotRevision = revision(option, "spot-revision");
+  const key = idempotency(option);
   const result = await request(
     `/v2/admin/moderation/cases/${encodeURIComponent(caseId)}/merge`,
     {
       method: "POST",
-      body: JSON.stringify({ spotId, confirmedClaims, reason }),
+      headers: { "idempotency-key": key },
+      body: JSON.stringify({ spotId, confirmedClaims, reason, expectedSubmissionRevision, expectedSpotRevision }),
     },
   );
   output({
     caseId,
-    canonicalMerge: result.canonicalMerge,
-    resultingStatus: result.detail.spot.status,
-    publicationComplete: result.assessment.complete,
-    remainingIssues: result.assessment.issues,
+    receipt: result.receipt,
+    readback: result.readback,
   });
 }
 
@@ -144,6 +162,7 @@ async function patchSpot({ positional, option, request, output }) {
 }
 
 const handlers = new Map([
+  ["session", async ({ request, output }) => output(await request("/v2/admin/session"))],
   ["dashboard", dashboard],
   ["moderation", moderation],
   ["case-export", caseExport],

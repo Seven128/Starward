@@ -16,12 +16,12 @@ import type {
 } from "@starward/miniapp-contracts";
 import {
   assertAdminOperation,
-  assertAdminToken,
-  normalizeAdminActor,
+  authenticateAdmin,
+  adminOperations,
 } from "./admin-auth.ts";
+import { adminOperationsContext } from "./admin-operations-support.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import {
-  PostgresMiniappRepository,
   type AdminContributionEvidenceClaim,
   type AdminSpotCandidateInput,
   type AdminSpotPatch,
@@ -70,6 +70,25 @@ export function envelope<T>(data: T) {
   };
 }
 
+/** A completed repository transaction must not turn into a pre-commit rejection
+ * when Redis invalidation fails. Keep the result and its remaining publication
+ * work separate; the idempotent command may retry these cache effects. */
+export async function committedEnvelope<T>(
+  data: T,
+  cache: Pick<MiniappService["cache"], "deleteByPrefix">,
+  prefixes: readonly string[],
+) {
+  const results = await Promise.allSettled(prefixes.map((prefix) =>
+    Promise.resolve().then(() => cache.deleteByPrefix(prefix))));
+  const failed = results.some((result) => result.status === "rejected");
+  const result = envelope(data);
+  return {
+    ...result,
+    postCommit: { cacheInvalidation: failed ? "FAILED" as const : "COMPLETE" as const },
+    warnings: failed ? [...result.warnings, "变更已提交，但公共读取缓存刷新未完成。请核对已提交结果，不要另建操作重复提交。"] : result.warnings,
+  };
+}
+
 @Controller("v2/admin")
 export class AdminController {
   constructor(
@@ -79,18 +98,16 @@ export class AdminController {
   #context(
     token: string | undefined,
     actor: string | undefined,
-    operation: AdminOperation = "CASE_READ",
+    operation: AdminOperation,
   ) {
-    assertAdminToken(token);
-    if (!(this.service.repository instanceof PostgresMiniappRepository))
-      throw new Error("admin_requires_postgres");
-    const actorId = normalizeAdminActor(actor);
-    assertAdminOperation(actorId, operation);
-    return {
-      repository: this.service.repository,
-      actorId,
-      requestId: randomUUID(),
-    };
+    return adminOperationsContext(this.service, token, actor, operation);
+  }
+
+  @Get("session")
+  async session(@Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
+    const principal = authenticateAdmin(token, actor);
+    assertAdminOperation(principal, "SESSION_READ");
+    return envelope({ ...principal, operations: adminOperations(principal) });
   }
 
   @Get("dashboard")
@@ -98,12 +115,13 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "SESSION_READ");
+    const allowed = adminOperations(context.principal);
     const [spots, articles, moderation, operations] = await Promise.all([
-      context.repository.adminListSpots(),
-      context.repository.adminListArticles(),
-      context.repository.adminListModerationCases(),
-      context.repository.adminOperations(),
+      allowed.includes("CASE_READ") ? context.repository.adminListSpots() : [],
+      allowed.includes("CASE_READ") ? context.repository.adminListArticles() : [],
+      allowed.includes("CASE_READ") ? context.repository.adminListModerationCases() : [],
+      allowed.includes("AUDIT_READ") ? context.repository.adminOperations() : {},
     ]);
     return envelope({ spots, articles, moderation, ...operations });
   }
@@ -113,7 +131,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "CASE_READ");
     return envelope(await context.repository.adminListSpots());
   }
 
@@ -123,7 +141,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "SPOT_CREATE");
     const name = requireText(body.name, "name", 120);
     const region = requireText(body.region, "region", 120);
     const address = requireText(body.address, "address", 500);
@@ -192,8 +210,7 @@ export class AdminController {
       actorId: context.actorId,
       requestId: context.requestId,
     });
-    await this.service.cache.deleteByPrefix("search:");
-    return envelope(result);
+    return committedEnvelope(result, this.service.cache, ["search:"]);
   }
 
   @Patch("spots/:spotId")
@@ -203,7 +220,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "SPOT_EDIT");
     if (!spotId.startsWith("spot:")) throw new Error("formal_spot_not_found");
     const reason = requireText(body.reason, "reason", 500);
     if (body.name !== undefined) requireText(body.name, "name", 120);
@@ -351,12 +368,7 @@ export class AdminController {
       actorId: context.actorId,
       requestId: context.requestId,
     });
-    await Promise.all([
-      this.service.cache.deleteByPrefix("map:"),
-      this.service.cache.deleteByPrefix(`spot-overview:${spotId}`),
-      this.service.cache.deleteByPrefix("favorites:"),
-    ]);
-    return envelope(result);
+    return committedEnvelope(result, this.service.cache, ["map:", `spot-overview:${spotId}`, "favorites:"]);
   }
 
   @Post("spots/:spotId/publish")
@@ -385,9 +397,7 @@ export class AdminController {
       requestId: context.requestId,
       idempotencyKey: requireIdempotency(idempotencyKey),
     });
-    await this.service.cache.deleteByPrefix("map:");
-    await this.service.cache.deleteByPrefix(`spot-overview:${spotId}`);
-    return envelope(result);
+    return committedEnvelope(result, this.service.cache, ["map:", `spot-overview:${spotId}`]);
   }
 
   @Post("spots/:spotId/suspend")
@@ -416,9 +426,7 @@ export class AdminController {
       requestId: context.requestId,
       idempotencyKey: requireIdempotency(idempotencyKey),
     });
-    await this.service.cache.deleteByPrefix("map:");
-    await this.service.cache.deleteByPrefix(`spot-overview:${spotId}`);
-    return envelope(result);
+    return committedEnvelope(result, this.service.cache, ["map:", `spot-overview:${spotId}`]);
   }
 
   @Get("articles")
@@ -426,7 +434,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "CASE_READ");
     return envelope(await context.repository.adminListArticles());
   }
 
@@ -435,7 +443,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "CASE_READ");
     return envelope(await context.repository.adminListModerationCases());
   }
 
@@ -555,12 +563,7 @@ export class AdminController {
       requestId: context.requestId,
       idempotencyKey: requireIdempotency(idempotencyKey),
     });
-    await Promise.all([
-      this.service.cache.deleteByPrefix("map:"),
-      this.service.cache.deleteByPrefix(`spot-overview:${body.spotId}`),
-      this.service.cache.deleteByPrefix("favorites:"),
-    ]);
-    return envelope(result);
+    return committedEnvelope(result, this.service.cache, ["map:", `spot-overview:${body.spotId}`, "favorites:"]);
   }
 
   @Get("data-sources")
@@ -568,7 +571,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "AUDIT_READ");
     return envelope((await context.repository.adminOperations()).dataSources);
   }
 
@@ -577,7 +580,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "AUDIT_READ");
     return envelope((await context.repository.adminOperations()).providerHealth);
   }
 
@@ -586,7 +589,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "AUDIT_READ");
     return envelope({
       usage: (await context.repository.adminOperations()).costs,
       budget: await this.service.budgetSnapshot(),
@@ -598,7 +601,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "AUDIT_READ");
     return envelope((await context.repository.adminOperations()).decisions);
   }
 
@@ -607,7 +610,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "AUDIT_READ");
     return envelope((await context.repository.adminOperations()).audits);
   }
 }

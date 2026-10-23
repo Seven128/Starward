@@ -19,6 +19,7 @@ import {
   contributionMediaHasHistory,
 } from "../contribution-attempts.ts";
 import { buildFormalContributionResult } from "../formal-contribution-submission.ts";
+import { isContributionUploadExpired, projectContributionUploadLifetime } from "../contribution-upload-lifetime.ts";
 
 export class InMemoryContributionStore {
   #records = new Map<
@@ -73,13 +74,13 @@ export class InMemoryContributionStore {
     this.ensureUser(userId);
     return [...this.#records.get(userId)!.values()]
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
-      .map((submission) => structuredClone(submission));
+      .map((submission) => projectContributionUploadLifetime(submission));
   }
 
   get(userId: UserId, submissionId: ContributionId) {
     this.ensureUser(userId);
     const submission = this.#records.get(userId)!.get(submissionId);
-    return submission ? structuredClone(submission) : null;
+    return submission ? projectContributionUploadLifetime(submission) : null;
   }
 
   saveDraft(
@@ -121,9 +122,14 @@ export class InMemoryContributionStore {
     if (!isContributionEditable(current.state)) throw new Error("contribution_not_editable");
     if (!current.rightsConfirmed) throw new Error("contribution_media_rights_required");
     const replaced = replaceUploadId ? current.media.find((item) => item.uploadId === replaceUploadId) : undefined;
-    if (replaceUploadId && (!replaced || replaced.state !== "EXPIRED")) throw new Error("contribution_upload_replacement_invalid");
+    if (replaceUploadId && (!replaced || !isContributionUploadExpired(replaced)
+      || contributionMediaHasHistory(current, replaced))) throw new Error("contribution_upload_replacement_invalid");
     assertContributionUploadFits(current, upload, replaced);
     const candidateProfile = appendCandidateProfileMedia(current, upload, replaced);
+    if (replaced) {
+      this.#queueDeletion(userId, replaced);
+      this.#objects.delete(replaced.uploadId);
+    }
     const next = {
       ...structuredClone(current),
       media: replaced ? current.media.map((item) => structuredClone(item.uploadId === replaceUploadId ? upload : item)) : [

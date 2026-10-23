@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Notice } from "./notice";
 import { EventCatalogView } from "./event-catalog-view";
+import { createAdminSessionOwner, createAdminCommandOwner, type AdminSession as AuthSession, type AdminCommandAttempt } from "./admin-session";
 
 type ViewKey =
   | "queue"
@@ -24,7 +25,6 @@ type LoadState =
 type Tone = "neutral" | "violet" | "success" | "warning" | "danger";
 type JsonRecord = Record<string, unknown>;
 
-type AuthSession = { token: string; actor: string };
 type ApiEnvelope<T> = JsonRecord & {
   data?: T;
   dataState?: string;
@@ -58,7 +58,7 @@ type MutationState = {
   requestId?: string;
 };
 
-const API_BASE = String(import.meta.env.VITE_ADMIN_API_BASE_URL ?? "").replace(
+const API_BASE = String(import.meta.env?.VITE_ADMIN_API_BASE_URL ?? "").replace(
   /\/$/u,
   "",
 );
@@ -497,7 +497,7 @@ function OpsIcon({ name }: { name: OpsIconName }) {
   );
 }
 
-async function requestEnvelope<T>(
+async function fetchAdminEnvelope<T>(
   path: string,
   session: AuthSession,
   init: RequestInit = {},
@@ -507,7 +507,7 @@ async function requestEnvelope<T>(
   headers.set("accept", "application/json");
   headers.set("content-type", "application/json");
   headers.set("x-admin-token", session.token);
-  headers.set("x-admin-actor", session.actor);
+  if (session.actor) headers.set("x-admin-actor", session.actor);
   headers.set("x-request-id", newIdempotencyKey("request"));
   if (idempotencyKey) headers.set("idempotency-key", idempotencyKey);
   const response = await fetch(`${API_BASE}${path}`, {
@@ -645,19 +645,15 @@ function MutationBanner({ state }: { state: MutationState }) {
 
 function AuthGate({
   token,
-  actor,
   error,
   busy,
   onToken,
-  onActor,
   onSubmit,
 }: {
   token: string;
-  actor: string;
   error: string;
   busy: boolean;
   onToken: (value: string) => void;
-  onActor: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
@@ -682,16 +678,7 @@ function AuthGate({
             placeholder="仅在本次浏览会话使用"
           />
         </label>
-        <label>
-          <span>actor identity</span>
-          <input
-            required
-            pattern={"admin:[A-Za-z0-9._\\x2d]{1,64}"}
-            value={actor}
-            onChange={(event) => onActor(event.target.value)}
-            placeholder="admin:your-name"
-          />
-        </label>
+        <p className="form-hint">身份与权限由服务端凭证决定，认证后显示。</p>
         {error ? (
           <p className="form-error" role="alert">
             {error}
@@ -2450,13 +2437,17 @@ function OperationsSidebar({
 }
 
 export default function AdminPage() {
-  const initialToken = getSessionStorage(SESSION_TOKEN_KEY);
-  const initialActor = getSessionStorage(SESSION_ACTOR_KEY) || "admin:local";
-  const [session, setSession] = useState<AuthSession | null>(
-    initialToken ? { token: initialToken, actor: initialActor } : null,
-  );
+  const [initialToken] = useState(() => getSessionStorage(SESSION_TOKEN_KEY));
+  const sessionOwner = useRef(createAdminSessionOwner()).current;
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [token, setToken] = useState(initialToken);
-  const [actor, setActor] = useState(initialActor);
+  const requestEnvelope = useCallback(<T,>(path: string, activeSession: AuthSession, init: RequestInit = {}, key?: string) =>
+    sessionOwner.read(activeSession, async () => {
+      if (init.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+      const result = await fetchAdminEnvelope<T>(path, activeSession, init, key);
+      if (init.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+      return result;
+    }), [sessionOwner]);
   const [authState, setAuthState] = useState<
     "idle" | "checking" | "authenticated" | "error"
   >(initialToken ? "checking" : "idle");
@@ -2494,11 +2485,20 @@ export default function AdminPage() {
     phase: "idle",
     label: "",
   });
+  type CommandInput = {
+    label: string; path: string; body: JsonRecord;
+    verify?: (fresh: DashboardData, receipt: JsonRecord) => boolean;
+    verifyReadback?: (activeSession: AuthSession, receipt: JsonRecord) => Promise<boolean>;
+  };
+  const commandOwner = useRef(createAdminCommandOwner<CommandInput>(sessionOwner, () => newIdempotencyKey("operation"))).current;
+  const [commandVersion, setCommandVersion] = useState(0);
+  const pendingCommand = session ? commandOwner.pending(session) : null;
+  void commandVersion;
   const activeRequest = useRef<AbortController | null>(null);
   const requestEventCatalog = useCallback(<T,>(path: string, init?: RequestInit) => {
     if (!session) return Promise.reject(new Error("请先认证。"));
     return requestEnvelope<T>(path, session, init);
-  }, [session]);
+  }, [requestEnvelope, session]);
 
   const readDashboard = useCallback(
     async (activeSession: AuthSession, signal?: AbortSignal) => {
@@ -2541,6 +2541,8 @@ export default function AdminPage() {
       setDashboardState("loading");
       try {
         const result = await readDashboard(activeSession, controller.signal);
+        sessionOwner.assertCurrent(activeSession);
+        if (activeRequest.current !== controller || controller.signal.aborted) return null;
         const next = result.data;
         setData(next);
         setQueueState(result.queueState);
@@ -2554,22 +2556,22 @@ export default function AdminPage() {
         setAuthState("authenticated");
         return next;
       } catch (error) {
-        if (controller.signal.aborted) throw error;
+        if (controller.signal.aborted || !sessionOwner.isCurrent(activeSession) || activeRequest.current !== controller) throw error;
         setDashboardState("error");
         throw error;
       }
     },
-    [readDashboard],
+    [readDashboard, sessionOwner],
   );
 
   useEffect(() => {
     if (!session) return;
     loadDashboard(session).catch((error) => {
-      if (!(error instanceof DOMException && error.name === "AbortError"))
+      if (sessionOwner.isCurrent(session) && !(error instanceof DOMException && error.name === "AbortError"))
         setAuthError(getErrorMessage(error));
     });
     return () => activeRequest.current?.abort();
-  }, [loadDashboard, session]);
+  }, [loadDashboard, session, sessionOwner]);
 
   useEffect(() => {
     if (!data) return;
@@ -2595,11 +2597,12 @@ export default function AdminPage() {
       { method: "GET", signal: controller.signal },
     )
       .then((envelope) => {
+        if (!sessionOwner.isCurrent(session) || controller.signal.aborted) return;
         setCaseDetail(asRecord(envelope.data));
         setCaseDetailState("ready");
       })
       .catch((error) => {
-        if (!controller.signal.aborted) {
+        if (sessionOwner.isCurrent(session) && !controller.signal.aborted) {
           setCaseDetail(null);
           setCaseDetailState(
             error instanceof ApiError && error.status === 404
@@ -2621,11 +2624,12 @@ export default function AdminPage() {
       { method: "GET", signal: controller.signal },
     )
       .then((envelope) => {
+        if (!sessionOwner.isCurrent(session) || controller.signal.aborted) return;
         setMediaDetail(asRecord(envelope.data));
         setMediaState("ready");
       })
       .catch((error) => {
-        if (!controller.signal.aborted) {
+        if (sessionOwner.isCurrent(session) && !controller.signal.aborted) {
           setMediaDetail(null);
           setMediaState(
             error instanceof ApiError && error.status === 404
@@ -2646,10 +2650,12 @@ export default function AdminPage() {
         session,
         { method: "GET" },
       );
+      if (!sessionOwner.isCurrent(session)) return;
       const rows = asRecords(envelope.data);
       setAuditRows(rows);
       setAuditState(rows.length ? "ready" : "empty");
     } catch {
+      if (!sessionOwner.isCurrent(session)) return;
       setAuditRows(data?.audits ?? []);
       setAuditState(data?.audits.length ? "partial" : "error");
     }
@@ -2659,38 +2665,42 @@ export default function AdminPage() {
     if (view === "audit") void loadAudit();
   }, [loadAudit, view]);
 
-  const authenticate = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAuthError("");
-    if (!/^admin:[A-Za-z0-9._-]{1,64}$/u.test(actor.trim())) {
-      setAuthError("actor identity 必须符合 admin:<name> 格式");
-      return;
-    }
-    const nextSession = { token: token.trim(), actor: actor.trim() };
-    if (!nextSession.token) {
-      setAuthError("管理员 token 不能为空");
-      return;
-    }
-    setAuthState("checking");
-    try {
-      await loadDashboard(nextSession);
-      setSession(nextSession);
-      setSessionStorage(nextSession);
-    } catch (error) {
-      setSession(null);
-      setAuthState("error");
-      setAuthError(getErrorMessage(error));
-    }
+  const clearPrivateState = () => {
+    setData(null); setQueueState("idle"); setDashboardState("idle");
+    setSelectedCaseId(""); setSelectedSpotId(""); setSelectedMediaId("");
+    setCaseDetail(null); setCaseDetailState("idle"); setMediaDetail(null); setMediaState("idle");
+    setAuditRows([]); setAuditState("idle"); setMergePreview(null); setMergePreviewState("idle");
+    setReplacementPreview(null); setReplacementPreviewState("idle"); setMergeSelections({});
+    setCurrentSpotId(""); setSuccessorSpotId(""); setReason(""); setMutation({ phase: "idle", label: "" });
   };
 
-  const signOut = () => {
+  const authenticateToken = async (credential: string) => {
     activeRequest.current?.abort();
-    setSession(null);
-    setData(null);
-    setDashboardState("idle");
-    setAuthState("idle");
-    setAuthError("");
-    setSessionStorage(null);
+    const candidate = sessionOwner.begin(credential.trim());
+    setSession(null); clearPrivateState(); setAuthError(""); setAuthState("checking");
+    try {
+      const identity = await requestEnvelope<{ actorId: string }>("/v2/admin/session", candidate);
+      const confirmed = sessionOwner.confirm(candidate, identity.data?.actorId ?? "");
+      setSession(confirmed); setSessionStorage(confirmed); setAuthState("authenticated");
+    } catch (error) {
+      if (!sessionOwner.isCurrent(candidate)) return;
+      sessionOwner.retire(); setSessionStorage(null); setAuthState("error"); setAuthError(getErrorMessage(error));
+    }
+  };
+  const authenticate = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!token.trim()) { setAuthError("管理员 token 不能为空"); return; }
+    void authenticateToken(token);
+  };
+  useEffect(() => {
+    if (initialToken) void authenticateToken(initialToken);
+    return () => { sessionOwner.retire(); activeRequest.current?.abort(); };
+  }, []);
+
+  const signOut = () => {
+    sessionOwner.retire(); activeRequest.current?.abort();
+    setSession(null); clearPrivateState(); setToken("");
+    setAuthState("idle"); setAuthError(""); setSessionStorage(null);
   };
 
   const navigate = (nextView: ViewKey) => {
@@ -2702,91 +2712,75 @@ export default function AdminPage() {
 
   const refresh = () => {
     if (session)
-      void loadDashboard(session).catch((error) =>
-        setAuthError(getErrorMessage(error)),
-      );
+      void loadDashboard(session).catch((error) => {
+        if (sessionOwner.isCurrent(session)) setAuthError(getErrorMessage(error));
+      });
   };
 
-  const runMutation = useCallback(
-    async (input: {
-      label: string;
-      path: string;
-      body: JsonRecord;
-      verify?: (fresh: DashboardData, receipt: JsonRecord) => boolean;
-      verifyReadback?: (
-        activeSession: AuthSession,
-        receipt: JsonRecord,
-      ) => Promise<boolean>;
-    }) => {
-      if (!session) return;
-      const idempotencyKey = newIdempotencyKey(
-        input.label.replace(/\s+/gu, "-"),
-      );
-      setMutation({ phase: "submitting", label: input.label });
-      try {
-        const envelope = await requestEnvelope<unknown>(
-          input.path,
-          session,
-          {
-            method: "POST",
-            body: JSON.stringify({ ...input.body, idempotencyKey }),
-          },
-          idempotencyKey,
-        );
-        const receipt = extractReceipt(envelope);
-        if (!receipt) {
-          setMutation({
-            phase: "unverified",
-            label: input.label,
-            message: "服务端响应缺少 receipt；即使 HTTP 成功，也不会显示成功。",
-            requestId: asString(envelope.requestId),
-          });
-          return;
-        }
-        setMutation({
-          phase: "readback",
-          label: input.label,
-          receipt,
-          requestId: asString(envelope.requestId),
-        });
-        const freshResult = await readDashboard(session);
-        const fresh = freshResult.data;
-        setData(fresh);
-        setQueueState(freshResult.queueState);
-        const readbackMatches = input.verifyReadback
-          ? await input.verifyReadback(session, receipt)
-          : input.verify
-            ? input.verify(fresh, receipt)
-            : true;
-        if (!readbackMatches) {
-          setMutation({
-            phase: "unverified",
-            label: input.label,
-            receipt,
-            requestId: asString(envelope.requestId),
-            message:
-              "已收到服务端 receipt，但当前 readback 没有证明预期对象/影响已经生效。",
-          });
-          return;
-        }
-        setMutation({
-          phase: "confirmed",
-          label: input.label,
-          receipt,
-          requestId: asString(envelope.requestId),
-          message: "receipt 与服务端 readback 均匹配当前操作。",
-        });
-      } catch (error) {
-        setMutation({
-          phase: "error",
-          label: input.label,
-          message: getErrorMessage(error),
-          requestId: error instanceof ApiError ? error.requestId : undefined,
-        });
+  const executeMutation = async (attempt: AdminCommandAttempt<CommandInput>) => {
+    const { input, session: origin, idempotencyKey, wireBody } = attempt;
+    let confirmed = false;
+    let writeAcknowledged = false;
+    setMutation({ phase: "submitting", label: input.label });
+    setCommandVersion(value => value + 1);
+    try {
+      const envelope = await requestEnvelope<unknown>(input.path, origin, { method: "POST", body: wireBody }, idempotencyKey);
+      writeAcknowledged = true;
+      sessionOwner.assertCurrent(origin);
+      const receipt = extractReceipt(envelope);
+      if (!receipt) {
+        setMutation({ phase: "unverified", label: input.label, message: "服务端响应缺少回执，结果未确认；保留原操作供重试核对。", requestId: asString(envelope.requestId) });
+        return;
       }
-    },
-    [readDashboard, session],
-  );
+      if (receipt.actorId !== origin.actor || receipt.idempotencyKey !== idempotencyKey ||
+        !["COMMITTED", "REPLAYED"].includes(asString(receipt.status))) {
+        setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "回执身份或操作标识不匹配，暂不确认结果；保留原操作核对。" });
+        return;
+      }
+      commandOwner.recordCommitted(attempt, receipt);
+      setMutation({ phase: "readback", label: input.label, receipt, requestId: asString(envelope.requestId) });
+      const freshResult = await readDashboard(origin);
+      sessionOwner.assertCurrent(origin);
+      const readbackMatches = input.verifyReadback ? await input.verifyReadback(origin, receipt)
+        : input.verify ? input.verify(freshResult.data, receipt) : true;
+      sessionOwner.assertCurrent(origin);
+      setData(freshResult.data); setQueueState(freshResult.queueState);
+      if (!readbackMatches) {
+        setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "已收到回执，当前读回尚未证明预期结果；保留原操作继续核对。" });
+        return;
+      }
+      if (asRecord(envelope.postCommit).cacheInvalidation === "FAILED") {
+        setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "变更已提交且管理读回已确认，但公共缓存刷新未完成。请重试原操作完成刷新；不要另建重复操作。" });
+        return;
+      }
+      confirmed = true;
+      setMutation({ phase: "confirmed", label: input.label, receipt, requestId: asString(envelope.requestId), message: "回执与服务端读回均匹配本次操作。" });
+    } catch (error) {
+      if (!sessionOwner.isCurrent(origin)) return;
+      // A definitive rejection is safe to revise; transport/5xx/readback failures
+      // retain the dispatched command even if its transaction may have committed.
+      const rejected = error instanceof ApiError && [400, 401, 403, 404, 409, 410, 422].includes(error.status)
+        && !writeAcknowledged && !commandOwner.hasUnresolvedOutcome(attempt);
+      if (rejected) confirmed = true;
+      const knownReceipt = commandOwner.knownReceipt(attempt);
+      setMutation({ phase: rejected ? "error" : "unverified", label: input.label,
+        message: `${knownReceipt ? "先前提交已获服务端回执，尚未完成核对或缓存刷新；本次重试失败不表示此前未提交。" : rejected ? "" : "先前提交结果仍待核对；本次失败不能证明操作未发生。"}${getErrorMessage(error)}`,
+        ...(knownReceipt ? { receipt: knownReceipt } : {}), requestId: error instanceof ApiError ? error.requestId : undefined });
+    } finally {
+      commandOwner.settle(attempt, confirmed);
+      if (sessionOwner.isCurrent(origin)) setCommandVersion(value => value + 1);
+    }
+  };
+  const runMutation = (input: CommandInput) => {
+    if (!session) return;
+    try { void executeMutation(commandOwner.begin(session, input)); }
+    catch (error) { setMutation({ phase: "unverified", label: pendingCommand?.input.label ?? input.label, message: getErrorMessage(error) }); }
+  };
+  const retryMutation = () => {
+    if (!session) return;
+    const attempt = commandOwner.retry(session);
+    if (attempt) void executeMutation(attempt);
+  };
 
   const resolveCase = (
     resolution: "APPROVED" | "REJECTED" | "CHANGES_REQUESTED",
@@ -2865,12 +2859,14 @@ export default function AdminPage() {
           }),
         },
       );
+      if (!sessionOwner.isCurrent(session)) return;
       const payload = asRecord(envelope.data);
       const preview = asRecord(payload.preview ?? payload);
       setMergePreview(preview);
       setMergeSelections({});
       setMergePreviewState(Object.keys(preview).length ? "ready" : "partial");
     } catch {
+      if (!sessionOwner.isCurrent(session)) return;
       setMergePreview(null);
       setMergeSelections({});
       setMergePreviewState("error");
@@ -2968,6 +2964,7 @@ export default function AdminPage() {
           }),
         },
       );
+      if (!sessionOwner.isCurrent(session)) return;
       const payload = asRecord(envelope.data);
       const impact = asRecord(payload.impact ?? payload);
       setReplacementPreview(impact);
@@ -2975,6 +2972,7 @@ export default function AdminPage() {
         Object.keys(impact).length ? "ready" : "partial",
       );
     } catch {
+      if (!sessionOwner.isCurrent(session)) return;
       setReplacementPreview(null);
       setReplacementPreviewState("error");
     }
@@ -3031,7 +3029,7 @@ export default function AdminPage() {
   };
 
   const renderView = () => {
-    if (view === "events") return <EventCatalogView request={requestEventCatalog} />;
+    if (view === "events") return <EventCatalogView key={session?.generation} request={requestEventCatalog} />;
     if (!data)
       return (
         <div className="content-error">
@@ -3206,17 +3204,19 @@ export default function AdminPage() {
                 读模型未完整返回；缺失字段保持未确认，不会由前端生成。
               </Notice>
             ) : null}
+            {pendingCommand ? <Notice tone="warning" title="有一笔操作尚未确认">
+              {pendingCommand.input.label}。输入和修订保持原样，先重试核对这笔操作再提交新的更改。
+              <button className="control secondary" type="button" disabled={mutation.phase === "submitting" || mutation.phase === "readback"} onClick={retryMutation}>重试原操作</button>
+            </Notice> : null}
             {renderView()}
           </main>
         </div>
       ) : (
         <AuthGate
           token={token}
-          actor={actor}
           error={authError}
           busy={authState === "checking"}
           onToken={setToken}
-          onActor={setActor}
           onSubmit={authenticate}
         />
       )}

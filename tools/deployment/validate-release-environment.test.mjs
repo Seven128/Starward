@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { rm } from "node:fs/promises";
 import test from "node:test";
 import {
@@ -22,6 +23,22 @@ test("a release environment closes identity, credentials and least-privilege lan
     assert.equal(result.status, "valid");
     assert.equal(result.environment, "staging");
     assert.equal(result.imageDigest, releaseImageDigest);
+  });
+});
+
+test("management release requires a fixed principal or separate server-owned credentials", async () => {
+  await withFixture({ api: { MINIAPP_ADMIN_ACTOR: "" } }, async deployPath => {
+    await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /api:MINIAPP_ADMIN_PRINCIPAL/u);
+  });
+  await withFixture({ api: { MINIAPP_ADMIN_RBAC: "{}" } }, async deployPath => {
+    await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /api:MINIAPP_ADMIN_PRINCIPAL/u);
+  });
+  const credential = { actorId: "admin:release", tokenSha256: createHash("sha256").update("separate-test-credential").digest("hex"), roles: ["OWNER"] };
+  await withFixture({ api: { MINIAPP_ADMIN_TOKEN: "", MINIAPP_ADMIN_ACTOR: "", MINIAPP_ADMIN_RBAC: "", MINIAPP_ADMIN_CREDENTIALS: JSON.stringify([credential]) } }, async deployPath => {
+    assert.equal((await validateReleaseEnvironment({ deployEnvPath: deployPath })).status, "valid");
+  });
+  await withFixture({ api: { MINIAPP_ADMIN_CREDENTIALS: "[]" } }, async deployPath => {
+    await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /api:MINIAPP_ADMIN_PRINCIPAL/u);
   });
 });
 

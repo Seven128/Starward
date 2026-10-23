@@ -52,6 +52,8 @@ export async function createReleaseEnvironmentFixture(overrides = {}) {
     WECHAT_MINIAPP_APP_SECRET: "wechat-app-secret-at-least-24",
     MINIAPP_SESSION_SECRET: "session-secret-at-least-thirty-two-characters",
     MINIAPP_ADMIN_TOKEN: "admin-token-at-least-thirty-two-characters",
+    MINIAPP_ADMIN_ACTOR: "admin:release-owner",
+    MINIAPP_ADMIN_RBAC: JSON.stringify({ "admin:release-owner": ["OWNER"] }),
     MINIAPP_WEATHER_PROVIDER: "QWEATHER",
     QWEATHER_FORECAST_HOURS: "240",
     QWEATHER_API_HOST: "example.qweatherapi.com",

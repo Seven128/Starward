@@ -212,6 +212,7 @@ try {
   stage("backup-restore:complete");
   const apiPort = await freePort();
   const adminToken = randomUUID();
+  const auditorToken = randomUUID();
   const api = spawn(
     process.execPath,
     ["--import", "tsx", "src/main.ts"],
@@ -226,10 +227,10 @@ try {
         MINIAPP_CACHE_PREFIX: cachePrefix,
         MINIAPP_QUEUE_NAME: queueName,
         MINIAPP_ADMIN_TOKEN: adminToken,
-        MINIAPP_ADMIN_RBAC: JSON.stringify({
-          "admin:infrastructure-check": ["OWNER"],
-          "admin:infrastructure-auditor": ["AUDITOR"],
-        }),
+        MINIAPP_ADMIN_CREDENTIALS: JSON.stringify([
+          { actorId: "admin:infrastructure-check", tokenSha256: createHash("sha256").update(adminToken).digest("hex"), roles: ["OWNER"] },
+          { actorId: "admin:infrastructure-auditor", tokenSha256: createHash("sha256").update(auditorToken).digest("hex"), roles: ["AUDITOR"] },
+        ]),
         MINIAPP_API_PORT: String(apiPort),
         MINIAPP_API_HOST: "127.0.0.1",
         MINIAPP_AUTH_MODE: "LOCAL_TEST",
@@ -504,7 +505,7 @@ try {
     });
     const roleDenied = await fetch(`${base}/v2/admin/spots/${encodeURIComponent(spotId)}/suspend`, {
       method: "POST",
-      headers: { ...lifecycleHeaders("auditor-denied"), "x-admin-actor": "admin:infrastructure-auditor" },
+      headers: { ...lifecycleHeaders("auditor-denied"), "x-admin-token": auditorToken, "x-admin-actor": "admin:infrastructure-auditor" },
       body: JSON.stringify({ reason: "auditor cannot mutate published places", expectedRevision: currentRevision }),
     });
     if (roleDenied.status !== 403) throw new Error(`admin_role_mutation_not_denied:${roleDenied.status}`);

@@ -31,6 +31,7 @@ import type { MediaObjectStorePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 import { isContributionEditable } from "./contribution-attempts.ts";
 import { contributionMediaObjectKey } from "./contribution-media-object.ts";
+import { cleanupExpiredContributionUploads } from "./contribution-media-maintenance.ts";
 
 export class ContributionService {
   constructor(
@@ -40,7 +41,6 @@ export class ContributionService {
   ) {}
 
   async list(userId: UserId) {
-    await this.cleanupExpiredUploads();
     return this.repository.listContributions(userId);
   }
 
@@ -168,7 +168,6 @@ export class ContributionService {
     const upload = submission.media.find((item) => item.uploadId === uploadId);
     if (!upload) throw new Error("contribution_upload_not_found");
     if (Date.parse(upload.expiresAt) <= Date.now()) {
-      await this.cleanupExpiredUploads();
       throw new Error("contribution_upload_expired");
     }
     const raw = decodeContributionBase64(
@@ -237,7 +236,6 @@ export class ContributionService {
 
   async removeUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
     const submission = await this.repository.removeContributionUpload(userId, submissionId, uploadId, expectedRevision, idempotencyKey);
-    await this.cleanupExpiredUploads();
     return submission;
   }
 
@@ -253,7 +251,6 @@ export class ContributionService {
       expectedRevision,
       idempotencyKey,
     );
-    await this.cleanupExpiredUploads();
     return submission;
   }
 
@@ -358,19 +355,11 @@ export class ContributionService {
 
   async removeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
     const intent = await this.repository.removeFormalContributionUpload(userId, intentId, uploadId, expectedRevision, idempotencyKey);
-    await this.cleanupExpiredUploads();
     return intent;
   }
 
   async cleanupExpiredUploads() {
-    const objectKeys = await this.repository.expireContributionUploads(
-      new Date().toISOString(),
-    );
-    await Promise.all(objectKeys.map(async (key) => {
-      await this.mediaStore.delete(key);
-      await this.repository.acknowledgeContributionMediaDeletion([key]);
-    }));
-    return objectKeys.length;
+    return cleanupExpiredContributionUploads(this.repository, this.mediaStore);
   }
 
   async #ownedDraft(userId: UserId, submissionId: ContributionId) {

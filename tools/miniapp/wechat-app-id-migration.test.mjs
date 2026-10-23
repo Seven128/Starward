@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +8,7 @@ import test from "node:test";
 import {
   inspectWechatAppId,
   migrateWechatAppId,
+  trackedAppIdFiles,
 } from "./wechat-app-id-migration.mjs";
 
 const oldAppId = `wx${"1".repeat(16)}`;
@@ -49,11 +51,35 @@ test("identity inspection requires one tracked AppID and matching local identity
       ...selected,
       trackedAppIdFiles: [
         ...selected.trackedAppIdFiles,
-        "docs/old-account.md",
+        "apps/duplicate-miniapp/project.config.json",
       ],
     }),
     /wechat_app_id_tracked_identity_ambiguous/u,
   );
+});
+
+test("tracked identity discovery preserves historical Markdown but rejects another live literal", async (t) => {
+  const selected = await fixture(t, { privateAppId: null });
+  const historicalPath = ".codex/work-items/history/identity.md";
+  await mkdir(path.join(selected.root, path.dirname(historicalPath)), { recursive: true });
+  const history = `Historical account: ${newAppId}\n`;
+  await writeFile(path.join(selected.root, historicalPath), history);
+  const git = (...args) => execFileSync("git", args, {
+    cwd: selected.root, encoding: "utf8", windowsHide: true,
+  });
+  git("init", "--quiet");
+  git("add", "--", ...selected.trackedAppIdFiles, historicalPath);
+  const tracked = trackedAppIdFiles({ root: selected.root });
+  assert.deepEqual(tracked, selected.trackedAppIdFiles);
+  assert.equal((await inspectWechatAppId({ ...selected, trackedAppIdFiles: tracked })).appId, oldAppId);
+  assert.equal(await readFile(path.join(selected.root, historicalPath), "utf8"), history);
+
+  const duplicatePath = "apps/wechat-miniapp/duplicate-identity.json";
+  await writeFile(path.join(selected.root, duplicatePath), JSON.stringify({ appid: newAppId }));
+  git("add", "--", duplicatePath);
+  await assert.rejects(inspectWechatAppId({
+    ...selected, trackedAppIdFiles: trackedAppIdFiles({ root: selected.root }),
+  }), /wechat_app_id_tracked_identity_ambiguous/u);
 });
 
 test("a local private AppID mismatch fails before migration", async (t) => {

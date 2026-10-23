@@ -1,7 +1,8 @@
 import { createPreferencesRuntime, type PreferenceRuntimeRecord } from "@starward/domain/preferences/runtime";
 import * as Crypto from "expo-crypto";
 import type { PreferenceProfile } from "@starward/domain/preferences";
-import type { LocationSource, PrimaryDestination } from "./shell-store";
+import type { PrimaryDestination } from "./shell-store";
+import { restoreShellLocation, type ShellLocation } from "./shell-location";
 import { createPreferenceStorage } from "./preferences-storage";
 
 const ACTOR_ID = "personal-trial-owner";
@@ -13,11 +14,15 @@ async function digest(value: string): Promise<string> {
 let runtimePromise: ReturnType<typeof createPreferencesRuntime> | null = null;
 
 function runtime() {
-  runtimePromise ??= (async () => createPreferencesRuntime({
-    storage: await createPreferenceStorage(),
-    digest,
-    releaseProfile: { id: "individual-personal-trial", productionTrafficAllowed: false },
-  }))();
+  if (!runtimePromise) {
+    const attempt = (async () => createPreferencesRuntime({
+      storage: await createPreferenceStorage(),
+      digest,
+      releaseProfile: { id: "individual-personal-trial", productionTrafficAllowed: false },
+    }))();
+    runtimePromise = attempt;
+    void attempt.catch(() => { if (runtimePromise === attempt) runtimePromise = null; });
+  }
   return runtimePromise;
 }
 
@@ -45,7 +50,7 @@ export async function persistActiveProfile(profileId: string) {
   });
 }
 
-export async function persistShellLocation(location: { source: LocationSource; label: string; latitude?: number; longitude?: number }) {
+export async function persistShellLocation(location: ShellLocation) {
   return (await runtime()).execute({
     outcome: "mobile-shell-and-preferences",
     actorId: ACTOR_ID,
@@ -68,7 +73,7 @@ export async function persistShellDestination(destination: PrimaryDestination) {
 export interface HydratedPreferenceRuntimeState {
   profiles: PreferenceProfile[];
   activeProfileId?: string;
-  location?: { source: LocationSource; label: string; latitude?: number; longitude?: number };
+  location?: ShellLocation;
   activeDestination?: PrimaryDestination;
 }
 
@@ -92,8 +97,8 @@ export async function hydratePreferenceRuntime(): Promise<HydratedPreferenceRunt
       activeProfileId = profile.id;
     } else if (record.operation === "preference.activate" && typeof payload.profileId === "string") {
       activeProfileId = payload.profileId;
-    } else if (record.operation === "shell.location.set" && typeof payload.label === "string" && ["unset", "device", "manual"].includes(String(payload.source))) {
-      location = { source: payload.source as LocationSource, label: payload.label, latitude: typeof payload.latitude === "number" ? payload.latitude : undefined, longitude: typeof payload.longitude === "number" ? payload.longitude : undefined };
+    } else if (record.operation === "shell.location.set") {
+      location = restoreShellLocation(payload) ?? location;
     } else if (record.operation === "shell.destination.set" && ["tonight", "map", "trips", "sky", "me", "itinerary", "profile"].includes(String(payload.destination))) {
       const destination = payload.destination === "itinerary" ? "trips" : payload.destination === "profile" ? "me" : payload.destination;
       activeDestination = destination as PrimaryDestination;

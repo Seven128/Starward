@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start:acceptance": "vite",
+    "typecheck": "node ../../tools/run-node.cjs --bin typescript tsc --noEmit",
     "build": "tsc --noEmit && vite build"
   },
   "dependencies": {

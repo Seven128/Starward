@@ -1194,6 +1194,9 @@ export type AdminRole =
   | "AUDITOR";
 
 export type AdminOperation =
+  | "SESSION_READ"
+  | "SPOT_CREATE"
+  | "SPOT_EDIT"
   | "QUEUE_READ"
   | "CASE_READ"
   | "CASE_REVIEW"

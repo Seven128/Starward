@@ -76,37 +76,9 @@ test("Operations controller is registered in the production module", () => {
   assert.ok(controllers.includes(AdminEventCatalogController));
 });
 
-test("admin RBAC fails closed in production and denies unauthorized operations", () => {
-  const previousNodeEnv = process.env.NODE_ENV;
-  const previousRbac = process.env.MINIAPP_ADMIN_RBAC;
-  try {
-    process.env.NODE_ENV = "test";
-    delete process.env.MINIAPP_ADMIN_RBAC;
-    assert.doesNotThrow(() => assertAdminOperation("admin:local", "PUBLISH"));
-
-    process.env.MINIAPP_ADMIN_RBAC = JSON.stringify({
-      "admin:review": ["MODERATOR"],
-    });
-    assert.doesNotThrow(() =>
-      assertAdminOperation("admin:review", "MERGE_PREVIEW"),
-    );
-    assert.throws(
-      () => assertAdminOperation("admin:review", "PUBLISH"),
-      /admin_permission_denied/u,
-    );
-
-    delete process.env.MINIAPP_ADMIN_RBAC;
-    process.env.NODE_ENV = "production";
-    assert.throws(
-      () => assertAdminOperation("admin:local", "QUEUE_READ"),
-      /admin_rbac_disabled/u,
-    );
-  } finally {
-    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = previousNodeEnv;
-    if (previousRbac === undefined) delete process.env.MINIAPP_ADMIN_RBAC;
-    else process.env.MINIAPP_ADMIN_RBAC = previousRbac;
-  }
+test("admin RBAC denies unauthorized operations on the authenticated principal", () => {
+  assert.doesNotThrow(() => assertAdminOperation({ actorId: "admin:review", roles: ["MODERATOR"] }, "MERGE_PREVIEW"));
+  assert.throws(() => assertAdminOperation({ actorId: "admin:review", roles: ["MODERATOR"] }, "PUBLISH"), /admin_permission_denied/u);
 });
 
 test("request-changes forwards actor, expected revision and idempotency key", async () => {
@@ -128,9 +100,13 @@ test("request-changes forwards actor, expected revision and idempotency key", as
   } as never);
   const previousToken = process.env.MINIAPP_ADMIN_TOKEN;
   const previousRbac = process.env.MINIAPP_ADMIN_RBAC;
+  const previousActor = process.env.MINIAPP_ADMIN_ACTOR;
+  const previousCredentials = process.env.MINIAPP_ADMIN_CREDENTIALS;
   try {
     process.env.MINIAPP_ADMIN_TOKEN = "test-token";
-    delete process.env.MINIAPP_ADMIN_RBAC;
+    process.env.MINIAPP_ADMIN_RBAC = JSON.stringify({ "admin:local": ["OWNER"] });
+    process.env.MINIAPP_ADMIN_ACTOR = "admin:local";
+    delete process.env.MINIAPP_ADMIN_CREDENTIALS;
     await controller.requestChanges(
       "case:one",
       { reason: "补充道路证据", expectedRevision: 7 },
@@ -143,6 +119,10 @@ test("request-changes forwards actor, expected revision and idempotency key", as
     else process.env.MINIAPP_ADMIN_TOKEN = previousToken;
     if (previousRbac === undefined) delete process.env.MINIAPP_ADMIN_RBAC;
     else process.env.MINIAPP_ADMIN_RBAC = previousRbac;
+    if (previousActor === undefined) delete process.env.MINIAPP_ADMIN_ACTOR;
+    else process.env.MINIAPP_ADMIN_ACTOR = previousActor;
+    if (previousCredentials === undefined) delete process.env.MINIAPP_ADMIN_CREDENTIALS;
+    else process.env.MINIAPP_ADMIN_CREDENTIALS = previousCredentials;
   }
   assert.deepEqual(calls, [
     {

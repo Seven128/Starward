@@ -838,6 +838,8 @@ test("media removal is scoped, revision checked, replayable and deletes only its
     await assert.rejects(service.removeContributionUpload(userId, draft.submissionId, target.uploadId, draft.revision - 1, "remove:stale"), /contribution_revision_conflict/);
     const removed = await service.removeContributionUpload(userId, draft.submissionId, target.uploadId, draft.revision, "remove:target");
     assert.deepEqual(removed.data.media, [draft.media[1]]);
+    assert.ok(await mediaStore.read(object.objectKey), "the committed request leaves physical deletion to maintenance");
+    assert.equal(await service.contributions.cleanupExpiredUploads(), 1);
     assert.equal(await mediaStore.read(object.objectKey), null);
     assert.deepEqual((await service.removeContributionUpload(userId, draft.submissionId, target.uploadId, draft.revision, "remove:target")).data, removed.data);
     assert.ok(await service.contributions.readForAdmin(draft.media[1]!.uploadId));
@@ -1028,7 +1030,7 @@ for (const formal of [false, true]) {
         assert.equal((await scenario.read())?.state, "PENDING");
         assert.equal(await scenario.service.repository.getContributionUploadObject(scenario.upload.uploadId), null);
         assert.ok(await store.read(store.key));
-        if (retirement === "remove") await assert.rejects(scenario.remove(), /delete_unavailable/);
+        if (retirement === "remove") await scenario.remove();
         else if (retirement === "expire") await scenario.service.repository.expireContributionUploads(new Date(Date.parse(scenario.upload.expiresAt) + 1).toISOString());
         else assert.equal((await scenario.service.repository.deleteAccount(scenario.userId, "integrity:erase")).mediaCleanupState, "QUEUED");
         await assert.rejects(scenario.service.contributions.cleanupExpiredUploads(), /delete_unavailable/);

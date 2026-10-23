@@ -14,8 +14,22 @@ test("product CI checks release products without design or Context gates", async
   assert.match(source, /npm audit --omit=dev --workspace @starward\/miniapp-api --audit-level=high/u);
   assert.match(source, /npm run test:deployment/u);
   assert.match(source, /npm run check:miniapp:release-code/u);
+  assert.match(source, /if: steps\.scope\.outputs\.consumers == 'true'\s+run: npm run check:product:consumers/u);
   assert.match(source, /docker build/u);
   assert.doesNotMatch(source, /design|validate-harness|context:|wechat.*upload/iu);
+});
+
+test("product consumer checks run actual workspace owners without generating a shared candidate", async () => {
+  const pkg = JSON.parse(await readFile("package.json", "utf8"));
+  const checks = pkg.scripts["check:product:consumers"];
+  assert.match(checks, /npm run test:mobile:fast/u);
+  assert.match(checks, /npm run typecheck --workspace @starward\/api/u);
+  assert.match(checks, /npm run test --workspace @starward\/api/u);
+  assert.match(checks, /npm run typecheck --workspace @starward\/admin-web/u);
+  assert.match(checks, /node tools\/run-node\.cjs --test tools\/miniapp\/admin-page\.test\.mjs tools\/miniapp\/admin-session\.test\.mjs tools\/miniapp\/admin-operations-client\.test\.mjs/u);
+  const admin = JSON.parse(await readFile("apps/admin-web/package.json", "utf8"));
+  assert.match(admin.scripts.typecheck, /tsc --noEmit/u);
+  assert.doesNotMatch(checks, /build|devtools|device|preview/u);
 });
 
 test("staging privilege follows only a successful trusted main push", async () => {

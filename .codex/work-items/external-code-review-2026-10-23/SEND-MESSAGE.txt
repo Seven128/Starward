@@ -1,0 +1,9 @@
+请按两个附件审查 Starward 的整个项目：
+1. REVIEW-PROMPT.zh-CN.md：完整审查要求和报告格式。
+2. PROJECT-BACKGROUND.zh-CN.md：产品背景、实现地图和已知问题。
+
+仓库：https://github.com/Seven128/Starward
+本次精确源码：https://github.com/Seven128/Starward/tree/4b5a610a1aaa76f8cf5a727dd5403af4b72d83e0
+Commit：4b5a610a1aaa76f8cf5a727dd5403af4b72d83e0
+
+主任务是全仓代码质量、架构、模块划分、抽象复用、成熟方案选用、鲁棒性和可扩展性审查。请审完整仓库树，不限本次diff。地图叠层渲染链路/内存和云观星播放/调时/内存是两个重点专题。请给有代码依据、分优先级、能实施并验证的建议；明确实际读取范围和不确定性。

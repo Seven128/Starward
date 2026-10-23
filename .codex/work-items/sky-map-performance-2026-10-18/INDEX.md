@@ -1,8 +1,18 @@
 # Starward 收口任务索引
 
-[R28首accepted成本关联](R28-FIRST-ACCEPTED-COSTS-20261023.md)持同一A问题的有限观察合同；当前源码、检查、候选/手机在途和下一步仅由HANDOFF拥有。
+最新跨机接力：[新电脑完整提示词](NEW-COMPUTER-PROMPT-20261023.md)。已完成批次与保留失败归HANDOFF；新增[偏好原子存储/回放核验](R20-PREFERENCES-CONTRACT-REVIEW-20261023.md)和[F07消费者证据](R20-NATIVE-CONTEXT-TRACE-20261023.md)已进入仓库，生产修复尚未完成，不能标全绿。原始私有资料、Heap和冻结包未随Git上传。
 
-2026-10-22最新确认：用户已采用[本轮局部UI设计](https://stitch.google.com/projects/7144519510537620825?node-id=3995519477980461148)并要求Stitch同步及旧稿清理，随后明确**UI先做，叠层完整显示链路/连续操作/内存第二，Sky六字段点按/内存第三**。原[PLAN](PLAN.md)承接R19的责任/依赖/验收，原叠层交互结论和全部未撤销义务保留；[设计采用记录](../map-ui-design-2026-10-22/HANDOFF.md)持有资源回读与清理证据。本机已收到明确继续指令，原发送端paused只作历史；当前Goal、候选、进度和下一步只见[HANDOFF](HANDOFF.md)，不把执行日志放进PLAN。
+2026-10-23 用户已批准把经本机核验的审查问题与三组重构纳入[唯一PLAN的R20](PLAN.md#verified-review-findings-and-responsibility-refactors-r20)，随后明确恢复完整Goal并开始实施。本聊天已创建完整无预算Goal，最新工具状态见HANDOFF；微信开发者工具、手机及共享调试服务由另一对话占用，本轮先推进不依赖这些资源的代码和隔离验证。[审查核验与条件](REVIEW-RECONCILIATION-20261023.md)、[完整要求](REQUIREMENTS.md)、[完整Goal正文](GOAL-OBJECTIVE.md)、[唯一当前阶段/下一步](HANDOFF.md)同步承接；R1–R19/H1–H8/A01–A15/N01–N09及全部未完成义务保留。[继续提示词](NEXT-CHAT-PROMPT.md)同时承接当前限制。下文各批“当前”、PID、候选和未激活状态均按记录时间解释，不能覆盖HANDOFF。
+
+[最新共享验证结果](CURRENT-VALIDATION-20261023.md)的失败在对应新证据成立前保留；[LAN调试准备](LAN-DEBUG-RESUME-20261023.md)及[官方开发期包体选项核查](LAN-DEBUG-PACKAGE-AUDIT-20261023.md)保留已发生事实，gen18差异/未完成状态见HANDOFF。本轮恢复实施不授权本聊天抢占LAN/采样/设备资源。
+
+[R28首accepted成本关联](R28-FIRST-ACCEPTED-COSTS-20261023.md)持同一A问题的有限观察合同：gen34已冻结，最终独审未完成，未推送/采样。此前完整逐批状态保留在[历史批次记录](HANDOFF-HISTORY-20261023.md)，只作定点查证。
+
+本分叉恢复实施后的首批：[管理身份与命令恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)、[头像提交安全/退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[共享检查/实际消费者](R20-SHARED-CHECKS-20261023.md)及[独立复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)。Mini API本地全套已由旧354失败更新为981通过/0失败/42跳过，后续管理修复另作受影响补验；未把本地通过外推为真机、Redis或整体Goal完成。唯一下一步沿HANDOFF，不重做已完成保护或抢占另一对话的设备。
+
+后续媒体、队列和锁序批次：[持久生命周期/恢复消费者](R20-MEDIA-LIFECYCLE-20261023.md)、[非提醒对账/真实Redis重启](R20-OUTBOX-RECOVERY-20261023.md)、[完整贡献锁序](R20-CONTRIBUTION-LOCK-ORDER-20261023.md)与[独审](R20-QUEUE-LOCK-INDEPENDENT-REVIEW-20261023.md)。已修过期替换与MEDIA确认/注销等待环；最新[精确账户媒体续批](R20-ACCOUNT-MEDIA-BATCHES-20261023.md)又修两处真实丢回复误死信，保部署/长期运行缺口。[原生App F05/F06最终独审](R20-NATIVE-STATE-FINAL-REVIEW-20261023.md)记录根hydration、一次定位、预设弹层恢复与本地检查，设备、偏好当前投影/回放和F07仍保留。当前唯一下一步归HANDOFF，不重复完成批次。
+
+当前确认的顺序继续有效：用户已采用[本轮局部UI设计](https://stitch.google.com/projects/7144519510537620825?node-id=3995519477980461148)并要求Stitch同步及旧稿精确清理；**UI先做，叠层完整显示链路/连续操作/内存第二，Sky六字段点按/内存第三**。原[PLAN](PLAN.md)承接R19责任/依赖/验收，原叠层交互结论和全部未撤销义务保留；[设计采用记录](../map-ui-design-2026-10-22/HANDOFF.md)持有资源回读与清理证据，不重选My或重新生成未改区域，不把执行日志放进PLAN。
 
 R19生产整合、目标画面、代码/输出独审及本批预览失败恢复的导航入口：[UI整合证据](R19-UI-INTEGRATION-20261022.md)。采用源与生产实现、开发反馈与最终验收继续分别判断。
 
@@ -84,7 +94,7 @@ gen33后续已[实际自动推送、正常全天空Play及6检查点读回](R27-
 
 23. [恢复数据后的约4km地形实际服务样本](RESTORED-TERRAIN-SAMPLE.json)：粗档固定包不含所请求z12细档，首次3.926s、重复6ms；属于后续叠层性能责任，不能把恢复/API通过当真机优化已验收。
 
-24. [交接与恢复提示词](NEXT-CHAT-PROMPT.md)：供用户在新对话明确要求执行的接手文本；本接手对话已收到明确继续指令，完整Goal无预算；实际工具状态见HANDOFF。原实施前停止边界已解除，单纯读取文件仍不自行激活工作。当前事实仍只见HANDOFF。
+24. [交接与恢复提示词](NEXT-CHAT-PROMPT.md)：供用户以后明确恢复实施时使用。历史接手阶段曾收到继续指令并创建无预算Goal；后来用户暂停，再于本分叉仅授权R20方案整理。当前许可/工具状态只见HANDOFF，单纯读取文件或采用方案不会恢复实施。
 
 25. [R17当前测试与夹具修复](R17-CURRENT-TESTS.md)、[同条件手机诊断构建](R17-PHONE-PROBE.md)、[有限地形细档发布](TERRAIN-HOTSPOT-PRODUCTS.md)、[Map静态分发适配](MAP-STATIC-ADAPTER.md)。本地检查、真实HTTP读回和目标手机结果保持各自证据范围。
 
@@ -218,4 +228,4 @@ gen33后续已[实际自动推送、正常全天空Play及6检查点读回](R27-
 
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
-恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后按完整正文创建、不设token预算；已有等价Goal则续用。本发送端为交接而paused，新对话用户明确继续提示词提供继续授权；历史active/blocked/paused不替代最新人类指令。当前状态归HANDOFF，进度/日志/下一步不写PLAN。核源码/候选/在途状态及所需服务/窗口，旧PID、截图和session不提供当前手机输入资格，完整义务和保护边界继续保留。
+恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF、REVIEW-RECONCILIATION-20261023 → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户后续明确要求继续Goal后按完整正文创建、不设token预算；已有等价Goal则续用。父聊天历史paused不代表本分叉有Goal；本轮仅方案授权不恢复实施。历史active/blocked/paused不替代最新人类指令。当前状态归HANDOFF，进度/日志/下一步不写PLAN。实际恢复时才核源码/候选/在途与所需服务/窗口；旧PID、截图和session不提供输入资格，完整义务和保护边界继续保留。

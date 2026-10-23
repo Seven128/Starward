@@ -1,7 +1,8 @@
-import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { router, useIsFocused } from "expo-router";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   ActivityIndicator,
+  AppState,
   Modal,
   Pressable,
   ScrollView,
@@ -33,8 +34,10 @@ import {
 } from "@starward/ui-system/tokens";
 import { PreferenceWizard } from "../features/preferences/PreferenceWizard";
 import { expoPermissionGateway, type PermissionDecision } from "../native/permissions/permission-gateway";
+import { expoForegroundLocationGateway } from "../native/permissions/foreground-location-gateway";
 import { useShellStore } from "../state/shell-store";
 import { useStarwardTheme } from "./useStarwardTheme";
+import { createDeviceLocationSelection } from "./device-location-selection";
 
 type QuickTarget = Extract<ObservingTarget, "milky-way" | "planets" | "meteor-shower">;
 type WalkingChoice = 0 | 0.8 | 2;
@@ -110,6 +113,8 @@ function PermissionDialog({
   visible,
   status,
   loading,
+  message,
+  canAskAgain,
   styles,
   palette,
   onAllow,
@@ -119,6 +124,8 @@ function PermissionDialog({
   visible: boolean;
   status: PermissionDecision;
   loading: boolean;
+  message: string | null;
+  canAskAgain: boolean;
   styles: ShellStyles;
   palette: ColorPalette;
   onAllow(): void;
@@ -141,9 +148,9 @@ function PermissionDialog({
           <Text testID="permission-denied-alternative" style={styles.alternative}>
             暂不允许仍可手动输入城市或出发地，基础查询不会被阻断。
           </Text>
-          {status === "denied" ? (
+          {message ? (
             <Text accessibilityLiveRegion="polite" style={styles.error}>
-              系统已拒绝；不会重复强迫授权。你可以继续使用手动地点。
+              {message}
             </Text>
           ) : null}
           <Pressable
@@ -155,7 +162,7 @@ function PermissionDialog({
           >
             {loading
               ? <ActivityIndicator color={palette.onPrimary} />
-              : <Text style={styles.primaryButtonText}>允许使用期间定位</Text>}
+              : <Text style={styles.primaryButtonText}>{status === "granted" ? "重新获取位置" : canAskAgain ? "允许使用期间定位" : "检查权限状态"}</Text>}
           </Pressable>
           <View style={styles.dialogActions}>
             <Pressable accessibilityRole="button" onPress={onManual} style={styles.secondaryButton}>
@@ -188,19 +195,47 @@ function ProfileSwitcherDialog({
   onSelect(id: string): Promise<void>;
   onCreate(): void;
 }) {
+  const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [selectingId, setSelectingId] = useState<string | null>(null);
+  const selection = useRef<symbol | null>(null);
+  useEffect(() => {
+    if (!visible) { setSelectionError(null); setSelectingId(null); }
+    return () => { selection.current = null; };
+  }, [visible]);
+  const leave = (action: () => void) => {
+    selection.current = null;
+    action();
+  };
+  const select = async (id: string) => {
+    if (selection.current) return;
+    const attempt = Symbol();
+    selection.current = attempt;
+    setSelectionError(null);
+    setSelectingId(id);
+    try {
+      await onSelect(id);
+      if (selection.current === attempt) onClose();
+    } catch {
+      if (selection.current === attempt) setSelectionError("当前预设未切换，请重试。");
+    } finally {
+      if (selection.current === attempt) { selection.current = null; setSelectingId(null); }
+    }
+  };
   return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={() => leave(onClose)}>
       <View style={styles.backdrop}>
         <View accessibilityViewIsModal style={styles.dialog}>
           <Text style={styles.eyebrow}>当前推荐画像</Text>
           <Text style={styles.dialogTitle}>切换偏好预设</Text>
+          {selectionError ? <Text style={styles.error}>{selectionError}</Text> : null}
           <View style={styles.dialogList}>
             {profiles.map((profile) => (
               <Pressable
                 key={profile.id}
                 accessibilityRole="radio"
-                accessibilityState={{ selected: profile.id === activeId }}
-                onPress={() => void onSelect(profile.id).then(onClose)}
+                accessibilityState={{ selected: profile.id === activeId, disabled: selectingId !== null }}
+                disabled={selectingId !== null}
+                onPress={() => void select(profile.id)}
                 style={({ pressed }) => [
                   styles.dialogListRow,
                   profile.id === activeId && styles.selectedRow,
@@ -211,14 +246,14 @@ function ProfileSwitcherDialog({
                   <Text style={styles.listTitle}>{profile.name}</Text>
                   <Text style={styles.listMeta}>{profileImpactSummary(profile)}</Text>
                 </View>
-                <Text style={styles.rowAction}>{profile.id === activeId ? "当前" : "切换"}</Text>
+                <Text style={styles.rowAction}>{profile.id === selectingId ? "正在切换" : profile.id === activeId ? "当前" : "切换"}</Text>
               </Pressable>
             ))}
           </View>
-          <Pressable accessibilityRole="button" onPress={onCreate} style={styles.primaryButton}>
+          <Pressable accessibilityRole="button" onPress={() => leave(onCreate)} style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>新建完整预设</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={onClose} style={styles.secondaryButtonWide}>
+          <Pressable accessibilityRole="button" onPress={() => leave(onClose)} style={styles.secondaryButtonWide}>
             <Text style={styles.secondaryButtonText}>关闭</Text>
           </Pressable>
         </View>
@@ -256,6 +291,8 @@ export function MobileShellScreen() {
     recommendationState,
     persistenceState,
     persistenceError,
+    hydrationState,
+    hydrationError,
     hydrateFromRuntime,
     setManualLocation,
     setDeviceLocation,
@@ -265,25 +302,40 @@ export function MobileShellScreen() {
   const [manualLocation, setManualLocationDraft] = useState("深圳市 · 南山区");
   const [manualEditorVisible, setManualEditorVisible] = useState(false);
   const [permissionVisible, setPermissionVisible] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState<PermissionDecision>("undetermined");
-  const [permissionLoading, setPermissionLoading] = useState(false);
+  const locationSelection = useMemo(() => createDeviceLocationSelection({
+    permission: expoPermissionGateway,
+    location: expoForegroundLocationGateway,
+    save: (fix, signal) => setDeviceLocation("当前位置", fix, signal),
+  }), [setDeviceLocation]);
+  const locationRequest = useSyncExternalStore(locationSelection.subscribe, locationSelection.getState, locationSelection.getState);
+  const permissionLoading = ["requesting", "locating", "saving"].includes(locationRequest.phase);
+  const focused = useIsFocused();
   const [profileSwitcherVisible, setProfileSwitcherVisible] = useState(false);
   const [wizardVisible, setWizardVisible] = useState(false);
   const [quickTarget, setQuickTarget] = useState<QuickTarget>("milky-way");
   const [walking, setWalking] = useState<WalkingChoice>(0.8);
 
   useEffect(() => {
-    void hydrateFromRuntime();
-  }, [hydrateFromRuntime]);
+    if (!focused) locationSelection.cancel();
+    return () => locationSelection.cancel();
+  }, [focused, locationSelection]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      // An OS permission prompt may make iOS inactive; it is still this task.
+      if (state === "background") locationSelection.cancel();
+    });
+    return () => subscription.remove();
+  }, [locationSelection]);
 
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? createUnrestrictedProfile(),
     [activeProfileId, profiles],
   );
   const manualVisible = manualEditorVisible || location.source === "manual";
-  const persistenceLabel = persistenceState === "loading"
+  const persistenceLabel = hydrationState === "idle" || hydrationState === "loading"
     ? "正在恢复"
-    : persistenceState === "saving"
+    : hydrationState === "error" ? "恢复失败" : persistenceState === "saving"
       ? "正在保存"
       : persistenceState === "error"
         ? "保存失败"
@@ -295,23 +347,19 @@ export function MobileShellScreen() {
   };
 
   const chooseManualLocation = async () => {
+    locationSelection.cancel();
     setManualEditorVisible(true);
     if (manualLocation.trim()) await setManualLocation(manualLocation.trim());
   };
 
   const requestLocation = async () => {
-    if (permissionLoading) return;
-    setPermissionLoading(true);
-    try {
-      const result = await expoPermissionGateway.requestForegroundLocation();
-      setPermissionStatus(result.decision);
-      if (result.decision === "granted") {
-        await setDeviceLocation("当前位置", 0, 0);
-        setPermissionVisible(false);
-      }
-    } finally {
-      setPermissionLoading(false);
-    }
+    const saved = await locationSelection.request();
+    if (saved && locationSelection.getState().phase === "saved") setPermissionVisible(false);
+  };
+
+  const closePermission = () => {
+    locationSelection.cancel();
+    setPermissionVisible(false);
   };
 
   return (
@@ -326,9 +374,18 @@ export function MobileShellScreen() {
       >
         {restoration.evidence}
         <View style={styles.pageHead}>
-          <Text testID={persistenceState === "ready" ? "me-preferences-ready" : undefined} style={styles.eyebrow}>首次使用 · 3 / 4</Text>
+          <Text testID={hydrationState === "ready" && persistenceState === "ready" ? "me-preferences-ready" : undefined} style={styles.eyebrow}>首次使用 · 3 / 4</Text>
           <Text style={styles.pageTitle}>把今晚变成可执行计划</Text>
           <Text style={styles.pageSubtitle}>权限按任务说明；不授权也能手动选择地点与有限使用。</Text>
+          {hydrationError ? (
+            <View>
+              <Text style={styles.error}>{hydrationError}</Text>
+              <Pressable accessibilityRole="button" onPress={() => void hydrateFromRuntime()} style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>重试恢复本机偏好</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          {persistenceError ? <Text style={styles.error}>{persistenceError}</Text> : null}
         </View>
 
         <View
@@ -349,7 +406,7 @@ export function MobileShellScreen() {
               testID="shell-open-permission-feature"
               accessibilityRole="button"
               accessibilityLabel="允许使用期间定位"
-              onPress={() => setPermissionVisible(true)}
+              onPress={() => { locationSelection.cancel(); setPermissionVisible(true); }}
               style={({ pressed }) => [styles.strongButton, pressed && styles.pressed]}
             >
               <Text style={styles.strongButtonText}>允许使用期间</Text>
@@ -360,7 +417,7 @@ export function MobileShellScreen() {
               accessibilityLabel="手动选择位置"
               accessibilityState={{ busy: persistenceState === "saving" }}
               disabled={persistenceState === "saving"}
-              onPress={() => void chooseManualLocation()}
+              onPress={() => void chooseManualLocation().catch(() => undefined)}
               style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, persistenceState === "saving" && styles.disabled]}
             >
               <Text style={styles.secondaryButtonText}>手动选择</Text>
@@ -375,19 +432,28 @@ export function MobileShellScreen() {
                 accessibilityLabel="手动位置"
                 value={manualLocation}
                 onChangeText={setManualLocationDraft}
-                onSubmitEditing={() => void chooseManualLocation()}
+                onSubmitEditing={() => void chooseManualLocation().catch(() => undefined)}
                 placeholder="城市或出发地"
                 placeholderTextColor={palette.textSecondary}
                 returnKeyType="done"
                 style={styles.input}
               />
-              <View style={styles.locationResult}>
+            </View>
+          ) : null}
+          {location.source !== "unset" ? (
+            <View style={styles.locationResult}>
                 <Text testID="shell-location-label" style={styles.locationValue}>{location.label}</Text>
                 <Text testID="shell-location-source" style={styles.rowAction}>
                   {location.source === "manual" ? "手动位置" : location.source === "device" ? "设备前台位置" : "未设置"}
                 </Text>
+                {location.source === "device" ? (
+                  <Text style={styles.meta}>
+                    {location.accuracyMeters == null ? "精度未知" : `误差约 ${Math.round(location.accuracyMeters)} m`}
+                    {location.timestampMs === undefined ? " · 采样时间未知" : ` · ${new Date(location.timestampMs).toLocaleTimeString("zh-CN")} 采样`}
+                    {location.mocked ? " · 系统标记为模拟位置" : ""}
+                  </Text>
+                ) : null}
               </View>
-            </View>
           ) : null}
         </View>
 
@@ -485,7 +551,7 @@ export function MobileShellScreen() {
               accessibilityHint="切换当前推荐画像"
               accessibilityState={{
                 selected: true,
-                busy: persistenceState === "loading",
+                busy: hydrationState === "loading",
                 ...profileEvidence.accessibilityState,
               }}
               onPress={() => setProfileSwitcherVisible(true)}
@@ -526,16 +592,18 @@ export function MobileShellScreen() {
 
       <PermissionDialog
         visible={permissionVisible}
-        status={permissionStatus}
+        status={locationRequest.permission}
         loading={permissionLoading}
+        message={locationRequest.message}
+        canAskAgain={locationRequest.canAskAgain}
         styles={styles}
         palette={palette}
         onAllow={() => void requestLocation()}
         onManual={() => {
           setPermissionVisible(false);
-          void chooseManualLocation();
+          void chooseManualLocation().catch(() => undefined);
         }}
-        onClose={() => setPermissionVisible(false)}
+        onClose={closePermission}
       />
       <ProfileSwitcherDialog
         visible={profileSwitcherVisible}

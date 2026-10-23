@@ -27,6 +27,18 @@ export function normalizeContributionAttempts(
   };
 }
 
+/** Shared durable-record normalization; old records retain their publication
+ * axes and history defaults when a maintenance transaction updates media. */
+export function normalizeContributionSubmission(value: ContributionSubmission): ContributionSubmission {
+  const submissionState = value.submissionState ?? (value.state === "APPROVED" ? "ACCEPTED" : value.state);
+  return {
+    ...normalizeContributionAttempts(value), submissionState,
+    mergeState: value.mergeState ?? "NOT_STARTED",
+    publicationImpact: value.publicationImpact ?? "NONE",
+    statusHistory: value.statusHistory ?? [],
+  };
+}
+
 export function appendContributionAttempt(
   value: ContributionSubmission,
   submittedAt: string,

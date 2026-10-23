@@ -146,6 +146,7 @@ export class AdminOperationsController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
+    adminOperationsContext(this.service, token, actor, "MEDIA_REVIEW");
     if (body.decision !== "ACCEPT" && body.decision !== "REJECT")
       throw new Error("admin_media_decision_invalid");
     return this.reviewMedia(

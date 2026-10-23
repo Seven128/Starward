@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { Queue, Worker, type Job } from "bullmq";
+import { DelayedError, WaitingError, Queue, Worker, type Job } from "bullmq";
 import pg, { type PoolClient } from "pg";
 import { AstronomyService } from "./astronomy-service.ts";
 import { MemoryCache } from "./cache.ts";
@@ -8,6 +8,10 @@ import type { MediaObjectStorePort, WeatherPort } from "./ports.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
 import { handleIdlePoolErrors } from "./postgres-pool-errors.ts";
 import { createMediaObjectStore } from "./media-object-store.ts";
+import { isAccountMediaRetirementPayload, retireAccountMediaBatch } from "./account-media-retirement.ts";
+import { retireExpiredAccountAvatarWrites } from "./account-avatar-persistence.ts";
+import { cleanupExpiredContributionUploads, MEDIA_MAINTENANCE_BATCH_SIZE } from "./contribution-media-maintenance.ts";
+import { OutboxDispatchRecovery, OutboxQueueHandleProbe } from "./outbox-dispatch-recovery.ts";
 import {
   loadRuntimeConfig,
   type MiniappRuntimeConfig,
@@ -21,6 +25,7 @@ import { PlanReminderDispatcher } from "./plan-reminder-dispatcher.ts";
 
 const { Pool } = pg;
 const DEFAULT_QUEUE_NAME = "starward-miniapp-current";
+const QUEUE_RETRY_DELAY_MS = 250;
 export const OPERATIONAL_JOB_KINDS = Object.freeze([
   "WEATHER",
   "ASTRONOMY",
@@ -82,7 +87,7 @@ function connectionFromUrl(redisUrl: string) {
   };
 }
 
-function mapEventToJob(eventType: string, payload: unknown) {
+export function mapEventToJob(eventType: string, payload: unknown) {
   if (
     typeof payload === "object" &&
     payload !== null &&
@@ -100,6 +105,7 @@ function mapEventToJob(eventType: string, payload: unknown) {
 interface JobOutcome {
   resultState: string;
   resultPayload: Readonly<Record<string, unknown>>;
+  continueAfterMs?: number;
 }
 
 export interface OutboxWorkerOptions {
@@ -127,6 +133,7 @@ export class OutboxWorkerRuntime {
   readonly eventCatalog: AstronomicalEventCatalogOwner;
   private readonly usageStore: PostgresVendorUsageStore;
   private readonly reminderDispatcher: PlanReminderDispatcher;
+  private readonly dispatchRecovery: OutboxDispatchRecovery;
 
   constructor(options: OutboxWorkerOptions) {
     this.config = options.runtimeConfig ?? loadRuntimeConfig();
@@ -165,14 +172,14 @@ export class OutboxWorkerRuntime {
       connection,
       defaultJobOptions: {
         attempts: 3,
-        backoff: { type: "exponential", delay: 250 },
+        backoff: { type: "exponential", delay: QUEUE_RETRY_DELAY_MS },
         removeOnComplete: 100,
         removeOnFail: 100,
       },
     });
     this.worker = new Worker(
       queueName,
-      async (job) => this.#process(job),
+      async (job, token) => this.#process(job, token),
       { connection, concurrency: 1 },
     );
     // Same existing broker/outbox/processor, separate execution capacity. A
@@ -180,7 +187,13 @@ export class OutboxWorkerRuntime {
     this.reminderQueue = new Queue(`${queueName}-reminders`,{
       connection,defaultJobOptions:{attempts:3,backoff:{type:'exponential',delay:250},removeOnComplete:100,removeOnFail:100},
     });
-    this.reminderWorker = new Worker(`${queueName}-reminders`,async job=>this.#process(job),{connection,concurrency:1});
+    this.reminderWorker = new Worker(`${queueName}-reminders`,async (job, token)=>this.#process(job, token),{connection,concurrency:1});
+    this.dispatchRecovery = new OutboxDispatchRecovery(
+      this.pool,
+      new OutboxQueueHandleProbe([this.queue, this.reminderQueue]),
+      event => mapEventToJob(event.event_type, event.payload) === "NOTIFICATION",
+      event => mapEventToJob(event.event_type, event.payload) === "MEDIA" && isAccountMediaRetirementPayload(event.payload),
+    );
   }
 
   async enqueueOperationalSweep(bucket = hourBucket()) {
@@ -271,6 +284,7 @@ export class OutboxWorkerRuntime {
   }
 
   async dispatchBatch(limit = 50) {
+    await this.dispatchRecovery.recoverBatch(limit);
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -330,6 +344,9 @@ export class OutboxWorkerRuntime {
       if (counts.every(result=>Object.values(result).every(count=>count===0))) {
         const remaining=await this.pool.query<{count:number}>("SELECT count(*)::int AS count FROM outbox_events WHERE state='DISPATCHED'");
         if (remaining.rows[0]!.count===0) return;
+        // A one-shot run also traverses recovery pages once live queue work
+        // drains; retained first-page handles cannot hide later lost jobs.
+        await this.dispatchBatch();
       }
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
@@ -859,38 +876,59 @@ export class OutboxWorkerRuntime {
         break;
       }
       case "MEDIA": {
-        if (
-          typeof input.payload === "object" &&
-          input.payload !== null &&
-          "action" in input.payload &&
-          input.payload.action === "DELETE_ACCOUNT_MEDIA" &&
-          "deletionBatchId" in input.payload &&
-          typeof input.payload.deletionBatchId === "string"
-        ) {
+        if (isAccountMediaRetirementPayload(input.payload)) {
           const deletionBatchId = input.payload.deletionBatchId;
-          const queued = await client.query<{ object_key: string }>(
-            `SELECT object_key
-               FROM account_deletion_media_queue
-              WHERE deletion_batch_id = $1
-              ORDER BY object_key
-              FOR UPDATE`,
-            [deletionBatchId],
-          );
-          for (const row of queued.rows)
-            await this.mediaStore.delete(row.object_key);
-          await client.query(
-            "DELETE FROM account_deletion_media_queue WHERE deletion_batch_id = $1",
-            [deletionBatchId],
-          );
+          const mediaClient = await this.repository.pool.connect();
+          let retired: Awaited<ReturnType<typeof retireAccountMediaBatch>>;
+          try {
+            await mediaClient.query("BEGIN");
+            retired = await retireAccountMediaBatch(mediaClient, this.mediaStore, deletionBatchId);
+            await mediaClient.query("COMMIT");
+          } catch (error) {
+            await mediaClient.query("ROLLBACK");
+            throw error;
+          } finally { mediaClient.release(); }
+          if (retired.hasRemainingObjects) {
+            if (!retired.continueProcessing) throw new Error("account_media_retirement_partial_failure");
+            // Reuse this exact BullMQ handle. An unfinished page is neither a
+            // final effect nor a failed attempt; durable progress owns restart.
+            return {
+              resultState: "ACCOUNT_MEDIA_PENDING",
+              resultPayload: retired,
+              continueAfterMs: retired.deletedObjectCount + retired.retainedObjectCount > 0 ? 0 : QUEUE_RETRY_DELAY_MS,
+            };
+          }
           outcome = {
             resultState: "ACCOUNT_MEDIA_DELETED",
-            resultPayload: {
-              deletionBatchId,
-              deletedObjectCount: queued.rows.length,
-            },
+            resultPayload: { deletionBatchId, deletedObjectCount: retired.totalDeletedObjectCount, retainedObjectCount: retired.totalRetainedObjectCount },
           };
+          // Final counts and effect commit together. A lost completion reply
+          // replays the effect, rather than recreating an empty batch receipt.
+          await client.query("DELETE FROM account_media_retirement_progress WHERE deletion_batch_id=$1", [deletionBatchId]);
           break;
         }
+        // Each owner commits its independent retirement progress. Keep the
+        // outbox lock/effect identity, but never retain avatar-intent locks
+        // while contribution cleanup waits on its account/parent owners.
+        const maintenanceErrors: unknown[] = [];
+        let contributionDeletedObjectCount = 0;
+        let avatarWrites: Awaited<ReturnType<typeof retireExpiredAccountAvatarWrites>> | null = null;
+        try {
+          contributionDeletedObjectCount = await cleanupExpiredContributionUploads(this.repository, this.mediaStore);
+        } catch (error) { maintenanceErrors.push(error); }
+        const maintenanceClient = await this.repository.pool.connect();
+        try {
+          await maintenanceClient.query("BEGIN");
+          avatarWrites = await retireExpiredAccountAvatarWrites(maintenanceClient, this.mediaStore, MEDIA_MAINTENANCE_BATCH_SIZE);
+          await maintenanceClient.query("COMMIT");
+        } catch (error) {
+          await maintenanceClient.query("ROLLBACK");
+          maintenanceErrors.push(error);
+        } finally { maintenanceClient.release(); }
+        if (avatarWrites?.failedIntentCount) maintenanceErrors.push(new Error("account_avatar_retirement_partial_failure"));
+        // A retry reuses the durable unfinished intents; success in the other
+        // owner has already committed and cannot be undone by this job error.
+        if (maintenanceErrors.length) throw maintenanceErrors[0];
         const counts = await client.query<{
           pending_imports: string;
           uploaded_media: string;
@@ -900,12 +938,12 @@ export class OutboxWorkerRuntime {
           (SELECT count(*) FROM spot_media
             WHERE payload ->> 'origin' = 'USER_UPLOAD')::text AS uploaded_media`);
         outcome = {
-          resultState: "CAPABILITY_GATED",
+          resultState: "MEDIA_MAINTAINED",
           resultPayload: {
             pendingImports: Number(counts.rows[0]!.pending_imports),
             uploadedMedia: Number(counts.rows[0]!.uploaded_media),
-            manualTextImport: true,
-            uploadPipeline: "DISABLED_NO_PRIVATE_OBJECT_STORAGE_OR_REVIEW_CALLBACK",
+            contributionDeletedObjectCount,
+            avatarWrites,
           },
         };
         break;
@@ -1043,10 +1081,32 @@ export class OutboxWorkerRuntime {
     return outcome;
   }
 
-  async #process(job: Job) {
+  async #continueJob(job: Job, delayMs: number, token?: string): Promise<never> {
+    // Both transitions are atomic with the original processor token. A lost
+    // reply must never let this old execution fail a newly owned handle.
+    if (token) {
+      try {
+        await job.moveToDelayed(Date.now() + delayMs, token);
+      } catch {
+        try { await job.moveToWait(token); } catch {}
+        // The fallback is bounded to one attempt. If both outcomes are unknown,
+        // retain DISPATCHED: a missing handle is recovered by the existing
+        // reconciler, or BullMQ's stalled-job owner resumes the active handle.
+        // A confirmed terminal failed handle is separately archived for replay.
+        throw new WaitingError();
+      }
+      throw new DelayedError();
+    }
+    // No token is never permission to use BullMQ's unchecked default token.
+    throw new WaitingError();
+  }
+
+  async #process(job: Job, token?: string) {
     const eventId = String(job.data.eventId);
     const executionId = randomUUID();
     const client = await this.pool.connect();
+    let dispatchedAt: string | null | undefined;
+    let continuationAfterMs: number | undefined;
     try {
       await client.query(
         `INSERT INTO job_executions(
@@ -1060,11 +1120,13 @@ export class OutboxWorkerRuntime {
       const event = await client.query<{
         event_type: string;
         payload: unknown;
+        dispatched_at: string | null;
       }>(
-        "SELECT event_type, payload FROM outbox_events WHERE event_id = $1 FOR UPDATE",
+        "SELECT event_type, payload, dispatched_at::text FROM outbox_events WHERE event_id = $1 FOR UPDATE",
         [eventId],
       );
       if (!event.rows[0]) throw new Error("outbox_event_not_found");
+      dispatchedAt = event.rows[0].dispatched_at;
       const input = {
         eventId,
         eventType: event.rows[0].event_type,
@@ -1091,6 +1153,17 @@ export class OutboxWorkerRuntime {
           'SELECT result_state,result_payload FROM job_effects WHERE effect_key=$1',[effectKey]);
         outcome = {resultState:recorded.rows[0]!.result_state,resultPayload:recorded.rows[0]!.result_payload};
       } else outcome = await this.#applyEffect(client,input);
+      if (outcome.continueAfterMs !== undefined) {
+        // The independent media page is already durable. Receipt/outer COMMIT
+        // uncertainty after this point must not consume a business retry.
+        continuationAfterMs = outcome.continueAfterMs;
+        await client.query(
+          `UPDATE job_executions SET state='CONTINUED',completed_at=now(),result_state=$2,result_payload=$3
+            WHERE execution_id=$1`, [executionId, outcome.resultState, outcome.resultPayload],
+        );
+        await client.query("COMMIT");
+        return await this.#continueJob(job, continuationAfterMs, token);
+      }
       await client.query(
         `UPDATE outbox_events
             SET state = 'COMPLETE', completed_at = now(), attempts = attempts + 1,
@@ -1108,32 +1181,37 @@ export class OutboxWorkerRuntime {
       await client.query("COMMIT");
       return { eventId, jobKind: job.name, ...outcome };
     } catch (error) {
+      if (error instanceof DelayedError || error instanceof WaitingError) throw error;
       try {
         await client.query("ROLLBACK");
       } catch {}
+      if (continuationAfterMs !== undefined)
+        return await this.#continueJob(job, continuationAfterMs, token);
       const code = error instanceof Error ? error.message : "worker_failure";
       await client.query(
         `UPDATE job_executions
             SET state = 'FAILED', completed_at = now(), error_code = $2
-          WHERE execution_id = $1`,
+          WHERE execution_id = $1 AND state = 'RUNNING'`,
         [executionId, code],
       );
       const maximumAttempts = Number(job.opts.attempts ?? 3);
-      if (job.attemptsMade + 1 >= maximumAttempts)
+      if (dispatchedAt !== undefined && job.attemptsMade + 1 >= maximumAttempts)
         await client.query(
           `UPDATE outbox_events
               SET state = 'DEAD_LETTER', attempts = attempts + 1,
                   last_error_code = $2
-            WHERE event_id = $1`,
-          [eventId, code],
+            WHERE event_id = $1 AND state IN ('PENDING', 'DISPATCHED')
+              AND dispatched_at IS NOT DISTINCT FROM $3::timestamptz`,
+          [eventId, code, dispatchedAt],
         );
-      else
+      else if (dispatchedAt !== undefined)
         await client.query(
           `UPDATE outbox_events
               SET state = 'DISPATCHED', attempts = attempts + 1,
                   last_error_code = $2
-            WHERE event_id = $1`,
-          [eventId, code],
+            WHERE event_id = $1 AND state IN ('PENDING', 'DISPATCHED')
+              AND dispatched_at IS NOT DISTINCT FROM $3::timestamptz`,
+          [eventId, code, dispatchedAt],
         );
       throw error;
     } finally {

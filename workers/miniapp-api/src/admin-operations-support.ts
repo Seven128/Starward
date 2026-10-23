@@ -6,8 +6,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import {
   assertAdminOperation,
-  assertAdminToken,
-  normalizeAdminActor,
+  authenticateAdmin,
 } from "./admin-auth.ts";
 import type { MiniappService } from "./miniapp-service.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
@@ -64,14 +63,14 @@ export function adminOperationsContext(
   actor: string | undefined,
   operation: AdminOperation,
 ) {
-  assertAdminToken(token);
+  const principal = authenticateAdmin(token, actor);
+  assertAdminOperation(principal, operation);
   if (!(service.repository instanceof PostgresMiniappRepository))
     throw new Error("admin_requires_postgres");
-  const actorId = normalizeAdminActor(actor);
-  assertAdminOperation(actorId, operation);
   return {
     repository: service.repository,
-    actorId,
+    principal,
+    actorId: principal.actorId,
     requestId: randomUUID(),
   };
 }

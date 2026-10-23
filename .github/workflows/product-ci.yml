@@ -64,6 +64,9 @@ jobs:
       - name: Check release code
         if: steps.scope.outputs.product == 'true'
         run: npm run check:miniapp:release-code
+      - name: Check native App API and admin consumers
+        if: steps.scope.outputs.consumers == 'true'
+        run: npm run check:product:consumers
       - name: Build backend release packages
         if: steps.scope.outputs.product == 'true'
         run: npm run build:miniapp:release

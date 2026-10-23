@@ -139,7 +139,7 @@ for (const order of ["delete-first", "write-first"] as const) {
   });
 }
 
-test("late avatar metadata rejection retires its actual filesystem bytes", { skip: !databaseUrl }, async () => {
+test("late avatar rejection precedes any filesystem upload", { skip: !databaseUrl }, async () => {
   const repository = await repositoryForTest(), root = await mkdtemp(path.join(os.tmpdir(), "starward-account-write-media-"));
   const mediaStore = new LocalFilesystemMediaObjectStore(root);
   const service = new MiniappService({ repository, mediaStore, config: createTestRuntimeConfig(), weather: new DeterministicWeatherTestAdapter(), route: new DisabledRouteAdapter() });
@@ -151,7 +151,7 @@ test("late avatar metadata rejection retires its actual filesystem bytes", { ski
     await repository.deleteAccount(userId, `delete:${randomUUID()}`);
     const bytes = await readFile(new URL("./test-fixtures/self-generated-transport-test.jpg", import.meta.url));
     await assert.rejects(service.saveAccountAvatar(userId, { dataBase64: bytes.toString("base64"), mimeType: "image/jpeg", declaredByteSize: bytes.length, zoom: 1.3, expectedRevision: 1 }, `avatar:${randomUUID()}`), /account_not_active/u);
-    assert.equal(puts, 1, "the real filesystem put must be observed before compensation");
+    assert.equal(puts, 0, "ACTIVE-account rejection must happen before any filesystem write");
     const entries = await readdir(root, { recursive: true, withFileTypes: true });assert.equal(entries.filter(entry => entry.isFile()).length, 0);
     await assertErased(repository, userId);
   } finally {

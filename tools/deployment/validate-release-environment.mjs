@@ -4,6 +4,7 @@ import { isIPv4 } from "node:net";
 import { pathToFileURL } from "node:url";
 import { readEnvironmentFile } from "./env-file.mjs";
 import { assertSkyStaticDeliveryIdentity } from "./sky-static-release.mjs";
+import { configuredAdminCredentials } from "../../workers/miniapp-api/src/admin-credentials.ts";
 
 const REQUIRED_STAGING_STEPS = Object.freeze([
   "backup-verification", "compose-version", "compose-config", "image-pull",
@@ -52,6 +53,7 @@ const RELEASE_IDENTITY_KEYS = Object.freeze([
 const SECRET_KEYS = new Set([
   "AMAP_WEB_SERVICE_KEY",
   "MINIAPP_ADMIN_TOKEN",
+  "MINIAPP_ADMIN_CREDENTIALS",
   "MINIAPP_SESSION_SECRET",
   "OPEN_METEO_API_KEY",
   "QWEATHER_CREDENTIAL_ID",
@@ -185,7 +187,10 @@ function validateApi(api, expected, postgres, redis) {
     secret(api, "WECHAT_MINIAPP_APP_SECRET", 24);
   }
   secret(api, "MINIAPP_SESSION_SECRET", 32);
-  secret(api, "MINIAPP_ADMIN_TOKEN", 32);
+  if (api.MINIAPP_ADMIN_CREDENTIALS?.trim()) checkedValue(api, "MINIAPP_ADMIN_CREDENTIALS");
+  else secret(api, "MINIAPP_ADMIN_TOKEN", 32);
+  try { configuredAdminCredentials(api); }
+  catch { fail("release_environment_invalid", "api:MINIAPP_ADMIN_PRINCIPAL"); }
   const weatherProvider = checkedValue(api, "MINIAPP_WEATHER_PROVIDER");
   equal(weatherProvider, "QWEATHER", "api:MINIAPP_WEATHER_PROVIDER");
   const forecastHours = Number(checkedValue(api, "QWEATHER_FORECAST_HOURS"));

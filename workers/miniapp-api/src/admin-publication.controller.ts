@@ -14,7 +14,7 @@ import {
   requiredSpotId,
   requiredText,
 } from "./admin-operations-support.ts";
-import { envelope } from "./admin.controller.ts";
+import { committedEnvelope, envelope } from "./admin.controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 
 type RevisionBody = {
@@ -115,9 +115,7 @@ export class AdminPublicationController {
       requestId: context.requestId,
       idempotencyKey: requiredIdempotency(idempotencyKey),
     });
-    await this.service.cache.deleteByPrefix("map:");
-    await this.service.cache.deleteByPrefix(`spot-overview:${spotId}`);
-    return envelope(result);
+    return committedEnvelope(result, this.service.cache, ["map:", `spot-overview:${spotId}`]);
   }
 
   @Post("spots/:spotId/unpublish")

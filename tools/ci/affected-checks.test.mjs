@@ -16,17 +16,36 @@ test("lightweight and full installs resolve the same locked Context checker", ()
 });
 
 test("context and existing Skill prose can use lightweight checks without skipping product inputs", () => {
-  assert.deepEqual(affectedChecks(["project_context/global.md", ".codex/skills/uiux_design/SKILL.md"]), { product: false, context: true });
+  assert.deepEqual(affectedChecks(["project_context/global.md", ".codex/skills/uiux_design/SKILL.md"]), { product: false, context: true, consumers: false });
   for (const file of ["DESIGN.md", "docs/design-resources/map/ADOPTED.md", "docs/source-plan.md", "apps/wechat-miniapp/src/app.tsx", "packages/astronomy-core/data/catalog.json", "unknown-config.json"])
     assert.equal(affectedChecks([file]).product, true, file);
-  assert.deepEqual(affectedChecks(["package-lock.json"]), { product: true, context: true });
-  assert.deepEqual(affectedChecks([".github/workflows/product-ci.yml"]), { product: true, context: true });
-  assert.deepEqual(affectedChecks(["tools/run-node.cjs"]), { product: true, context: true });
-  assert.deepEqual(affectedChecks(["tools/miniapp/runtime-event-policy.mjs"]), { product: true, context: true });
+  assert.deepEqual(affectedChecks(["package-lock.json"]), { product: true, context: true, consumers: true });
+  assert.deepEqual(affectedChecks([".github/workflows/product-ci.yml"]), { product: true, context: true, consumers: true });
+  assert.deepEqual(affectedChecks(["tools/run-node.cjs"]), { product: true, context: true, consumers: true });
+  assert.deepEqual(affectedChecks(["tools/miniapp/runtime-event-policy.mjs"]), { product: true, context: true, consumers: false });
+});
+
+test("consumer changes and shared inputs cannot pass through a Mini Program-only lane", () => {
+  for (const file of [
+    "apps/mobile/src/state/shell-store.ts", "apps/api/src/feature-routes.ts",
+    "apps/admin-web/src/app/page.tsx", "workers/miniapp-api/src/admin-auth.ts",
+    "packages/contracts/src/admin.ts", "packages/domain/src/preferences/runtime.ts",
+    "packages/miniapp-contracts/src/admin.ts", "packages/astronomy-core/src/index.ts",
+    "tools/miniapp/admin-page.test.mjs", "tools/miniapp/admin-session.test.mjs",
+    "tools/miniapp/admin-operations-client.test.mjs", "tools/miniapp/admin-operations-client.mjs",
+    "tools/miniapp/admin-operations-commands.mjs", "tools/miniapp/admin-operations.mjs",
+    "tools/miniapp/run-operations-browser-session.mjs", "tools/miniapp/operations-browser-data.mjs",
+    "tools/miniapp/docker-compose-runtime.mjs", "tools/miniapp/ui-contract-probes.json",
+    "tools/miniapp/verify-ui-contracts.mjs", "tools/miniapp/workflow-conformance.test.mjs",
+    "tools/miniapp/new-shared-owner.mjs",
+    "unknown-config.json",
+  ]) assert.equal(affectedChecks([file]).consumers, true, file);
+  assert.equal(affectedChecks(["apps/wechat-miniapp/src/app.tsx"]).consumers, false);
+  assert.equal(affectedChecks(["apps/wechat-miniapp/src/app.tsx", "packages/contracts/src/admin.ts"]).consumers, true);
 });
 
 test("manual dispatch, initial push, empty or failed diff retain full validation", () => {
-  const both = { product: true, context: true };
+  const both = { product: true, context: true, consumers: true };
   assert.deepEqual(checksForEvent("workflow_dispatch", {}), both);
   assert.deepEqual(checksForEvent("push", { before: "0".repeat(40), after: "b".repeat(40) }), both);
   assert.deepEqual(checksForEvent("push", { before: "a".repeat(40), after: "b".repeat(40) }, () => { throw Error("missing base"); }), both);
@@ -40,7 +59,7 @@ test("PRs compare the merge base and push ranges include every commit and delete
     calls.push(args);
     return args[0] === "merge-base" ? "c".repeat(40) : "project_context/global.md\0apps/api/src/deleted.ts\0";
   });
-  assert.deepEqual(result, { product: true, context: true });
+  assert.deepEqual(result, { product: true, context: true, consumers: true });
   assert.equal(calls[1].at(-2), "c".repeat(40));
   assert.ok(calls[1].includes("--no-renames"));
   const pushCalls = [];

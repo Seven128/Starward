@@ -7,6 +7,7 @@ import {
   SearchAltitude,
   SearchRiseSet,
 } from "./astronomy-engine-runtime.ts";
+import { MILKY_WAY_CORE_DIRECTION } from "./milky-way-direction.ts";
 export * from "./sky-capabilities.ts";
 export * from "./gaia-catalog.ts";
 export * from "./hipparcos-catalog.ts";
@@ -107,7 +108,7 @@ function horizontal(body: Body, at: Date, observer: Observer) {
 function targetHorizontal(target: SupportedTarget, at: Date, observer: Observer) {
   if (target === "milky-way-core") {
     // Sagittarius A* vicinity, J2000; this is a direction proxy, not a brightness model.
-    return Horizon(at, observer, 17.761133, -29.0078);
+    return Horizon(at, observer, MILKY_WAY_CORE_DIRECTION.raHours, MILKY_WAY_CORE_DIRECTION.decDeg);
   }
   return horizontal(BODY_BY_TARGET[target]!, at, observer);
 }

@@ -2003,26 +2003,24 @@ export class MiniappService {
     const sanitized = sanitizeAccountAvatarImage(raw, input.mimeType);
     const sha256 = createHash("sha256").update(sanitized).digest("hex");
     const scope = createHash("sha256").update(userId).digest("hex").slice(0, 24);
-    const objectId = createHash("sha256").update("account.avatar:" + idempotencyKey).digest("hex").slice(0, 32);
+    const objectId = createHash("sha256").update(`account.avatar:${input.expectedRevision}:${idempotencyKey}`).digest("hex").slice(0, 32);
     const extension = input.mimeType === "image/jpeg" ? "jpg" : input.mimeType === "image/png" ? "png" : "webp";
     const objectKey = `profiles/${scope}/${objectId}.${extension}`;
-    let wrote = false;
-    const existing = await this.contributions.mediaStore.read(objectKey);
-    if (existing) {
-      const existingHash = createHash("sha256").update(existing).digest("hex");
-      if (existingHash !== sha256) throw new Error("account_profile_idempotency_conflict");
-    } else {
-      await this.contributions.mediaStore.put({ objectKey, bytes: sanitized, mimeType: input.mimeType });
-      wrote = true;
-    }
-    try {
-      const saved = await this.repository.saveAccountAvatar(userId, { objectKey, version: sha256, mimeType: input.mimeType, zoom: Math.round(input.zoom * 100) / 100, byteSize: sanitized.length, sha256 }, input.expectedRevision, "account.avatar:" + idempotencyKey);
-      if (saved.previousObjectKey && saved.previousObjectKey !== objectKey) await this.contributions.mediaStore.delete(saved.previousObjectKey);
-      return envelope(saved.profile, "FRESH", []);
-    } catch (error) {
-      if (wrote) await this.contributions.mediaStore.delete(objectKey);
-      throw error;
-    }
+    const saved = await this.repository.saveAccountAvatar(userId, {
+      objectKey, version: sha256, mimeType: input.mimeType,
+      zoom: Math.round(input.zoom * 100) / 100, byteSize: sanitized.length, sha256,
+    }, input.expectedRevision, "account.avatar:" + idempotencyKey, async () => {
+      const existing = await this.contributions.mediaStore.read(objectKey);
+      if (existing) {
+        if (createHash("sha256").update(existing).digest("hex") !== sha256)
+          throw new Error("account_profile_idempotency_conflict");
+      } else {
+        await this.contributions.mediaStore.put({ objectKey, bytes: sanitized, mimeType: input.mimeType });
+      }
+    });
+    // Retirement commits with the reference and is retried by MEDIA. Neither
+    // old-object deletion nor an uncertain COMMIT may delete the new object.
+    return envelope(saved.profile, "FRESH", []);
   }
 
   async getPreferences(userId: UserId) {

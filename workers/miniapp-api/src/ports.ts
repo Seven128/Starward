@@ -258,7 +258,10 @@ export interface MiniappRepositoryPort {
   getAccountProfile(userId: UserId): Promise<AccountProfileRecord>;
   saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string): Promise<AccountProfileRecord>;
   getAccountAvatarObject(userId: UserId): Promise<({ objectKey: string } & AccountAvatarMetadata) | null>;
-  saveAccountAvatar(userId: UserId, avatar: AccountAvatarMetadata & { objectKey: string; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string): Promise<{ profile: AccountProfileRecord; previousObjectKey: string | null }>;
+  /** persistObject runs only after active-account, replay and revision checks,
+   * while the repository owns the account mutation. A thrown commit may have
+   * succeeded: callers must not compensate by deleting this object's bytes. */
+  saveAccountAvatar(userId: UserId, avatar: AccountAvatarMetadata & { objectKey: string; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string, persistObject?: () => Promise<void>): Promise<{ profile: AccountProfileRecord; previousObjectKey: string | null }>;
   getPreferences(userId: UserId): Promise<UserPreferencesRecord>;
   savePreferences(
     userId: UserId,
@@ -355,7 +358,7 @@ export interface MiniappRepositoryPort {
   completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string, writeObject: () => Promise<void>): Promise<ContributionFormalUploadIntent>;
   removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
   getFormalUploadIntent(userId: UserId, intentId: string): Promise<ContributionFormalUploadIntent | null>;
-  expireContributionUploads(now: string): Promise<readonly string[]>;
+  expireContributionUploads(now: string, limit?: number): Promise<readonly string[]>;
   removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission>;
   acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void>;
   getOwnedContributionUploadObject(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId): Promise<{ objectKey: string; mimeType: ContributionMediaUpload["mimeType"] } | null>;

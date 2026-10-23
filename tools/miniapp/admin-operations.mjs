@@ -26,21 +26,22 @@ function output(value) {
 }
 
 function printHelp() {
-  process.stdout.write(`今晚去观星管理员操作（仅 API/CLI，无 Web 运营台）
+  process.stdout.write(`今晚去观星管理员操作
 
-环境：MINIAPP_ADMIN_TOKEN（必填），MINIAPP_ADMIN_BASE_URL、MINIAPP_ADMIN_ACTOR（可选）
+环境：MINIAPP_ADMIN_TOKEN（个人凭证，必填），MINIAPP_ADMIN_BASE_URL、MINIAPP_ADMIN_ACTOR（可选身份核对；不能选择权限）
 
 命令：
   dashboard
+  session
   moderation
   case-export <caseId> --out <private-json-path>
   media <uploadId> --out <private-image-path>
-  resolve <caseId> <APPROVED|REJECTED> --reason <text>
-  merge <caseId> <spotId> --claims <comma-list> --reason <text>
+  resolve <caseId> <APPROVED|REJECTED> --reason <text> --revision <n> --idempotency-key <stable-key>
+  merge <caseId> <spotId> --claims <comma-list> --reason <text> --submission-revision <n> --spot-revision <n> --idempotency-key <stable-key>
   candidate-create --input <json> --reason <text>
   spot-patch <spotId> --input <json> --reason <text>
 
-token 不接受命令行参数，避免进入 shell 历史。case-export 与 media 使用独占新文件，避免覆盖已有证据。
+token 不接受命令行参数，避免进入 shell 历史。丢失 resolve/merge 回执时保留全部参数和同一 key 重试；未知结果不能改输入或换 key。case-export 与 media 使用独占新文件，避免覆盖已有证据。
 `);
 }
 
@@ -56,10 +57,12 @@ async function main() {
     ),
   ).replace(/\/$/u, "");
   const actor = String(
-    option("actor", process.env.MINIAPP_ADMIN_ACTOR ?? "admin:local"),
+    option("actor", process.env.MINIAPP_ADMIN_ACTOR ?? ""),
   );
   const token = process.env.MINIAPP_ADMIN_TOKEN?.trim() ?? "";
-  const request = createAdminRequest({ baseUrl, actor, token });
+  const request = createAdminRequest({ baseUrl, actor, token,
+    onPostCommitWarning: (message) => process.stderr.write(`${message}\n`),
+  });
   await runAdminCommand(command, { positional, option, request, output });
 }
 

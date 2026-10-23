@@ -3,7 +3,11 @@ import { appendFileSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-const full = () => ({ product: true, context: true });
+const full = () => ({ product: true, context: true, consumers: true });
+// Directory placement does not establish ownership: admin commands, fixtures
+// and browser checks also live under tools/miniapp. Only known WEAPP tool
+// families omit the other consumers; new/shared tools conservatively include them.
+const weappOnlyTool = /^tools\/miniapp\/(?:wechat-app-id-migration|wechatide-skill-sync|development(?:-[a-z-]+)?|device(?:-[a-z-]+)?|generate-miniapp-sdk|generate-mode-icons|generate-semantic-assets|generate-design-tokens|compiled-sky-origin|contracts-reexports|runtime-event-policy|run-wechat-devtools-session)(?:\.test)?\.[mc]js$/u;
 
 // Only known non-executable documentation is cheap. Unknown paths, design
 // inputs, dependencies and workflow changes deliberately retain product checks.
@@ -11,6 +15,7 @@ export function affectedChecks(files) {
   if (!files.length) return full();
   let product = false;
   let context = false;
+  let consumers = false;
   for (const file of files) {
     if (file === "README.md") continue;
     if (file === "AGENTS.md" || /^project_context\//u.test(file) ||
@@ -22,9 +27,14 @@ export function affectedChecks(files) {
       // The lightweight job also checks live workflow/source references. An
       // unknown executable input can affect them, so full changes retain both.
       context = true;
+      // WEAPP source/known tools and its design resources have their existing lane.
+      // Shared packages, API/admin/native sources, dependencies and unknown
+      // inputs retain checks for the other actual product consumers.
+      if (!/^(?:apps\/wechat-miniapp\/|docs\/design-resources\/)/u.test(file) && !weappOnlyTool.test(file))
+        consumers = true;
     }
   }
-  return { product, context };
+  return { product, context, consumers };
 }
 
 export function checksForEvent(eventName, event, git = (...args) => execFileSync("git", args, { encoding: "utf8" })) {
@@ -51,6 +61,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   let selected = full();
   try { selected = checksForEvent(process.env.GITHUB_EVENT_NAME, JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"))); } catch { /* Missing diff evidence runs every check. */ }
   if (process.env.GITHUB_OUTPUT)
-    appendFileSync(process.env.GITHUB_OUTPUT, `product=${selected.product}\ncontext=${selected.context}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `product=${selected.product}\ncontext=${selected.context}\nconsumers=${selected.consumers}\n`);
   console.log(JSON.stringify(selected));
 }

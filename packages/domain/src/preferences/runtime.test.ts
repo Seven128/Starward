@@ -26,6 +26,22 @@ function request(token: string, idempotencyKey: string): PreferenceRuntimeReques
 }
 
 describe("preferences runtime", () => {
+  it("rejects a changed payload under the same key without changing the committed state", async () => {
+    const rows = new Map<string, string>();
+    const runtime = await createPreferencesRuntime({ storage: {
+      kind: "sqlite", read: async key => rows.get(key) ?? null,
+      write: async (key, value) => { rows.set(key, value); },
+    } });
+    const original = request("银河摄影", "profile-bound-input");
+    const committed = await runtime.execute(original);
+    await expect(runtime.execute({ ...original, payload: { ...original.payload, token: "已经更改" } }))
+      .rejects.toThrow("preference_runtime_idempotency_conflict");
+    expect(await runtime.list({ actorId: original.actorId })).toEqual([expect.objectContaining({ inputDigest: committed.inputDigest, stateVersion: 1 })]);
+    await expect(runtime.execute({ ...original, payload: { profile: original.payload.profile, token: original.payload.token } }))
+      .resolves.toMatchObject({ status: "replayed", entityId: committed.entityId, stateVersion: 1 });
+    await runtime.close();
+  });
+
   it("commits variable inputs, survives restart, replays idempotently, and rejects invalid input", async () => {
     const dataDir = await mkdtemp(join(tmpdir(), "starward-preferences-"));
     try {

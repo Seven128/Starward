@@ -76,17 +76,24 @@ export class InMemoryLibraryStore {
     return structuredClone(saved);
   }
 
-  saveAccountAvatar(userId: UserId, avatar: NonNullable<AccountProfileRecord["avatar"]>, expectedRevision: number, idempotencyKey: string) {
+  checkAccountAvatarSave(userId: UserId, avatar: NonNullable<AccountProfileRecord["avatar"]>, expectedRevision: number, idempotencyKey: string) {
     this.ensureUser(userId);
     const replay = this.#replay<{ profile: AccountProfileRecord; previousObjectKey: string | null }>(userId, idempotencyKey);
     if (replay) {
-      if (replay.profile.avatar?.version !== avatar.version || replay.profile.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
+      if (replay.profile.avatar?.version !== avatar.version || replay.profile.avatar.mimeType !== avatar.mimeType || replay.profile.avatar.zoom !== avatar.zoom || replay.profile.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
       return structuredClone(replay);
     }
     const current = this.#profiles.get(userId)!;
     if (current.revision !== expectedRevision) throw new Error("account_profile_revision_conflict");
+    return null;
+  }
+
+  saveAccountAvatar(userId: UserId, avatar: NonNullable<AccountProfileRecord["avatar"]>, expectedRevision: number, idempotencyKey: string, previousObjectKey: string | null = null) {
+    const replay = this.checkAccountAvatarSave(userId, avatar, expectedRevision, idempotencyKey);
+    if (replay) return replay;
+    const current = this.#profiles.get(userId)!;
     const profile = { ...current, avatar: structuredClone(avatar), revision: expectedRevision + 1, updatedAt: new Date().toISOString() };
-    const result = { profile, previousObjectKey: current.avatar ? `memory:${current.avatar.version}` : null };
+    const result = { profile, previousObjectKey };
     this.#profiles.set(userId, profile);
     this.#remember(userId, idempotencyKey, result);
     return structuredClone(result);

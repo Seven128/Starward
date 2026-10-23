@@ -200,17 +200,19 @@ export async function migrateWechatAppId({
   return Object.freeze(summary);
 }
 
-function trackedAppIdFiles() {
+export function trackedAppIdFiles({ root = repositoryRoot } = {}) {
+  // Markdown records describe historical identities; they are not current
+  // source/DevTools configuration. Keep executable/configuration literals in
+  // scope so a second active identity still blocks a guarded migration.
   const result = spawnSync(
     "git",
-    ["grep", "-l", "-E", "wx[0-9a-f]{16}", "--"],
-    { cwd: repositoryRoot, encoding: "utf8", windowsHide: true },
+    ["grep", "-l", "-z", "-E", "wx[0-9a-f]{16}", "--", ".", ":(exclude,glob)**/*.md"],
+    { cwd: root, encoding: "utf8", windowsHide: true },
   );
   if (![0, 1].includes(result.status ?? -1))
     fail("wechat_app_id_tracked_scan_failed");
   return result.stdout
-    .split(/\r?\n/u)
-    .map((entry) => entry.trim())
+    .split("\0")
     .filter(Boolean);
 }
 

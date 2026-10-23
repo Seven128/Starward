@@ -1255,6 +1255,8 @@ async function prepareNativeInfrastructure(runId) {
     MINIAPP_CACHE_PREFIX: cachePrefix,
     MINIAPP_QUEUE_NAME: `starward-miniapp-native-${suffix}`,
     MINIAPP_ADMIN_TOKEN: adminToken,
+    MINIAPP_ADMIN_CREDENTIALS: "",
+    MINIAPP_ADMIN_ACTOR: "admin:native-acceptance",
     MINIAPP_ADMIN_RBAC: JSON.stringify({
       "admin:native-acceptance": ["OWNER"],
     }),

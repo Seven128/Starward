@@ -1,11 +1,11 @@
-export function createAdminRequest({ baseUrl, actor, token }) {
+export function createAdminRequest({ baseUrl, actor, token, onPostCommitWarning = () => undefined }) {
   const parsed = new URL(baseUrl);
   const loopback = ["127.0.0.1", "localhost", "::1"].includes(
     parsed.hostname,
   );
   if (parsed.protocol !== "https:" && !(parsed.protocol === "http:" && loopback))
     throw new Error("admin_transport_requires_https_or_loopback");
-  if (!/^admin:[a-zA-Z0-9._-]{1,64}$/u.test(actor))
+  if (actor && !/^admin:[a-zA-Z0-9._-]{1,64}$/u.test(actor))
     throw new Error("admin_actor_invalid");
   if (!token) throw new Error("MINIAPP_ADMIN_TOKEN_missing");
 
@@ -16,7 +16,7 @@ export function createAdminRequest({ baseUrl, actor, token }) {
         accept: "application/json",
         "content-type": "application/json",
         "x-admin-token": token,
-        "x-admin-actor": actor,
+        ...(actor ? { "x-admin-actor": actor } : {}),
         ...(init.headers ?? {}),
       },
     });
@@ -25,6 +25,8 @@ export function createAdminRequest({ baseUrl, actor, token }) {
       throw new Error(
         `admin_http_${response.status}:${body?.code ?? "invalid_response"}:${body?.requestId ?? "no_request_id"}`,
       );
+    if (body?.postCommit?.cacheInvalidation === "FAILED")
+      onPostCommitWarning("变更已提交，但公共读取缓存刷新未完成。请读取当前结果；不要另建操作或盲目重发非幂等写入。");
     return body?.data;
   };
 }

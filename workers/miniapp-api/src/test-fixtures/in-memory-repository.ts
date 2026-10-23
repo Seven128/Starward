@@ -25,6 +25,7 @@ import {
 import { distanceMeters } from "@starward/coordinate-system";
 import type { MiniappRepositoryPort } from "../ports.ts";
 import { InMemoryContributionStore } from "./in-memory-contribution-store.ts";
+import { projectFormalUploadLifetime } from "../contribution-upload-lifetime.ts";
 import { InMemoryLibraryStore } from "./in-memory-library-store.ts";
 import { contributionFormalBaseline } from "../contribution-formal-baseline.ts";
 import { assertContributionBaselineMatches } from "../contribution-validation.ts";
@@ -56,6 +57,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   #formalPendingDeletion = new Set<string>();
   #reminderSchedules = new Map<string, StoredPlanReminderSchedule[]>();
   #avatarObjects = new Map<UserId, { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number }>();
+  readonly pendingAccountMediaRetirement = new Set<string>();
 
   constructor(spots: readonly SpotSummary[] = [TEST_PUBLISHED_SPOT]) {
     this.#spots = spots.map((spot) => structuredClone(spot));
@@ -75,6 +77,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     this.#formalPendingDeletion.clear();
     this.#reminderSchedules.clear();
     this.#avatarObjects.clear();
+    this.pendingAccountMediaRetirement.clear();
   }
 
   async listSpots() {
@@ -240,17 +243,25 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
 
   async getAccountProfile(userId: UserId) { return this.#library.getAccountProfile(userId); }
   async saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string) {
-    return this.#library.saveAccountNickname(userId, nickname, expectedRevision, idempotencyKey);
+    return this.#withContributionMutation(async () => this.#library.saveAccountNickname(userId, nickname, expectedRevision, idempotencyKey));
   }
   async getAccountAvatarObject(userId: UserId) {
     const value = this.#avatarObjects.get(userId);
     return value ? structuredClone(value) : null;
   }
-  async saveAccountAvatar(userId: UserId, avatar: { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string) {
-    const previous = this.#avatarObjects.get(userId)?.objectKey ?? null;
-    const result = this.#library.saveAccountAvatar(userId, avatar, expectedRevision, idempotencyKey);
-    this.#avatarObjects.set(userId, { objectKey: avatar.objectKey, version: avatar.version, mimeType: avatar.mimeType, zoom: avatar.zoom });
-    return { ...result, previousObjectKey: previous };
+  async saveAccountAvatar(userId: UserId, avatar: { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string, persistObject?: () => Promise<void>) {
+    return this.#withContributionMutation(async () => {
+      const current = this.#library.getAccountProfile(userId);
+      // Validate without publishing the fixture state until the store succeeds.
+      const replay = this.#library.checkAccountAvatarSave(userId, avatar, expectedRevision, idempotencyKey);
+      if (replay) return replay;
+      await persistObject?.();
+      const previous = this.#avatarObjects.get(userId)?.objectKey ?? null;
+      const result = this.#library.saveAccountAvatar(userId, avatar, current.revision, idempotencyKey, previous);
+      this.#avatarObjects.set(userId, { objectKey: avatar.objectKey, version: avatar.version, mimeType: avatar.mimeType, zoom: avatar.zoom });
+      if (previous && previous !== avatar.objectKey) this.pendingAccountMediaRetirement.add(previous);
+      return result;
+    });
   }
   async getPreferences(userId: UserId) {
     return this.#library.getPreferences(userId);
@@ -500,7 +511,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       this.#formalUploadIntents.set(intent.intentId, { userId, value: structuredClone(intent), objects: new Map() }); this.#formalUploadReceipts.set(key, structuredClone(intent)); return structuredClone(intent);
     });
   }
-  async getFormalUploadIntent(userId: UserId, intentId: string) { const item=this.#formalUploadIntents.get(intentId); return item?.userId===userId ? structuredClone(item.value) : null; }
+  async getFormalUploadIntent(userId: UserId, intentId: string) { const item=this.#formalUploadIntents.get(intentId); return item?.userId===userId ? projectFormalUploadLifetime(item.value) : null; }
   async createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string) {
     return this.#withContributionMutation(async () => {
       const key = `${userId}|${idempotencyKey}`; const replay = this.#formalUploadReceipts.get(key); if (replay) return structuredClone(replay);
@@ -552,7 +563,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       return structuredClone(item.value);
     });
   }
-  async expireContributionUploads(now: string) {
+  async expireContributionUploads(now: string, limit = 50) {
     return this.#withContributionMutation(async () => {
       const objectKeys = new Set(await this.#contributions.expireUploads(now));
       for (const item of this.#formalUploadIntents.values()) {
@@ -576,7 +587,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
         }
       }
       for (const key of this.#formalPendingDeletion) objectKeys.add(key);
-      return [...objectKeys];
+      return [...objectKeys].slice(0, limit);
     });
   }
   async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {

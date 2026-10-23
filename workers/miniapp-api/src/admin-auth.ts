@@ -1,8 +1,12 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import type { AdminOperation, AdminRole } from "@starward/miniapp-contracts";
+import { configuredAdminCredentials, type AdminPrincipal, type ConfiguredCredential } from "./admin-credentials.ts";
 
 const ROLE_OPERATIONS: Record<AdminRole, readonly AdminOperation[]> = {
   OWNER: [
+    "SESSION_READ",
+    "SPOT_CREATE",
+    "SPOT_EDIT",
     "QUEUE_READ",
     "CASE_READ",
     "CASE_REVIEW",
@@ -26,6 +30,7 @@ const ROLE_OPERATIONS: Record<AdminRole, readonly AdminOperation[]> = {
     "EVENT_CATALOG_RERUN",
   ],
   MODERATOR: [
+    "SESSION_READ",
     "QUEUE_READ",
     "CASE_READ",
     "CASE_REVIEW",
@@ -34,8 +39,9 @@ const ROLE_OPERATIONS: Record<AdminRole, readonly AdminOperation[]> = {
     "EVENT_CATALOG_IMPORT",
     "EVENT_CATALOG_REVIEW",
   ],
-  MEDIA_REVIEWER: ["MEDIA_READ", "MEDIA_REVIEW"],
+  MEDIA_REVIEWER: ["SESSION_READ", "MEDIA_READ", "MEDIA_REVIEW"],
   PUBLISHER: [
+    "SESSION_READ",
     "CASE_READ",
     "MERGE_PREVIEW",
     "PUBLICATION_ASSESS",
@@ -48,66 +54,29 @@ const ROLE_OPERATIONS: Record<AdminRole, readonly AdminOperation[]> = {
     "EVENT_CATALOG_PUBLISH",
     "EVENT_CATALOG_ROLLBACK",
   ],
-  AUDITOR: ["QUEUE_READ", "CASE_READ", "MEDIA_READ", "AUDIT_READ", "EVENT_CATALOG_READ"],
+  AUDITOR: ["SESSION_READ", "QUEUE_READ", "CASE_READ", "MEDIA_READ", "AUDIT_READ", "EVENT_CATALOG_READ"],
 };
 
-export function assertAdminToken(provided: string | undefined) {
-  const expected = process.env.MINIAPP_ADMIN_TOKEN?.trim();
-  if (!expected) throw new Error("admin_capability_disabled");
+export function authenticateAdmin(provided: string | undefined, assertedActor?: string): AdminPrincipal {
+  const credentials = configuredAdminCredentials(process.env);
   if (!provided) throw new Error("admin_auth_required");
-  const expectedBytes = Buffer.from(expected);
-  const providedBytes = Buffer.from(provided);
-  if (
-    expectedBytes.length !== providedBytes.length ||
-    !timingSafeEqual(expectedBytes, providedBytes)
-  )
-    throw new Error("admin_auth_required");
-}
-
-export function normalizeAdminActor(value: string | undefined) {
-  const actor = value?.trim() || "admin:local";
-  if (!/^admin:[a-zA-Z0-9._-]{1,64}$/u.test(actor))
-    throw new Error("admin_actor_invalid");
-  return actor;
-}
-
-function configuredRoles(actor: string): readonly AdminRole[] {
-  const raw = process.env.MINIAPP_ADMIN_RBAC?.trim();
-  if (!raw) {
-    if (process.env.NODE_ENV === "production")
-      throw new Error("admin_rbac_disabled");
-    return ["OWNER"];
+  const digest = createHash("sha256").update(provided).digest();
+  let matched: ConfiguredCredential | undefined;
+  for (const credential of credentials) {
+    if (timingSafeEqual(Buffer.from(credential.tokenSha256, "hex"), digest)) matched = credential;
   }
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error("admin_rbac_invalid");
-  }
-  const roles =
-    parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)[actor]
-      : undefined;
-  if (
-    !Array.isArray(roles) ||
-    roles.some(
-      (role) =>
-        typeof role !== "string" ||
-        !(["OWNER", "MODERATOR", "MEDIA_REVIEWER", "PUBLISHER", "AUDITOR"] as const).includes(
-          role as AdminRole,
-        ),
-    )
-  )
-    throw new Error("admin_rbac_actor_not_configured");
-  return roles as AdminRole[];
+  if (!matched) throw new Error("admin_auth_required");
+  if (assertedActor !== undefined && assertedActor !== matched.actorId)
+    throw new Error("admin_auth_actor_mismatch");
+  return Object.freeze({ actorId: matched.actorId, roles: matched.roles });
 }
 
-export function assertAdminOperation(
-  actor: string,
-  operation: AdminOperation,
-) {
-  const roles = configuredRoles(actor);
-  if (!roles.some((role) => ROLE_OPERATIONS[role].includes(operation)))
+export function adminOperations(principal: AdminPrincipal): readonly AdminOperation[] {
+  return [...new Set(principal.roles.flatMap((role) => ROLE_OPERATIONS[role]))];
+}
+
+export function assertAdminOperation(principal: AdminPrincipal, operation: AdminOperation) {
+  if (!principal.roles.some((role) => ROLE_OPERATIONS[role].includes(operation)))
     throw new Error("admin_permission_denied");
-  return roles;
+  return principal;
 }

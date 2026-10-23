@@ -107,7 +107,9 @@ export function PrimaryTabBar({ state, navigation }: PrimaryTabBarProps) {
                 ? navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true })
                 : { defaultPrevented: false };
               if (event.defaultPrevented) return;
-              void setDestination(destination.id);
+              // Navigation remains usable when its optional restoration hint
+              // cannot be saved; the shell store owns the visible retry state.
+              void setDestination(destination.id).catch(() => undefined);
               if (!selected) {
                 if (Platform.OS !== "web") void Haptics.selectionAsync().catch(() => undefined);
                 navigation.navigate(destination.group, route?.params);

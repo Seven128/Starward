@@ -19,11 +19,21 @@ function mapStatus(value: Location.PermissionResponse): ForegroundLocationResult
   };
 }
 
+let foregroundRequest: Promise<ForegroundLocationResult> | null = null;
+
 export const expoPermissionGateway: PermissionGateway = {
   async getForegroundLocationStatus() {
     return mapStatus(await Location.getForegroundPermissionsAsync());
   },
-  async requestForegroundLocation() {
-    return mapStatus(await Location.requestForegroundPermissionsAsync());
+  requestForegroundLocation() {
+    if (!foregroundRequest) {
+      const attempt = Location.requestForegroundPermissionsAsync().then(mapStatus);
+      foregroundRequest = attempt;
+      void attempt.then(
+        () => { if (foregroundRequest === attempt) foregroundRequest = null; },
+        () => { if (foregroundRequest === attempt) foregroundRequest = null; },
+      );
+    }
+    return foregroundRequest;
   },
 };

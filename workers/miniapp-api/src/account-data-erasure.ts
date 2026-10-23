@@ -54,14 +54,15 @@ export async function eraseAccountContributionEvidence(client: PoolClient, userI
   const erasedAt = new Date().toISOString();
   const marker = { privacyErasedAt: erasedAt };
   await client.query("SELECT set_config('starward.account_erasure_at', $1, true)", [erasedAt]);
-  // Lock cases before submissions, matching the administrator review order.
+  // The caller already holds the account and its submissions. All contribution
+  // mutations acquire the submission before its cases, including moderation.
+  const submissions = await client.query<{ submission_id: string; payload: ContributionSubmission }>(
+    "SELECT submission_id, payload FROM user_submissions WHERE user_id = $1 ORDER BY submission_id FOR UPDATE", [userId]);
   const cases = await client.query<{ case_id: string }>(
     `SELECT case_id FROM moderation_cases
       WHERE subject_type = 'USER_CONTRIBUTION'
         AND subject_id IN (SELECT submission_id FROM user_submissions WHERE user_id = $1)
       ORDER BY case_id FOR UPDATE`, [userId]);
-  const submissions = await client.query<{ submission_id: string; payload: ContributionSubmission }>(
-    "SELECT submission_id, payload FROM user_submissions WHERE user_id = $1 ORDER BY submission_id FOR UPDATE", [userId]);
   const submissionIds = submissions.rows.map((row) => row.submission_id);
   const caseIds = cases.rows.map((row) => row.case_id);
   const uploadIds = submissions.rows.flatMap((row) => (row.payload.media ?? []).map((media) => media.uploadId));

@@ -7,16 +7,22 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { consumeNativeRouteIntent, useNativeRouteIntent } from "./native-route-store";
 import { useStarwardTheme } from "./useStarwardTheme";
 import { DesignEvidenceRuntimeProvider } from "./DesignEvidenceRuntime";
+import { useShellStore } from "../state/shell-store";
 
 export default function RuntimeRoot({ children }: { children?: ReactNode }) {
   const nativeRouteIntent = useNativeRouteIntent();
   const { mode, palette } = useStarwardTheme();
+  const hydrateFromRuntime = useShellStore((state) => state.hydrateFromRuntime);
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: { retry: 1, staleTime: 60_000 },
       mutations: { retry: 0 },
     },
   }));
+
+  useEffect(() => {
+    void hydrateFromRuntime();
+  }, [hydrateFromRuntime]);
 
   useEffect(() => {
     const href = consumeNativeRouteIntent(nativeRouteIntent);

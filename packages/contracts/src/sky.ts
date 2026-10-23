@@ -11,9 +11,12 @@ export interface SkyQuery {
 
 export interface SkyPosition {
   id: string;
+  /** Stable upstream identity; optional for compatible historical responses. */
+  sourceId?: string;
   name: string;
   kind: "star" | "deep-sky" | "constellation-anchor" | "milky-way-core";
-  magnitude: number;
+  /** Direction proxies have no measured magnitude. */
+  magnitude: number | null;
   altitudeDeg: number;
   azimuthDeg: number;
   visible: boolean;
@@ -31,7 +34,7 @@ export interface SkyContext {
   schemaVersion: "starward-sky-context-v1";
   state: SkyDataState;
   generatedAt: string;
-  algorithm: { name: "Astronomy Engine"; version: string; coordinateSystem: "WGS84"; refraction: "normal" };
+  algorithm: { name: "Astronomy Engine"; version: string; coordinateSystem: "WGS84"; refraction: "normal" | "none" };
   context: SkyQuery;
   catalog: { loadedChunk: "bright"; deferredChunks: string[]; magnitudeLimit: number };
   objects: SkyPosition[];

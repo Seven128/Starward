@@ -6,13 +6,14 @@
       "import { NATIVE_CHROME_THEME } from \"./theme/design-tokens\"",
       "navigationBarBackgroundColor: NATIVE_CHROME_THEME.DAY.canvas",
       "backgroundColor: NATIVE_CHROME_THEME.DAY.canvas",
-      "color: NATIVE_CHROME_THEME.DAY.color",
-      "selectedColor: NATIVE_CHROME_THEME.DAY.selectedColor"
+      "navigationStyle: \"custom\"",
+      "navigationBarTextStyle: \"black\""
     ],
     "none_of": [
       "#F5F7FA",
       "#536DFE",
-      "#667085"
+      "#667085",
+      "tabBar:"
     ]
   },
   {
