@@ -18,7 +18,7 @@ import {
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { celestialObjectPosition } from "./celestial-object-position.ts";
-import { validateTerrainRequest } from "./terrain-request.ts";
+import { validateTerrainRequest, validateTerrainPreviewRequest } from "./terrain-request.ts";
 import { HORIZON_RADIUS_M } from "./terrain-horizon-model.ts";
 import {
   assertFilterState,
@@ -188,6 +188,19 @@ function parseCloudLayer(
   return layer as ObservationContext["weatherView"]["cloudLayer"];
 }
 
+function parseTerrainOverlayRequest(purpose?: string, centerLat?: string, centerLng?: string, radiusKm?: string, viewportBounds?: string): TerrainOverlayRequest {
+  const latitude = Number(centerLat), longitude = Number(centerLng), radius = Number(radiusKm);
+  if (purpose !== "MAP" && purpose !== "SPOT") throw new Error("terrain_overlay_request_invalid");
+  const parts = viewportBounds?.split(",");
+  if (parts && (purpose !== "MAP" || radiusKm !== undefined || parts.length !== 4 || parts.some(part => !part.trim())))
+    throw new Error("terrain_overlay_request_invalid");
+  const request: TerrainOverlayRequest = parts ? { purpose: "MAP", center: { system: "GCJ02", latitude, longitude },
+    viewportBounds: { west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } }
+    : { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
+  validateTerrainRequest(request);
+  return request;
+}
+
 async function withTerrainRead<T>(reply: FastifyReply | undefined, read: (signal: AbortSignal) => Promise<T>): Promise<T> {
   const controller = new AbortController();
   const cancel = () => { if (!reply?.raw.writableFinished) controller.abort(new Error("terrain_request_cancelled")); };
@@ -300,19 +313,26 @@ export class MiniappController {
     @Res({ passthrough: true }) reply?: FastifyReply,
     @Query("viewportBounds") viewportBounds?: string,
   ) {
-    const latitude = Number(centerLat);
-    const longitude = Number(centerLng);
-    const radius = Number(radiusKm);
-    if (purpose !== "MAP" && purpose !== "SPOT")
-      throw new Error("terrain_overlay_request_invalid");
-    const parts = viewportBounds?.split(",");
-    if (parts && (purpose !== "MAP" || radiusKm !== undefined || parts.length !== 4 || parts.some(part => !part.trim())))
-      throw new Error("terrain_overlay_request_invalid");
-    const request: TerrainOverlayRequest = parts ? { purpose: "MAP", center: { system: "GCJ02", latitude, longitude },
-      viewportBounds: { west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } }
-      : { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
-    validateTerrainRequest(request);
+    const request = parseTerrainOverlayRequest(purpose, centerLat, centerLng, radiusKm, viewportBounds);
     return withTerrainRead(reply, signal => this.service.getTerrainOverlay(request, signal));
+  }
+
+  @Get("terrain/overlay/preview")
+  async terrainOverlayPreview(
+    @Query("purpose") purpose?: string,
+    @Query("centerLat") centerLat?: string,
+    @Query("centerLng") centerLng?: string,
+    @Query("radiusKm") radiusKm?: string,
+    @Query("viewportBounds") viewportBounds?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
+  ) {
+    let request: TerrainOverlayRequest;
+    try {
+      if (!centerLat?.trim() || !centerLng?.trim()) throw new Error("terrain_overlay_preview_request_invalid");
+      request = parseTerrainOverlayRequest(purpose, centerLat, centerLng, radiusKm, viewportBounds);
+      validateTerrainPreviewRequest(request);
+    } catch { throw new BadRequestException("terrain_overlay_preview_request_invalid"); }
+    return withTerrainRead(reply, signal => this.service.getTerrainOverlayPreview(request, signal));
   }
 
   @Get("terrain/horizon")
@@ -500,13 +520,16 @@ export class MiniappController {
     @Query("contextId") contextId?: string,
     @Query("at") at?: string,
     @Headers("authorization") authorization?: string,
+    @Query("window") windowMode?: string,
   ) {
+    if (windowMode !== undefined && windowMode !== "NIGHT" && windowMode !== "TWO_HOURS")
+      throw new BadRequestException("sky_geometry_window_mode_invalid");
     const locationId = decodeURIComponent(spotId);
     const userId = locationId.startsWith("contribution:")
       ? await this.service.auth.requirePrincipal(authorization)
       : await this.service.auth.optionalPrincipal(authorization);
     return this.service.getSkyGeometryWindow(locationId, required(contextId, "observation_context_required"),
-      required(at, "observation_time_required"), userId);
+      required(at, "observation_time_required"), userId, windowMode);
   }
 
   @Get("spots/:spotId/sky/objects/:reference")

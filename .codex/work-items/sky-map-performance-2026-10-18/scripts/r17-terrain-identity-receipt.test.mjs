@@ -12,6 +12,22 @@ const request = { purpose: 'MAP', center: { system: 'GCJ02', latitude: 30, longi
 const url = () => new URL('http://fixture.invalid/v2/terrain/overlay?purpose=MAP&centerLat=30&centerLng=110&viewportBounds=109.99,29.99,110.01,30.01');
 const file = '/v2/terrain/assets/fixture-public.png';
 
+test('published preview is associated with the fine window without claiming its image is final', async () => {
+  const owner = createTerrainIdentityReceiptOwner(), previewUrl = url();
+  previewUrl.pathname += '/preview';
+  const fine = owner.start(url(), 'GET'), preview = owner.start(previewUrl, 'GET');
+  assert.equal(preview.requestKeySha256, fine.requestKeySha256);
+  assert.notEqual(preview.requestOrdinal, fine.requestOrdinal);
+  const parentHash = digest('published-parent'), fineHash = digest('fine-image');
+  const facts = await owner.metadata(Response.json({ data: { state: 'AVAILABLE', imageUrl: file,
+    imageSha256: parentHash, preview: { requestedZoom: 12, imageZoom: 11 } } }), preview);
+  assert.equal(facts.imageSha256, parentHash);
+  assert.notEqual(facts.imageSha256, fineHash);
+  assert.equal(Object.hasOwn(facts, 'fineComplete'), false);
+  const invalid = new URL('http://fixture.invalid/v2/terrain/overlay/preview?purpose=SPOT&centerLat=30&centerLng=110&radiusKm=10');
+  assert.equal(owner.start(invalid, 'GET').requestKeyState, 'UNKNOWN');
+});
+
 test('one response binds its producer key and declared image without retaining private input', async () => {
   const owner = createTerrainIdentityReceiptOwner(), body = Buffer.from('fixture-png-body'), sha = digest(body);
   const start = owner.start(url(), 'GET');

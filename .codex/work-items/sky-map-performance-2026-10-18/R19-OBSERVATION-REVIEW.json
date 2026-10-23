@@ -1,0 +1,28 @@
+{
+  "schema": "starward-task-review-v1",
+  "date": "2026-10-21",
+  "reviewer": "review_r19_observation",
+  "head": "5b27a062c670cb2336e8e5c00c7e7a4071db0fac",
+  "scope": "task-only r19 draw reasons and terrain observer compatibility",
+  "outcome": "no-P1-P2-blocker-found",
+  "findings": [],
+  "independentChecks": {
+    "r19SelectedBehaviorProtocolTerminal": { "passed": 4, "failed": 0 },
+    "terrainSelectedPendingTransformOverflow": { "passed": 3, "failed": 0, "runner": "npm run node -- --import tsx --test" },
+    "diffCheck": "passed",
+    "initialTerrainRunnerFailure": "direct node --test did not load named TypeScript export; existing repository tsx entry passed"
+  },
+  "notPerformed": ["production edits", "device or IDE operations", "service changes", "actual build", "upload", "commit", "target performance acceptance", "leak acceptance"],
+  "sourceBase": ".codex/work-items/sky-map-performance-2026-10-18/scripts/",
+  "sources": [
+    { "file": "build-r17-normal-baseline-v3.mjs", "sha256": "580da6856bd4c30645a33f8ad648c53b5cc78bd18c15351a7e8b66dd7bf179df" },
+    { "file": "r17-normal-observations.ts", "sha256": "5f770b123f78b04df0445e312798de6f01eeb4434558618990a187e54fcdde0e" },
+    { "file": "r17-normal-input-instrumentation.mjs", "sha256": "7529bd3297b966e54bc9d2c4cd62e930642b571993ac17195583a90513b84b17" },
+    { "file": "r17-normal-input-protocol.mjs", "sha256": "187e7d7e4f1383eda5e7bd7e6cb78ff55169591730e7feaf30cfb245a546bc44" },
+    { "file": "r17-normal-input.test.mjs", "sha256": "bc6c96097698bb0a03c41de5df28e8f583ce58aaa356f76b3e794530a579a6c1" },
+    { "file": "r17-normal-baseline-v3-fixture.mjs", "sha256": "47e5a52c3bd83a028e7adee2a86e9d5d4c413cda48f9e7d8bf5193268549c658" },
+    { "file": "inject-terrain-wait-observer.mjs", "sha256": "2d9967b3a82bc56ce831ec636e1cceabde2bd71291a597ca3e2fb4db4cc9edef" },
+    { "file": "terrain-wait-observer.ts", "sha256": "1882536b9e68a718cd6954f390837a57b472af71d3e07318c10c3d5fce62c316" },
+    { "file": "terrain-wait-observer.test.mjs", "sha256": "f5ba6c8a4e895f2f245ca673952f026abb7d1a0ca4a5b6147ea557a8adc1f5ef" }
+  ]
+}

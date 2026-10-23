@@ -1,0 +1,81 @@
+{
+  "schema": "starward-task-transfer-v1",
+  "state": "LOCAL_ARCHIVE_ONLY_UPLOAD_DEFERRED_BY_USER",
+  "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+  "visibility": "OWNER_ONLY",
+  "packet": {
+    "name": "starward-performance-r12-20261020.zip",
+    "bytes": 312051665,
+    "sha256": "5f55ec6cbf746cd3228c3aa3f07b47380c7613d73860c570ed6622d0db65c24a",
+    "manifestName": "private-manifest.json",
+    "manifestSha256": "5ea3d5299e47d6dffc95311e9f29f8e859cb01b8e45fb221e19882bad6360eb0",
+    "files": 4215,
+    "uncompressedBytes": 343757850,
+    "parts": [
+      {
+        "order": 1,
+        "name": "starward-performance-r12-20261020.zip.part01",
+        "bytes": 83886080,
+        "sha256": "995ec1a1d07dd0ceb127127e8f290e583e7bd501e9e53ea6c591d3564d68362b"
+      },
+      {
+        "order": 2,
+        "name": "starward-performance-r12-20261020.zip.part02",
+        "bytes": 83886080,
+        "sha256": "be8ca652234f2ac1e85959707494342e9f7ea700d154e20d46e32d30dcf155c9"
+      },
+      {
+        "order": 3,
+        "name": "starward-performance-r12-20261020.zip.part03",
+        "bytes": 83886080,
+        "sha256": "8bc1e32f7f2a54ddc78c36ea0d4ac3a59a35872c5104a4b3bd47046a69c973b7"
+      },
+      {
+        "order": 4,
+        "name": "starward-performance-r12-20261020.zip.part04",
+        "bytes": 60393425,
+        "sha256": "945f6b9bd4b8d962e5cf6dd03c297a19c5e6df0e526473df8557514f3c2b78fe"
+      }
+    ]
+  },
+  "scope": [
+    "Normal r10 terrain identity, warm-pan and Play/Pause/Cancel/Map originals",
+    "Before six-field native-keyboard failure and complete corrected r12 source/build/maps",
+    "R12 all-six-field hold recordings, seconds intent metrics and independent reviews",
+    "Exact immutable terrain proof inputs and bounded offline owner replay"
+  ],
+  "excluded": [
+    "Credentials and private environments",
+    "Private databases and phone storage",
+    "Node modules, active logs, QR material and browser profiles",
+    "Unchanged original packet, runtime products and r10 build reuse existing receipts"
+  ],
+  "candidate": {
+    "mode": "normal",
+    "transport": "usb-reverse",
+    "scope": "development_feedback_only",
+    "bundleSha256": "7a64f49ef07760a697b4351363c0cf41e27928e46d86a133e7825ce291d2fcb6",
+    "buildSourceSha256": "99246b31242408157015765dfc49090d7a7ec7169dce6befea09976fff5fc57e",
+    "files": 337,
+    "bytes": 5003888,
+    "phoneVisibleLabel": "R17 normal Sky A1 r12 USB",
+    "phoneBundleBytesVerified": false,
+    "phoneDebug": "ON"
+  },
+  "restoreOwner": {
+    "script": ".codex/work-items/sky-map-performance-2026-10-18/scripts/restore-cross-computer-evidence.py",
+    "receipt": ".codex/work-items/sky-map-performance-2026-10-18/RECEIVER-PERFORMANCE-TRANSFER-20261020.json",
+    "instructions": "Download the declared Drive file as parts[].name into a private directory. Use --receipt and a fresh --destination; Windows long paths require an extended-path prefix. No existing directory is overlaid."
+  },
+  "limits": [
+    "Preserves bounded development feedback; full Goal and final device acceptance remain incomplete.",
+    "Historical gen26 and legacy push UNKNOWN remain unchanged.",
+    "Restoration does not start services, recover credentials or reuse device input authority."
+  ],
+  "remoteReadback": {
+    "verified": false,
+    "uploadAuthorizedOnlyOnExplicitRequest": true,
+    "priorPart01Attempt": "TIMED_OUT_OUTCOME_UNCONFIRMED",
+    "subsequentFolderSearchFoundFile": false
+  }
+}

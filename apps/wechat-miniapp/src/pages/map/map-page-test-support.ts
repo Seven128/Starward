@@ -1,5 +1,6 @@
 import type { AnalysisOverlay } from "../../state/app-store";
 import { mapLayerKindForOverlay, mapSceneLayerForOverlay } from "./map-layer-selection";
+import { createPrimaryNavigationController } from "../../navigation/primary-navigation-controller";
 
 /** Query-owner dependencies used by the existing focused Map callback tests.
  * Use the real layer policy; static reads require an explicit response adapter. */
@@ -22,9 +23,15 @@ export function createMapSceneTestBoundaries(options: {
  */
 export function createMapPageTestBoundaries() {
   const calls: string[] = [];
+  const nativePage = { route: "pages/map/index" };
+  const controller = createPrimaryNavigationController({ currentPage: () => nativePage });
+  controller.show(nativePage);
   return {
     calls,
+    nativePage,
     scope: {
+      pageVisible: true,
+      primaryNavigation: { controller, get presentation() { return controller.getSnapshot(); } },
       mapReturnPhase: { current: null as "waiting" | "revealing" | null },
       mapReturnPresentation: null as "waiting" | "revealing" | null,
       skyEntryPresentation: null as number | null,

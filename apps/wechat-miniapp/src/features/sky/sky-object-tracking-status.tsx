@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef } from "react";
 import type { CelestialObjectPositionData } from "@starward/miniapp-contracts";
 import { useSkyPresentationPosition as useCelestialPosition } from "./use-sky-presentation-position";

@@ -18,6 +18,21 @@ test("main-page adopted bitmaps keep geometry and accessible names through the s
 });
 
 test("subpackage consumers share main bitmaps while retaining package variants and theme paths", () => {
+  for (const [mode, expected] of [
+    ["DAY", "/assets/b-icons/weapp-tabbar/map--day--default.png"],
+    ["NIGHT", "/assets/icons/tab-map-night.png"],
+    ["OBSERVATION", "/assets/icons/tab-map-observation.png"],
+  ] as const) {
+    const map = semanticIconRenderer("pages/my/index", mode).render({ name: "map", decorative: false });
+    assert.equal(map.type, "image");
+    assert.equal(map.props.src, expected);
+    assert.equal(map.props["aria-label"], "地图");
+  }
+  const mainAvatar = semanticIconRenderer("pages/map/index");
+  assert.equal(mainAvatar.resolvePath("account-user", "default", "pages/map/index"),
+    "/assets/b-icons/weapp-tabbar/account-user--day--default.png");
+  assert.equal(mainAvatar.resolvePath("account-user", "selected", "pages/map/index"),
+    "/assets/b-icons/weapp-tabbar/account-user--day--selected.png");
   const settings = semanticIconRenderer("pages/my/index").render({ name: "settings" });
   assert.equal(settings.type, "image");
   assert.equal(settings.props.src, "/assets/b-icons/settings--day--default.png");

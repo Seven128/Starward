@@ -56,8 +56,8 @@ export function transformTerrainWaitSources(input) {
         '        success(result) {\n          if (input.url.startsWith("/v2/terrain/assets/")) terrainWait.downloadReturned(input.key, result.statusCode);\n          terminal = true;', 'download_callback');
     } else if (file.endsWith('/use-map-raster-installation.ts')) {
       source = once(source,
-        '  resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, requiresMapRecovery: needsRecovery }) => {',
-        '  resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, requiresMapRecovery: needsRecovery }) => {\n    if (input.label === "地形") terrainWait.nativeResult(nativeMap.mapId, actual?.src ?? null, !failure, isCurrent(), phase ?? "display");', 'native_result');
+        '  resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, presentationUnknown, requiresMapRecovery: needsRecovery }) => {',
+        '  resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, presentationUnknown, requiresMapRecovery: needsRecovery }) => {\n    if (input.label === "地形") terrainWait.nativeResult(nativeMap.mapId, actual?.src ?? null, !failure, isCurrent(), phase ?? "display", Boolean(presentationUnknown));', 'native_result');
     } else if (file.endsWith('/pages/map/index.tsx')) {
       const start = action => `terrainWait.start("${action}", terrain.identity,
         terrain.data?.data.imageUrl ? \`\${terrain.data.data.publicationId ?? ""}:\${terrain.data.data.imageUrl}\` : null,
@@ -73,8 +73,8 @@ export function transformTerrainWaitSources(input) {
         `                      const next = !terrainEnabled;
                       if (next) ${start('enable')}
                       setTerrainEnabled(next);`, 'real_enable');
-      source = once(source, '      {!eventModalPresent ? <FloatingNotificationHost /> : null}',
-        '      <TerrainWaitMarker visible={pageVisible} />\n      {!eventModalPresent ? <FloatingNotificationHost /> : null}', 'temporal_marker');
+      source = once(source, '      {pageVisible && !eventModalPresent ? <FloatingNotificationHost /> : null}',
+        '      <TerrainWaitMarker visible={pageVisible} />\n      {pageVisible && !eventModalPresent ? <FloatingNotificationHost /> : null}', 'temporal_marker');
     }
     out.set(file, importTrace + source);
   }

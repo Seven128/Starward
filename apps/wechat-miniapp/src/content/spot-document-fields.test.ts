@@ -4,17 +4,20 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import * as document from "./spot-document";
+import { sharedButtonTestBoundary } from "../components/shared-button-test-support";
 
 type Node = { type: string | ((props: any) => Node); props: any };
 
 function renderer() {
   const exported: Record<string, (props: any) => Node> = {};
-  const jsx = (type: Node["type"], props: any) => ({ type, props });
+  const buttons = sharedButtonTestBoundary((type: unknown, props: any) => ({ type, props }));
+  const jsx = buttons.element;
   vm.runInNewContext(ts.transpileModule(readFileSync(new URL("./spot-document-fields.tsx", import.meta.url), "utf8"), {
     compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   }).outputText, { exports: exported, require: (name: string) => {
     if (name === "react/jsx-runtime") return { jsx, jsxs: jsx, Fragment: "Fragment" };
     if (name === "@tarojs/components") return { Button: "Button", Input: "Input", Text: "Text", Textarea: "Textarea", View: "View" };
+    if (name === "@/components/shared-button-press") return buttons;
     if (name === "./spot-document") return document;
     if (name.endsWith("semantic-asset")) return { SemanticIcon: "Icon" };
     if (name.endsWith(".scss")) return {};

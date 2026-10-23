@@ -1,40 +1,89 @@
-import { isPrimaryPageRoute, type PrimaryPageRoute } from "./primary-navigation";
+import type { PrimaryPageRoute } from "./primary-navigation";
 
-type Page = { route?: string };
-export type PrimaryNavigationState = {
-  route: PrimaryPageRoute | null;
-  pending: PrimaryPageRoute | null;
-  failed: PrimaryPageRoute | null;
-};
+export type PrimaryNativePage = { route?: string };
+export type PrimaryNavigationState = Readonly<{
+  route: PrimaryPageRoute;
+  phase: "closed" | "opening" | "open" | "closing";
+  transitionTicket: number | null;
+  nativeVisible: boolean;
+  foregroundRoute: PrimaryPageRoute | null;
+  disposed: boolean;
+}>;
 
-/** Selection commits on a real page show; a switch promise never selects a tab. */
+const MAP: PrimaryPageRoute = "pages/map/index";
+const MY: PrimaryPageRoute = "pages/my/index";
+
+/** The Map Page owns one logical My presentation; native children only suspend it. */
 export function createPrimaryNavigationController(ports: {
-  currentPage(): Page | undefined;
-  switchTab(url: string): Promise<unknown>;
-  changed(state: PrimaryNavigationState): void;
+  currentPage(): PrimaryNativePage | undefined;
+  changed?(state: PrimaryNavigationState): void;
 }) {
-  let state: PrimaryNavigationState = { route: null, pending: null, failed: null };
-  let page: Page | undefined, alive = true, visible = false, revision = 0;
-  const emit = (next: PrimaryNavigationState) => { state = next; ports.changed(next); };
-  const retire = () => { revision++; visible = false; page = undefined; };
+  let page: PrimaryNativePage | undefined;
+  let activation: object | null = null;
+  let serial = 0;
+  let state: PrimaryNavigationState = Object.freeze({
+    route: MAP, phase: "closed", transitionTicket: null,
+    nativeVisible: false, foregroundRoute: null, disposed: false,
+  });
+  const listeners = new Set<() => void>();
+  const emit = (patch: Partial<PrimaryNavigationState>) => {
+    state = Object.freeze({ ...state, ...patch });
+    ports.changed?.(state);
+    for (const listener of [...listeners]) listener();
+  };
+  const currentPageIs = (owner: PrimaryNativePage) => {
+    try { return ports.currentPage() === owner; }
+    catch { return false; }
+  };
+  const nativeForeground = () => {
+    if (state.disposed || !state.nativeVisible || !page) return false;
+    return currentPageIs(page);
+  };
+  const isForeground = (route: string | undefined) => nativeForeground() && route === state.route && state.phase !== "closing";
+  const present = (route: PrimaryPageRoute) => {
+    if (!nativeForeground() || route === state.route) return false;
+    activation = {};
+    emit({ route, phase: route === MY ? "opening" : "closing",
+      transitionTicket: ++serial, foregroundRoute: route === MY ? MY : null });
+    return true;
+  };
   return {
-    show(owner: Page) {
-      if (!alive || ports.currentPage() !== owner || !isPrimaryPageRoute(owner.route)) return;
-      // Layout refreshes belong to the same visible page and cannot retire its request.
-      if (visible && page === owner && state.route === owner.route) return;
-      revision++; visible = true; page = owner;
-      emit({ route: owner.route, pending: null, failed: null });
+    getSnapshot: () => state,
+    subscribe(listener: () => void) {
+      if (state.disposed) return () => {};
+      listeners.add(listener);
+      return () => { listeners.delete(listener); };
     },
-    hide() { retire(); if (alive) emit({ ...state, pending: null, failed: null }); },
-    dispose() { retire(); alive = false; },
-    async open(route: PrimaryPageRoute) {
-      if (!alive || !visible || !page || ports.currentPage() !== page || state.pending || route === state.route) return;
-      const owner = page, ticket = ++revision;
-      const current = () => alive && visible && revision === ticket && page === owner && ports.currentPage() === owner;
-      emit({ ...state, pending: route, failed: null });
-      try { await ports.switchTab("/" + route); }
-      catch { if (current()) emit({ ...state, pending: null, failed: route }); }
-      finally { if (current() && state.pending) emit({ ...state, pending: null }); }
+    owns: (owner: PrimaryNativePage | undefined) => !state.disposed && !!page && owner === page,
+    show(owner: PrimaryNativePage) {
+      if (state.disposed || owner.route !== MAP || !currentPageIs(owner) || (page && page !== owner)) return false;
+      if (!page) { page = owner; activation = {}; }
+      // Resize/layout synchronization is not a new activation or transition.
+      if (!state.nativeVisible) emit({ nativeVisible: true, foregroundRoute: state.phase === "closing" ? null : state.route });
+      return true;
     },
+    hide() {
+      if (!state.disposed && state.nativeVisible) emit({ nativeVisible: false, foregroundRoute: null });
+    },
+    dispose() {
+      if (state.disposed) return;
+      activation = null;
+      emit({ disposed: true, nativeVisible: false, foregroundRoute: null, transitionTicket: null });
+      listeners.clear();
+      page = undefined;
+    },
+    openMy: () => present(MY),
+    closeMy: () => present(MAP),
+    finishTransition(ticket: number) {
+      if (state.disposed || state.transitionTicket !== ticket) return false;
+      emit({ phase: state.route === MY ? "open" : "closed", transitionTicket: null,
+        foregroundRoute: state.nativeVisible ? state.route : null });
+      return true;
+    },
+    isForeground,
+    /** A native child hide/show retains this identity; a primary intent replaces it. */
+    presentationIdentity: (route: string | undefined) => !state.disposed && page && route === state.route ? activation : null,
   };
 }
+
+export type PrimaryNavigationController = ReturnType<typeof createPrimaryNavigationController>;

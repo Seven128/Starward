@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { SemanticIcon, type SemanticIconName } from "./semantic-asset";
 import "./toggle-field.scss";
 
@@ -20,9 +21,6 @@ export function ToggleField({ id, label, description, checked, disabled = false,
       className={`toggle-field setting-row focus-ring${checked ? " toggle-field--checked" : ""}${disabled ? " toggle-field--disabled" : ""}`}
       disabled={disabled}
       ariaLabel={`${label}，${stateLabels ? (checked ? stateLabels.checked : stateLabels.unchecked) : (checked ? "已开启" : "已关闭")}${disabled ? "，不可更改" : `，点击${stateLabels ? (checked ? stateLabels.unchecked : stateLabels.checked) : (checked ? "关闭" : "开启")}`}`}
-      hoverClass="toggle-field--pressed"
-      hoverStartTime={0}
-      hoverStayTime={0}
       onClick={() => { if (!disabled) onChange(!checked); }}
     >
       {icon ? <View className={`toggle-field__icon toggle-field__icon--${iconTone ?? "plain"}`} aria-hidden="true">

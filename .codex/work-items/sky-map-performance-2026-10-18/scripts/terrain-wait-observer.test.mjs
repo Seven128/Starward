@@ -61,6 +61,20 @@ test('actual ready cache is explicit; metadata failure has no invented ready res
   assert.doesNotMatch(JSON.stringify(report), /inactive-|privateCoordinate|not-for-export/);
 });
 
+test('pending and unknown native presentation never masquerade as installed acknowledgments', () => {
+  const { probe: p } = fixture();
+  p.start('gesture', 'request', 'asset', 'path', baseline);
+  p.nativeResult('map', 'path', true, true, 'pending', true);
+  p.nativeResult('map', 'path', true, true, 'display', true);
+  p.nativeResult('map', 'path', false, true, 'display', true);
+  p.nativeResult('map', 'path', true, true, 'display', false);
+  const report = p.snapshot();
+  assert.equal(report.schema, 'starward-terrain-wait-v2');
+  assert.deepEqual(report.rows.slice(1).map(row => row.phase),
+    ['native_pending', 'native_presentation_unknown', 'native_failure', 'native_ack']);
+  assert.deepEqual(report.rows.slice(1).map(row => row.presentationUnknown), [true, true, true, false]);
+});
+
 test('backward wall clock is explicit and cannot yield clamped elapsed evidence', () => {
   const f = fixture(), p = f.probe;
   p.start('gesture', 'r', null, null, baseline);
@@ -119,6 +133,7 @@ test('current real consumer transforms have valid syntax and keep the cache/down
   assert.match(hook, /terrainWait\.fileReady\(imageKey, path, \{ bytes,/);
   assert.doesNotMatch(hook, /fileReady\([^\n]*imageSha256/);
   assert.match(transformed.get('apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts'), /void coordinator\.apply/);
+  assert.match(transformed.get('apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts'), /phase \?\? "display", Boolean\(presentationUnknown\)/);
   assert.throws(() => transformTerrainWaitSources(transformed), /original_sources_required/);
 });
 

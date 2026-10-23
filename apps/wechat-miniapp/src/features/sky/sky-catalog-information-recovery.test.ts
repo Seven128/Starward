@@ -26,7 +26,7 @@ test("a retained stale object description offers an inline retry without losing 
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
     View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text", SkyObjectDialog: "SkyObjectDialog",
-    SemanticIcon: "SemanticIcon", SoftButton: "SoftButton", SkySourceLink: "SkySourceLink", StatusPanel: "StatusPanel",
+    SemanticIcon: "SemanticIcon", SoftButton: "SoftButton", SourceButton: "SourceButton", StatusPanel: "StatusPanel",
     useRef: (current: unknown) => ({ current }), useEffect: () => {},
     useAppStore: (selector: (state: unknown) => unknown) => selector({ notify: () => {} }),
     useCelestialInformation: () => information, productSourceNames: () => "", skyObjectKindLabel, skyObjectIdentityLabel,
@@ -53,7 +53,7 @@ test("a retained stale object description offers an inline retry without losing 
   assert.equal(find(tree, node => node?.type === "Text" &&
     node.children?.includes("目录修订与原始字段的完整核对说明")), null,
     "long catalogue notes belong to the source page, after the modal's facts");
-  assert.ok(find(tree, node => node?.type === "SkySourceLink"));
+  assert.ok(find(tree, node => node?.type === "SourceButton"));
   const status = find(tree, node => node?.type === "StatusPanel" && node.props.state === "STALE");
   assert.ok(status, "the retained facts need an actionable stale-state explanation");
   status.props.onRecover();
@@ -85,7 +85,7 @@ test("the actual object modal sends its painted publication to both details and 
   const render = vm.runInNewContext(code, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text", SkyObjectDialog: "SkyObjectDialog", SemanticIcon: "SemanticIcon",
-    SoftButton: "SoftButton", SkySourceLink: "SkySourceLink", StatusPanel: "StatusPanel", useRef: (current: unknown) => ({ current }), useEffect: () => {},
+    SoftButton: "SoftButton", SourceButton: "SourceButton", StatusPanel: "StatusPanel", useRef: (current: unknown) => ({ current }), useEffect: () => {},
     useAppStore: (select: (value: unknown) => unknown) => select({ notify() {} }), skyObjectKindLabel, skyObjectIdentityLabel,
     Taro: { async navigateTo({ url }: { url: string }) { urls.push(url); } },
     productSourceNames: () => "IRSA",
@@ -100,9 +100,9 @@ test("the actual object modal sends its painted publication to both details and 
   const stack = [tree];
   let button: any;
   while (stack.length) { const item = stack.pop(); if (Array.isArray(item)) stack.push(...item);
-    else if (item?.type === "SkySourceLink") { button = item; break; }
+    else if (item?.type === "SourceButton") { button = item; break; }
     else if (item) stack.push(...(item.children ?? []), ...(item.props?.priority ? [item.props.priority] : [])); }
-  assert.ok(button); button.props.onClick();
+  assert.ok(button); button.props.onOpen();
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(urls, [`/sky/sources/index?reference=M%3A42&imagePublicationHash=${publicationHash}&opticalPublicationHash=${opticalPublicationHash}`]);
   render({ reference: "M:42", knownName: "M 42", knownKind: "NEBULA", imagePublicationHash: publicationHash, onClose() {} });

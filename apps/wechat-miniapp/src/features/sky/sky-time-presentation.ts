@@ -1,4 +1,4 @@
-import { assertSkyObservationFrames, assertSkyTimeModel, assertStellarGeometryFrame,
+import { assertSkyObservationFrames, assertSkyTimeModel, assertStellarGeometryFrame, skyGeometryWindow,
   STELLAR_GEOMETRY_FORMAT, STELLAR_GEOMETRY_REFERENCE_AT,
   type SkyReport, type SkyGeometryReport, type SkyGeometryRow, type SkyTimeModel,
   type DeepSkyScenePoint, type HourlySkyRow, type SourceSummary } from "@starward/miniapp-contracts";
@@ -8,16 +8,18 @@ import { exactSkyTimeFrame } from "./sky-time-frame";
 const prepared = new WeakMap<SkyReport, SkyTimeModel | null>();
 export type SkyTimeRulerRow = Pick<HourlySkyRow, "at"> & Partial<Pick<HourlySkyRow, "opportunityBlockers" | "opportunityEligible">>;
 
-/** Geometry windows supply ticks only, with no fabricated weather/advice. */
+/** Calendar selection keeps the complete observation day even when the
+ * admitted geometry is only a short preview. These ticks supply no facts. */
 export function skyTimeRulerRows(report: SkyReport | undefined, model: SkyTimeModel | null): readonly SkyTimeRulerRow[] {
-  return model && model !== skyPresentationTimeModel(report) ? model.knots.map(knot => ({ at: knot.at })) : report?.hourly ?? [];
+  return model && report && model !== skyPresentationTimeModel(report)
+    ? skyGeometryWindow(model.startAt, report.context.timezone).hourlyAt.map(at => ({ at })) : report?.hourly ?? [];
 }
 
 /** The ruler spaces supplied rows uniformly, not their elapsed durations.
- * Interpolate the actual adjacent instants only within admitted model coverage;
- * older reports keep their independently valid nearest supplied row. */
+ * Calendar selection can request a not-yet-supplied instant; the geometry owner
+ * obtains it separately. Older exact-only reports retain nearest-row input. */
 export function skyRulerTime(rows: readonly Pick<HourlySkyRow, "at">[], position: number,
-  model: Pick<SkyTimeModel, "startAt" | "endAt"> | null): string | null {
+  model: Pick<SkyTimeModel, "startAt" | "endAt"> | "CALENDAR" | null): string | null {
   if (!rows.length || !Number.isFinite(position)) return null;
   const bounded = Math.max(0, Math.min(position, rows.length - 1));
   const nearest = rows[Math.round(bounded)]!.at;
@@ -25,7 +27,7 @@ export function skyRulerTime(rows: readonly Pick<HourlySkyRow, "at">[], position
   if (!model || left === right) return nearest;
   const start = Date.parse(rows[left]!.at), end = Date.parse(rows[right]!.at);
   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start ||
-    !(start >= Date.parse(model.startAt) && end <= Date.parse(model.endAt))) return nearest;
+    (model !== "CALENDAR" && !(start >= Date.parse(model.startAt) && end <= Date.parse(model.endAt)))) return nearest;
   return new Date(Math.round(start + (end - start) * (bounded - left))).toISOString();
 }
 
@@ -118,6 +120,9 @@ export function presentSkyTime(report: SkyReport | undefined, at: string,
         equatorialToEnu: geometry.observationFrame.equatorialToEnu, observer: geometry.observationFrame.observer,
         format: STELLAR_GEOMETRY_FORMAT, referenceAt: STELLAR_GEOMETRY_REFERENCE_AT };
       assertStellarGeometryFrame(current, { catalog: scene.catalog, observer: scene.observer, at });
+      // This newly owned exact instant can safely feed current-Canvas drawing
+      // preparation. Do not freeze or retain historical report frames here.
+      freezeGeometry(current);
       frames = [{ at, state: "AVAILABLE", geometry: current }];
     } catch { /* Keep valid independent solar/observation/deep layers. */ }
   }

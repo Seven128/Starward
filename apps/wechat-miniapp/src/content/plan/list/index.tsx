@@ -1,9 +1,11 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
 import { AccountEntry } from "../../account-entry";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { SemanticIcon } from "@/components/semantic-asset";
@@ -80,7 +82,7 @@ function PlanListPage() {
         </View>
         {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
         {!owner ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后查看观星计划。" recoveryLabel="返回我的"
-          onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> :
+          onRecover={() => void openPrimaryPage("/pages/my/index")} /> :
           query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
         {navigationError ? <View role="alert"><Text>页面暂未打开，请再次点击。</Text></View> : null}
         {entries.map((entry, index) => {

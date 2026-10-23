@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { createNativeEditorLeaveGuardController } from "../../hooks/editor-leave-guard-controller";
+import { primaryPageNavigationForTest } from "../../navigation/primary-page-navigation-test-support";
 
 const contributionSource = readFileSync(new URL("./contribution-editor.tsx", import.meta.url), "utf8");
 const formalFeedbackSource = readFileSync(new URL("../spot-feedback/index.tsx", import.meta.url), "utf8");
@@ -39,13 +40,15 @@ test("confirmed draft withdrawal leaves without another native unsaved-input pro
       disableAlertBeforeUnload: () => { enabled = false; },
     });
     nativeLeaveGuard.configure(true, "未保存输入");
+    const taro = {
+      getCurrentPages: () => [{}, {}],
+      navigateBack: async () => { if (enabled) extraPrompts++; else returned++; },
+      switchTab: async () => { if (enabled) extraPrompts++; else returned++; },
+    };
     const leave = vm.runInNewContext(ts.transpileModule(`(${callback});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       embedded, managesRecords: false, nativeLeaveGuard, onClose: () => { closed++; },
-      Taro: {
-        getCurrentPages: () => [{}, {}],
-        navigateBack: async () => { if (enabled) extraPrompts++; else returned++; },
-        switchTab: async () => { if (enabled) extraPrompts++; else returned++; },
-      },
+      Taro: taro,
+      ...primaryPageNavigationForTest(taro),
       form: { kind: "NEW_SPOT_PROPOSAL", selectKind() {}, announce() {} },
     });
     leave(); await Promise.resolve();

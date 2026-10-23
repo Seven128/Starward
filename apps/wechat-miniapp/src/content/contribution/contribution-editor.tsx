@@ -1,4 +1,6 @@
-import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
+import { Image, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { BaseEventOrig, ScrollViewProps } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -180,7 +182,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   const leaveAfterWithdrawal = () => {
     if (embedded) { onClose?.(); return; }
     nativeLeaveGuard.suspendForProgrammaticLeave();
-    const fallback = () => Taro.switchTab({ url: managesRecords ? "/pages/my/index" : "/pages/map/index" });
+    const fallback = () => openPrimaryPage(managesRecords ? "/pages/my/index" : "/pages/map/index");
     let hasPriorPage = false;
     try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
     void (hasPriorPage ? Taro.navigateBack().catch(fallback) : fallback()).catch(() => {
@@ -243,10 +245,10 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   };
   return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}${standaloneDraftEditor ? " contribution-page--standalone-editor" : ""}${managesRecords ? " contribution-page--records" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {commands.handoffWarning}
-    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? saveStatus : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}><SemanticIcon name="close" /></Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} right={standaloneDraftEditor ? saveStatus : undefined} back backPresentation={standaloneDraftEditor && themeClass.includes("theme-day") ? "dismiss" : undefined} backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
+    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? saveStatus : null}<Button pressVariant="icon" className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}><SemanticIcon name="close" /></Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} right={standaloneDraftEditor ? saveStatus : undefined} back backPresentation={standaloneDraftEditor && themeClass.includes("theme-day") ? "dismiss" : undefined} backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
     {form.ownerChanged && !managesRecords ? <StatusPanel state="ERROR" title="账号已变化"
       detail="请返回地图后重新打开，原账号的输入不会交给当前账号。" recoveryLabel="返回地图"
-      onRecover={() => embedded ? onClose?.() : void Taro.switchTab({ url: "/pages/map/index" })} /> : <>
+      onRecover={() => embedded ? onClose?.() : void openPrimaryPage("/pages/map/index")} /> : <>
     {isNewSpotDocument && !readonlyRecord ? <SpotDocumentTabs
       className="contribution-document-tabs"
       chapter={documentChapter}

@@ -1,7 +1,9 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useState } from "react";
 import type { FacilityEvidence, SpotDetail } from "@starward/miniapp-contracts";
-import { Provenance } from "@/components/provenance";
+import { SourceAttribution } from "@/components/source-attribution";
+import { SourceEntry } from "@/components/source-entry";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
 
@@ -34,7 +36,10 @@ export function SpotAdditionalInformation({ spotId, detail, facilities, onLayout
         <FacilityEvidenceDetails evidence={facility} title={facilityLabel(facility.type)} />
       </View>)}
       {guidance.map(message => <Text className="type-caption" key={message}>{message}</Text>)}
-      {paragraphs.length && detail?.dataDisclosure[0] ? <Provenance source={detail.dataDisclosure[0]} compact /> : null}
+      {paragraphs.length && detail?.dataDisclosure[0] ? <View>
+        <SourceAttribution presentation="credit" sources={[detail.dataDisclosure[0]]} />
+        <SourceEntry id="additional-site-source" label="场地资料来源" sources={[detail.dataDisclosure[0]]} />
+      </View> : null}
     </View> : null}
   </View>;
 }

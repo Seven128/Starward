@@ -13,6 +13,7 @@ import type { SkyHipsSourceGroup, SkyLineSegment, SkyRenderSurface } from "./sky
 import { drawSkyConstellations, prepareSkyConstellationArtwork, type SkyConstellationLayer } from "./sky-constellation-render";
 import { createSkyStarAppearance, skyStarDisplayColor, skyStarMagnitudeLimit } from "./sky-star-appearance";
 import type { SkyStarTransitionFrame, SkyTransitionStar } from "./sky-star-transition";
+import type { SkyStarDrawPreparation } from "./sky-star-draw-preparation";
 import type { SkyReadyImageFrame } from "./sky-ready-presentation";
 import { drawSkyReadyArtwork, drawSkyReadyArtworkLevels, drawSkyReadyMesh, drawSkyReadyMeshLevels } from "./sky-ready-artwork";
 import type { SkyArtworkLevel, SkyArtworkLevelSurface } from "./sky-artwork-level-composition";
@@ -139,6 +140,7 @@ export function drawSkyScene(
   preparedRegions?: readonly SkyScenePreparedOpticalRegion[],
   starTransitions?: SkyStarTransitionFrame,
   readyImages?: SkyReadyImageFrame,
+  starDrawing?: SkyStarDrawPreparation,
 ) {
   const palette =
     mode === "OBSERVATION"
@@ -186,6 +188,7 @@ export function drawSkyScene(
   // Missing pose has no invented North-facing view. Recovery/list semantics
   // remain available outside this canvas until a trusted stream is present.
   if (!data || !basis) {
+    starDrawing?.reset();
     context.finish();
     painted?.(null, { sdssOptical: null, deepSkyImage: null });
     completed?.();
@@ -421,6 +424,8 @@ export function drawSkyScene(
   const frame = resolveSkySceneFrame(data.skyScene, frameAt);
   const starAppearance = createSkyStarAppearance(verticalFovDeg, mode === "OBSERVATION" ? undefined : sun?.altitudeDeg, mode);
   const starMagnitudeLimit = skyStarMagnitudeLimit(verticalFovDeg, mode === "OBSERVATION" ? undefined : sun?.altitudeDeg, mode);
+  starDrawing?.prepare({ canvas: context, context: data.context, at: frameAt, basis, width, height,
+    verticalFovDeg, center, mode, sunAltitudeDeg: sun?.altitudeDeg });
   const namedStars: NonNullable<SkyPickSnapshot["namedStars"]>[number][] = [];
   const catalogTransition = starTransitions?.layer("catalog", catalog && frame?.state === "AVAILABLE" ? catalog : null);
   const paintStar = (star: SkyTransitionStar, projection: { x: number; y: number }, pickable = true) => {
@@ -434,66 +439,78 @@ export function drawSkyScene(
     paintedObjects.push(object);
     if (star.named && star.magnitude <= 2.5) namedStars.push({ ...object, opacity: star.opacity });
   };
-  if (catalog && frame?.state === "AVAILABLE") {
-    const paintCatalogPoint=(pointIndex:number,point:readonly [number,number,number],projection:{x:number;y:number})=>{
-      const [catalogIndex,azimuthDeg,altitudeDeg]=point;
-      const entry = catalog.entries[catalogIndex];
-      if(!entry)return;
-      const transmission = mode === "OBSERVATION" ? undefined : frame.displayTransmission;
-      const appearance = starAppearance(entry.magnitude,
-        mode === "OBSERVATION" || transmission !== undefined ? undefined : altitudeDeg);
-      if (!appearance) return;
-      if (transmission !== undefined) appearance.opacity *= transmission(pointIndex);
-      const starColor = mode === "OBSERVATION"
-        ? palette.target : (catalog.displayColors ? catalog.displayColors[catalogIndex] : skyStarDisplayColor(entry.colorIndex)) ?? palette.text;
-      const star: SkyTransitionStar = { reference: entry.objectRef,
-        displayName: entry.displayName ?? entry.objectRef.replace(":", " "), kind: "STAR",
-        magnitude: entry.magnitude, azimuthDeg, altitudeDeg, named: Boolean(entry.displayName),
-        color: starColor, radiusPx: appearance.radiusPx, opacity: appearance.opacity };
-      paintStar(catalogTransition?.point(star) ?? star, projection);
-    };
-    if(projector&&frame.forEachProjected&&starMagnitudeLimit!==null){
-      frame.forEachProjected(projector,starMagnitudeLimit,paintCatalogPoint);
-    }else{
-      const points=frame.points??[];
-      for(let pointIndex=0;pointIndex<points.length;pointIndex++){
-        const point=points[pointIndex]!,entry=catalog.entries[point[0]];
-        if(!entry||starMagnitudeLimit===null||!Number.isFinite(entry.magnitude))continue;
-        if(entry.magnitude>=starMagnitudeLimit){if(catalog.magnitudeOrdered)break;continue;}
-        const direction=frame.displayDirection?.(pointIndex);
-        const projection=direction?projector?.prepared(direction):project(point[1],point[2]);
-        if(projection)paintCatalogPoint(pointIndex,point,projection);
+  const buildCatalogStars = (visit: (star: SkyTransitionStar, projection: { x: number; y: number }) => void) => {
+    if (catalog && frame?.state === "AVAILABLE") {
+      const paintCatalogPoint=(pointIndex:number,point:readonly [number,number,number],projection:{x:number;y:number})=>{
+        const [catalogIndex,azimuthDeg,altitudeDeg]=point;
+        const entry = catalog.entries[catalogIndex];
+        if(!entry)return;
+        const transmission = mode === "OBSERVATION" ? undefined : frame.displayTransmission;
+        const appearance = starAppearance(entry.magnitude,
+          mode === "OBSERVATION" || transmission !== undefined ? undefined : altitudeDeg);
+        if (!appearance) return;
+        if (transmission !== undefined) appearance.opacity *= transmission(pointIndex);
+        const starColor = mode === "OBSERVATION"
+          ? palette.target : (catalog.displayColors ? catalog.displayColors[catalogIndex] : skyStarDisplayColor(entry.colorIndex)) ?? palette.text;
+        const star: SkyTransitionStar = { reference: entry.objectRef,
+          displayName: entry.displayName ?? entry.objectRef.replace(":", " "), kind: "STAR",
+          magnitude: entry.magnitude, azimuthDeg, altitudeDeg, named: Boolean(entry.displayName),
+          color: starColor, radiusPx: appearance.radiusPx, opacity: appearance.opacity };
+        visit(star, projection);
+      };
+      if(projector&&frame.forEachProjected&&starMagnitudeLimit!==null){
+        frame.forEachProjected(projector,starMagnitudeLimit,paintCatalogPoint);
+      }else{
+        const points=frame.points??[];
+        for(let pointIndex=0;pointIndex<points.length;pointIndex++){
+          const point=points[pointIndex]!,entry=catalog.entries[point[0]];
+          if(!entry||starMagnitudeLimit===null||!Number.isFinite(entry.magnitude))continue;
+          if(entry.magnitude>=starMagnitudeLimit){if(catalog.magnitudeOrdered)break;continue;}
+          const direction=frame.displayDirection?.(pointIndex);
+          const projection=direction?projector?.prepared(direction):project(point[1],point[2]);
+          if(projection)paintCatalogPoint(pointIndex,point,projection);
+        }
       }
     }
-  }
+  };
+  const paintCatalogStar = (star: SkyTransitionStar, projection: { x: number; y: number }) =>
+    paintStar(catalogTransition?.point(star) ?? star, projection);
+  if (starDrawing) starDrawing.catalog(catalog, frame, buildCatalogStars, paintCatalogStar);
+  else buildCatalogStars(paintCatalogStar);
 
   const currentSupplement=currentStellarSupplement(supplement,data.skyScene,frameAt);
   const supplementTransition = starTransitions?.layer("supplement",
     currentSupplement ? `${currentSupplement.catalogVersion}:${currentSupplement.publicationHash}` : null);
-  const supplementTransmission=mode === "OBSERVATION" ? undefined : currentSupplement?.displayTransmission;
-  const paintSupplementPoint=(pointIndex:number,point:readonly [string,number,number,number],projection:{x:number;y:number})=>{
-    const [reference,magnitude,azimuthDeg,altitudeDeg]=point;
-    const appearance=starAppearance(magnitude,mode === "OBSERVATION" || supplementTransmission ? undefined : altitudeDeg);if(!appearance)return;
-    if(supplementTransmission)appearance.opacity*=supplementTransmission(pointIndex);
-    // SAO supplies no adopted colour index. Use the neutral sky palette.
-    const star: SkyTransitionStar = { reference, displayName: reference.replace(':',' '), kind: "STAR",
-      magnitude, magnitudeBand: "VISUAL", azimuthDeg, altitudeDeg, named: false,
-      color: mode === "OBSERVATION" ? palette.target : palette.text,
-      radiusPx: appearance.radiusPx, opacity: appearance.opacity };
-    paintStar(supplementTransition?.point(star) ?? star, projection);
-  };
-  if(currentSupplement?.forEachProjected&&projector&&starMagnitudeLimit!==null){
-    currentSupplement.forEachProjected(projector,starMagnitudeLimit,paintSupplementPoint);
-  }else{
-    const points=currentSupplement?.points??[];
-    for(let pointIndex=0;pointIndex<points.length;pointIndex++){
-      const point=points[pointIndex]!,magnitude=point[1];
-      if(starMagnitudeLimit===null||!Number.isFinite(magnitude)||magnitude>=starMagnitudeLimit)continue;
-      const direction=currentSupplement?.displayDirection?.(pointIndex);
-      const projection=direction?projector?.prepared(direction):project(point[2],point[3]);
-      if(projection)paintSupplementPoint(pointIndex,point,projection);
+  const buildSupplementStars = (visit: (star: SkyTransitionStar, projection: { x: number; y: number }) => void) => {
+    const supplementTransmission=mode === "OBSERVATION" ? undefined : currentSupplement?.displayTransmission;
+    const paintSupplementPoint=(pointIndex:number,point:readonly [string,number,number,number],projection:{x:number;y:number})=>{
+      const [reference,magnitude,azimuthDeg,altitudeDeg]=point;
+      const appearance=starAppearance(magnitude,mode === "OBSERVATION" || supplementTransmission ? undefined : altitudeDeg);if(!appearance)return;
+      if(supplementTransmission)appearance.opacity*=supplementTransmission(pointIndex);
+      // SAO supplies no adopted colour index. Use the neutral sky palette.
+      const star: SkyTransitionStar = { reference, displayName: reference.replace(':',' '), kind: "STAR",
+        magnitude, magnitudeBand: "VISUAL", azimuthDeg, altitudeDeg, named: false,
+        color: mode === "OBSERVATION" ? palette.target : palette.text,
+        radiusPx: appearance.radiusPx, opacity: appearance.opacity };
+      visit(star, projection);
+    };
+    if(currentSupplement?.forEachProjected&&projector&&starMagnitudeLimit!==null){
+      currentSupplement.forEachProjected(projector,starMagnitudeLimit,paintSupplementPoint);
+    }else{
+      const points=currentSupplement?.points??[];
+      for(let pointIndex=0;pointIndex<points.length;pointIndex++){
+        const point=points[pointIndex]!,magnitude=point[1];
+        if(starMagnitudeLimit===null||!Number.isFinite(magnitude)||magnitude>=starMagnitudeLimit)continue;
+        const direction=currentSupplement?.displayDirection?.(pointIndex);
+        const projection=direction?projector?.prepared(direction):project(point[2],point[3]);
+        if(projection)paintSupplementPoint(pointIndex,point,projection);
+      }
     }
-  }
+  };
+  const paintSupplementStar = (star: SkyTransitionStar, projection: { x: number; y: number }) =>
+    paintStar(supplementTransition?.point(star) ?? star, projection);
+  if (starDrawing) starDrawing.supplement(currentSupplement, buildSupplementStars, paintSupplementStar);
+  else buildSupplementStars(paintSupplementStar);
   // Only a same-time, still-valid layer may finish a short visual exit. Reproject
   // its real ray in this camera; never reuse old screen pixels or make it pickable.
   for (const transition of [catalogTransition, supplementTransition]) for (const star of transition?.exits() ?? []) {

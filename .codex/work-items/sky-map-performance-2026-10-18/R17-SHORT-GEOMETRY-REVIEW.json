@@ -1,0 +1,125 @@
+{
+  "schema": "starward-short-geometry-independent-review-v1",
+  "reviewedAtUtc": "2026-10-20T20:44:29.1758791Z",
+  "reviewer": "/root/review_short_geometry_integration",
+  "baseHead": "5b27a062c670cb2336e8e5c00c7e7a4071db0fac",
+  "scope": "Uncommitted optional TWO_HOURS geometry integration and its actual manual-input / ruler / full-window Play consumers",
+  "verdict": "NO_P1_P2_FOUND_IN_REVIEWED_SCOPE",
+  "findings": [],
+  "inputFiles": [
+    {
+      "path": "packages/miniapp-contracts/src/sky-time-model.ts",
+      "sha256": "4c7e4a71ad80f4b65edc8533cb453e7ee14be1c62aff5bb9df0e6ba484049d6f"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "a61db3ff7827f789acddc3d1705923d982f700e57efd60f078dedd608e410781"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "220f624c339e15307aa0bf3e05e64f8361dcfe7eaccb8bb8911817e79cdf46e8"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "25e80a19f82ce4214f62d3c3b62e755f455abdfc21309aa6c28712097fb27237"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-celestial-client.ts",
+      "sha256": "bb814e1255082de925cc7248453ecc912d4be2f91363aaa8bafb89f119b3c95f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-geometry-window-response.ts",
+      "sha256": "b2d63185311147d3c8adf7bf7828612a2f958862e9c8d2936f285ff85bbbf29b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts",
+      "sha256": "1883968f36a0c9f02fb5adde13dad97e6410b68a22a45aa96ec868feb0d9eb92"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "1220bb69736a0316b80116831370180f173f01f7bcaf40d1372189fb4b12fb18"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "3b53fd784ba56d18224cd0e7080719df006954e68d83b84255259a78c76c5e2b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-controls.tsx",
+      "sha256": "ba2cb2f633b5b29a07e40573c1584b19a83b41f4c9596b19fd78b80571fff0f4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "d14ebe8697b3adff89110562ea4218497780d857b14ae59f45138cec2cbaf75c"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-time-model.test.ts",
+      "sha256": "2820e51ee909952a0affc70d064afaacb9844cb3af0a1db2ccbf35601ce949c4"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-geometry-window.test.ts",
+      "sha256": "91f15ec5e3d4f86f63cb289c59d4742fef954e16f809bb913bfb636f8a4d8d8b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts",
+      "sha256": "8a4cf2764feea0351164ab68f93aa52b2177496662754326556a1906da36aa80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.test.ts",
+      "sha256": "9d0f299f7a53bdbf86c1b14f895ca8ef7179997b0d91623efc41b8ea4c8069fa"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-page-action-ownership.test.ts",
+      "sha256": "57411838c81b0e343211c75bc15043effacc9bf79b8ef6181354b29655d02bd7"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler.test.ts",
+      "sha256": "cc95616114e618aacc5d6dc5eb0498e338f5c0051346e861e5ba846f2e33b941"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+      "sha256": "66cdd7b2a519f74c6483a35f14345fc6d6f5df84e86922fb8810f225e87a9144"
+    }
+  ],
+  "checks": [
+    {
+      "command": "node tools/run-node.cjs --import tsx --test packages/miniapp-contracts/src/sky-time-model.test.ts apps/wechat-miniapp/src/features/sky/sky-observation-time.test.ts apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts apps/wechat-miniapp/src/features/sky/sky-page-action-ownership.test.ts apps/wechat-miniapp/src/features/sky/orientation-time-ruler.test.ts apps/wechat-miniapp/src/features/sky/orientation-time-ruler-window.test.ts",
+      "cwd": "repository root",
+      "exitCode": 1,
+      "passedTests": 55,
+      "failedFileLoads": 1,
+      "failure": "sky-page-action-ownership.test.ts did not execute: @/utils alias unresolved from root cwd",
+      "interpretation": "Harness invocation error; not counted as product regression or pass"
+    },
+    {
+      "command": "node ../../tools/run-node.cjs --import tsx --test src/features/sky/sky-page-action-ownership.test.ts",
+      "cwd": "apps/wechat-miniapp",
+      "exitCode": 0,
+      "passedTests": 30,
+      "failedTests": 0
+    }
+  ],
+  "effectivePassedTests": 85,
+  "verifiedByCode": [
+    "Optional mode defaults to NIGHT; invalid modes rejected; exact 30-minute knots and shortened DST final cell preserve original night coverage",
+    "Mode and grid start participate in Query/API identity; admission validates original observer, Context, coverage, source bounds and immutable model",
+    "One query and one retained geometry window; mode upgrade for Play reuses existing query/transport/cache owners",
+    "Pending Play belongs to current time intent and is retired by newer manual input, pause, cancellation, hide or Context replacement; full supply gates normal 1x playback",
+    "Ruler keeps complete day calendar selection independent of short geometry coverage, without invented weather/advice",
+    "Failed full-window preparation remains a recoverable pending Play with retry feedback and no short-window playback substitution",
+    "Existing Query gcTime:0, response cache limits and service model-cache bounds retained; no new subscription, history list or per-frame recorder added"
+  ],
+  "limitations": [
+    "Not a real-device performance, visual-conformance, sustained-memory or no-leak acceptance result",
+    "No claim that historical native exit / memory-growth cause is repaired",
+    "No device, IDE, running service, database, upload, code commit or push was operated by this reviewer",
+    "Backend HTTP integration test and full typecheck were inspected / left to parent validation rather than rerun in this review",
+    "New client short mode requires matching updated backend; old backend may ignore window and return full coverage that the new client correctly rejects",
+    "Source-extraction/hook fixtures establish only their simulated owner behavior, not full React/native runtime scheduling"
+  ],
+  "outOfScope": [
+    "Existing r16 date rollback repair except preservation at touched integration boundary",
+    "Terrain changes",
+    "Text-measurement cache",
+    "Complete Goal delivery and other pending obligations"
+  ]
+}

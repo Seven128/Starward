@@ -42,15 +42,23 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
   const text = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   for (const sourceText of [text, text.replaceAll(" => ", "  =>  ")]) {
     for (const editorClosing of [false, true]) {
+    for (const reason of ["native", "my"]) {
     const source = ts.createSourceFile("map.tsx", sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const hooks: string[] = [];
     const visit = (node: ts.Node) => {
-      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && ["useDidShow", "useDidHide"].includes(node.expression.text))
-        hooks.push(`${node.getText(source)};`);
+      if (ts.isVariableStatement(node) && node.declarationList.declarations.some(item => item.name.getText(source) === "foregroundLife"))
+        hooks.push(node.getText(source));
+      if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression) &&
+          ["foregroundLife.current.show", "foregroundLife.current.hide"].includes(node.expression.left.getText(source)))
+        hooks.push(node.getText(source));
+      if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+          node.expression.expression.getText(source) === "useLayoutEffect" &&
+          node.expression.arguments[1]?.getText(source) === "[primaryNavigation.controller]")
+        hooks.push(node.getText(source));
       ts.forEachChild(node, visit);
     };
     visit(source);
-    let show: (() => void) | undefined, hide: (() => void) | undefined;
+    let cleanup: (() => void) | undefined;
     let visible = false, stopped = 0, offset = 40, dragging = true, calendarOwner: string | null = "current-calendar";
     let retainedFailure = false;
     const epoch = { current: 3 }, drag = { current: {} as object | null };
@@ -60,8 +68,8 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     const boundaries = createMapPageTestBoundaries();
     vm.runInNewContext(ts.transpileModule(hooks.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       ...boundaries.scope,
-      useDidShow: (callback: () => void) => { show = callback; },
-      useDidHide: (callback: () => void) => { hide = callback; },
+      useRef: (current: unknown) => ({ current }),
+      useLayoutEffect: (callback: () => () => void) => { cleanup = callback(); },
       setPageVisible: (value: boolean) => { visible = value; },
       setCalendarOwner: (value: string | null) => { calendarOwner = value; },
       invalidateMapPointIntent: (preserveFailure: boolean) => { retainedFailure = preserveFailure; },
@@ -73,10 +81,10 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
       skyEntry: {show() {skyLifecycle.push("show");}, hide() {skyLifecycle.push("hide");}},
       setBottomPresentation: (next: string) => {presentation = next; cancelledEditor++;},
     });
-    assert.ok(show && hide);
-    show();
+    assert.ok(cleanup, "the actual Map foreground effect must subscribe to the primary owner");
     assert.equal(visible, true);
-    hide();
+    const controller = boundaries.scope.primaryNavigation.controller;
+    if (reason === "native") controller.hide(); else controller.openMy();
     assert.equal(visible, false);
     assert.deepEqual(boundaries.calls, ["focus-cancel", "location-cancel"], "hide retires pending camera and location work");
     assert.equal(stopped, 1);
@@ -90,6 +98,15 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     assert.equal(editorScope.current, null, "a late confirmation or exit cannot retain the hidden page's scope");
     assert.equal(cancelledEditor, 1);
     assert.equal(presentation, editorClosing ? "none" : "spot-editor", "only an already approved exit is finalized on hide");
+    if (reason === "my") {
+      controller.closeMy();
+      assert.equal(visible, false, "Map work must not resume underneath My's left exit");
+      controller.finishTransition(controller.getSnapshot().transitionTicket!);
+      assert.equal(visible, true, "only the completed exit restores Map's existing owner");
+    }
+    cleanup();
+    controller.dispose();
+    }
     }
   }
 });

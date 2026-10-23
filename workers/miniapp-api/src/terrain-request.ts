@@ -32,6 +32,11 @@ export function validateTerrainRequest(input: TerrainOverlayRequest) {
     throw new Error("terrain_overlay_request_invalid");
 }
 
+export function validateTerrainPreviewRequest(input: TerrainOverlayRequest) {
+  validateTerrainRequest(input);
+  if (input.purpose !== "MAP" || !input.viewportBounds) throw new Error("terrain_overlay_preview_request_invalid");
+}
+
 export function normalizeTerrainRequest(input: TerrainRenderRequest): TerrainRenderRequest {
   if (input.fixedWindow) return terrainWindowRequest(input.fixedWindow);
   if (input.fixedRaster) return terrainFixedRequest(input.fixedRaster);

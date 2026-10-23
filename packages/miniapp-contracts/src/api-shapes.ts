@@ -350,6 +350,9 @@ export interface TerrainElevationColorEncoding {
 
 export interface TerrainOverlayData {
   state: TerrainProjectionState;
+  /** Only the preview operation may return an already-published, coarser image.
+   * It covers the complete requested fixed window but never completes its fine read. */
+  preview?: { requestedZoom: number; imageZoom: number };
   /** Missing coverage has no failureCode; failures remain independently recoverable. */
   failureCode?: "TERRAIN_READ_FAILED";
   purpose: TerrainOverlayRequest["purpose"];

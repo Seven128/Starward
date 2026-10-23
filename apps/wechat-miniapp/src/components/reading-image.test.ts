@@ -12,7 +12,7 @@ test("native photo failure retries only that image and ignores the retired decod
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, {
     React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
-    View: "View", Text: "Text", Image: "Image", LoadingIndicator: "Loading", SoftButton: "Button", SourceDisclosure: "Source",
+    View: "View", Text: "Text", Image: "Image", LoadingIndicator: "Loading", SoftButton: "Button",
     mediaSource: (path: string) => path,
     useState: (initial: unknown) => { const index = stateIndex++; if (!(index in states)) states[index] = initial;
       return [states[index], (value: unknown) => { states[index] = value; }]; },

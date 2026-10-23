@@ -1,8 +1,10 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { getFormalContributionSubmitResult } from "./submission-result-client";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { AccountEntry } from "../account-entry";
 import { LoadingIndicator } from "@/components/loading-indicator";
-import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
+import { Image, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
@@ -497,7 +499,7 @@ function FormalFeedbackEditor() {
           <StatusPanel state="STALE" detail={baseline ? "部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。" : "部分正式地点或反馈资料尚未确认最新状态，请重新获取后再编辑。"}
             recoveryLabel="重新获取" onRecover={retryResourceFailures} />
         ) : null}
-        {ownerChanged ? <StatusPanel state="ERROR" title="账号已变化" detail="请返回观星点后重新打开反馈页。" recoveryLabel="返回地图" onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })} /> : query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : requestedFeedback.status === "UNAVAILABLE" && !baseline ? <StatusPanel state="ERROR" title="无法继续编辑这条反馈" detail="这条反馈不存在、已进入其他状态，或不属于当前账号。请到“我的”核对最新记录。" recoveryLabel="返回我的记录" onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> : !baseline && (query.refreshError || query.data?.dataState === "STALE_USABLE" || history.refreshError || history.data?.dataState === "STALE_USABLE") ? null : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
+        {ownerChanged ? <StatusPanel state="ERROR" title="账号已变化" detail="请返回观星点后重新打开反馈页。" recoveryLabel="返回地图" onRecover={() => void openPrimaryPage("/pages/map/index")} /> : query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : requestedFeedback.status === "UNAVAILABLE" && !baseline ? <StatusPanel state="ERROR" title="无法继续编辑这条反馈" detail="这条反馈不存在、已进入其他状态，或不属于当前账号。请到“我的”核对最新记录。" recoveryLabel="返回我的记录" onRecover={() => void openPrimaryPage("/pages/my/index")} /> : !baseline && (query.refreshError || query.data?.dataState === "STALE_USABLE" || history.refreshError || history.data?.dataState === "STALE_USABLE") ? null : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields
             values={values}
@@ -532,7 +534,7 @@ function FormalFeedbackEditor() {
             {noRemainingChanges ? <View className="formal-feedback-conflict formal-feedback-no-change" role="status" aria-live="polite">
               <Text className="formal-feedback-conflict__label">本次无需提交</Text>
               <Text>当前正式资料中已没有需要提交的差异。可继续修改、选择保留我的修改，或返回地图。</Text>
-              <SoftButton label="返回地图" onClick={() => void Taro.switchTab({ url: "/pages/map/index" })}>返回地图</SoftButton>
+              <SoftButton label="返回地图" onClick={() => void openPrimaryPage("/pages/map/index")}>返回地图</SoftButton>
             </View> : null}
             </>}
           />

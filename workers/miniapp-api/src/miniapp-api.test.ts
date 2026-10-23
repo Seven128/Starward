@@ -851,8 +851,16 @@ test("pending proposal sky is owner-scoped and bound to the submitted coordinate
     assert.equal(geometry.data.spotId, pending.submissionId);
     assert.equal(geometry.data.model.observer.latitude, location.wgs84.latitude);
     assert.match(geometry.warnings.at(-1) ?? "", /审核中提案坐标/u);
+    const shortGeometry = await service.getSkyGeometryWindow(pending.submissionId, context.contextId,
+      "2026-08-05T13:00:24.087Z", owner.userId, "TWO_HOURS");
+    assert.equal(shortGeometry.data.spotId, pending.submissionId);
+    assert.equal(shortGeometry.data.model.observer.latitude, location.wgs84.latitude);
+    assert.equal(shortGeometry.data.model.knots.length, 5);
+    assert.deepEqual(shortGeometry.warnings, geometry.warnings);
     await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt), /authentication_required/u);
     await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, stranger.userId), /contribution_not_found/u);
+    await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, undefined, "TWO_HOURS"), /authentication_required/u);
+    await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, stranger.userId, "TWO_HOURS"), /contribution_not_found/u);
     const otherContext = (await service.resolveObservationContext({
       location: { kind: "MAP_POINT", displayName: "其他位置", wgs84: { system: "WGS84", latitude: 22.57, longitude: 114.59 }, source: "MAP_VIEWPORT", timezoneHint: "Asia/Shanghai" },
       localDate: "2026-08-06",
@@ -870,6 +878,9 @@ test("pending proposal sky is owner-scoped and bound to the submitted coordinate
     });
     await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, owner.userId),
       /proposal_sky_context_invalid/u, "legacy proposal consent withdrawn during the await must prevent publication");
+    withdrawn = false;
+    await assert.rejects(() => service.getSkyGeometryWindow(pending.submissionId, context.contextId, fineAt, owner.userId, "TWO_HOURS"),
+      /proposal_sky_context_invalid/u, "short supply must also recheck consent after computation");
   } finally { await service.onModuleDestroy(); }
 });
 

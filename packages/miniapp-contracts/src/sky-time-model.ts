@@ -8,6 +8,7 @@ export const SKY_TIME_MODEL_METHOD = "EQJ_HERMITE_ENU_SLERP";
 export const SKY_TIME_MODEL_MAX_INTERVAL_SECONDS = 1800;
 export const SKY_TIME_MODEL_MAX_KNOTS = 49;
 export const SKY_TIME_BODY_ORDER = ["SUN", "MOON", ...SKY_PLANET_ORDER] as const;
+export type SkyGeometryWindowMode = "NIGHT" | "TWO_HOURS";
 export type SkyTimeBodyName = "SUN" | "MOON" | SkyPlanetBody;
 export type SkyTimeVector = readonly [number, number, number];
 export interface SkyTimeBodyAxes {
@@ -49,9 +50,12 @@ export interface SkyTimeModel {
   knots: readonly SkyTimeKnot[];
 }
 
-/** The existing local noon-to-noon observation group, independent of a Context
- * mutation. Include both endpoints so every instant of this group is covered. */
-export function skyGeometryWindow(at: string, timezone: string) {
+/** The existing local noon-to-noon observation group, or its containing grid
+ * cell of at most two hours (normally five knots), without a Context mutation.
+ * Both endpoints are sampled; a shortened DST night's final cell stops at the
+ * original night boundary, retaining the same 30-minute sampling interval. */
+export function skyGeometryWindow(at: string, timezone: string, mode: SkyGeometryWindowMode = "NIGHT") {
+  if (mode !== "NIGHT" && mode !== "TWO_HOURS") throw new TypeError("sky_geometry_window_mode_invalid");
   const instant = Date.parse(at);
   if (!Number.isFinite(instant) || new Date(instant).toISOString() !== at)
     throw new TypeError("sky_geometry_time_invalid");
@@ -59,13 +63,18 @@ export function skyGeometryWindow(at: string, timezone: string) {
   const date = `${String(civil.year).padStart(4, "0")}-${String(civil.month).padStart(2, "0")}-${String(civil.day).padStart(2, "0")}`;
   const localDate = observationNightForCivilDate(date, `${String(civil.hour).padStart(2, "0")}:00`);
   const bounds = observationNightBounds({ localDate, timezone });
-  const start = Date.parse(bounds.nightStartUtc), end = Date.parse(bounds.nightEndUtc);
+  const nightStart = Date.parse(bounds.nightStartUtc), nightEnd = Date.parse(bounds.nightEndUtc);
+  if (instant < nightStart || instant >= nightEnd || nightEnd - nightStart > 86_400_000 || nightEnd <= nightStart)
+    throw new TypeError("sky_geometry_window_unsupported");
+  const windowDurationMs = 2 * 60 * 60 * 1000;
+  const start = mode === "TWO_HOURS"
+    ? nightStart + Math.floor((instant - nightStart) / windowDurationMs) * windowDurationMs : nightStart;
+  const end = mode === "TWO_HOURS" ? Math.min(start + windowDurationMs, nightEnd) : nightEnd;
   const intervals = Math.ceil((end - start) / (SKY_TIME_MODEL_MAX_INTERVAL_SECONDS * 1000));
-  if (instant < start || instant >= end || end - start > 86_400_000 || intervals < 1 ||
-    intervals + 1 > SKY_TIME_MODEL_MAX_KNOTS) throw new TypeError("sky_geometry_window_unsupported");
+  if (intervals < 1 || intervals + 1 > SKY_TIME_MODEL_MAX_KNOTS) throw new TypeError("sky_geometry_window_unsupported");
   const hourlyAt = Array.from({ length: intervals + 1 }, (_, index) =>
     new Date(Math.min(end, start + index * SKY_TIME_MODEL_MAX_INTERVAL_SECONDS * 1000)).toISOString());
-  return { localDate, startAt: bounds.nightStartUtc, endAt: bounds.nightEndUtc, hourlyAt };
+  return { localDate, startAt: new Date(start).toISOString(), endAt: new Date(end).toISOString(), hourlyAt };
 }
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);

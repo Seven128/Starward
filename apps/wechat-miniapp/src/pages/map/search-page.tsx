@@ -1,3 +1,4 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { FINDER_FIELD_PLACEHOLDER } from "./finder-field";
 import { mediaSource } from "@/utils/media-source";
@@ -6,7 +7,8 @@ import { choosePlatformLocation } from "@/services/platform-location";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import type { CSSProperties } from "react";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
+import { Input, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
@@ -27,6 +29,7 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { filterIconName } from "@/components/filter-icon";
 import { StatusPanel } from "@/components/status-panel";
 import { SourceAttribution } from "@/components/source-attribution";
+import { SourceEntry } from "@/components/source-entry";
 import { SelectedCardStar } from "@/components/selected-card-star";
 import { SpotIdentityContent } from "@/components/spot-identity-content";
 import { FilterSheet } from "@/components/filter-sheet";
@@ -392,7 +395,7 @@ export function MapSearchSurface() {
     } catch {
       if (!intent.current()) return;
       try {
-        await Taro.switchTab({ url: "/pages/map/index" });
+        await openPrimaryPage("/pages/map/index");
       } catch (error) {
         if (!intent.current()) return;
         notify({ owner: "search", placement: "inline", tone: "warning", title: "暂时无法返回地图", body: `${errorMessage(error)}。搜索内容和选择已保留，请再次返回。`, dismissible: true, dedupeKey: "search-return-failed" });
@@ -543,6 +546,7 @@ export function MapSearchSurface() {
         >
           <Button
             className="spot-search-field__leading focus-ring"
+            pressVariant="icon"
             ariaLabel="返回地图"
             onClick={() => void leaveSearch()}
           >
@@ -728,7 +732,10 @@ export function MapSearchSurface() {
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null}
           </SearchResultPartition>
           </View>
-          {activeFilterGroups.includes("LESS_CLOUD") ? <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
+          {activeFilterGroups.includes("LESS_CLOUD") ? <View>
+            <SourceAttribution presentation="credit" sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
+            <SourceEntry id="search-weather-source" label="少云筛选来源" sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
+          </View> : null}
         </ScrollView>
       </View>
       {filterSheetOpen ? <FilterSheet {...(scene.data ? { capabilities: scene.data.data.filterCapabilities.byGroup } : {})} initialCategory={filterCategory} /> : null}

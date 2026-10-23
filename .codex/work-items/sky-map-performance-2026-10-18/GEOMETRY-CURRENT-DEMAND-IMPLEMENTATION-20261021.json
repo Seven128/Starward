@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "starward-geometry-current-demand-implementation-v1",
+  "createdAt": "2026-10-21T01:16:32.6453107Z",
+  "status": "IMPLEMENTED_AND_INDEPENDENTLY_REVIEWED_TARGET_VALIDATION_PENDING",
+  "sourceFiles": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts",
+      "sha256": "14f7c106243d5cae58dc299a46345d7513e3affad6a76baac1bf4eac31bce0f5",
+      "bytes": 6045
+    },
+    {
+      "path": "apps/wechat-miniapp/src/hooks/use-resource-query.ts",
+      "sha256": "ac6abd7bfbbad287fc74240085f1dcac6042b205e58881a4531b13be04adc8ce",
+      "bytes": 4118
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "8be2568d01fc26930456ddff93833da50861bac29ee9aaa4632a4334a2be3118",
+      "bytes": 246314
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts",
+      "sha256": "cb0372d69f3eba51d5858dca667d145cb50168fb6db689102694e1a12bae792a",
+      "bytes": 42665
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/query-client.ts",
+      "sha256": "a7c61193100506626c5e2d5638e253342cfd850a5192c147a7550746d934e430",
+      "bytes": 1131
+    }
+  ],
+  "counterchecks": [
+    {
+      "name": "delayed Query effect after newer clock intent",
+      "before": "FAIL: expected no request, actual A request",
+      "after": "PASS: old A suppressed and latest B starts"
+    },
+    {
+      "name": "A to B to A with coalesced B render",
+      "naiveLiveEnabled": "FAIL: expected A request, actual none",
+      "after": "PASS: retired queued options stay disabled; fresh A options start"
+    }
+  ],
+  "verification": {
+    "uniquePassedTests": 80,
+    "geometryAndResourceQueryPassed": 19,
+    "timeAndPageConsumerPassed": 61,
+    "typecheckExit": 0,
+    "diffCheckExit": 0,
+    "commands": [
+      "node ../../tools/run-node.cjs --import tsx --test src/features/sky/use-sky-time-geometry.test.ts src/hooks/use-resource-query.test.ts",
+      "node ../../tools/run-node.cjs --import tsx --test src/features/sky/sky-observation-time.test.ts src/features/sky/sky-page-action-ownership.test.ts src/features/sky/sky-report-recovery.test.ts src/features/sky/sky-time-commit-continuity.test.ts src/features/sky/sky-time-preview-status.test.ts src/features/sky/sky-time-disclosure.test.ts",
+      "npm run typecheck --workspace @starward/wechat-miniapp"
+    ]
+  },
+  "unverified": [
+    "task geometry probe adaptation",
+    "target phone responsiveness",
+    "full ordinary Play",
+    "heap retention and allocation churn",
+    "native allocation failure cause",
+    "no memory leak",
+    "complete Goal"
+  ],
+  "notPerformed": [
+    "phone or IDE operations",
+    "service changes",
+    "candidate build",
+    "preview push",
+    "commit",
+    "upload"
+  ],
+  "probeAdaptation": {
+    "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-instrumentation.mjs",
+    "owner": "addR17GeometryStages",
+    "changedSourceAnchors": [
+      "queryFn dispatch",
+      "retained current assignment"
+    ],
+    "edited": false
+  },
+  "sourceFilesBeforeRetryFix": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts",
+      "sha256": "14f7c106243d5cae58dc299a46345d7513e3affad6a76baac1bf4eac31bce0f5",
+      "bytes": 6045
+    },
+    {
+      "path": "apps/wechat-miniapp/src/hooks/use-resource-query.ts",
+      "sha256": "ac6abd7bfbbad287fc74240085f1dcac6042b205e58881a4531b13be04adc8ce",
+      "bytes": 4118
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "8be2568d01fc26930456ddff93833da50861bac29ee9aaa4632a4334a2be3118",
+      "bytes": 246314
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts",
+      "sha256": "3f9412b1de68cc7cef04eacd2d04177070ce4f48778166a48c9531249131fa64",
+      "bytes": 39753
+    }
+  ],
+  "followup": {
+    "owner": "root",
+    "problem": "explicit supersession entered default network retry:1 and delayed returned A by about 1 second",
+    "fix": "existing query-client owner rejects MiniappRequestCancelled retries; genuine errors retain one retry",
+    "countercheck": {
+      "before": "2 failed: cancelled query remained fetching/backoff; cancelled request attempted twice",
+      "after": "21 geometry/resource checks passed with actual production QueryClient defaults and optimistic observer"
+    },
+    "uniqueApplicablePassedTests": 82,
+    "reusedUnchangedConsumerTests": 61,
+    "typecheckExit": 0,
+    "independentReview": "GEOMETRY-CURRENT-DEMAND-INDEPENDENT-REVIEW-20261021.json",
+    "limits": "No target latency or memory acceptance; no candidate built for this geometry change yet."
+  }
+}

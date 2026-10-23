@@ -1,3 +1,4 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
@@ -9,10 +10,10 @@ import { useFacilityGallery } from "@/features/spot/use-facility-gallery";
 import { ArticleMedia } from "./article-media";
 import { FACILITY_LABEL } from "@/utils/facility-presentation";
 import { CustomNav } from "@/components/custom-nav";
-import { Provenance } from "@/components/provenance";
+import { SourceAttribution } from "@/components/source-attribution";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
-import { SourceDisclosure } from "@/components/source-disclosure";
+import { SourceEntry } from "@/components/source-entry";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
@@ -126,7 +127,7 @@ export default function ArticlePage() {
             title="攻略入口不可用"
             detail="无法确认当前观星点或文章，请返回地图重新选择正式观星点。"
             recoveryLabel="返回地图"
-            onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })}
+            onRecover={() => void openPrimaryPage("/pages/map/index")}
           />
         ) : loading ? (
           <StatusPanel state="LOADING" detail="正在加载攻略。" />
@@ -204,7 +205,8 @@ export default function ArticlePage() {
                       <FacilityCard id={`article-facility-${index}`} evidence={facility} photos={gallery.photos(block.facilityType)}
                         onOpenPhotos={() => gallery.open(block.facilityType, `#article-facility-${index}`)} />
                       <FacilityEvidenceDetails evidence={facility} showHeading={false} showDescription={false} showSource={false} />
-                      <SourceDisclosure id={`article-facility-source-${index}`} label="引用设施来源与核验" sources={[facility.source]} />
+                      <SourceAttribution presentation="credit" sources={[facility.source]} />
+                      <SourceEntry id={`article-facility-source-${index}`} label="引用设施来源与核验" sources={[facility.source]} />
                     </>
                     : site.refreshError || site.data?.dataState === "STALE_USABLE"
                       ? <StatusPanel state="PARTIAL" detail="设施记录尚未确认最新状态，暂不能判断是否缺失。" />
@@ -212,7 +214,8 @@ export default function ArticlePage() {
                 </View>
               );
             })}
-            <Provenance source={article.source} presentation="disclosure" />
+            <SourceAttribution presentation="credit" sources={[article.source]} />
+            <SourceEntry id="article-reading-source" label="文章来源与许可" sources={[article.source]} />
           </View>
         )}
       </View>

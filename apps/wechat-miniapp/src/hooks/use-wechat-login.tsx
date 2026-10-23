@@ -1,9 +1,9 @@
-import { useDidHide } from "@tarojs/taro";
 import { useEffect, useRef, useState } from "react";
 import { currentDraftUserId, loginWithWechat } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { WechatLogin } from "@/components/wechat-login";
 import { useAccountOperation } from "./use-account-operation";
+import { usePresentedPageLifecycle } from "@/navigation/page-presentation";
 
 /** Page-owned intent only; session storage, identity and private drafts stay in their existing owners. */
 export function useWechatLogin({ nativeBack = true } = {}) {
@@ -22,9 +22,10 @@ export function useWechatLogin({ nativeBack = true } = {}) {
     setOpen(false);
     setFailed(false);
   };
-  useDidHide(close);
+  const presentation = usePresentedPageLifecycle({ hide: close });
   useEffect(() => () => { task.current = undefined; request.current?.abort(); }, []);
   const requireAccount = (run: (owner: string) => void = () => {}, valid = () => true) => {
+    if (!presentation.isCurrent()) return;
     const owner = currentDraftUserId();
     if (owner) { if (valid()) run(owner); return; }
     request.current?.abort();

@@ -1,8 +1,8 @@
-import { Button, Text, View } from "@tarojs/components";
-import { useEffect, useState, type MutableRefObject } from "react";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
+import { useState, type MutableRefObject } from "react";
 import { NativeBackBoundary } from "./native-back-boundary";
 import { LoadingIndicator } from "./loading-indicator";
-import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 
 export function WechatLogin({ busy, failed, onLogin, onClose, nativeBack = true, backHandler }: {
   busy: boolean;
@@ -13,7 +13,6 @@ export function WechatLogin({ busy, failed, onLogin, onClose, nativeBack = true,
   backHandler?: MutableRefObject<() => void>;
 }) {
   const [privacy, setPrivacy] = useState(false);
-  useEffect(retainPrimaryNavigationCover, []);
   const back = () => privacy ? setPrivacy(false) : onClose();
   if (backHandler) backHandler.current = back;
   return <>

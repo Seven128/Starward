@@ -1,0 +1,55 @@
+/* Native hover-class owns only transient feedback. Selected/like/business
+ * states remain on their existing owners, and no hit surface is transformed. */
+.shared-button-press.shared-button-press {
+  --shared-button-press-shadow-color: #22313e14;
+  --button-press-duration: 140ms;
+  transition: filter var(--button-press-duration) ease-out, box-shadow var(--button-press-duration) ease-out,
+    var(--button-domain-transition, background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out);
+}
+.shared-button-press.shared-button-press--pressed:not([disabled]) {
+  filter: brightness(.96);
+  --button-press-duration: 80ms;
+}
+.shared-button-press > .shared-button-press__face,
+.shared-button-press.shared-button-press--face-before::before {
+  transition: box-shadow var(--button-press-duration) ease-out;
+}
+.shared-button-press--face-self.shared-button-press--pressed:not([disabled]),
+.shared-button-press--face-child.shared-button-press--pressed:not([disabled]) > .shared-button-press__face,
+.shared-button-press--face-before.shared-button-press--pressed:not([disabled])::before {
+  box-shadow: inset 0 2Px 5Px var(--shared-button-press-shadow-color) !important;
+}
+.theme-observation .shared-button-press,
+.theme-observation.shared-button-press {
+  --shared-button-press-shadow-color: var(--pressed-overlay);
+}
+.shared-button-press--icon > .semantic-icon,
+.shared-button-press--icon > .semantic-asset,
+.shared-button-press--icon .shared-button-press__icon {
+  transition: transform 140ms ease-out, opacity 140ms ease-out;
+}
+.shared-button-press--icon.shared-button-press--pressed:not([disabled]) > .semantic-icon,
+.shared-button-press--icon.shared-button-press--pressed:not([disabled]) > .semantic-asset,
+.shared-button-press--icon.shared-button-press--pressed:not([disabled]) .shared-button-press__icon {
+  transform: translateY(1Px) scale(.94);
+  transition-duration: 80ms;
+}
+.reduced-motion .shared-button-press.shared-button-press,
+.reduced-motion.shared-button-press.shared-button-press { transition-duration: 0ms !important; }
+.reduced-motion .shared-button-press.shared-button-press > .shared-button-press__face,
+.reduced-motion .shared-button-press.shared-button-press--face-before::before { transition-duration: 0ms !important; }
+.reduced-motion .shared-button-press--icon.shared-button-press--pressed > .semantic-icon,
+.reduced-motion .shared-button-press--icon.shared-button-press--pressed > .semantic-asset,
+.reduced-motion .shared-button-press--icon.shared-button-press--pressed .shared-button-press__icon {
+  transform: none; opacity: .76; transition-duration: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shared-button-press.shared-button-press { transition-duration: 0ms !important; }
+  .shared-button-press.shared-button-press--pressed > .shared-button-press__face,
+  .shared-button-press.shared-button-press--face-before.shared-button-press--pressed::before { transition-duration: 0ms !important; }
+  .shared-button-press--icon.shared-button-press--pressed > .semantic-icon,
+  .shared-button-press--icon.shared-button-press--pressed > .semantic-asset,
+  .shared-button-press--icon.shared-button-press--pressed .shared-button-press__icon {
+    transform: none; opacity: .76; transition-duration: 0ms !important;
+  }
+}

@@ -1,3 +1,4 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
@@ -388,7 +389,7 @@ export default function SettingsPage() {
               detail={preferenceSyncStatus}
               recoveryLabel={needsAccountRecovery ? "返回我的" : canRetryPreferenceSync ? "重试同步" : undefined}
               onRecover={needsAccountRecovery
-                ? () => void Taro.switchTab({ url: "/pages/my/index" })
+                ? () => void openPrimaryPage("/pages/my/index")
                 : canRetryPreferenceSync ? () => void syncNow() : undefined}
             />
           ) : null}

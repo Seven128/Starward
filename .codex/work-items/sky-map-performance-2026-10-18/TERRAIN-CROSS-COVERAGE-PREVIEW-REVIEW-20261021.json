@@ -1,0 +1,61 @@
+{
+  "schema": "starward-terrain-cross-coverage-independent-review-v1",
+  "date": "2026-10-21",
+  "reviewerTask": "/root/review_terrain_cross_coverage_preview",
+  "decision": "ready_for_bounded_phone_trial",
+  "newBlockingFindings": [],
+  "productionEdited": false,
+  "deviceIdeServiceOrBuildOperated": false,
+  "committedOrUploaded": false,
+  "sourceSha256": {
+    "apps/wechat-miniapp/src/hooks/use-terrain-overlay.ts": "c2a446c2e383b25da748cd134f51a805acdabbefeeed3324e6d945e10bec3438",
+    "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts": "ab0769adccbd331e1312b25e048b049ce3f6f092ac1279ec9e52d53aa49257ed",
+    "apps/wechat-miniapp/src/pages/map/map-ground-overlay.ts": "1dc86c0af9c551a9de87175b7038bc3ed3cf8358742e0140e303669f6708e349",
+    "apps/wechat-miniapp/src/pages/map/index.tsx": "9e62b429a15c8ded708be75f037ec9d14be619912875bb1779c7c9e1143cff1e"
+  },
+  "sourceMatchesImplementationReport": true,
+  "independentlyExecutedChecks": {
+    "command": "node tools/run-node.cjs --import tsx --test --test-name-pattern 'cross-coverage parent|same-id-only parent|uncovered actual viewport|missing native update|Map preview admission|live installation admission|initial-only parent|failed same-id parent|timed-out update|suspend during a pending update|cancellable exit' apps/wechat-miniapp/src/hooks/use-terrain-overlay.test.ts apps/wechat-miniapp/src/pages/map/use-map-raster-installation.test.ts apps/wechat-miniapp/src/pages/map/terrain-ground-overlay.test.ts apps/wechat-miniapp/src/pages/map/terrain-map-presentation.test.ts",
+    "exitCode": 0,
+    "passed": 11,
+    "failed": 0,
+    "cancelled": 0,
+    "selectedNames": [
+      "live installation admission can enable a cross-coverage parent and revoke it without restarting the fine read",
+      "cross-coverage parent and final fine use one id with their own bounds and retire every native pin",
+      "a same-id-only parent never falls back to a second translucent id after capability disappears",
+      "a failed same-id parent update keeps both pins and repeated failed cleanup never adds more native files",
+      "a timed-out update retains both files until the actual late callback and cannot retire a newer installation",
+      "suspend during a pending update waits for its ack and remove before releasing either file",
+      "Map preview admission checks the actual visible viewport independently of the buffered fine request",
+      "a cancellable exit blocks effect reinstallations and resumes the newest source after the real clearance",
+      "an initial-only parent fills an empty surface, keeps its own bounds until fine ack, and cannot replace existing fine detail",
+      "an uncovered actual viewport may use a same-id parent, then queued fine detail prevents a late downgrade",
+      "missing native update keeps cross-coverage parents out while ordinary fine replacement remains available"
+    ],
+    "productionDiffCheckExitCode": 0,
+    "scope": "Source-extracted hook models and production coordinator with simulated native callbacks; not physical presentation or memory acceptance."
+  },
+  "reusedChecks": {
+    "source": "TERRAIN-CROSS-COVERAGE-PREVIEW-IMPLEMENTATION-20261021.md",
+    "relatedTests": "92/92 reported by implementer; not independently rerun in full",
+    "miniappTypecheck": "exit 0 reported by implementer; source hashes verified unchanged"
+  },
+  "priorPhoneEvidence": {
+    "source": "R19-NATIVE-OVERLAY-PHONE-REVIEW.md",
+    "meaning": "Prior candidate's terrain same-ID update reached native_pending and native_ack, with visible newly exposed coverage gap; does not validate this cross-coverage parent branch."
+  },
+  "remaining": [
+    "Current complete candidate's actual fine A to parent B to fine B pixels, source identity, transparency and final fine detail",
+    "Rapid pan and zoom with all relevant terrain, cloud and light consumers",
+    "External uncontrolled native Map teardown absence fence",
+    "Actual target heap/GPU retention and no-memory-leak evidence",
+    "Map Screen Contract's initial-only/two-slot wording to reconcile with final adopted candidate during the existing coherent Context update"
+  ],
+  "acceptance": {
+    "crossCoveragePhonePassed": false,
+    "overallOverlayPerformancePassed": false,
+    "noMemoryLeakProven": false,
+    "fullGoalComplete": false
+  }
+}

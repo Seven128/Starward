@@ -1,4 +1,6 @@
-import { Button, Text, View } from "@tarojs/components";
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
@@ -67,7 +69,7 @@ export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroup
       map.setFinderQuery(spot.name);
       map.setViewport({ center: spot.spotGcj02, zoom: Math.max(12, map.viewport.zoom) });
       map.requestSpotOpen(spot.spotId);
-      await Taro.switchTab({ url: "/pages/map/index" });
+      await openPrimaryPage("/pages/map/index");
     } catch (error) {
       if (version === openingVersion.current && currentDraftUserId() === owner) setOpenError({
         id: item.submissionId,

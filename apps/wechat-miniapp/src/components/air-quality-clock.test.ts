@@ -45,11 +45,11 @@ function mountedAirQuality(currentExpires: boolean) {
     useEffect(fn: () => unknown, deps: unknown[]) { const index = cursor++; if (!same(slots[index]?.deps, deps)) {
       const old = slots[index]; slots[index] = { deps }; effects.push(() => { old?.cleanup?.(); slots[index].cleanup = fn(); });
     } },
-    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", SourceAttribution: "SourceAttribution", SourceDisclosure: "SourceDisclosure", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
+    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", SourceAttribution: "SourceAttribution", SourceEntry: "SourceEntry", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
     React: { createElement: (type: any, props: any, ...children: any[]) => typeof type === "function" ? type(props) : ({ type, props, children }) },
   });
   const renderedSources = (node: any): any[] => Array.isArray(node) ? node.flatMap(renderedSources)
-    : node && typeof node === "object" ? node.type === "SourceAttribution" || node.type === "SourceDisclosure" ? node.props.sources : renderedSources(node.children) : [];
+    : node && typeof node === "object" ? node.type === "SourceAttribution" || node.type === "SourceEntry" ? node.props.sources : renderedSources(node.children) : [];
   return { envelope, notifications, query, refreshOptions, sources: () => renderedSources(tree), refreshes: () => refreshes, hide: () => hide(), show: () => show(),
     receive(data: typeof envelope) { query.data = data; dirty = true; },
     fail(error: unknown) { query.refreshError = error; dirty = true; },

@@ -1,5 +1,6 @@
-import { Button, Text, View, type ButtonProps, type CommonEvent } from "@tarojs/components";
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { Text, View, type CommonEvent } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
+import Taro from "@tarojs/taro";
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import type { ObservationPlan, SpotSummary } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
@@ -8,6 +9,7 @@ import { SoftButton } from "@/components/soft-button";
 import { myPlanTimeLabel, selectPlanEntry } from "./plan-entry";
 import "./my-plan-card.scss";
 import { useAppStore } from "@/state/app-store";
+import { usePresentedPageLifecycle } from "@/navigation/page-presentation";
 
 type PressPoint = { identifier: number; clientX: number; clientY: number };
 type PressRect = { left: number; top: number; width: number; height: number };
@@ -44,18 +46,18 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, guest = fa
   const owner = useAppStore((state) => state.accountOwnerId);
   const reset = useAppStore((state) => state.mapResetVersion);
   const largeText = useAppStore((state) => state.preferences.largeText);
-  const buttonFeedback: Pick<ButtonProps, "hoverClass" | "hoverStartTime" | "hoverStayTime"> = mode === "DAY"
-    ? { hoverClass: "my-plan-card__button--pressed", hoverStartTime: 0, hoverStayTime: 0 } : {};
   const id = `my-plan-press-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [press, setPress] = useState({ x: 50, y: 40, active: false });
-  const gesture = useRef<{ origin: PressPoint; latest: PressPoint; rect: PressRect | null } | null>(null);
+  const gesture = useRef<{ origin: PressPoint; latest: PressPoint; rect: PressRect | null; presentation: unknown } | null>(null);
   const alive = useRef(true), visible = useRef(true);
   const cancel = () => {
     gesture.current = null;
     if (alive.current) setPress(current => current.active ? { ...current, active: false } : current);
   };
-  useDidHide(() => { visible.current = false; cancel(); });
-  useDidShow(() => { visible.current = true; });
+  const page = usePresentedPageLifecycle({
+    hide: () => { visible.current = false; cancel(); },
+    show: () => { visible.current = true; },
+  });
   useLayoutEffect(cancel, [mode, owner, reset, largeText, plans, pressLayout]);
   useEffect(() => {
     alive.current = true;
@@ -65,13 +67,14 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, guest = fa
   const start = (event: CommonEvent) => {
     cancel();
     const point = singlePress(event);
-    if (!point || !alive.current || !visible.current || mode !== "DAY") return;
-    const current = { origin: point, latest: point, rect: null as PressRect | null };
+    if (!point || !alive.current || !visible.current || !page.isCurrent() || mode !== "DAY") return;
+    const current = { origin: point, latest: point, rect: null as PressRect | null, presentation: page.identity() };
     gesture.current = current;
-    // Query each accepted press: the retained tab and ScrollView may have moved.
+    // Query each accepted press: retained content and its ScrollView may have moved.
     try {
       Taro.createSelectorQuery().select(`#${id}`).boundingClientRect().exec(rows => {
-        if (!alive.current || !visible.current || gesture.current !== current) return;
+        if (!alive.current || !visible.current || !page.isCurrent() ||
+            page.identity() !== current.presentation || gesture.current !== current) return;
         const rect = rows?.[0] as PressRect | null;
         if (!rect || ![rect.left, rect.top, rect.width, rect.height].every(Number.isFinite) ||
             rect.width <= 0 || rect.height <= 0 || !inside(rect, current.origin) || !inside(rect, current.latest)) {
@@ -86,6 +89,7 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, guest = fa
   const move = (event: CommonEvent) => {
     const current = gesture.current;
     if (!current) return;
+    if (!page.isCurrent() || page.identity() !== current.presentation) { cancel(); return; }
     const point = singlePress(event);
     if (!point || point.identifier !== current.origin.identifier) { cancel(); return; }
     current.latest = point;
@@ -94,16 +98,16 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, guest = fa
   return <View id={id} className={`liquid-glass-surface my-plan-card${press.active ? " my-plan-card--pressed" : ""}`} role="group" aria-label="观星计划" data-material="liquid-glass"
     onTouchStart={start} onTouchMove={move} onTouchEnd={cancel} onTouchCancel={cancel}>
     <View className="my-plan-card__touch" aria-hidden style={{ "--touch-x": `${press.x}%`, "--touch-y": `${press.y}%` } as CSSProperties} />
-    <Button {...buttonFeedback} className="my-plan-card__header focus-ring" onClick={onOpenAll}
+    <Button className="my-plan-card__header focus-ring" disabled={!page.visible} onClick={() => { if (page.isCurrent()) onOpenAll(); }}
       aria-label="打开全部观星计划" data-control="my-plan-entry" data-od-id="my-plan-entry">
       <View className="my-plan-card__title"><SemanticIcon name={mode === "DAY" ? "plan-suv" : "star"} className="my-plan-card__suv" /><Text>观星计划</Text></View>
       {!guest ? <View className="my-plan-card__header-chevron" aria-hidden><SemanticIcon name="plan-header-chevron" /></View> : null}
     </Button>
-    {guest ? <View className="my-plan-card__guest"><Text>登录后查看观星计划</Text><SoftButton label="登录" onClick={onOpenAll} /></View> : null}
+    {guest ? <View className="my-plan-card__guest"><Text>登录后查看观星计划</Text><SoftButton label="登录" disabled={!page.visible} onClick={() => { if (page.isCurrent()) onOpenAll(); }} /></View> : null}
     {!guest && loading ? <StatusPanel state="LOADING" detail="正在同步账户" /> : null}
-    {!guest && unavailable ? <StatusPanel state={rows.length ? "STALE" : "ERROR"} detail={rows.length ? "更新失败，保留上次记录" : "账户资料暂未取得"} recoveryLabel="重试" onRecover={onRetry} /> : null}
-    {!guest && rows.map(({ plan, ongoing, name, time }, index) => <Button {...buttonFeedback} className={`my-plan-card__row focus-ring${index === rows.length - 1 ? " my-plan-card__row--last" : ""}`} key={plan.planId}
-      onClick={() => onOpen(plan)} aria-label={`打开${name ?? "观星点"}的计划`}>
+    {!guest && unavailable ? <StatusPanel state={rows.length ? "STALE" : "ERROR"} detail={rows.length ? "更新失败，保留上次记录" : "账户资料暂未取得"} recoveryLabel="重试" onRecover={() => { if (page.isCurrent()) onRetry?.(); }} /> : null}
+    {!guest && rows.map(({ plan, ongoing, name, time }, index) => <Button className={`my-plan-card__row focus-ring${index === rows.length - 1 ? " my-plan-card__row--last" : ""}`} key={plan.planId}
+      disabled={!page.visible} onClick={() => { if (page.isCurrent()) onOpen(plan); }} aria-label={`打开${name ?? "观星点"}的计划`}>
       <View className="my-plan-card__dot" aria-hidden="true" />
       <View className="my-plan-card__copy">
         <Text className="my-plan-card__name">{name ?? "点位资料暂不可用"}</Text>
@@ -116,7 +120,7 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, guest = fa
       <SemanticIcon name="plan-row-chevron" />
     </Button>)}
     {!guest && !loading && !unavailable && !rows.length ? <Text className="my-plan-card__empty">未来24小时暂无观星计划</Text> : null}
-    {!guest && hasMore ? <Button {...buttonFeedback} className="my-plan-card__more focus-ring" onClick={onOpenAll} aria-label="查看其余观星计划">
+    {!guest && hasMore ? <Button className="my-plan-card__more focus-ring" disabled={!page.visible} onClick={() => { if (page.isCurrent()) onOpenAll(); }} aria-label="查看其余观星计划">
       {mode === "DAY" ? <SemanticIcon name="more" /> : <><View aria-hidden="true" /><View aria-hidden="true" /><View aria-hidden="true" /></>}
     </Button> : null}
   </View>;

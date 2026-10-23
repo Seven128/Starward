@@ -1,0 +1,14 @@
+.source-page { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.source-page__scroll { flex: 1; min-height: 0; }
+.source-page__content { box-sizing: border-box; min-width: 0; padding-top: 24rpx; display: flex; flex-direction: column; gap: 20rpx; }
+.source-page__content text { min-width: 0; overflow-wrap: anywhere; }
+.source-page__footer { flex: none; padding: 10Px 18Px max(16Px, env(safe-area-inset-bottom)); background: var(--surface); }
+.source-page__footer > button { width: 100%; }
+.source-document__section { display: flex; flex-direction: column; gap: 10Px; font-size: 14Px; line-height: 23Px; }
+.source-document__fact { display: flex; align-items: flex-start; gap: 16Px; }
+.source-document__fact > text:first-child { flex: 0 0 76Px; color: var(--text-tertiary); }
+.source-document__fact > text:last-child { flex: 1; white-space: pre-wrap; }
+.source-document__link { display: flex; flex-direction: column; align-items: flex-start; gap: 6Px; }
+.source-document__section > text { white-space: pre-wrap; }
+.theme-day.source-page { background: #f5f6f8; }
+.theme-day .source-page__content { padding: 16Px 18Px 28Px; gap: 14Px; }

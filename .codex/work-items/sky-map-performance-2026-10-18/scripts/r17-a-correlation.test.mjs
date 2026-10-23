@@ -12,10 +12,11 @@ import { validateR17PhoneProbeMetrics as validateOriginal } from './r17-phone-pr
 import { createR17PhoneProbeCollector } from './r17-phone-probe-collector.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url)), root = path.resolve(here,'../../../..');
 const require = createRequire(import.meta.url), ts = require(path.join(root,'apps/wechat-miniapp/node_modules/typescript'));
-const originalRuntime = await fs.readFile(path.join(here,'r17-phone-probe-v3-runtime.ts'),'utf8');
-const originalObserver = await fs.readFile(path.join(here,'r17-page-bridge-observer.ts'),'utf8');
+const readTemplate = name => fs.readFile(path.join(here,name),'utf8').then(value => value.replaceAll('\r\n','\n'));
+const originalRuntime = await readTemplate('r17-phone-probe-v3-runtime.ts');
+const originalObserver = await readTemplate('r17-page-bridge-observer.ts');
 const transformed = addR17ACorrelation({ runtime: originalRuntime, pageObserver: originalObserver });
-const helper = await fs.readFile(path.join(here,'r17-a-correlation-runtime.ts'),'utf8');
+const helper = await readTemplate('r17-a-correlation-runtime.ts');
 function compile(source) {
   const result = ts.transpileModule(source.replaceAll('__VARIANT__','candidate'), {
     reportDiagnostics:true, compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS},

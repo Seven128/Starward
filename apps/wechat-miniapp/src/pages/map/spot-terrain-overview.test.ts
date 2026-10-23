@@ -26,7 +26,7 @@ function harness() {
     useRasterImage: (descriptor: any, enabled: boolean) => { rasterReads.push({ descriptor, enabled });
       return { imagePath: enabled ? rasterState.imagePath ?? null : null, imagePending: enabled && Boolean(rasterState.imagePending),
         imageError: enabled ? rasterState.imageError ?? null : null, reportImageFailure: () => { rasterFailures++; }, retryImage: () => { rasterRetries++; } }; },
-    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceDisclosure: "SourceDisclosure", SourceAttribution: "SourceAttribution",
+    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceEntry: "SourceEntry", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return { notices, queries, get retries() { return retries; }, get imageFailures() { return imageFailures; },
@@ -127,7 +127,7 @@ test("terrain and light credits follow actual displayed layers while complete so
   const data = { ...base, lightPollution: { ...base.lightPollution, source: lightSource } };
   const creditSources = (tree: any) => Array.from(nodes(tree).find(node => node.type === "SourceAttribution")?.props.sources ?? []);
   const assertCompleteSources = (tree: any) => {
-    const sources = nodes(tree).find(node => node.type === "SourceDisclosure").props.sources;
+    const sources = nodes(tree).find(node => node.type === "SourceEntry").props.sources;
     assert.deepEqual(Array.from(sources), [base.source, lightSource], "collapse and layer switches must preserve the full redistribution records");
   };
   const h = harness(); h.set({ data: { data }, imagePath: "/local/terrain.png" });
@@ -213,7 +213,7 @@ test("terrain recovery states use the reading flow without covering geographic r
   ] as const) {
     h.set(query);
     const tree = h.render(), all = nodes(tree);
-    const map = all.find(node => node.props?.className === "spot-terrain__map");
+    const map = all.find(node => node.props?.className?.split(/\s+/u).includes("spot-terrain__map"));
     assert.equal(nodes(map).some(node => node.type === "StatusPanel"), false,
       `${state}: the recovery content must not compete with the centered spot marker`);
     assert.equal(all.filter(node => node.type === "StatusPanel" && node.props.state === state).length, 1);
@@ -287,7 +287,7 @@ test("terrain scale follows the selected geographic radius and complete redistri
   tree = h.render(); all = nodes(tree);
   assert.equal(all.find(node => node.props?.className === "spot-terrain__scale").children[0].props.style.width, "10%",
     "1 km at radius 5 and 10 km at radius 50 occupy the same fraction of the same geographic viewport");
-  const disclosure = all.find(node => node.type === "SourceDisclosure");
+  const disclosure = all.find(node => node.type === "SourceEntry");
   assert.equal(disclosure.props.sources[0], base.source);
   assert.equal(disclosure.props.sources[1], lightSource);
   assert.match(JSON.stringify(disclosure.props.sources[0].limitations), /produced using Copernicus WorldDEM-30/u);

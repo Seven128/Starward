@@ -102,3 +102,16 @@ test("a source reading link cannot invent attribution or claim an undeclared off
   assert.match(renderedText(combined), /复制官方链接/);
   assert.equal(nodes(combined).find(node => node.props?.selectable && node.children[0] === notice).children[0], notice);
 });
+
+test("the compact source entry keeps every required credit while detailed reading retains official copying", async () => {
+  const h = harness(), current = source();
+  const credit = h.render({ sources: [current], presentation: "credit" });
+  assert.match(renderedText(credit), /和风天气/);
+  assert.ok(renderedText(credit).includes(notice));
+  assert.equal(nodes(credit).filter(node => node.type === "SoftButton").length, 0);
+  assert.doesNotMatch(renderedText(credit), /https:/);
+  const reading = h.render({ sources: [current], presentation: "disclosure" });
+  nodes(reading).find(node => node.type === "SoftButton").props.onClick();
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(h.copied(), "https://www.qweather.com/");
+});

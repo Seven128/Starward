@@ -1,0 +1,9 @@
+.source-button {
+  box-sizing: border-box; display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center;
+  width: 44Px; height: 44Px; min-width: 44Px; min-height: 44Px; margin: 0; padding: 0;
+  border: 1Px solid var(--sky-glass-edge, var(--border)); border-radius: 10Px;
+  background: var(--sky-glass-inner, var(--surface-subtle)); color: var(--text-primary);
+}
+.source-button::after { border: 0; }
+.source-button > .semantic-icon { width: 22Px; height: 22Px; filter: var(--source-icon-filter, none); }
+.theme-day .source-button { --source-icon-filter: brightness(.42); }

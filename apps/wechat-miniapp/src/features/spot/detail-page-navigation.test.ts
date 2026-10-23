@@ -3,20 +3,28 @@ import {readFileSync} from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { primaryPageNativeRuntimeForTest } from "../../navigation/primary-page-navigation-test-support";
 
 test("invalid detail recovery handles a failed map return and permits retry without duplicate navigation", async () => {
   const source=ts.createSourceFile("spot.tsx",readFileSync(new URL("./spot-detail-page.tsx",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
   let declaration="";
   const visit=(node:ts.Node)=>{if(ts.isVariableDeclaration(node)&&node.name.getText(source)==="returnToMap")declaration="const "+node.getText(source)+";";ts.forEachChild(node,visit);};visit(source);assert.ok(declaration);
-  let reject!: (error:Error)=>void,calls=0;
+  const navigation=primaryPageNativeRuntimeForTest([{route:"spot/detail/index"}]);
   const lock={current:false},states:boolean[]=[];
   const run=vm.runInNewContext(ts.transpileModule(declaration+"\nreturnToMap;",{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,{
     detailPagePending:lock,setMapReturnFailed:(failed:boolean)=>states.push(failed),
-    Taro:{switchTab:({url}:{url:string})=>{assert.equal(url,"/pages/map/index");return ++calls===1?new Promise((_resolve,fail)=>{reject=fail;}):Promise.resolve();}},
+    ...navigation.dispatcher,
   });
-  const pending=run();await run();assert.equal(calls,1);
-  reject(Error("native failed"));await pending;assert.equal(lock.current,false);assert.deepEqual(states,[true]);
-  await run();assert.equal(calls,2);assert.deepEqual(states,[true,false]);
+  const pending=run();await run();assert.equal(navigation.calls.length,1);
+  assert.equal(navigation.calls[0]?.kind,"reLaunch");assert.equal(navigation.calls[0]?.url,"/pages/map/index");
+  navigation.calls[0]!.reject(Error("native failed"));await pending;assert.equal(lock.current,false);assert.deepEqual(states,[true]);
+  const retry=run();assert.equal(navigation.calls.length,2);
+  navigation.calls[1]!.resolve();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(lock.current,true);assert.deepEqual(states,[true],"native acceptance alone cannot clear the failed-return state");
+  const map={route:"pages/map/index"};navigation.setStack([map]);
+  assert.deepEqual(states,[true],"a projected stack is not the real Map show");
+  assert.equal(navigation.showMap(map),true);await retry;
+  assert.deepEqual(states,[true,false]);navigation.dispose();
 });
 
 test("detail child navigation preserves content on failure, prevents repeats and clears only its own recovered notice", async () => {

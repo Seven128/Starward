@@ -1,0 +1,1151 @@
+{
+  "schemaVersion": "starward-r21-hold-independent-review-v1",
+  "reviewer": "review_r21_hold_result",
+  "createdAt": "2026-10-21T00:59:19.400Z",
+  "scope": "READ_ONLY_PRODUCT_AND_FROZEN_ARTIFACT_REVIEW_NO_DEVICE_IDE_SERVICE_BUILD_PUSH_OR_UPLOAD",
+  "decision": {
+    "status": "CONTINUATION_COST_IMPROVEMENT_OBSERVED_BUT_NOT_END_TO_END_RESPONSIVENESS_PASS",
+    "summary": "Same full-sky night start and publication with different number of hold intents. Continuation average elapsed draw decreased, but effect average was nearly unchanged and first-accepted latency/coverage did not improve. Candidate remains pending ordinary-Play miss-cost comparison; no leak conclusion.",
+    "next": "Reuse these stage associations for the geometry supply/current-demand owner; inspect requests beginning after newer intents and delayed admission without moving cheap presentation preparation or adding arbitrary debounce. Complete ordinary-Play no-hit/full-draw comparison before accepting the added working set.",
+    "causalLimits": [
+      "Different intent count, date endpoint, cache/runtime conditions and no randomization; worse first-accepted numbers alone do not prove cache caused a regression.",
+      "Logical client call to validated Promise is not a measured network/server/client-parsing decomposition.",
+      "Same effect/continuation class is not a measured star-cache miss/hit; the current probe deliberately has no cache-hit counter.",
+      "Unknown sub-resolution stage calls are not zero; inclusive stages may overlap and cannot be summed to CPU/GPU/physical FPS."
+    ]
+  },
+  "binding": {
+    "mode": "normal",
+    "buildGeneration": 27,
+    "buildSourceSha256": "502d9d644785e33af7ce1537bc1899a738725cc752d42daefaf95d66baee3448",
+    "windowId": 1,
+    "localBundleSha256": "5a9f4b6bc8eb3e9c4dc8c3595467476d74e4664cd4db0c959a060ee0a83f99c1",
+    "sourceManifestSha256": "9ef149422a237a78c6469a61a87906d64121ef807bf5a9a758aad443bc60d9e5",
+    "sourceSnapshotSha256": "4218ba87fe856c6ce44ee5e5f5eb702304695e9edaca7933950b458ba3cf4382",
+    "frozenDirectory": "tmp/r17-normal-a1-review-r21-usb",
+    "frozenSourceCount": 1589,
+    "allFrozenSourcesHashVerified": true,
+    "sourceIdentityRecalculated": true,
+    "bundleFileCount": 337,
+    "bundleBytes": 5034239,
+    "feedbackPreparedGenerationAndDeviceSessionBundleMatch": true,
+    "uniquePhoneR21Label": "Previously checked by root; this reviewer independently read local generation/session binding and actual hold images, did not operate phone",
+    "phoneBundleBytesVerified": false,
+    "runtimeAppIdIndependentlyVerified": false,
+    "protocol": "starward-r20-phone-probe-draw-costs-v1",
+    "strictProtocolValid": true,
+    "compactBytes": 32755,
+    "sourceScope": "Exact r21 frozen source and protocol; current production read only"
+  },
+  "sample": {
+    "rawName": "baseline-r17-1-4xal8l64ck.json",
+    "sha256": "296e8e61f6c426357817fc919480a50be20e9cdba1088e081f8f7f2a06aa7c46",
+    "bytes": 57690,
+    "input": {
+      "created": 17,
+      "firstAccepted": 7,
+      "late": 3,
+      "unaccepted": 10,
+      "consumedPreparations": 7,
+      "unconsumedPreparations": 17,
+      "costs": {
+        "consumed": {
+          "knownSubtotalMs": 8,
+          "validCalls": 6,
+          "unknownCalls": 1,
+          "unknown": {
+            "belowResolution": 1,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "unconsumed": {
+          "knownSubtotalMs": 1,
+          "validCalls": 1,
+          "unknownCalls": 16,
+          "unknown": {
+            "belowResolution": 16,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "expiredUnconsumed": {
+          "knownSubtotalMs": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        }
+      }
+    },
+    "window": {
+      "startDelayMs": 0,
+      "durationLimitMs": 45000,
+      "elapsedMs": 15011,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 5439,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "scene": {
+      "baseRowsMin": 8404,
+      "baseRowsMax": 8404,
+      "saoRowsMin": 2675,
+      "saoRowsMax": 2842,
+      "selectedTilesMin": 103,
+      "selectedTilesMax": 105,
+      "catalogVersions": [
+        "bsc5p-bright-stars.v3"
+      ],
+      "saoPublicationHashes": [
+        "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+      ],
+      "modelAlgorithms": [],
+      "modes": [
+        "DAY"
+      ]
+    },
+    "viewport": {
+      "widthMin": 384,
+      "widthMax": 384,
+      "heightMin": 796.800048828125,
+      "heightMax": 796.800048828125,
+      "fovMin": 264.3550889449854,
+      "fovMax": 264.3550889449854
+    },
+    "counters": {
+      "timeIntentPublications": 17,
+      "preparedRequests": 50,
+      "paintAttempts": 42,
+      "nativeCallbacks": 42,
+      "acceptedCopies": 42,
+      "sceneFinishes": 42,
+      "glDrawSubmissions": 1970,
+      "bscSubmittedStars": 239099,
+      "saoSubmittedStars": 3721,
+      "acceptedBscObjects": 198952,
+      "acceptedSaoObjects": 1782,
+      "failedFrames": 0,
+      "invalidations": 0
+    },
+    "draw": {
+      "observedCalls": 42,
+      "validCalls": 42,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1159,
+      "minMs": 17,
+      "maxMs": 58,
+      "keptSamples": 42,
+      "p50Ms": 26,
+      "p95Ms": 50,
+      "overflow": false
+    },
+    "nativePaintOwner": {
+      "observedCalls": 42,
+      "validCalls": 42,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1163,
+      "minMs": 18,
+      "maxMs": 58,
+      "keptSamples": 42,
+      "p50Ms": 26,
+      "p95Ms": 50,
+      "overflow": false
+    },
+    "intentLatency": {
+      "intentToFirstAcceptedMs": {
+        "observedCalls": 7,
+        "validCalls": 7,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1210,
+        "minMs": 135,
+        "maxMs": 252,
+        "keptSamples": 7,
+        "p50Ms": 174,
+        "p95Ms": 252,
+        "overflow": false
+      },
+      "unsupersededIntentToFirstAcceptedMs": {
+        "observedCalls": 4,
+        "validCalls": 4,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 717,
+        "minMs": 139,
+        "maxMs": 252,
+        "keptSamples": 4,
+        "p50Ms": 175,
+        "p95Ms": 252,
+        "overflow": false
+      },
+      "supersededIntentToFirstAcceptedMs": {
+        "observedCalls": 3,
+        "validCalls": 3,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 493,
+        "minMs": 135,
+        "maxMs": 184,
+        "keptSamples": 3,
+        "p50Ms": 174,
+        "p95Ms": 184,
+        "overflow": false
+      }
+    },
+    "acceptedGap": {
+      "observedCalls": 41,
+      "validCalls": 41,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 2483,
+      "minMs": 24,
+      "maxMs": 264,
+      "keptSamples": 41,
+      "p50Ms": 39,
+      "p95Ms": 222,
+      "overflow": false
+    },
+    "geometry": {
+      "schemaVersion": "starward-r17-geometry-stages-v1",
+      "meaning": "logical-client-call-validated-promise-current-hook-assignment-not-network-or-presentation",
+      "capacity": 128,
+      "requestLimit": 64,
+      "windowLimit": 64,
+      "responseLimit": 128,
+      "observed": 67,
+      "dropped": 0,
+      "overflow": false,
+      "exportOmitted": 6,
+      "invalid": 0,
+      "requests": 17,
+      "omittedRequests": 0,
+      "unmatchedAdmissions": 0,
+      "pendingAtStop": 0,
+      "responseRotations": 0,
+      "windowMisses": 0,
+      "ambiguousResponses": 0,
+      "exportedEventsByCode": {
+        "1": 16,
+        "2": 16,
+        "3": 8,
+        "4": 7,
+        "5": 8,
+        "6": 6
+      },
+      "lateStarts": [
+        {
+          "intent": 3,
+          "request": 3,
+          "intentRelativeMs": 522,
+          "requestRelativeMs": 627,
+          "elapsedToCall": 105,
+          "nextIntentRelativeMs": 619
+        },
+        {
+          "intent": 8,
+          "request": 8,
+          "intentRelativeMs": 1073,
+          "requestRelativeMs": 1179,
+          "elapsedToCall": 106,
+          "nextIntentRelativeMs": 1170
+        },
+        {
+          "intent": 14,
+          "request": 14,
+          "intentRelativeMs": 1694,
+          "requestRelativeMs": 1799,
+          "elapsedToCall": 105,
+          "nextIntentRelativeMs": 1793
+        }
+      ]
+    },
+    "firstAcceptedStages": [
+      {
+        "intent": 1,
+        "prepareToken": 2,
+        "late": false,
+        "intentRelativeMs": 1,
+        "requestRelativeMs": 14,
+        "validatedRelativeMs": 169,
+        "hookRelativeMs": 173,
+        "prepareStart": 173,
+        "prepareFinish": 176,
+        "paintEntry": 200,
+        "firstAccepted": 253,
+        "stages": {
+          "intentToCall": 13,
+          "callToValidated": 155,
+          "validatedToHook": 4,
+          "preparationElapsedMs": 3,
+          "preparationElapsedStatus": "valid",
+          "prepareFinishToPaint": 24,
+          "paintEntryToAccepted": 53,
+          "total": 252
+        }
+      },
+      {
+        "intent": 2,
+        "prepareToken": 4,
+        "late": true,
+        "intentRelativeMs": 434,
+        "requestRelativeMs": 451,
+        "validatedRelativeMs": 489,
+        "hookRelativeMs": 492,
+        "prepareStart": 492,
+        "prepareFinish": 492,
+        "paintEntry": 522,
+        "firstAccepted": 569,
+        "stages": {
+          "intentToCall": 17,
+          "callToValidated": 38,
+          "validatedToHook": 3,
+          "preparationElapsedMs": null,
+          "preparationElapsedStatus": "belowResolution",
+          "prepareFinishToPaint": 30,
+          "paintEntryToAccepted": 47,
+          "total": 135
+        }
+      },
+      {
+        "intent": 6,
+        "prepareToken": 9,
+        "late": false,
+        "intentRelativeMs": 793,
+        "requestRelativeMs": 811,
+        "validatedRelativeMs": 851,
+        "hookRelativeMs": 855,
+        "prepareStart": 855,
+        "prepareFinish": 856,
+        "paintEntry": 901,
+        "firstAccepted": 944,
+        "stages": {
+          "intentToCall": 18,
+          "callToValidated": 40,
+          "validatedToHook": 4,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "prepareFinishToPaint": 45,
+          "paintEntryToAccepted": 43,
+          "total": 151
+        }
+      },
+      {
+        "intent": 7,
+        "prepareToken": 11,
+        "late": true,
+        "intentRelativeMs": 945,
+        "requestRelativeMs": 987,
+        "validatedRelativeMs": 1053,
+        "hookRelativeMs": 1080,
+        "prepareStart": 1080,
+        "prepareFinish": 1081,
+        "paintEntry": 1094,
+        "firstAccepted": 1129,
+        "stages": {
+          "intentToCall": 42,
+          "callToValidated": 66,
+          "validatedToHook": 27,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "prepareFinishToPaint": 13,
+          "paintEntryToAccepted": 35,
+          "total": 184
+        }
+      },
+      {
+        "intent": 12,
+        "prepareToken": 17,
+        "late": false,
+        "intentRelativeMs": 1423,
+        "requestRelativeMs": 1441,
+        "validatedRelativeMs": 1475,
+        "hookRelativeMs": 1477,
+        "prepareStart": 1477,
+        "prepareFinish": 1478,
+        "paintEntry": 1522,
+        "firstAccepted": 1562,
+        "stages": {
+          "intentToCall": 18,
+          "callToValidated": 34,
+          "validatedToHook": 2,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "prepareFinishToPaint": 44,
+          "paintEntryToAccepted": 40,
+          "total": 139
+        }
+      },
+      {
+        "intent": 13,
+        "prepareToken": 19,
+        "late": true,
+        "intentRelativeMs": 1579,
+        "requestRelativeMs": 1607,
+        "validatedRelativeMs": 1675,
+        "hookRelativeMs": 1701,
+        "prepareStart": 1701,
+        "prepareFinish": 1702,
+        "paintEntry": 1720,
+        "firstAccepted": 1753,
+        "stages": {
+          "intentToCall": 28,
+          "callToValidated": 68,
+          "validatedToHook": 26,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "prepareFinishToPaint": 18,
+          "paintEntryToAccepted": 33,
+          "total": 174
+        }
+      },
+      {
+        "intent": 17,
+        "prepareToken": 24,
+        "late": false,
+        "intentRelativeMs": 1987,
+        "requestRelativeMs": null,
+        "validatedRelativeMs": null,
+        "hookRelativeMs": null,
+        "prepareStart": 2070,
+        "prepareFinish": 2071,
+        "paintEntry": 2104,
+        "firstAccepted": 2162,
+        "stages": {
+          "intentToCall": null,
+          "callToValidated": null,
+          "validatedToHook": null,
+          "preparationElapsedMs": 1,
+          "preparationElapsedStatus": "valid",
+          "prepareFinishToPaint": 33,
+          "paintEntryToAccepted": 58,
+          "total": 175
+        }
+      }
+    ],
+    "preparationToRequest": {
+      "observedCalls": 24,
+      "validCalls": 7,
+      "unknownCalls": 17,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 17
+      },
+      "knownSubtotalMs": 102,
+      "minMs": 11,
+      "maxMs": 23,
+      "p50Ms": 13,
+      "p95Ms": 23
+    },
+    "requestToPaint": {
+      "observedCalls": 24,
+      "validCalls": 7,
+      "unknownCalls": 17,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 17
+      },
+      "knownSubtotalMs": 105,
+      "minMs": 1,
+      "maxMs": 29,
+      "p50Ms": 17,
+      "p95Ms": 29
+    },
+    "drawCosts": {
+      "schemaVersion": "starward-r20-draw-costs-v1",
+      "metricsSchema": "starward-r19-phone-probe-draw-reasons-v1",
+      "meaning": "inclusive-wall-elapsed-synchronous-actual-paint-scope-not-CPU-GPU-or-pixels",
+      "nesting": "submit-may-overlap-starTraversal-both-inside-draw-do-not-add",
+      "classification": "unknown-bit-or-missing-first-then-effect-bit-else-continuation",
+      "scopedPaints": 42,
+      "missingAdmissionPaints": 0,
+      "nestedPaints": 0,
+      "scopeChangedSpans": 0,
+      "groups": [
+        {
+          "kind": "inputResourceEffect",
+          "paints": 15,
+          "stages": {
+            "draw": {
+              "observedCalls": 15,
+              "validCalls": 15,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 483,
+              "maxMs": 58,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "starTraversal": {
+              "observedCalls": 30,
+              "validCalls": 27,
+              "unknownCalls": 3,
+              "knownSubtotalMs": 272,
+              "maxMs": 34,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 3,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "rendererSubmit": {
+              "observedCalls": 699,
+              "validCalls": 39,
+              "unknownCalls": 660,
+              "knownSubtotalMs": 138,
+              "maxMs": 8,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 660,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "continuationOnly",
+          "paints": 27,
+          "stages": {
+            "draw": {
+              "observedCalls": 27,
+              "validCalls": 27,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 676,
+              "maxMs": 50,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "starTraversal": {
+              "observedCalls": 54,
+              "validCalls": 45,
+              "unknownCalls": 9,
+              "knownSubtotalMs": 289,
+              "maxMs": 19,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 9,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "rendererSubmit": {
+              "observedCalls": 1271,
+              "validCalls": 69,
+              "unknownCalls": 1202,
+              "knownSubtotalMs": 234,
+              "maxMs": 10,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 1202,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "unknown",
+          "paints": 0,
+          "stages": {
+            "draw": {
+              "observedCalls": 0,
+              "validCalls": 0,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 0,
+              "maxMs": null,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "starTraversal": {
+              "observedCalls": 0,
+              "validCalls": 0,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 0,
+              "maxMs": null,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "rendererSubmit": {
+              "observedCalls": 0,
+              "validCalls": 0,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 0,
+              "maxMs": null,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            }
+          }
+        }
+      ],
+      "unbound": {
+        "draw": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "knownSubtotalMs": 0,
+          "maxMs": null,
+          "threwCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "starTraversal": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "knownSubtotalMs": 0,
+          "maxMs": null,
+          "threwCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "rendererSubmit": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "knownSubtotalMs": 0,
+          "maxMs": null,
+          "threwCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        }
+      }
+    },
+    "perPaintGroups": [
+      {
+        "kind": "inputResourceEffect",
+        "paints": 15,
+        "drawKnownAverageMs": 32.2,
+        "traversalKnownSubtotalPerPaintMs": 18.133333333333333,
+        "submitKnownSubtotalPerPaintMs": 9.2
+      },
+      {
+        "kind": "continuationOnly",
+        "paints": 27,
+        "drawKnownAverageMs": 25.037037037037038,
+        "traversalKnownSubtotalPerPaintMs": 10.703703703703704,
+        "submitKnownSubtotalPerPaintMs": 8.666666666666666
+      },
+      {
+        "kind": "unknown",
+        "paints": 0,
+        "drawKnownAverageMs": null,
+        "traversalKnownSubtotalPerPaintMs": null,
+        "submitKnownSubtotalPerPaintMs": null
+      }
+    ],
+    "page": {
+      "available": 1,
+      "submitted": 50,
+      "completed": 50,
+      "failed": 0,
+      "failedBeforeCallback": 0,
+      "callbackMissing": 0,
+      "pending": 0,
+      "inheritedPending": 0,
+      "maxPending": 3,
+      "duplicateCallback": 0,
+      "keyCountTotal": 449,
+      "maxKeyCount": 25,
+      "keyCountFailures": 0,
+      "sampledCalls": 16,
+      "sampledBytes": 47895,
+      "maxSampledBytes": 19694,
+      "serializationFailures": 0,
+      "bufferDataCalls": 152,
+      "totalTypedUploadBytes": 20611068,
+      "maxTypedUploadBytes": 283104,
+      "latencyTotalMs": 2098,
+      "latencyMaxMs": 110,
+      "enableDebug": true
+    },
+    "failedFrames": 0,
+    "invalidations": 0
+  },
+  "comparison": {
+    "reference": "R20-DRAW-COST-RESULT.md/json",
+    "baselineSource": "85fe0ba21c869c109581015a77fea4b641fc316de6ace548781ff0fdfb921bd2",
+    "baselineBundle": "d0e1a4500635629d1bfb631fd48fa089f50a66dded829ae065ba127b380a767e",
+    "baselineRawSha256": "a3fa8643517eb5d5eb30da6fde21798a6cb165f4ee64e6247ce02167d4e5d259",
+    "baseline": {
+      "window": {
+        "startDelayMs": 0,
+        "durationLimitMs": 45000,
+        "elapsedMs": 15011,
+        "elapsedStatus": "valid",
+        "reason": "manual"
+      },
+      "counters": {
+        "timeIntentPublications": 15,
+        "preparedRequests": 60,
+        "paintAttempts": 45,
+        "nativeCallbacks": 45,
+        "acceptedCopies": 45,
+        "sceneFinishes": 45,
+        "glDrawSubmissions": 2077,
+        "bscSubmittedStars": 255855,
+        "saoSubmittedStars": 3988,
+        "acceptedBscObjects": 212756,
+        "acceptedSaoObjects": 1910,
+        "failedFrames": 0,
+        "invalidations": 0
+      },
+      "draw": {
+        "observedCalls": 45,
+        "validCalls": 45,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1397,
+        "minMs": 23,
+        "maxMs": 55,
+        "keptSamples": 45,
+        "p50Ms": 30,
+        "p95Ms": 40,
+        "overflow": false
+      },
+      "intentLatency": {
+        "intentToFirstAcceptedMs": {
+          "observedCalls": 9,
+          "validCalls": 9,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 1397,
+          "minMs": 118,
+          "maxMs": 203,
+          "keptSamples": 9,
+          "p50Ms": 151,
+          "p95Ms": 203,
+          "overflow": false
+        },
+        "unsupersededIntentToFirstAcceptedMs": {
+          "observedCalls": 5,
+          "validCalls": 5,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 715,
+          "minMs": 118,
+          "maxMs": 163,
+          "keptSamples": 5,
+          "p50Ms": 148,
+          "p95Ms": 163,
+          "overflow": false
+        },
+        "supersededIntentToFirstAcceptedMs": {
+          "observedCalls": 4,
+          "validCalls": 4,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 682,
+          "minMs": 130,
+          "maxMs": 203,
+          "keptSamples": 4,
+          "p50Ms": 198,
+          "p95Ms": 203,
+          "overflow": false
+        }
+      },
+      "acceptedGap": {
+        "observedCalls": 44,
+        "validCalls": 44,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 2913,
+        "minMs": 25,
+        "maxMs": 235,
+        "keptSamples": 44,
+        "p50Ms": 52,
+        "p95Ms": 153,
+        "overflow": false
+      },
+      "input": {
+        "created": 15,
+        "firstAccepted": 9,
+        "late": 4,
+        "unaccepted": 6,
+        "consumedPreparations": 9,
+        "unconsumedPreparations": 15,
+        "costs": {
+          "consumed": {
+            "knownSubtotalMs": 10,
+            "validCalls": 7,
+            "unknownCalls": 2,
+            "unknown": {
+              "belowResolution": 2,
+              "clockUnavailable": 0,
+              "clockDiscontinuity": 0,
+              "outOfRange": 0,
+              "notObserved": 0
+            }
+          },
+          "unconsumed": {
+            "knownSubtotalMs": 1,
+            "validCalls": 1,
+            "unknownCalls": 14,
+            "unknown": {
+              "belowResolution": 14,
+              "clockUnavailable": 0,
+              "clockDiscontinuity": 0,
+              "outOfRange": 0,
+              "notObserved": 0
+            }
+          },
+          "expiredUnconsumed": {
+            "knownSubtotalMs": 0,
+            "validCalls": 0,
+            "unknownCalls": 0,
+            "unknown": {
+              "belowResolution": 0,
+              "clockUnavailable": 0,
+              "clockDiscontinuity": 0,
+              "outOfRange": 0,
+              "notObserved": 0
+            }
+          }
+        }
+      },
+      "geometry": {
+        "schemaVersion": "starward-r17-geometry-stages-v1",
+        "meaning": "logical-client-call-validated-promise-current-hook-assignment-not-network-or-presentation",
+        "capacity": 128,
+        "requestLimit": 64,
+        "windowLimit": 64,
+        "responseLimit": 128,
+        "observed": 58,
+        "dropped": 0,
+        "overflow": false,
+        "exportOmitted": 0,
+        "invalid": 0,
+        "requests": 15,
+        "omittedRequests": 0,
+        "unmatchedAdmissions": 0,
+        "pendingAtStop": 0,
+        "responseRotations": 0,
+        "windowMisses": 0,
+        "ambiguousResponses": 0,
+        "exportedEventsByCode": {
+          "1": 15,
+          "2": 15,
+          "3": 4,
+          "4": 11,
+          "5": 4,
+          "6": 9
+        },
+        "lateStarts": [
+          {
+            "intent": 4,
+            "request": 4,
+            "intentRelativeMs": 575,
+            "requestRelativeMs": 722,
+            "elapsedToCall": 147,
+            "nextIntentRelativeMs": 683
+          },
+          {
+            "intent": 8,
+            "request": 8,
+            "intentRelativeMs": 1051,
+            "requestRelativeMs": 1215,
+            "elapsedToCall": 164,
+            "nextIntentRelativeMs": 1180
+          }
+        ]
+      },
+      "perPaintGroups": [
+        {
+          "kind": "inputResourceEffect",
+          "paints": 22,
+          "drawKnownAverageMs": 32.68181818181818,
+          "traversalKnownSubtotalPerPaintMs": 18.363636363636363,
+          "submitKnownSubtotalPerPaintMs": 9.181818181818182
+        },
+        {
+          "kind": "continuationOnly",
+          "paints": 23,
+          "drawKnownAverageMs": 29.434782608695652,
+          "traversalKnownSubtotalPerPaintMs": 15.434782608695652,
+          "submitKnownSubtotalPerPaintMs": 8.478260869565217
+        },
+        {
+          "kind": "unknown",
+          "paints": 0,
+          "drawKnownAverageMs": null,
+          "traversalKnownSubtotalPerPaintMs": null,
+          "submitKnownSubtotalPerPaintMs": null
+        }
+      ]
+    },
+    "matched": {
+      "initialDisplayedDateTime": true,
+      "viewport": true,
+      "catalogAndSaoSceneBounds": true,
+      "geometryWindowIdentitiesForCommonFirst15": true,
+      "holdRequestedDuration": true
+    },
+    "notMatched": [
+      "Actual intent count: 15 vs 17; final date 10-06 vs 10-04",
+      "Full request/cache and process scheduling conditions not controlled",
+      "Counts of effect/continuation paints differ; no paired randomized trial",
+      "Full ordinary-Play before-baseline unavailable in this reviewed evidence"
+    ]
+  },
+  "video": {
+    "file": "recording-1792543612291.mp4",
+    "bytes": 390825,
+    "sha256": "a70a967d53b4dfd8d6f1377c73e4b234008ab89ce82ddf0f1307b4a9088f32ee",
+    "duration": 4.849589,
+    "width": 1080,
+    "height": 2376,
+    "requestedDurationSeconds": 10,
+    "viewedBeforeAndAfter": true,
+    "viewedSamples": [
+      {
+        "name": "hold-2_100000.png",
+        "target": 2.1,
+        "currentTime": 2.1,
+        "media": {
+          "mediaTime": 0.373344,
+          "presentedFrames": 8
+        },
+        "observedRequestedDate": "2026-10-21"
+      },
+      {
+        "name": "hold-2_500000.png",
+        "target": 2.5,
+        "currentTime": 2.5,
+        "media": {
+          "mediaTime": 2.457756,
+          "presentedFrames": 9
+        },
+        "observedRequestedDate": "2026-10-20"
+      },
+      {
+        "name": "hold-3_000000.png",
+        "target": 3,
+        "currentTime": 3,
+        "media": {
+          "mediaTime": 2.899222,
+          "presentedFrames": 10
+        },
+        "observedRequestedDate": "2026-10-15"
+      },
+      {
+        "name": "hold-3_500000.png",
+        "target": 3.5,
+        "currentTime": 3.5,
+        "media": {
+          "mediaTime": 3.464911,
+          "presentedFrames": 11
+        },
+        "observedRequestedDate": "2026-10-10"
+      },
+      {
+        "name": "hold-4_000000.png",
+        "target": 4,
+        "currentTime": 4,
+        "media": {
+          "mediaTime": 3.997667,
+          "presentedFrames": 12
+        },
+        "observedRequestedDate": "2026-10-06"
+      },
+      {
+        "name": "hold-4_799589.png",
+        "target": 4.799589,
+        "currentTime": 4.799589,
+        "media": {
+          "mediaTime": 4.796878,
+          "presentedFrames": 13
+        },
+        "observedRequestedDate": "2026-10-04"
+      }
+    ],
+    "observation": "Visible date runs down through intermediate values and star positions change, final 10-04 preview visible. At intermediate 10-15/10-10/10-06 samples update-pending feedback is visible. Displayed accepted time omits date, so pixels cannot label each accepted calendar instant. Recording ended at 4.849589 s and sparse samples do not certify smoothness.",
+    "clockJoinedToCollector": false,
+    "limits": "Local video media timestamps only. Decoded samples are not physical application FPS. Input release is not independently timestamped by this decoder."
+  },
+  "unverified": [
+    "All six fields and complete extreme responsiveness remain unfinished.",
+    "Ordinary Play no-hit allocation/draw regression is not resolved by this hold sample; no complete matching before-Play baseline in this evidence.",
+    "B retained-graph/churn/native-exit cause unresolved; list count, draw cost, brief non-exit and process PSS are not no-leak evidence.",
+    "No physical FPS/GPU or whole-session sustained-use result."
+  ],
+  "preservation": {
+    "localOnly": true,
+    "directory": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r21-hold\\review",
+    "originalFiles": [
+      {
+        "name": "screen-923409cc-f33c-4c48-91a1-4bc762eed339.png",
+        "bytes": 972482,
+        "sha256": "60cbca4ec92a24beb1ff0b8591ca68bfbfc9a2df044d7f292e3b03366c0afd62",
+        "readbackVerified": true
+      },
+      {
+        "name": "recording-1792543612291.mp4",
+        "bytes": 390825,
+        "sha256": "a70a967d53b4dfd8d6f1377c73e4b234008ab89ce82ddf0f1307b4a9088f32ee",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-fd8ad64a-9d49-4d98-bbb8-557605d444d6.png",
+        "bytes": 989690,
+        "sha256": "c9a5f94c565888f583ec899c0eafdf066d46002ca59f48e302e94c20f7af7a00",
+        "readbackVerified": true
+      },
+      {
+        "name": "baseline-r17-1-4xal8l64ck.json",
+        "bytes": 57690,
+        "sha256": "296e8e61f6c426357817fc919480a50be20e9cdba1088e081f8f7f2a06aa7c46",
+        "readbackVerified": true
+      }
+    ],
+    "originalBytes": 2410687,
+    "record": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r21-hold\\review\\original-preservation.json",
+    "frozenSourceReused": true,
+    "uploaded": false
+  }
+}

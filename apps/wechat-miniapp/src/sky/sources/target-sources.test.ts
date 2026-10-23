@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import type { ObservationContext, SkyTarget } from "@starward/miniapp-contracts";
+import { uniqueSourceRecords, type ObservationContext, type SkyTarget } from "@starward/miniapp-contracts";
 import { parseSkyTargetSourceSelection, skyTargetSourceContextMatches, skyTargetSourcesRoute } from "../../features/sky/sky-target-sources-route";
 import { skyTargetInstantQueryKey } from "../../services/sky-target-instant-response";
 import { sourceRecoveryTestScope } from "./source-recovery-test-support";
@@ -52,9 +52,9 @@ test("actual target source page keeps the selected credit, rejects replacement i
   const render = vm.runInNewContext(ts.transpileModule(component.getText(source).replace(/^export\s+/u, "") + "\nSkyTargetSourcesPage;",
     { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
     ...scope.bindings, React: { createElement: (type: string, props: any, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
-    View: "View", Text: "Text", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
+    View: "View", Text: "Text", ScrollView: "ScrollView", SourcePage:"SourcePage",CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {}, useThemeClass: () => "",
-    useAppStore: store, parseSkyTargetSourceSelection, skyTargetSourceContextMatches, skyTargetInstantQueryKey,
+    useAppStore: store, parseSkyTargetSourceSelection, skyTargetSourceContextMatches, skyTargetInstantQueryKey, uniqueSourceRecords,
     getSkyTargetInstant: async (binding: any) => { requests++; assert.equal(binding.at, at); assert.equal(binding.contextRevision, 2); return query.data; },
     useResourceQuery: (options: any) => { enabled = options.enabled; queryFn = options.queryFn; return query; },
   });
@@ -64,6 +64,12 @@ test("actual target source page keeps the selected credit, rejects replacement i
   assert.ok(first.some(n => n.type === "Text" && n.children.includes("原始完整活动说明")), "full report explanation remains available with its selected source");
   assert.ok(first.some(n => n.type === "StatusPanel" && n.props.state === "PARTIAL"));
   assert.ok(first.some(n => n.type === "StatusPanel" && n.props.state === "STALE"));
+  const selected = query.data.data.targets[0] as any;
+  selected.activity = { source: { ...sourceCredit, retrievedAt: "2026-10-15T12:00:00.000Z" } };
+  assert.equal(frame().filter(n => n.type === "Provenance").length, 2, "same source ID cannot erase a different complete activity record");
+  selected.activity.source = { ...sourceCredit };
+  assert.equal(frame().filter(n => n.type === "Provenance").length, 1, "identical complete records remain one reading section");
+  delete selected.activity;
   await queryFn!(); assert.equal(requests, 1, "use the original target transport, without an image request");
   const retry = first.find(n => n.type === "StatusPanel" && n.props.onRecover)!.props.onRecover;
   retry(); assert.equal(retries, 1);

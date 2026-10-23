@@ -47,6 +47,9 @@ test("fractional ruler input moves actual solar and observation geometry between
   assert.equal(Date.parse(at),Math.round(Date.parse(rows[0]!.at)+.25*(Date.parse(rows[1]!.at)-Date.parse(rows[0]!.at))));
   const current=presentSkyTime(report,at),start=presentSkyTime(report,rows[0]!.at);assert(current&&start);
   assert.equal(current.row.at,at);assert.equal(current.mode,"MODEL");
+  const stellarGeometry=current.report.skyScene.frames[0]?.geometry;assert(stellarGeometry);
+  assert(Object.isFrozen(stellarGeometry)&&Object.isFrozen(stellarGeometry.observer)&&Object.isFrozen(stellarGeometry.equatorialToEnu),
+    "the newly owned exact stellar instant qualifies for bounded current-Canvas preparation");
   assert.notEqual(current.row.sunAltitudeDeg,start.row.sunAltitudeDeg);
   assert.notDeepEqual(exactSkyObservationFrame(current.report,at)?.equatorialToEnu,
     exactSkyObservationFrame(start.report,rows[0]!.at)?.equatorialToEnu);
@@ -129,7 +132,7 @@ test("actual page invalidation clears hit testing synchronously before React hid
   const pendingSkyPaintRef={current:{snapshot:paintedSkyObjectsRef.current} as object|null};
   let presented: object|null=paintedSkyObjectsRef.current, size={width:400,height:800};
   const invalidated=vm.runInNewContext(ts.transpileModule(`(${callback})`,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,
-    {paintedSkyObjectsRef,pendingSkyPaintRef,canvasSurfaceRef:{current:null},setPresentedSkyFrame(value:object|null){presented=value;},
+    {paintedSkyObjectsRef,pendingSkyPaintRef,starDrawing:{reset(){}},canvasSurfaceRef:{current:null},setPresentedSkyFrame(value:object|null){presented=value;},
       setCanvasSize(update:(value:typeof size)=>typeof size){size=update(size);}});
   invalidated();assert.equal(paintedSkyObjectsRef.current,null);
   assert.equal(pendingSkyPaintRef.current,null);assert.equal(presented,null);

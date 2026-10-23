@@ -1,11 +1,11 @@
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
-import { Button, RootPortal, ScrollView, Text, View } from "@tarojs/components";
+import { RootPortal, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import type { AstronomicalEventLocalVisibility, AstronomicalEventOccurrence, ObservationContext, SourceSummary } from "@starward/miniapp-contracts";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 import { eventDatePosition, eventDatePresentation, eventDayLabel, eventKindLabel, eventTypeLabel, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "@/content/event/event-model";
-import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { getAstronomicalEvent, getAstronomicalEvents, resolveObservationContext } from "@/services/api-client";
@@ -14,7 +14,8 @@ import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "./native-back-boundary";
 import { SemanticIcon } from "./semantic-asset";
 import { StatusPanel } from "./status-panel";
-import { Provenance } from "./provenance";
+import { SourceAttribution } from "./source-attribution";
+import { SourceEntry } from "./source-entry";
 import { FloatingNotificationHost } from "./notification";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 
@@ -107,11 +108,6 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
     return () => retire(timer);
   }, [open, reducedMotion]);
 
-  useEffect(() => {
-    if (!mounted) return;
-    return retainPrimaryNavigationCover();
-  }, [mounted]);
-
   const catalog = useResourceQuery({
     queryKey: ["astronomical-events"], queryFn: getAstronomicalEvents,
     enabled: mounted && pageVisible, staleTime: 6 * 60 * 60 * 1000,
@@ -185,9 +181,9 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
       <View className="event-modal__backdrop" onClick={() => { if (phase !== "closing") onClose(); }} />
       <View className="event-modal__shell">
         <View className="event-modal__header">
-          {detailId ? <Button className="event-modal__icon-button" ariaLabel="返回事件列表" onClick={() => setDetailId(null)}><SemanticIcon name="arrow-left" /></Button> : <View className="event-modal__icon-spacer" />}
+          {detailId ? <Button pressVariant="icon" className="event-modal__icon-button" ariaLabel="返回事件列表" onClick={() => setDetailId(null)}><SemanticIcon name="arrow-left" /></Button> : <View className="event-modal__icon-spacer" />}
           <Text className="event-modal__title">{detailId ? "天文事件详情" : "天文事件"}</Text>
-          <Button className="event-modal__icon-button" ariaLabel="关闭天文事件" onClick={onClose}><SemanticIcon name="close" /></Button>
+          <Button pressVariant="icon" className="event-modal__icon-button" ariaLabel="关闭天文事件" onClick={onClose}><SemanticIcon name="close" /></Button>
         </View>
         <View className={`event-modal__pages${detailId ? " event-modal__pages--detail" : ""}`}>
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__list" ariaLabel="天文事件列表">
@@ -224,7 +220,6 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                 timezone={context?.timezone ?? "Asia/Shanghai"} source={record?.source ?? catalog.data?.data.sources.find(source => source.id === selectedDetail.sourceId)}
                 catalogVersion={record?.catalogVersion ?? catalog.data?.data.catalogVersion}
                 articleSource={record?.articleSource}
-                sourcePresentation={themeClass === "theme-day" ? "disclosure" : "default"}
                 failed={geometryFailed} onRetry={() => { void eventRecord.refetch(); if (context && previewDate) void detail.refetch(); }}
                 previewDate={previewDate ?? selectedDetail.peakDate}
                 canPreviewDate={Boolean(context)}
@@ -246,7 +241,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   </>;
 });
 
-function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, sourcePresentation, catalogVersion, failed, onRetry }: {
+function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, catalogVersion, failed, onRetry }: {
   event: AstronomicalEventOccurrence;
   visibility: AstronomicalEventLocalVisibility | null;
   mode: ModalMode;
@@ -258,7 +253,6 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
   timezone: string;
   source?: SourceSummary | undefined;
   articleSource?: SourceSummary | undefined;
-  sourcePresentation: "default" | "disclosure";
   catalogVersion?: string | undefined;
   failed?: boolean;
   onRetry?: () => void;
@@ -310,12 +304,22 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
     {event.kind === "METEOR_SHOWER" ? <View className="event-modal-detail__section event-modal-detail__catalogue"><Text className="type-section">数据来源与日期精度</Text>
       <Text className="type-body">{event.nominalPeakZhr === null ? "流量参考：暂无数据" : `参考峰值 ZHR ${event.nominalPeakZhr}`} · {event.velocityKmPerSecond === null ? "速度：暂无数据" : `速度 ${event.velocityKmPerSecond} km/s`}</Text>
       <Text className="type-caption">{event.nominalPeakZhr === null ? "现有资料不提供可用流量值，不能据此估算现场可见数量。" : "ZHR 是理想条件下的目录参考率，不是现场每小时可见数量。"}</Text></View> : null}
-    {source && isProductSource(source) ? <View className="event-modal-detail__section event-modal-detail__source">{sourcePresentation !== "disclosure" ? <Text className="type-section">资料来源</Text> : null}<Provenance source={source} presentation={sourcePresentation} />{catalogVersion ? <Text className="event-modal-detail__version type-caption">目录版本：{catalogVersion}</Text> : null}</View> : null}
+    {source && isProductSource(source) ? <View className="event-modal-detail__section event-modal-detail__source">
+      <Text className="type-caption">资料：{productSourceNames([source])}</Text>
+      <Text className="type-caption">{source.precision}</Text>
+      <SourceAttribution presentation="credit" sources={[source]} />
+      <SourceEntry id={`event-source-${event.occurrenceId}`} label="天象科学来源" sources={[source]}
+        {...(catalogVersion ? { sections: [{ kind: "facts" as const, items: [{ label: "目录版本", value: catalogVersion }] }] } : {})} />
+      {catalogVersion ? <Text className="event-modal-detail__version type-caption">目录版本：{catalogVersion}</Text> : null}
+    </View> : null}
     {event.article ? <View className="event-modal-detail__section event-modal-detail__article"><Text className="type-section">{event.article.title}</Text>
       {event.article.authorName ? <Text className="type-caption">作者：{event.article.authorName}</Text> : null}
       {event.article.publishedTime ? <Text className="type-caption">原文日期：{event.article.publishedTime}</Text> : null}
       {event.article.paragraphs.map((paragraph, index) => <Text key={index} className="type-article" selectable>{paragraph}</Text>)}
-      {articleSource && isProductSource(articleSource) ? <Provenance source={articleSource} presentation={sourcePresentation} /> : null}
+      {articleSource && isProductSource(articleSource) ? <View>
+        <SourceAttribution presentation="credit" sources={[articleSource]} />
+        <SourceEntry id={`event-article-source-${event.occurrenceId}`} label="补充文章来源与许可" sources={[articleSource]} />
+      </View> : null}
     </View> : null}
   </View>;
 }

@@ -5,6 +5,7 @@ import { nativeStatusBarHeightPx, nativeMenuClearancePx, nativeNavigationInsets 
 import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
 import { reportRuntimeError } from "@/services/runtime-error";
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 
 export function CustomNav({
   title,
@@ -18,11 +19,12 @@ export function CustomNav({
   beforeBack,
   onBackAuthorized,
   onBackFailure,
+  backAction,
 }: {
   title: string;
   subtitle?: string | undefined;
   back?: boolean | undefined;
-  backPresentation?: "back" | "dismiss" | undefined;
+  backPresentation?: "back" | "dismiss" | "map" | undefined;
   backOdId?: string | undefined;
   backFallbackTab?: "/pages/map/index" | "/pages/my/index" | undefined;
   odId?: string | undefined;
@@ -30,10 +32,12 @@ export function CustomNav({
   beforeBack?: (() => boolean | Promise<boolean>) | undefined;
   onBackAuthorized?: (() => void | Promise<void>) | undefined;
   onBackFailure?: (() => void | Promise<void>) | undefined;
+  backAction?: (() => void | Promise<void>) | undefined;
 }) {
   const statusBarHeight = nativeStatusBarHeightPx();
   const menuClearance = nativeMenuClearancePx();
   const dismiss = backPresentation === "dismiss";
+  const returnMap = backPresentation === "map";
   const actionSafeTop = right || dismiss ? nativeNavigationInsets().safeTop : undefined;
   const navigation = usePageNavigation();
   const backError = navigation.navigationError;
@@ -42,13 +46,15 @@ export function CustomNav({
     if (!attempt) return;
     if (attempt.stackReadError !== undefined)
       reportRuntimeError("native", "navigation_page_stack_failed", attempt.stackReadError);
-    const fallback = () => Taro.switchTab({ url: backFallbackTab });
+    const fallback = () => openPrimaryPage(backFallbackTab);
     try {
       if (beforeBack && !(await beforeBack())) return;
       if (!attempt.active()) return;
       await onBackAuthorized?.();
       if (!attempt.active()) return;
-      if (attempt.stack.length > 1) {
+      if (backAction) {
+        await backAction();
+      } else if (attempt.stack.length > 1) {
         try {
           await Taro.navigateBack();
         } catch (error) {
@@ -69,14 +75,21 @@ export function CustomNav({
     }
   };
   const backControl = back ? <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
-    <View className="custom-nav__back-control">
-      <SoftButton variant="ghost" label={dismiss ? "关闭页面" : "返回"} onClick={goBack}>{""}</SoftButton>
-      <SemanticIcon name={dismiss ? "close" : "arrow-left"} label={dismiss ? "关闭页面" : "返回"} className="custom-nav__back-icon" />
+    <View className={`custom-nav__back-control${returnMap ? " custom-nav__back-control--map" : ""}`}>
+      <SoftButton variant="ghost" label={returnMap ? "返回地图" : dismiss ? "关闭页面" : "返回"}
+        className={returnMap ? "custom-nav__map-button" : ""} onClick={goBack}>
+        {returnMap ? <>
+          <Text className="custom-nav__map-arrow" aria-hidden>‹</Text>
+          <SemanticIcon name="map" className="custom-nav__map-icon" />
+          <Text>地图</Text>
+        </> : ""}
+      </SoftButton>
+      {!returnMap ? <SemanticIcon name={dismiss ? "close" : "arrow-left"} label={dismiss ? "关闭页面" : "返回"} className="custom-nav__back-icon" /> : null}
     </View>
   </View> : null;
   return (
     <View
-      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}${dismiss ? " custom-nav--dismiss" : ""}`}
+      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}${dismiss ? " custom-nav--dismiss" : ""}${returnMap ? " custom-nav--map" : ""}`}
       data-control="mini-primary-navigation"
       {...(odId ? { "data-od-id": odId } : {})}
       style={{

@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { requestOneShotLocation, type OneShotLocationResult } from "./one-shot-location";
 import { enqueueNotification, selectNotification, type NotificationIntent, type NotificationRecord } from "../state/notification";
+import { primaryPageNavigationForTest } from "../navigation/primary-page-navigation-test-support";
 
 type Port = Parameters<typeof requestOneShotLocation>[0];
 // Synthetic coordinates only; no device data is captured by these tests.
@@ -365,10 +366,13 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
 test("actual default-region button resets before navigation and reports failed navigation", async () => {
   const events: string[] = [], feedback: string[] = [];
   const lock: { current: { kind: string } | null } = { current: { kind: "NAVIGATION" } };
+  const Taro = { getCurrentPages: () => [{ route: "pages/auth/index" }],
+    reLaunch: async (options: { url: string }) => { events.push(options.url); throw new Error("synthetic navigation failure"); } };
   const run = actualCallback("auth", "useDefaultRegion", {
+    ...primaryPageNavigationForTest(Taro),
     locationRequestBusy: lock, setBusy() {}, setFeedbackState() {},
     resetMapToDefaultRegion: () => events.push("reset"),
-    Taro: { switchTab: async (options: { url: string }) => { events.push(options.url); throw new Error("synthetic navigation failure"); } },
+    Taro,
     setFeedback: (value: string) => feedback.push(value),
   });
   await run(); assert.equal(events.length, 0);

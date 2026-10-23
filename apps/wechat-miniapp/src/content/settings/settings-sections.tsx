@@ -3,7 +3,8 @@ import { LoadingIndicator } from "@/components/loading-indicator";
 import { SemanticIcon, type SemanticIconName } from "@/components/semantic-asset";
 import type { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 
 import { DisplayModeControl } from "./display-mode-control";
 

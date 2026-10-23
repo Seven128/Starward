@@ -1,7 +1,8 @@
 import {assertStellarGeometryFrame,type SaoIndexPublication,type SaoTilePublication,type StellarGeometryFrame} from '@starward/miniapp-contracts';
 import type {ResolvedStellarFrame,ResolvedStellarScene} from './sky-stellar-scene';
 import {exactSkyTimeFrame} from './sky-time-frame';
-import {createSkyStellarTransform} from './sky-stellar-transform';
+import {createSkyStellarTransform,immutableSkyStellarGeometry} from './sky-stellar-transform';
+import {isAdmittedSaoIndexPublication,isAdmittedSaoTilePublication} from '../../services/sao-catalog-client';
 import type {SkyDirectionProjector,SkyDirectionProjection} from './sky-view-projection';
 
 export type SupplementPoint=readonly [reference:string,magnitude:number,azimuthDeg:number,altitudeDeg:number];
@@ -18,6 +19,8 @@ export interface SkyStellarSupplementFrame extends Pick<ResolvedStellarFrame,'di
 type TileTransform={geometry:StellarGeometryFrame;transform:ReturnType<typeof createSkyStellarTransform>;
   pointAt:(index:number)=>SupplementPoint};
 const transformed=new WeakMap<SaoTilePublication,TileTransform>();
+const reusableFrames=new WeakSet<SkyStellarSupplementFrame>();
+export function isReusableSkyStellarSupplementFrame(value:SkyStellarSupplementFrame):boolean {return reusableFrames.has(value);}
 
 export function supplementGeometry(publication:SaoIndexPublication,scene:ResolvedStellarScene|undefined,at:string|undefined){
   const geometry=exactSkyTimeFrame(scene?.frames,at)?.geometry;
@@ -76,9 +79,12 @@ export function resolveSkyStellarSupplement(publication:SaoIndexPublication,tile
       (index,projection)=>visit(span.start+index,span.cached.pointAt(index),projection));
   };
   let points:readonly SupplementPoint[]|undefined;
-  return {publicationHash:publication.publicationHash,catalogVersion:publication.index.catalogVersion,geometry,pointCount,
+  const resolved=Object.freeze({publicationHash:publication.publicationHash,catalogVersion:publication.index.catalogVersion,geometry,pointCount,
     get points(){return points??=Object.freeze(Array.from({length:pointCount},(_,index)=>pointAt(index)));},
-    forEachProjected,displayDirection,displayTransmission};
+    forEachProjected,displayDirection,displayTransmission});
+  if(immutableSkyStellarGeometry(geometry)&&isAdmittedSaoIndexPublication(publication)&&tiles.every(isAdmittedSaoTilePublication))
+    reusableFrames.add(resolved);
+  return resolved;
 }
 
 export function currentStellarSupplement(frame:SkyStellarSupplementFrame|null|undefined,scene:ResolvedStellarScene|undefined,at:string|undefined){

@@ -112,10 +112,6 @@
   background: var(--border);
 }
 
-.settings-entry-row:active,
-.settings-card--group .toggle-field--pressed {
-  background: var(--pressed-overlay);
-}
 
 .settings-entry-row[disabled],
 .settings-card--group .toggle-field[disabled] {
@@ -308,7 +304,6 @@
 
 .settings-display-mode-choice::after { border: 0; }
 .settings-display-mode-choice--selected { color: var(--text-primary); }
-.settings-display-mode-choice:active { background: var(--pressed-overlay); }
 .settings-display-mode-choice .semantic-icon { width: 25Px; height: 25Px; flex-basis: 25Px; color: var(--warning); }
 
 .theme-night .settings-mode-panel { background: linear-gradient(120deg, var(--surface-subtle), var(--icon-violet-soft)); }
@@ -517,9 +512,6 @@
   .settings-card--group .toggle-field--checked .toggle-field__track { background: #7c999e; }
   .settings-card--group .toggle-field--checked .toggle-field__thumb { transform: translateX(18Px); }
 
-  .settings-entry-row:active,
-  .settings-card--group .toggle-field--pressed,
-  .settings-display-mode-choice:active { background: #edf1f2; }
 
   .settings-sheet {
     padding-top: 0;

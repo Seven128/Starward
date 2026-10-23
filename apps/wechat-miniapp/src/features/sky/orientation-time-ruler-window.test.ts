@@ -192,6 +192,22 @@ const windowProps = (rows: readonly SkyTimeRulerRow[], at: string, committed = c
 const stepPx = 34;
 const one = { touches: [{ identifier: 1 }] };
 
+test("a held full-day ruler continues across pending short-window supply without cancelling or seizing the drag", t => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const props = windowProps(original, original[3]!.at, original[3]!.at), r = rulerFixture(props);
+  r.scroll.onTouchStart(one);
+  r.scroll.onScroll({ detail: { scrollLeft: 5.25 * stepPx } });
+  const commands = r.positions.length;
+  r.render({ ...props, activeIndex: 5, selectionReady: false, isPreviewing: true });
+  r.scroll.onScroll({ detail: { scrollLeft: 8.75 * stepPx } });
+  r.render({ ...props, rows: original.map(row => ({ ...row })), activeIndex: 8, selectionReady: true, isPreviewing: true });
+  assert.deepEqual(r.previews, [5.25, 8.75]); assert.equal(r.cancels, 0);
+  assert.equal(r.positions.length, commands, "admitting another short model does not position a held calendar ruler");
+  r.scroll.onTouchEnd(); t.mock.timers.tick(150);
+  assert.deepEqual(r.commits, [9]); assert.equal(r.cancels, 0);
+  r.unmount();
+});
+
 test("equal-length geometry windows follow the selected real row even when the committed instant is outside", () => {
   const r = rulerFixture(windowProps(original, committedAt));
   const at = "2026-10-17T20:30:17.123Z", next = windowProps(previous, at);

@@ -1,0 +1,96 @@
+{
+  "observedAtUtc": "2026-10-23T04:48:53.661197+08:00",
+  "project": "7144519510537620825",
+  "projectTitleObserved": "待审｜舒适尺度·星旅分享·公共动效｜09-23",
+  "cliVersion": "0.12.0",
+  "adoptedScreen": "3995519477980461148",
+  "adoptedMyImageViewed": true,
+  "myBoardViewed": "2363343729366275426",
+  "before": {
+    "count": 22,
+    "isTruncated": false,
+    "ids": [
+      "10730298707280640722",
+      "15784007085525249384",
+      "16763997252658823934",
+      "16763997252658825440",
+      "16763997252658826946",
+      "1f98910c16f84444b4aec58bb7ad741c",
+      "2210016762480219826",
+      "2363343729366274348",
+      "2363343729366274564",
+      "2363343729366275426",
+      "2363343729366275642",
+      "2363343729366276504",
+      "2363343729366277366",
+      "2363343729366277582",
+      "2960173540302109526",
+      "3995519477980461148",
+      "4493372846880550325",
+      "46a9936c70664e4381411573ab6b34da",
+      "5203113606453427839",
+      "5205988829884632961",
+      "5385664345158066168",
+      "6888738757748880241"
+    ]
+  },
+  "after": {
+    "count": 22,
+    "isTruncated": false,
+    "ids": [
+      "10730298707280640722",
+      "15784007085525249384",
+      "16763997252658823934",
+      "16763997252658825440",
+      "16763997252658826946",
+      "1f98910c16f84444b4aec58bb7ad741c",
+      "2210016762480219826",
+      "2363343729366274348",
+      "2363343729366274564",
+      "2363343729366275426",
+      "2363343729366275642",
+      "2363343729366276504",
+      "2363343729366277366",
+      "2363343729366277582",
+      "2960173540302109526",
+      "3995519477980461148",
+      "4493372846880550325",
+      "46a9936c70664e4381411573ab6b34da",
+      "5203113606453427839",
+      "5205988829884632961",
+      "5385664345158066168",
+      "6888738757748880241"
+    ]
+  },
+  "priorDeletedAbsent": true,
+  "priorDeletedIds": [
+    "48b5fb53ec86468d86544ee6eecea064",
+    "6054859b666a4bf4a708d5d16e18c6de",
+    "1029654656181953306"
+  ],
+  "protectedPresent": true,
+  "protectedIds": [
+    "5205988829884632961",
+    "5385664345158066168",
+    "1f98910c16f84444b4aec58bb7ad741c"
+  ],
+  "remoteWritesThisRun": [],
+  "newRemoteDeletions": [],
+  "retainedMyDependencies": [
+    "my/candidates/context-audit-2026-09-09/preview/",
+    "my/adopted/my-page/stitch-rendered.css",
+    "my/adopted/my-page/preview/interaction.css",
+    "my/adopted/my-page/preview/glass.css",
+    "shared/liquid-glass/material.css",
+    "shared/comfortable-scale-2026-09-22/preview/surfaces.css",
+    "shared/comfortable-scale-2026-09-22/preview/refinements.css"
+  ],
+  "remoteTextConflict": {
+    "adoptedScreenTitle": "已采用 10-22｜局部修订·原页保留｜可编辑源与审阅图",
+    "zipMetadata": "ADOPTED",
+    "galleryDetails": "STALE_CANDIDATE_README",
+    "resolvedRemotely": false
+  },
+  "toolLimit": "CLI does not expose pure screen metadata or in-place HTML update or screen deletion; official browser project controls did not load.",
+  "localDesignCopies": "9 temporary readback files, 132901242 bytes, moved to Windows recycle bin; original exact directory absent; see my-readback-temp-cleanup-20261023.json"
+}

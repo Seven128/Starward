@@ -1,6 +1,7 @@
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidShow } from "@tarojs/taro";
-import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
+import { Input, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useId, useMemo, useRef, useState } from "react";
 import { ToggleField } from "@/components/toggle-field";
 import { displayBeijingTimestamp } from "@/utils/zoned-date";

@@ -12,11 +12,6 @@
 .spot-horizon__summary { max-width: 100%; padding: 2Px 8Px; border-radius: 6Px; color: var(--text-secondary); background: var(--surface-subtle); font-size: 12Px; line-height: 18Px; font-weight: 500; }
 .spot-horizon__summary--partial { color: var(--warning); }
 .spot-horizon__disclaimer { display: block; margin-bottom: 10Px; color: var(--text-tertiary); font-size: 12Px; line-height: 18Px; }
-.spot-horizon .source-disclosure { box-sizing: border-box; width: 100%; margin: 0 0 10Px; overflow: hidden; border: 1Px solid var(--border); border-radius: 8Px; background: var(--surface-subtle); }
-.spot-horizon .source-disclosure__summary { min-height: 44Px; padding: 8Px 12Px; color: var(--text-secondary); font-size: 12Px; line-height: 18Px; font-weight: 400; }
-.spot-horizon .source-disclosure__chevron { font-size: 20Px; line-height: 20Px; }
-.spot-horizon .source-disclosure__body { padding: 10Px 12Px; border-top: 1Px dashed var(--border); }
-.spot-horizon .source-disclosure__note { padding: 0; background: transparent; border-radius: 0; color: var(--text-tertiary); font-size: 12Px; line-height: 18Px; }
 .spot-horizon__state { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24Px; border-radius: inherit; background: var(--surface); }
 .spot-horizon__state .status-panel { align-items: center; flex-direction: column; gap: 6Px; padding: 0; min-height: 0; text-align: center; background: transparent; border: 0; border-radius: 0; }
 .spot-horizon__state .status-panel > .type-caption { flex: 0; min-width: 0; max-width: 240Px; color: var(--text-tertiary); font-size: 12Px; line-height: 18Px; }
@@ -31,8 +26,4 @@
 .theme-day .spot-horizon__summary { color: #5e655f; background: #e8f0eb; }
 .theme-day .spot-horizon__summary--partial { color: #9a6700; background: #fff4e5; }
 .theme-day .spot-horizon__disclaimer { color: #6d746d; }
-.theme-day .spot-horizon .source-disclosure { border-color: #f0f3f1; background: #f7faf8; }
-.theme-day .spot-horizon .source-disclosure__summary { color: #5e655f; }
-.theme-day .spot-horizon .source-disclosure__body { border-color: #e8ece9; background: #fafcfa; }
-.theme-day .spot-horizon .source-disclosure__note { color: #6d746d; }
 .theme-day .spot-horizon__state { background: rgba(255,255,255,.95); }

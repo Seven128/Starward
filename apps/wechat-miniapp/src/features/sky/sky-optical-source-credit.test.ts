@@ -103,6 +103,7 @@ const moduleExports: Record<string, unknown> = {};
 vm.runInNewContext(componentCode, { exports: moduleExports, require(name: string) {
   if (name === "react/jsx-runtime") return { jsx, jsxs: jsx };
   if (name === "@tarojs/components") return { Button: "button", Text: "text", View: "view" };
+  if (name === "@/components/source-button") return { SourceButton: ({ onOpen, ...props }: { onOpen: () => void }) => jsx("button", { ...props, onClick: onOpen }) };
   throw new Error(`unexpected_component_dependency:${name}`);
 } });
 const Credit = moduleExports.SkyOpticalImageCredit as (props: {

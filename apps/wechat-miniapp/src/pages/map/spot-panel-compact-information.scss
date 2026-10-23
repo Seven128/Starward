@@ -1,0 +1,38 @@
+// Adopted R19 DAY composition. Scientific values, time and document ownership
+// remain in the existing panel; other themes retain their original groups.
+.spot-panel__compact-heading { display: flex; align-items: center; justify-content: space-between; gap: 12Px; }
+.spot-panel__compact-credit { display: flex; align-items: center; justify-content: space-between; flex: 1 0 100%; width: 100%; min-width: 0; gap: 8Px; }
+.spot-panel__compact-credit > .source-attribution { flex: 1; min-width: 0; }
+
+.theme-day.map-page .spot-panel--formal .spot-panel__section {
+  .spot-panel__block--astronomy-card { margin: 0 0 10Px; padding: 12Px 16Px; }
+  .spot-panel__astronomy-heading { margin: 16Px 0 10Px; }
+  .spot-panel__compact-heading { min-height: 34Px; margin: 0 0 4Px; }
+  .spot-panel__compact-heading > .type-label { margin: 0; padding: 0; color: #353742; font-size: 16Px; font-weight: 600; line-height: 24Px; }
+  .spot-panel__moon-inset { display: grid; grid-template-columns: 100Px minmax(0, 1fr); gap: 12Px; padding: 12Px; }
+  .spot-panel__moon-summary { grid-row: 1 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8Px; margin: 0; padding: 0; text-align: center; }
+  .spot-panel__moon-image { width: 43Px; height: 43Px; flex-basis: 43Px; }
+  .spot-panel__moon-name { font-size: 15Px; }
+  .spot-panel__moon-copy > .type-caption { margin: 4Px 0 0; font-size: 12Px; line-height: 19Px; }
+  .spot-panel__moon-events { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10Px; margin: 0; padding: 0; border: 0; }
+  .spot-panel__moon-events > view { gap: 4Px; }
+  .spot-panel__moon-events .type-caption { font-size: 12Px; }
+  .spot-panel__moon-events .type-body { font-size: 13Px; line-height: 20Px; }
+  .spot-panel__block--moon .spot-panel__metric-grid { grid-column: 2; gap: 10Px; margin: 0; padding: 0; border: 0; }
+  .spot-panel__block--moon .spot-panel__metric > .type-secondary { font-size: 12Px; }
+  .spot-panel__block--moon .spot-panel__metric > .type-body,
+  .spot-panel__block--moon .spot-panel__metric-value { font-size: 15Px; line-height: 22Px; }
+  .spot-panel__block--professional-matrix > .type-caption { margin: 0; font-size: 12Px; line-height: 20Px; }
+  .spot-panel__weather-matrix { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18Px 12Px; margin: 12Px 0; padding: 14Px 12Px; border-radius: 14Px; background: #fafbfc; }
+  .spot-panel__weather-matrix .spot-panel__metric { min-width: 0; gap: 3Px; margin: 0; padding: 0; border: 0; }
+  .spot-panel__weather-matrix .spot-panel__metric > .type-secondary { color: #7b8592; font-size: 13Px; line-height: 20Px; font-weight: 400; }
+  .spot-panel__weather-matrix .spot-panel__metric-value { color: #334353; font-size: 20Px; line-height: 26Px; font-weight: 600; }
+  .spot-panel__weather-matrix .spot-panel__metric-unit { margin-left: 3Px; font-size: 12Px; font-weight: 400; }
+  .spot-panel__measurement-note { margin: 4Px 0 0; font-size: 12Px; line-height: 20Px; }
+  .spot-panel__sky-source-reading { display: flex; align-items: center; justify-content: space-between; gap: 8Px; padding: 0 16Px; }
+  .spot-panel__sky-source-reading > .source-attribution { flex: 1; min-width: 0; }
+}
+@media (max-width: 340px) {
+  .theme-day.map-page .spot-panel--formal .spot-panel__section .spot-panel__weather-matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .theme-day.map-page .spot-panel--formal .spot-panel__section .spot-panel__moon-inset { grid-template-columns: 84Px minmax(0, 1fr); }
+}

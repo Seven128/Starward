@@ -59,6 +59,7 @@ import {
   type ProfileLinkId,
   type RouteEstimateRequest,
   type SearchData,
+  type SkyGeometryWindowMode,
   type SourceSummary,
   type SpotDetail,
   type SpotFilterEvidence,
@@ -154,11 +155,11 @@ import { QWeatherAirQualityAdapter, type AirQualityPort } from "./air-quality-pr
 import { SpotEnvironmentService } from "./spot-environment-service.ts";
 import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-reminder-schedule.ts";
 import { readFile } from "node:fs/promises";
-import { terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable } from "./terrain-publication.ts";
+import { terrainOverlayData } from "./terrain-publication.ts";
 import { TerrainService, type TerrainPort } from "./terrain-service.ts";
 import { terrainHorizonData } from "./terrain-horizon-data.ts";
 import { NightLightService, nightLightUnavailable } from "./night-light-service.ts";
-import { terrainBounds } from "./terrain-request.ts";
+import { terrainBounds, validateTerrainPreviewRequest } from "./terrain-request.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
   AstronomicalEventCatalogOwner,
@@ -1042,9 +1043,8 @@ export class MiniappService {
     ]);
     signal?.throwIfAborted();
     const publication = terrainRead.status === "fulfilled" ? terrainRead.value : null;
-    const terrainCovered = publication !== null && terrainRequestIsCovered(publication, input);
-    const terrainReadFailed = terrainRead.status === "rejected" || Boolean(publication?.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND"));
-    const terrainSource = terrainCovered ? terrainPublicationSource(publication) : null;
+    const terrainData = terrainOverlayData(input, publication, terrainRead.status === "rejected");
+    const terrainSource = terrainData.source;
     const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value.cells : [];
     const fixedLight = lightRead.status === "fulfilled" ? lightRead.value.fixed : null;
     const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
@@ -1064,32 +1064,7 @@ export class MiniappService {
     });
     const source = fixedLight?.source ?? darkSkyCells[0]?.source ?? null;
     const data: TerrainOverlayData = {
-      ...(terrainCovered ? {
-      state: publication.validPixelPercent < 99.9 || publication.sourceIssues?.length ? "PARTIAL" : "AVAILABLE",
-      purpose: input.purpose,
-      requestedRadiusKm: input.radiusKm ?? null,
-      effectiveRadiusKm: input.radiusKm ?? null,
-      centerGcj02: input.center,
-      publicationId: publication.publicationId,
-      datasetVersion: publication.dataset,
-      sourceProvider: publication.sourceProvider,
-      sourceResolution: publication.sourceResolution,
-      derivedResolutionM: publication.derivedResolutionM,
-      derivedAt: publication.derivedAt,
-      coordinateTransformVersion: publication.transformVersion,
-      imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
-      imageBytes: publication.image.byteSize,
-      imageSha256: publication.image.sha256,
-        imageStyle: publication.imageStyle ?? "ELEVATION_COLOR",
-      imageBoundsGcj02: publication.boundsGcj02,
-      elevationM: publication.elevationM,
-      elevationColorEncoding: publication.elevationColorEncoding ?? null,
-      coverageLabel: input.viewportBounds ? `已读取当前地图视窗，有效地形${publication.validPixelPercent}%。`
-        : `已发布中心周边 ${publication.maximumRadiusKm!.toFixed(0)} km，当前查看 ${input.radiusKm!.toFixed(1)} km。`,
-      limitations: publication.limitations,
-      source: terrainSource,
-      } : terrainUnavailable(input, terrainRead.status === "rejected" ? "地形数据读取失败，请重试。" : "当前地区暂无可获取的地形数据。")),
-      ...(terrainReadFailed ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
+      ...terrainData,
       lightPollution: {
         state: fixedLight ? fixedLight.state === "FRESH" ? "AVAILABLE" : fixedLight.state === "UNAVAILABLE" ? "UNAVAILABLE" : "PARTIAL"
           : lightCells.length ? "PARTIAL" : "UNAVAILABLE",
@@ -1111,6 +1086,26 @@ export class MiniappService {
       assetSha256: publication?.image.sha256 ?? null, fixedWindow: Boolean(publication?.fixedWindow), sourceObjects: publication?.sources.length ?? 0 });
     return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 && !fixedLight?.raster ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),
       [...data.limitations, ...(lightRead.status === "rejected" ? [data.lightPollution.coverageLabel] : [])]);
+  }
+
+  async getTerrainOverlayPreview(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainOverlayData>> {
+    validateTerrainPreviewRequest(input);
+    const startedAt = performance.now();
+    let preview: Awaited<ReturnType<TerrainPort["getPreviewPublication"]>> = null, failed = false;
+    try { preview = await this.terrain.getPreviewPublication(input, signal); }
+    catch { signal?.throwIfAborted(); failed = true; }
+    signal?.throwIfAborted();
+    const data = terrainOverlayData(input, preview?.publication ?? null, failed);
+    if (preview) {
+      data.preview = { requestedZoom: preview.requestedZoom, imageZoom: preview.imageZoom };
+      data.coverageLabel = "已取得当前范围的较粗地形，细节仍需独立读取。";
+    } else if (!failed) {
+      data.coverageLabel = "当前范围没有已发布的较粗地形；继续读取所需细节。";
+      data.limitations = [data.coverageLabel];
+    }
+    this.telemetry.event("terrain_preview_read", { milliseconds: performance.now() - startedAt, state: data.state,
+      assetSha256: preview?.publication.image.sha256 ?? null, requestedZoom: preview?.requestedZoom ?? null, imageZoom: preview?.imageZoom ?? null });
+    return envelope(data, preview ? "PARTIAL" : "UNAVAILABLE", data.source ? [data.source] : [], data.limitations);
   }
 
   async getTerrainHorizon(input: TerrainHorizonRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainHorizonData>> {
@@ -1820,9 +1815,10 @@ export class MiniappService {
     return result;
   }
 
-  async getSkyGeometryWindow(spotId: string, contextId: string, at: string, userId?: UserId | null) {
+  async getSkyGeometryWindow(spotId: string, contextId: string, at: string, userId?: UserId | null,
+    mode?: SkyGeometryWindowMode) {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
-    const result = await this.astronomy.computeGeometryWindow(context, at, proposal?.detail, proposal?.id);
+    const result = await this.astronomy.computeGeometryWindow(context, at, proposal?.detail, proposal?.id, mode);
     // Legacy MAP_POINT proposal Contexts have no privateProposal marker. Reuse
     // the complete current access boundary after the asynchronous geometry
     // read so consent/attempt withdrawal cannot publish an old private result.

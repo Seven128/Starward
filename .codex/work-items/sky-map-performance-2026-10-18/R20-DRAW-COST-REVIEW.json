@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "starward-r20-draw-cost-review-v1",
+  "date": "2026-10-21",
+  "reviewer": "review_r20_draw_cost_spans",
+  "scope": "TASK_ONLY_DRAW_COST_OBSERVATION_NOT_PRODUCT_ACCEPTANCE",
+  "decision": "no-P1-P2-found-ready-for-root-integration-and-target-sample",
+  "findings": [],
+  "reviewedFiles": [
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/R20-DRAW-COST-IMPLEMENTATION.md", "sha256": "83703633e9766e1675ae184f1265d19ae80521a72c3263f4c89b073bd0357281"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-observations.ts", "sha256": "1dc45a4dd69986f692080d000c2567659ec6f96d62322087defd6598a4ee8508"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-instrumentation.mjs", "sha256": "1fc3a33eb0d0f4c4b9a1944b61f3bc65d30d62a2a76b78e03acceab444978730"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-protocol.mjs", "sha256": "2e2b11135c7ed91dfc71673fdbb7d37f475192ef7db82eec762ddc09e6708b57"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs", "sha256": "8ce6c7c4773a905985b0b68089662f878e03c4982b9fd6ed36f8100c52b3148f"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs", "sha256": "59d1df2944ede125e0becc079520ecdd36d4c35a1ddc19f77557544617a5f854"},
+    {"path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-baseline-v3-fixture.mjs", "sha256": "2b73c34762b69d461f122bcfddf5fd91a31bef923a508b984db13db66759cfd3"},
+    {"path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts", "sha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80"},
+    {"path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts", "sha256": "3aed31102c4ffd1437e3648f21d158a2893245112d24a0b9bf770cfb844a92c1"},
+    {"path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts", "sha256": "c164b7e3f73dd58ee10f9e97332d392a918d41f4f7c3ff71c66f50913ed7410a"}
+  ],
+  "checks": {
+    "selectedExistingTests": {
+      "command": "node --test --test-name-pattern='r20 executes real BSC|r20 actual writer scopes|r20 complete receipt remains' .codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+      "passed": 3,
+      "failed": 0,
+      "exitCode": 0,
+      "durationMs": 675.6223
+    },
+    "independentControlledClockCounterexamples": {
+      "target": "current createR20DrawCosts loaded through TypeScript transpilation and vm",
+      "passed": 5,
+      "failed": 0,
+      "cases": [
+        "nested paint classified unknown; original outer draw remains inclusive",
+        "reused admission classified unknown rather than stale effect",
+        "submit after synchronous paint return is unbound",
+        "unknown bit wins over effect",
+        "Stop and new run prevent old span from writing into new aggregates"
+      ]
+    },
+    "existingReceiptCapacityExample": {
+      "sourceBasename": "baseline-r17-1-qjrmi38yd9.json",
+      "existingR19Bytes": 22052,
+      "fixedExtensionMinimalRunBytes": 3250,
+      "repackedExampleBytes": 25302,
+      "maxBytesUnchanged": 32768,
+      "meaning": "one unbound draw in a minimal synthetic extension; capacity cross-check only, not a new phone sample or exhaustive size bound"
+    }
+  },
+  "notPerformed": ["production edits", "phone or IDE operation", "service changes", "full author 32-test suite", "full strict typecheck rerun", "complete candidate build", "preview push", "data upload", "commit"],
+  "requiredNext": [
+    "root integrates current source and completes candidate build",
+    "reload existing bridge protocol module before new r20 collection",
+    "qualify actual nonempty phone r20 receipt and valid/unknown stage coverage",
+    "interpret nested inclusive elapsed within its actual workload window"
+  ],
+  "stillUnverified": ["phone flow and visual behavior", "six-field and cross-day fluidity", "GPU or physical presentation cost", "memory retention and leak requirements", "parallel Map implementation"]
+}

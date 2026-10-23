@@ -1,0 +1,198 @@
+[
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\map-corner-03-390.png",
+    "sha256": "12EB21008BFE62E7D18CB4CC2F975A0C1903FEE9044FA7EA401632392A6C65D7",
+    "bytes": 100794,
+    "kind": "exact_remote_duplicate",
+    "remote": "map\\candidates\\context-audit-2026-09-09\\reference\\map-current-2026-09-09.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\map-layer.png",
+    "sha256": "ECC0F49961811BDAF9E4E6078F7F5976DE00B7D6F73DB0DD6D7AF7B7C0808E76",
+    "bytes": 61582,
+    "kind": "exact_remote_duplicate",
+    "remote": "map\\candidates\\context-audit-2026-09-09\\reference\\map-layer.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\map-long-320.png",
+    "sha256": "35D01936416250F94CD22A978D1B3B141C1F836DC142B8FBC370A875D991B621",
+    "bytes": 60717,
+    "kind": "exact_remote_duplicate",
+    "remote": "map\\candidates\\context-audit-2026-09-09\\reference\\map-long-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\map-pending-fixed430.png",
+    "sha256": "065C06FDD9823732326772B28F9683A5D05689B8C6094E52F99A9235F552F6B1",
+    "bytes": 101464,
+    "kind": "exact_remote_duplicate",
+    "remote": "map\\candidates\\context-audit-2026-09-09\\reference\\map-pending-fixed430.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-320.png",
+    "sha256": "3B9EC9E9F6EA550D1A3C3A62994F3D6E8FDC879BE657963BC0DAE096E14E848C",
+    "bytes": 150932,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\ongoing-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-375.png",
+    "sha256": "3BF252251EC0C684E6F69F369AB394F3D07F5711C019A7D3297D98AA275020C8",
+    "bytes": 169591,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\ongoing-375.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-390.png",
+    "sha256": "59B4A0D031812707154536EBECD8A3017FF393CC1CAE6013ACA66CEECEA3CE47",
+    "bytes": 174251,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\ongoing-390.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-430.png",
+    "sha256": "2BC43187791500FA82D4F92B1C312D3B95B9A3BAD5D9AC96E896948E4C2A3025",
+    "bytes": 184401,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\ongoing-430.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-error.png",
+    "sha256": "335A4CB2D9D77C94823B0E3A9559D62D7348A98290C67128DD8B719B40F93421",
+    "bytes": 186092,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\error.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-glass-07-390.png",
+    "sha256": "465240B0DF8238222E53F5C524E3F2A6512A6F0E02BEAB2A05D5266AE6A8D946",
+    "bytes": 178484,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\my-current-2026-09-09.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\my-long-320.png",
+    "sha256": "8AF1501E6FC5E6C7F0DB310B700514A738C26DDA34307C87EDBBF9D5EA0758FD",
+    "bytes": 153099,
+    "kind": "exact_remote_duplicate",
+    "remote": "my\\candidates\\context-audit-2026-09-09\\reference\\long-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\plan-detail-320.png",
+    "sha256": "6CC6F811BBFA8169844C296EB13ABC8B41D7F45DA0370519B21D62D8F2BDA2F4",
+    "bytes": 36254,
+    "kind": "exact_remote_duplicate",
+    "remote": "plan\\candidates\\context-audit-2026-09-09\\reference\\plan-detail-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\plan-detail-375.png",
+    "sha256": "1F92D4A7E4D50638843B7B775B104494BCEB556D6A6F1FE6183EB7DE992B2A5E",
+    "bytes": 36716,
+    "kind": "exact_remote_duplicate",
+    "remote": "plan\\candidates\\context-audit-2026-09-09\\reference\\plan-detail-375.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\plan-detail-390.png",
+    "sha256": "8212A143395F63D05416CBA509B54F768E2777A910030D949D17363C486F8F68",
+    "bytes": 36583,
+    "kind": "exact_remote_duplicate",
+    "remote": "plan\\candidates\\context-audit-2026-09-09\\reference\\plan-detail-390.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\plan-detail-430.png",
+    "sha256": "D268970F7B7BA61E4F4386C44E3C7B542D7CD9A99A79F13C01ABD89C744B53BB",
+    "bytes": 36442,
+    "kind": "exact_remote_duplicate",
+    "remote": "plan\\candidates\\context-audit-2026-09-09\\reference\\plan-detail-430.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\plan-editor-long-320.png",
+    "sha256": "48369280E4BAED10BD3151F7BDB105DA3BC7EF7364303B3447919C39D59AB1FE",
+    "bytes": 27555,
+    "kind": "exact_remote_duplicate",
+    "remote": "plan\\candidates\\context-audit-2026-09-09\\reference\\plan-editor-long-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\plan-feedback-390.png",
+    "sha256": "AE92E733B8AED09D0947551128742DE3C390B4B333ADE83D730D64B97F0EB0A0",
+    "bytes": 32127,
+    "kind": "exact_remote_duplicate",
+    "remote": "plan\\candidates\\context-audit-2026-09-09\\reference\\plan-current-2026-09-09.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\search-final-05-390.png",
+    "sha256": "C1804725335DDD31BF681A2681142FBD16C67DBA03C4967C36CE52CD71540627",
+    "bytes": 86114,
+    "kind": "exact_remote_duplicate",
+    "remote": "search\\candidates\\context-audit-2026-09-09\\reference\\search-current-2026-09-09.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-320.png",
+    "sha256": "E53AF1E03F34ECC79CDECEFFDBCFAC231A637FCE73C7C10ED21C845161F9FE9E",
+    "bytes": 18139,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-375.png",
+    "sha256": "DE93EECDBA8C3EA4809FCCE755BD24017FF820BE8F6A0179A9941D8546DC615A",
+    "bytes": 19062,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-375.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-390.png",
+    "sha256": "F302381556559A2F69465142EB61AE18535A07DCB4C2D505A5DF63FBFD14314D",
+    "bytes": 19566,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-390.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-430.png",
+    "sha256": "F838052FBD438DEFD6B48D631EC626F11123A532FF0D4D1445D28AD7996050D5",
+    "bytes": 20404,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-430.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-glass-07-390.png",
+    "sha256": "856994D2307B5E07384A8FC1C2CA747475C0631FE789DE192BA053BBE8C6A8A2",
+    "bytes": 60235,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-current-2026-09-09.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-long-320.png",
+    "sha256": "2380C1BA8D7251E3D8129D84BB5988955877402F1F7C389F033E07E94ACBD13B",
+    "bytes": 20044,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-long-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-red-320.png",
+    "sha256": "02A41F1731D00170D44103BF9DC43DD82D89BC2335C9F3C8A6E2CA819CA5B9D3",
+    "bytes": 15458,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-red-320.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\work-items\\context-design-audit-2026-09-09\\output\\playwright\\sky-stitch.png",
+    "sha256": "47635C8882528B87C37A3919E18C610B040F575F2CA87500C758E4470D4AA29A",
+    "bytes": 85939,
+    "kind": "exact_remote_duplicate",
+    "remote": "sky\\candidates\\context-audit-2026-09-09\\reference\\sky-stitch.png"
+  },
+  {
+    "path": "D:\\dev\\Starward\\.codex\\task-notes\\design-scenarios-20261014\\consistency-after-basic-20261015.jpg",
+    "sha256": "CB325D16A4DE284A752C58C21AE565B0E79730C0E85A49BF6548AA0BF18F9AF2",
+    "bytes": 44694,
+    "kind": "exact_remote_duplicate",
+    "remote": "shared\\real-scenarios\\current-facilities.jpg"
+  },
+  {
+    "path": "D:\\dev\\Starward\\docs\\design-resources\\wechat-miniapp\\feedback\\adopted\\spot-feedback\\__pycache__\\server.cpython-313.pyc",
+    "sha256": "1675AF1C2E4515D104196AE72AF9F3FC64BB480E5A3436687780384330FD3670",
+    "bytes": 11202,
+    "kind": "derived_python_cache",
+    "remote": "feedback\\adopted\\spot-feedback\\server.py"
+  }
+]

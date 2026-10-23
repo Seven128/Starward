@@ -11,6 +11,7 @@ export const MINIAPP_API_OPERATIONS = {
   mapSceneGet: { method: "GET", path: "/map/scene" },
   mapNightLightGet: { method: "GET", path: "/map/night-light" },
   terrainOverlayGet: { method: "GET", path: "/terrain/overlay" },
+  terrainOverlayPreviewGet: { method: "GET", path: "/terrain/overlay/preview" },
   terrainHorizonGet: { method: "GET", path: "/terrain/horizon" },
   terrainAssetGet: { method: "GET", path: "/terrain/assets/{file}" },
   nightLightAssetGet: { method: "GET", path: "/night-light/assets/{datasetVersion}/{file}" },
@@ -146,6 +147,7 @@ export interface MiniappApiOperationTypes {
   mapSceneGet: { request: MapSceneRequest; response: ApiEnvelope<MapSceneData> };
   mapNightLightGet: { request: MapNightLightRequest; response: ApiEnvelope<MapLayerData> };
   terrainOverlayGet: { request: TerrainOverlayRequest; response: ApiEnvelope<TerrainOverlayData> };
+  terrainOverlayPreviewGet: { request: TerrainOverlayRequest; response: ApiEnvelope<TerrainOverlayData> };
   terrainHorizonGet: { request: TerrainHorizonRequest; response: ApiEnvelope<TerrainHorizonData> };
   terrainAssetGet: { request: void; response: ApiEnvelope<TerrainAssetData> };
   nightLightAssetGet: { request: void; response: NightLightAssetData };

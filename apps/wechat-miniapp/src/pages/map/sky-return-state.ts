@@ -13,6 +13,8 @@ export interface MapPanelReturnPosition {
   top: number;
   galleryIdentity: string;
   left: number;
+  /** A stable content block and its viewport offset, never resource payload. */
+  anchor?: { id: string; offset: number };
 }
 
 export interface MapSkyReturnPanel {

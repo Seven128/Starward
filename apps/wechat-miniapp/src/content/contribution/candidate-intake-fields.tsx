@@ -1,4 +1,5 @@
-import { Button, Input, Text, View } from "@tarojs/components";
+import { Input, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { ContributionFormalFieldKey } from "@starward/miniapp-contracts";
 import { ToggleField } from "@/components/toggle-field";
 import { SpotDocumentField } from "../spot-document-fields";

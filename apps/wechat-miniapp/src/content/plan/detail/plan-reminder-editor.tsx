@@ -1,4 +1,5 @@
-import { Button, Input, Text, View } from "@tarojs/components";
+import { Input, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { PlanReminder } from "@starward/miniapp-contracts";
 import { useEffect, useRef, useState } from "react";
 import "./plan-reminder-editor.scss";

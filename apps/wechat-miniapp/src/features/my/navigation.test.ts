@@ -21,7 +21,8 @@ test("My serializes competing entries and permits retry after native navigation 
     dismissNotification: (id: string) => { dismissed.push(id); state.notifications = state.notifications.filter(item => item.id !== id); },
   };
   const store = { getState: () => state, subscribe: () => () => {} };
-  const page = {};
+  let foreground = true;
+  const page = { isCurrent: () => foreground };
   const load = (file: string): any => {
     const module = { exports: {} };
     vm.runInNewContext(ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), {
@@ -35,7 +36,8 @@ test("My serializes competing entries and permits retry after native navigation 
       default: { getCurrentPages: () => [page], navigateTo: ({ url }: { url: string }) => {
         urls.push(url); return new Promise<void>((resolve, reject) => calls.push({ resolve, reject }));
       } },
-    } : name.endsWith("use-page-navigation") ? load("../../hooks/use-page-navigation.ts") : name.includes("api-client") ? { currentDraftUserId: () => "a" } : { useAppStore: store },
+    } : name.endsWith("page-presentation") ? { usePresentedPageLifecycle: () => ({ isCurrent: () => foreground, identity: () => page }) }
+      : name.endsWith("use-page-navigation") ? load("../../hooks/use-page-navigation.ts") : name.includes("api-client") ? { currentDraftUserId: () => "a" } : { useAppStore: store },
   });
     return module.exports;
   };
@@ -54,6 +56,7 @@ test("My serializes competing entries and permits retry after native navigation 
     recordAcceptanceDiagnostic: () => {},
     notify: (notice: unknown) => notices.push(notice),
     useAppStore: store,
+    page,
   });
   // Event adapters intentionally return void. Await their real native-navigation
   // promise without replacing the serialization, owner checks or feedback path.
@@ -77,6 +80,12 @@ test("My serializes competing entries and permits retry after native navigation 
   calls[2]!.resolve(); await next;
   assert.ok(state.notifications.includes(renewed));
   assert.deepEqual(dismissed, ["mine"]);
+  foreground = false;
+  const before = urls.length, logins = authenticatedOwners.length;
+  run("/content/contribution/index", "反馈页面", "contribution");
+  entries.openSettings();
+  assert.equal(urls.length, before, "retained My callbacks cannot navigate after logical foreground retirement");
+  assert.equal(authenticatedOwners.length, logins, "hidden My cannot start login");
 });
 
 test("My root exposes only the adopted plan, contribution, and settings destinations", () => {

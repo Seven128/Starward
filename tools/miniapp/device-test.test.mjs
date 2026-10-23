@@ -370,8 +370,13 @@ test("pixel coordinates, PNG header and swipe duration have explicit bounds", as
   assert.throws(() => pngSize(Buffer.from("private tool failure")), /screenshot_invalid/u);
   const { driver, calls } = adbDriver(); await driver.select();
   const capture = { activity, size: { width: 1080, height: 2400 } };
-  await assert.rejects(driver.input("swipe", [0, 0, 1, 1, 0], capture), /duration_invalid/u);
+  for (const duration of [0, 99, 10001, 8000.5, NaN, Infinity])
+    await assert.rejects(driver.input("swipe", [0, 0, 1, 1, duration], capture), /duration_invalid/u);
   assert.ok(!calls.some((args) => args.includes("input")));
+  for (const duration of [100, 8000, 10000]) {
+    await driver.input("swipe", [0, 0, 1, 1, duration], capture);
+    assert.deepEqual(calls.at(-1), ["-s", "private-serial", "shell", "input", "swipe", "0", "0", "1079", "2399", String(duration)]);
+  }
   await driver.input("tap", [0.5, 0.5], capture);
   assert.deepEqual(calls.at(-1), ["-s", "private-serial", "shell", "input", "tap", "540", "1200"]);
 });

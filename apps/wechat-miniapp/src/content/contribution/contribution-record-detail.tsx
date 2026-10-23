@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useState } from "react";
 import Taro from "@tarojs/taro";
 import { CONTRIBUTION_FORMAL_FIELD_KEYS, type ContributionSubmission } from "@starward/miniapp-contracts";

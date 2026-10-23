@@ -1,0 +1,289 @@
+{
+  "schema": "starward-r19-native-overlay-phone-review-v1",
+  "reviewedAt": "2026-10-20T22:27:22.775Z",
+  "scope": "Read-only independent review of saved phone raster pan; no device/IDE/service actions, uploads, commit or production edits.",
+  "candidate": {
+    "mode": "normal",
+    "generation": 27,
+    "sourceSha256": "ba176fb416984bf3b2a05c40c2038c08dd477c0abc93b49994e7dd84219be155",
+    "bundleSha256": "20bbc94bcbda9269ae134e34bd0fd75bc4386d814ec4b9d4564188da5d4b10e4",
+    "manifest": "D:/dev/Starward/.codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r19-usb/manifest.json",
+    "manifestSha256": "2e0b5c14df11312c2d57122f8dc52a3901c58124c2825f2358f456d680835778",
+    "bindings": [
+      {
+        "file": "apps/wechat-miniapp/src/pages/map/map-ground-overlay.ts",
+        "productionSha256": "926db5713481f8dd2dc05c10e8c96d312578b5754d5edbdd878b0685050a4a25",
+        "currentSha256": "926db5713481f8dd2dc05c10e8c96d312578b5754d5edbdd878b0685050a4a25",
+        "frozenInstrumentedSha256": "926db5713481f8dd2dc05c10e8c96d312578b5754d5edbdd878b0685050a4a25"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts",
+        "productionSha256": "259648453b5df1f531bd0d49e3f66d3a26344a875de7fe1bd41ba0b38526667c",
+        "currentSha256": "259648453b5df1f531bd0d49e3f66d3a26344a875de7fe1bd41ba0b38526667c",
+        "frozenInstrumentedSha256": "1f89d690b77a622d78c047858cfa452db0a826f8c5e3c738fc514a8a32ab6835"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/pages/map/index.tsx",
+        "productionSha256": "cef1c112b0a8271ec5a2eca780844c325920911141c51c46972cbdc744c3dc58",
+        "currentSha256": "cef1c112b0a8271ec5a2eca780844c325920911141c51c46972cbdc744c3dc58",
+        "frozenInstrumentedSha256": "3378614ccfec8dc7d2925e4c6e4dc9b32a83e07aaf8c3b2fcda143c5d2705e7c"
+      }
+    ]
+  },
+  "evidence": {
+    "privateDirectory": "C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/r19-native-update/pan-review",
+    "preservation": "preservation.json",
+    "originalCount": 5,
+    "totalBytes": 5944397,
+    "allReadbackVerified": true,
+    "files": [
+      {
+        "name": "recording-1792534559334.mp4",
+        "bytes": 1876593,
+        "sha256": "5cb9f302083cc2f7510ef7f51a8ab000d8909e95df6fada93cb5504f3da77671",
+        "readbackSha256": "5cb9f302083cc2f7510ef7f51a8ab000d8909e95df6fada93cb5504f3da77671",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-e0ab02e3-6661-4797-bcd6-9e63cac02fcb.png",
+        "bytes": 1029079,
+        "sha256": "139ed247a381a3e402380c8433107680f32aabef4fec1dc006e3ad0b2261f8a6",
+        "readbackSha256": "139ed247a381a3e402380c8433107680f32aabef4fec1dc006e3ad0b2261f8a6",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-6a936486-1386-4641-bb6f-f8c49f74c52b.png",
+        "bytes": 1875087,
+        "sha256": "9a925c6a8f60a46eb85e199a08e850089932dedc2a4599e5fedec943115bc911",
+        "readbackSha256": "9a925c6a8f60a46eb85e199a08e850089932dedc2a4599e5fedec943115bc911",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-c54c597d-07fd-4992-b313-74c4d98f28d3.png",
+        "bytes": 1160341,
+        "sha256": "4c8ad060fe02925b6be80dfe8ed1f5219dd9f09973dc3389efe9bf901b1f7090",
+        "readbackSha256": "4c8ad060fe02925b6be80dfe8ed1f5219dd9f09973dc3389efe9bf901b1f7090",
+        "readbackVerified": true
+      },
+      {
+        "name": "region-r17-region-ba176fb41698-1792534548515.json",
+        "bytes": 3297,
+        "sha256": "6202151b8fd8b508ece5eb9172e2079694a40a5f1dab0d8f73f88b60ba6350b0",
+        "readbackSha256": "6202151b8fd8b508ece5eb9172e2079694a40a5f1dab0d8f73f88b60ba6350b0",
+        "readbackVerified": true
+      }
+    ],
+    "video": {
+      "file": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r19-native-update\\pan-review\\recording-1792534559334.mp4",
+      "bytes": 1876593,
+      "sha256": "5cb9f302083cc2f7510ef7f51a8ab000d8909e95df6fada93cb5504f3da77671",
+      "duration": 4.542667,
+      "width": 1080,
+      "height": 2376,
+      "frames": [
+        {
+          "name": "hold-0_050000.png",
+          "target": 0.05,
+          "currentTime": 0.05,
+          "media": {
+            "mediaTime": 0.0388,
+            "presentedFrames": 2
+          }
+        },
+        {
+          "name": "hold-0_350000.png",
+          "target": 0.35,
+          "currentTime": 0.35,
+          "media": {
+            "mediaTime": 0.3383,
+            "presentedFrames": 3
+          }
+        },
+        {
+          "name": "hold-0_700000.png",
+          "target": 0.7,
+          "currentTime": 0.7,
+          "media": {
+            "mediaTime": 0.6898,
+            "presentedFrames": 4
+          }
+        },
+        {
+          "name": "hold-1_050000.png",
+          "target": 1.05,
+          "currentTime": 1.05,
+          "media": {
+            "mediaTime": 1.036067,
+            "presentedFrames": 5
+          }
+        },
+        {
+          "name": "hold-1_400000.png",
+          "target": 1.4,
+          "currentTime": 1.4,
+          "media": {
+            "mediaTime": 1.384789,
+            "presentedFrames": 6
+          }
+        },
+        {
+          "name": "hold-1_750000.png",
+          "target": 1.75,
+          "currentTime": 1.75,
+          "media": {
+            "mediaTime": 1.734022,
+            "presentedFrames": 7
+          }
+        },
+        {
+          "name": "hold-2_100000.png",
+          "target": 2.1,
+          "currentTime": 2.1,
+          "media": {
+            "mediaTime": 2.085878,
+            "presentedFrames": 8
+          }
+        },
+        {
+          "name": "hold-2_500000.png",
+          "target": 2.5,
+          "currentTime": 2.5,
+          "media": {
+            "mediaTime": 2.488344,
+            "presentedFrames": 9
+          }
+        },
+        {
+          "name": "hold-3_000000.png",
+          "target": 3,
+          "currentTime": 3,
+          "media": {
+            "mediaTime": 2.989611,
+            "presentedFrames": 10
+          }
+        },
+        {
+          "name": "hold-3_500000.png",
+          "target": 3.5,
+          "currentTime": 3.5,
+          "media": {
+            "mediaTime": 3.487244,
+            "presentedFrames": 11
+          }
+        },
+        {
+          "name": "hold-4_000000.png",
+          "target": 4,
+          "currentTime": 4,
+          "media": {
+            "mediaTime": 3.986111,
+            "presentedFrames": 12
+          }
+        },
+        {
+          "name": "hold-4_492667.png",
+          "target": 4.492667,
+          "currentTime": 4.492667,
+          "media": {
+            "mediaTime": 4.4814,
+            "presentedFrames": 13
+          }
+        }
+      ],
+      "limits": "Local video media timestamps only. Decoded samples are not physical application FPS. Input release is not independently timestamped by this decoder."
+    },
+    "additionalVideoSamples": "additional-video-samples.json",
+    "apiContextExcerpt": "api-context-excerpt.private.json",
+    "terrainWaitFullRowsAvailable": false,
+    "denseMarkerSamples": "dense-marker-samples.json",
+    "denseMarkerSheet": "dense-marker-sheet.jpg"
+  },
+  "action": {
+    "kind": "pan",
+    "requestedFrom": [
+      0.66,
+      0.34
+    ],
+    "requestedTo": [
+      0.14,
+      0.34
+    ],
+    "requestedDurationMs": 1400,
+    "requestedRecordingSeconds": 10,
+    "confirmedRegionGestureMs": 1407,
+    "regionClock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "beginWindow": "MAP:window:12-3345-1783-1-2",
+    "endWindow": "MAP:window:12-3345-1783-2-2",
+    "nativeUpdatedEvents": 0,
+    "viewportDimensionsUnchanged": true
+  },
+  "findings": {
+    "oldCoverage": "Retained terrain relief/light tint moves with base map in inspected samples; no observed whole-surface overlay clearing.",
+    "edgeGap": "Visible right-side hard boundary and missing relief from at least media 3.289778s through 4.144100s; about one fifth of width at settled camera. Filled by inspected media 4.193833s.",
+    "transition": "Same covered geography remains visually consistent, no obvious gross displacement or double-darkening in sampled frames. This does not prove single native id or pixel-exact transparency.",
+    "postAck": "Video ends at 4.542667s, close to final marker; independent later still shows filled coverage. Sustained stability and rapid repeated pan/zoom not covered.",
+    "method": "Terrain update branch confirmed by decoded TW7 native_pending A5 1849ms at media 4.210700s and following TW8 native_ack A5 1883ms at 4.227256s. The frozen source emits pending only immediately before same-id update dispatch, and the hook emits this terrain observer only for the terrain consumer. Numeric id and actual light method remain unexported.",
+    "memory": "unverified: no heap/retention, native/GPU or repeated lifecycle evidence in this clip."
+  },
+  "markerSamples": [
+    {
+      "mediaSeconds": 2.339156,
+      "text": "TW armed gesture"
+    },
+    {
+      "mediaSeconds": 2.388863,
+      "text": "TW 1 action A1 1ms"
+    },
+    {
+      "mediaSeconds": 3.986111,
+      "text": "TW 2 metadata_start A? 1499ms"
+    },
+    {
+      "mediaSeconds": 4.1441,
+      "text": "TW 4 file_acquire A5 1682ms",
+      "rightEdgeGap": true
+    },
+    {
+      "mediaSeconds": 4.193833,
+      "text": "TW 6 file_ready A5 1816ms",
+      "rightEdgeGap": false
+    },
+    {
+      "mediaSeconds": 4.2107,
+      "text": "TW 7 native_pending A5 1849ms",
+      "sameIdUpdateBranch": true
+    },
+    {
+      "mediaSeconds": 4.227256,
+      "text": "TW 8 native_ack A5 1883ms",
+      "rightEdgeGap": false
+    },
+    {
+      "mediaSeconds": 4.396178,
+      "text": "TW 11 native_ack A5 2054ms",
+      "rightEdgeGap": false
+    }
+  ],
+  "timingInterpretation": [
+    "Native markers update asynchronously and do not establish first physical visibility.",
+    "2054ms is the final displayed terrain marker relative to its action; not a first-visible latency.",
+    "First displayed native_ack is 1883ms; regional gesture lasts 1407ms. Without the full TerrainWait rows, do not assert their exact start alignment.",
+    "Video media timestamps are decoded observation timestamps, not application FPS or physical display time.",
+    "Requested 10s recording yielded actual MP4 duration 4.542667s; do not report a 10s observation."
+  ],
+  "decisions": {
+    "current": "Terrain same-id update branch and successful acknowledgment are confirmed for this fine-to-fine normal-preview gesture. Existing covered area remains visually coherent, while the new-area edge gap remains. Cross-coverage parent adoption stays unverified.",
+    "minimalMethodConfirmation": "Satisfied by existing video plus unique frozen-source branch; do not recapture or open debug solely for method. Numeric id and light-specific command details remain unobserved, but no new general telemetry is required for this branch decision.",
+    "nextMeaningfulCapability": "One bounded prevalidated fine A -> parent B -> fine B src+bounds sequence with terrain+LIGHT and visible uncovered area now resolves cross-coverage and transparency. Current source preserves both initial-only parent guards.",
+    "forbiddenInference": "Do not mark latency, no-leak, atomic texture replacement, correct every-pixel blending, GPU release or all three layers accepted."
+  }
+}

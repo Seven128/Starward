@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import * as eventModel from "../content/event/event-model";
+import { sharedButtonTestBoundary } from "./shared-button-test-support";
 
 type Node = { type: unknown; props: any };
 function find(node: any, match: (node: Node) => boolean): Node[] {
@@ -19,7 +20,8 @@ function harness() {
   const states: any[] = [], refs: any[] = [], effects: { deps: unknown[]; cleanup?: (() => void) | undefined }[] = [];
   const pending = new Map<number, () => void>(), timers = new Map<number, { at: number; run: () => void }>();
   let stateIndex = 0, refIndex = 0, effectIndex = 0, systemReduced = false, now = 0, timerId = 0;
-  const exports: any = {}, jsx = (type: unknown, props: any) => ({ type, props });
+  const exports: any = {}, buttons = sharedButtonTestBoundary((type: unknown, props: any) => ({ type, props }));
+  const jsx = buttons.element;
   const catalog = { data: { data: { events: [meteor, eclipse], sources: [], catalogVersion: "v1" }, dataState: "FRESH" }, isPending: false, isError: false, refetch() {} };
   const store = Object.assign((select: any) => select({ mode: "DAY", preferences: { reducedMotion: false }, notify() {} }), {
     getState: () => ({ clearNotifications() {} }),
@@ -39,10 +41,10 @@ function harness() {
         if (previous && deps.length === previous.deps.length && deps.every((value, i) => Object.is(value, previous.deps[i]))) return;
         pending.set(index, () => { previous?.cleanup?.(); effects[index] = { deps, cleanup: effect() ?? undefined }; });
       },
-    } : name === "@tarojs/components" ? { Button: "Button", View: "View", Text: "Text", ScrollView: "ScrollView", RootPortal: "RootPortal" }
+    } : name === "@/components/shared-button-press" ? buttons
+      : name === "@tarojs/components" ? { Button: "Button", View: "View", Text: "Text", ScrollView: "ScrollView", RootPortal: "RootPortal" }
       : name === "@tarojs/taro" ? { __esModule: true, default: { getCurrentPages: () => [] }, useDidShow() {}, useDidHide() {} }
       : name.includes("event-model") ? eventModel : name.includes("use-reduced-motion") ? { useReducedMotion: () => systemReduced }
-      : name.includes("primary-navigation-cover") ? { retainPrimaryNavigationCover: () => () => {} }
       : name.includes("app-store") ? { useAppStore: store } : name.includes("use-resource-query") ? {
         useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events" ? catalog : { isPending: false, isError: false, refetch() {} },
       } : name.includes("source-presentation") ? { productSourceNames: () => "", isProductSource: () => false } : {},

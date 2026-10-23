@@ -1,85 +1,63 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import test from "node:test";
-import vm from "node:vm";
-import ts from "typescript";
-import { createAccountOperationOwner } from "./account-operation";
+import test, { type TestContext } from "node:test";
+import { pagePresentationForTest } from "../navigation/page-presentation-test-support";
 
-function harness() {
-  const slots: any[] = [];
-  let cursor = 0, hide = () => {};
-  const cleanup: Array<() => void> = [];
-  const state = { userId: null as string | null, ownerId: null as string | null, reset: 0, page: {}, target: "wechat-login" };
+async function harness(t: TestContext, primary?: "my") {
+  const h = await pagePresentationForTest({ ...(primary ? { primary } : {}), state: { accountOwnerId: null } });
+  t.after(() => h.dispose());
   const pending: Array<{ signal: AbortSignal; resolve(value: { userId: string }): void; reject(error: Error): void }> = [];
-  const notices: unknown[] = [];
-  let operation!: ReturnType<typeof createAccountOperationOwner>;
-  const module = { exports: {} as any };
-  const jsx = (type: unknown, props: any) => ({ type, props });
-  vm.runInNewContext(ts.transpileModule(readFileSync(new URL("./use-wechat-login.tsx", import.meta.url), "utf8"), {
-    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
-  }).outputText, { exports: module.exports, module, AbortController,
-    require(name: string) {
-      if (name === "react/jsx-runtime") return { jsx, jsxs: jsx };
-      if (name === "react") return {
-        useRef(initial: unknown) { const i = cursor++; return slots[i] ??= { current: initial }; },
-        useState(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = initial; return [slots[i], (value: unknown) => { slots[i] = value; }]; },
-        useEffect(effect: () => (() => void) | undefined) { const i = cursor++; if (!slots[i]) { slots[i] = true; const fn = effect(); if (fn) cleanup.push(fn); } },
-      };
-      if (name === "@tarojs/taro") return { useDidHide: (fn: () => void) => { hide = fn; } };
-      if (name.endsWith("api-client")) return { currentDraftUserId: () => state.userId,
-        loginWithWechat: (signal: AbortSignal) => new Promise((resolve, reject) => pending.push({ signal, resolve, reject })) };
-      if (name.endsWith("app-store")) return { useAppStore: { getState: () => ({ notify: (n: unknown) => notices.push(n) }) } };
-      if (name.endsWith("components/wechat-login")) return { WechatLogin: "login" };
-      if (name.endsWith("use-account-operation")) return { useAccountOperation: (_target: string, onBusy: (value: boolean) => void) => {
-        operation ??= createAccountOperationOwner(() => ({ ...state }), onBusy); return operation;
-      } };
-      throw Error(name);
-    },
-  });
-  const render = () => { cursor = 0; return module.exports.useWechatLogin(); };
-  return { render, state, pending, notices,
-    bind(owner: string) { state.userId = state.ownerId = owner; state.reset++; operation.observe(); },
-    hide() { operation.hide(); hide(); },
-    unmount() { operation.dispose(); cleanup.forEach(fn => fn()); },
+  h.modules.api = { loginWithWechat: (signal: AbortSignal) => new Promise((resolve, reject) => pending.push({ signal, resolve, reject })) };
+  h.modules["@/components/wechat-login"] = { WechatLogin: h.leaf("WechatLogin") };
+  const useWechatLogin = h.load("hooks/use-wechat-login.tsx").useWechatLogin;
+  let current: any;
+  function Probe() { current = useWechatLogin(); return current.dialog; }
+  await h.render(Probe);
+  return { ...h, pending, current: () => current,
+    async requireAccount(run: (id: string) => void, valid = () => true) { await h.update(() => current.requireAccount(run, valid)); },
+    async login() { await h.update(() => current.dialog.props.onLogin()); },
+    async close() { await h.update(() => current.close()); },
   };
 }
-const settle = () => new Promise(resolve => setImmediate(resolve));
 
-test("shortcut login resumes its original valid task once after the account bootstrap", async () => {
-  const h = harness(), runs: string[] = [];
-  h.render().requireAccount((id: string) => runs.push(id));
-  const login = h.render().dialog;
-  login.props.onLogin(); login.props.onLogin();
+test("shortcut login resumes its original valid task once after the account bootstrap", async t => {
+  const h = await harness(t), runs: string[] = [];
+  await h.requireAccount(id => runs.push(id));
+  await h.update(() => { h.current().dialog.props.onLogin(); h.current().dialog.props.onLogin(); });
   assert.equal(h.pending.length, 1);
-  h.bind("a"); h.pending[0]!.resolve({ userId: "a" }); await settle();
-  assert.deepEqual(runs, ["a"]);
-  assert.equal(h.render().open, false);
-  assert.equal(h.notices.length, 1);
+  await h.bind("a"); h.pending[0]!.resolve({ userId: "a" }); await h.settle();
+  assert.deepEqual(runs, ["a"]); assert.equal(h.current().open, false); assert.equal(h.notices.length, 1);
 });
 
-test("cancel, hide, unmount and changed task each prevent a late login from running the old action", async () => {
+test("cancel, hide, unmount and changed task each prevent a late login from running the old action", async t => {
   for (const reason of ["cancel", "hide", "unmount", "changed-task"]) {
-    const h = harness(); let calls = 0, relevant = true;
-    h.render().requireAccount(() => calls++, () => relevant);
-    h.render().dialog.props.onLogin();
-    if (reason === "cancel") h.render().close();
-    if (reason === "hide") h.hide();
-    if (reason === "unmount") h.unmount();
+    const h = await harness(t); let calls = 0, relevant = true;
+    await h.requireAccount(() => calls++, () => relevant); await h.login();
+    if (reason === "cancel") await h.close();
+    if (reason === "hide") await h.hide();
+    if (reason === "unmount") await h.unmount();
     if (reason === "changed-task") relevant = false;
     if (reason !== "changed-task") assert.equal(h.pending[0]!.signal.aborted, true);
-    h.pending[0]!.resolve({ userId: "a" }); await settle();
-    assert.equal(calls, 0, reason);
-    assert.equal(h.notices.length, 0, reason);
+    h.pending[0]!.resolve({ userId: "a" }); await h.settle();
+    assert.equal(calls, 0, reason); assert.equal(h.notices.length, 0, reason);
+    await h.dispose();
   }
 });
 
-test("failed shortcut login stays retryable without running its task", async () => {
-  const h = harness(); let calls = 0;
-  h.render().requireAccount(() => calls++);
-  h.render().dialog.props.onLogin(); h.pending[0]!.reject(Error("unavailable")); await settle();
-  assert.equal(h.render().dialog.props.failed, true);
-  assert.equal(h.render().dialog.props.busy, false);
-  h.render().dialog.props.onLogin();
-  h.bind("a"); h.pending[1]!.resolve({ userId: "a" }); await settle();
+test("failed shortcut login stays retryable without running its task", async t => {
+  const h = await harness(t); let calls = 0;
+  await h.requireAccount(() => calls++); await h.login();
+  h.pending[0]!.reject(Error("unavailable")); await h.settle();
+  assert.equal(h.current().dialog.props.failed, true); assert.equal(h.current().dialog.props.busy, false);
+  await h.login(); await h.bind("a"); h.pending[1]!.resolve({ userId: "a" }); await h.settle();
   assert.equal(calls, 1);
+});
+
+test("logical My hide cancels login on the same native Map and returning cannot resume it", async t => {
+  const h = await harness(t, "my"); let calls = 0;
+  await h.requireAccount(() => calls++); await h.login();
+  await h.update(() => h.controller.closeMy());
+  assert.equal(h.pending[0]!.signal.aborted, true); assert.equal(h.current().open, false);
+  await h.update(() => h.controller.openMy()); await h.bind("a");
+  h.pending[0]!.resolve({ userId: "a" }); await h.settle();
+  assert.equal(calls, 0); assert.equal(h.notices.length, 0);
 });

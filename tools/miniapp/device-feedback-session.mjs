@@ -118,6 +118,7 @@ export async function recordOfficialTaskResult(run, taskId, output) {
     fail("official_task_already_terminal");
   await assertGenerationCurrent(run);
   let official = classifyOfficialPreviewResult(output, prior.result.tool, { requireStatus: true });
+  if (prior.diagnostic) official.diagnostic = prior.diagnostic;
   if (official.result.taskId && official.result.taskId !== taskId)
     fail("official_task_mismatch");
   official.result.taskId = taskId;

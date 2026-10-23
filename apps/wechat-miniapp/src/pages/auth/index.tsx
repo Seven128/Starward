@@ -1,3 +1,4 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useLoad } from "@tarojs/taro";
@@ -151,7 +152,7 @@ export default function PermissionPage() {
     const attempt = beginLocation("NAVIGATION");
     if (!attempt) return;
     try {
-      await Taro.switchTab({ url: "/pages/map/index" });
+      await openPrimaryPage("/pages/map/index");
     } catch {
       if (!currentLocation(attempt)) return;
       setFeedbackState("ERROR");

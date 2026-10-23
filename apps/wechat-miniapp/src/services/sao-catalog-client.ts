@@ -1,6 +1,13 @@
 import { assertSaoIndexPublication,assertSaoTilePublication,type ApiEnvelope,type SaoIndexPublication,
   type SaoTilePublication,type SaoTileReference,type SourceSummary } from '@starward/miniapp-contracts';
 
+// Membership carries no strong retention. A frozen copy is not a validated
+// delivery; derived render reuse may trust only these original inputs.
+const admittedIndexes=new WeakSet<SaoIndexPublication>();
+const admittedTiles=new WeakSet<SaoTilePublication>();
+export function isAdmittedSaoIndexPublication(value:SaoIndexPublication){return admittedIndexes.has(value);}
+export function isAdmittedSaoTilePublication(value:SaoTilePublication){return admittedTiles.has(value);}
+
 function freeze<T>(value:T):T {
   if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;
 }
@@ -38,6 +45,7 @@ export function createSaoCatalogClient(deps:{
       // retired observer's capability. Share the full immutable index, but give
       // each admitted delivery its own small publication/envelope wrapper.
       const admitted=freeze({...result,data:{...result.data}});
+      admittedIndexes.add(admitted.data);
       known.set(admitted.data,{envelope:admitted,generation});return admitted;
     },
     async getTile(publication:SaoIndexPublication,tileId:string,signal?:AbortSignal){
@@ -54,7 +62,7 @@ export function createSaoCatalogClient(deps:{
       if(!admitted.generation.isCurrent())throw new TypeError('sao_publication_invalid:retired_index');
       try{assertSaoTilePublication(result.data,publication,expected);assertSources(result.sources,publication);}
       catch(error){deps.invalidateTile(publication.publicationHash,tileId);throw error;}
-      return freeze(result);
+      const admittedTile=freeze(result);admittedTiles.add(admittedTile.data);return admittedTile;
     },
   };
 }

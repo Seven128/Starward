@@ -6,9 +6,8 @@ import { useAirQualityQuery } from "@/hooks/use-forecast-query";
 import { getSpotAirQuality } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
-import { ForecastCoverageNote } from "./forecast-coverage-note";
 import { SourceAttribution } from "./source-attribution";
-import { SourceDisclosure } from "./source-disclosure";
+import { SourceEntry } from "./source-entry";
 import { SoftButton } from "./soft-button";
 import { StatusPanel } from "./status-panel";
 import { airQualityState } from "./air-quality-state";
@@ -26,7 +25,9 @@ function Reading({ value }: { value: AirQualitySnapshot }) {
   </View>;
 }
 
-export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { spotId: string; selectedAt: string; timezone: string; visible?: boolean }) {
+export function AirQuality({ spotId, selectedAt, timezone, visible = true, id, onLayoutChange }: {
+  spotId: string; selectedAt: string; timezone: string; visible?: boolean; id?: string; onLayoutChange?: () => void;
+}) {
   const [active, setActive] = useState(true);
   const notify = useAppStore(state => state.notify);
   const enabled = active && visible && spotId.startsWith("spot:");
@@ -40,6 +41,7 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
   const requestFailed = Boolean(query.isError || query.refreshError || envelope?.dataState === "STALE_USABLE");
   const currentUnavailableByFailure = requestFailed || envelope?.data.current.unavailableReason === "REQUEST_FAILED" || envelope?.data.current.state === "STALE_USABLE";
   const forecastUnavailableByFailure = requestFailed || envelope?.data.forecast.unavailableReason === "REQUEST_FAILED" || envelope?.data.forecast.state === "STALE_USABLE";
+  useEffect(() => { onLayoutChange?.(); }, [envelope, failed, query.isPending, selectedAt, onLayoutChange]);
   useEffect(() => {
     if (enabled && failed) notify({ owner: "air-quality", placement: "floating", tone: "info", title: "空气质量数据异常",
       body: "部分数据暂不可用，可在空气质量中重试。", dedupeKey: spotId });
@@ -50,7 +52,7 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
   const retrievedLabel = retrievedAt ? `${calendarDateInTimezone(new Date(retrievedAt), timezone).slice(5).replace("-", "月")}日${clockTimeInTimezone(new Date(retrievedAt), timezone)}` : null;
   const currentExpired = envelope?.data.current.state === "EXPIRED";
   const forecastExpired = envelope?.data.forecast.state === "EXPIRED";
-  return <View className="spot-panel__evidence-group air-quality" data-control="spot-air-quality">
+  return <View {...(id ? { id } : {})} className={`spot-panel__evidence-group air-quality${id ? " panel-reading-anchor" : ""}`} data-control="spot-air-quality">
     <Text className="type-label air-quality__heading">空气质量</Text>
     {query.isError && !envelope ? <StatusPanel state="ERROR" detail="空气质量暂时无法获取，其他地点信息仍可查看。" recoveryLabel="重试空气质量" onRecover={() => void query.refetch()} /> : <>
     <View className="air-quality__segment-heading"><Text className="type-secondary">当前区域参考{retrievedLabel ? ` · 获取于${retrievedLabel}` : ""}</Text></View>
@@ -66,12 +68,15 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
         : <View role="status" aria-live="polite"><Text className="type-body air-quality__unavailable">{forecastExpired ? "空气质量预报已过期" : "该小时暂无空气质量预报"}</Text></View>}
     {view.forecast && forecastUnavailableByFailure ? <Text className="type-caption">更新失败，保留有效小时预报</Text> : null}
     {failed || view.expired || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试空气质量" loading={query.isFetching ? "arc" : false} onClick={() => void query.refetch()}>重试</SoftButton> : null}
-    {envelope ? <SourceAttribution compact sources={[...(view.current ? [envelope.data.current.source] : []), ...(view.forecast ? [envelope.data.forecast.source] : [])]} /> : null}
+    {envelope ? <SourceAttribution presentation="credit" sources={[...(view.current ? [envelope.data.current.source] : []), ...(view.forecast ? [envelope.data.forecast.source] : [])]} /> : null}
     </>}
-    <SourceDisclosure key={spotId} id="air-quality-source" label="空气质量范围与来源" sources={envelope ? [envelope.data.current.source, envelope.data.forecast.source] : []}>
-      {view.hours.length ? <ForecastCoverageNote starts={view.hours.map(hour => hour.at)} timezone={timezone} scopeKey={`${spotId}:${selectedAt}`} scope="air" stale={forecastUnavailableByFailure} /> : null}
-      <Text className="type-caption">获取时间不是点位实测时间。不同 AQI 标准保留原值；缺失污染物不补齐。空气质量不等于天文透明度或视宁度。</Text>
-      <Text className="type-caption">当前区域参考与所选时刻预报分别取数。小时预报仅适用于其对应小时，当前浓度不会填入未来时刻。</Text>
-    </SourceDisclosure>
+    <SourceEntry key={spotId} id="air-quality-source" label="空气质量范围与来源" sources={envelope ? [envelope.data.current.source, envelope.data.forecast.source] : []}
+      sections={[
+        ...(view.hours.length ? [{ kind: "forecast" as const, starts: view.hours.map(hour => hour.at), timezone, scope: "air" as const, stale: forecastUnavailableByFailure }] : []),
+        { kind: "text", paragraphs: [
+          "获取时间不是点位实测时间。不同 AQI 标准保留原值；缺失污染物不补齐。空气质量不等于天文透明度或视宁度。",
+          "当前区域参考与所选时刻预报分别取数。小时预报仅适用于其对应小时，当前浓度不会填入未来时刻。",
+        ] },
+      ]} />
   </View>;
 }

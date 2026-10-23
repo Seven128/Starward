@@ -4,7 +4,7 @@
 type Action = "enable" | "gesture";
 type Fields = Record<string, number | boolean | string | null>;
 type Row = Fields & { seq: number; phase: string; wallMs: number | null; relativeMs: number | null; clockEpoch: number };
-export const TERRAIN_WAIT_STORAGE_KEY = "starward.task.terrain-wait.v1";
+export const TERRAIN_WAIT_STORAGE_KEY = "starward.task.terrain-wait.v2";
 export function createTerrainWaitObserver(options: {
   action: Action; sourceSha256: string; now?: () => number;
   later?: (callback: () => void, delay: number) => unknown;
@@ -42,7 +42,7 @@ export function createTerrainWaitObserver(options: {
     if (rows.length >= 80) { overflow = true; seal("event_limit"); return; }
     rows.push({ seq: rows.length + 1, phase, ...clock(), ...fields }); notify();
   };
-  const snapshot = () => ({ schema: "starward-terrain-wait-v1", sourceSha256: options.sourceSha256,
+  const snapshot = () => ({ schema: "starward-terrain-wait-v2", sourceSha256: options.sourceSha256,
     action: options.action, started, active, sealed, stopReason, overflow,
     clock: { source: "Date.now", unit: "ms", kind: "wall-elapsed", monotonic: false,
       nominalResolutionMs: 1, effectiveResolutionMs: null, invalidReads: clockInvalid, backwardReads: backward },
@@ -104,11 +104,12 @@ export function createTerrainWaitObserver(options: {
         ? admitted.sha256.toLowerCase() : null;
       append("file_ready", { asset, file, fileBytes, fileSha256 });
     },
-    nativeResult(mapId: string, imagePath: string | null, ok: boolean, current: boolean, phase: string) {
+    nativeResult(mapId: string, imagePath: string | null, ok: boolean, current: boolean, phase: string, presentationUnknown = false) {
       if (!active) return;
       const file = opaque("path", imagePath);
-      append(ok ? "native_ack" : "native_failure", { map: opaque("map", mapId), file,
-        asset: file === null ? null : pathAssets.get(file) ?? null, current, cleanup: phase === "cleanup" });
+      append(phase === "pending" ? "native_pending" : !ok ? "native_failure" : presentationUnknown ? "native_presentation_unknown" : "native_ack",
+        { map: opaque("map", mapId), file, asset: file === null ? null : pathAssets.get(file) ?? null,
+          current, cleanup: phase === "cleanup", presentationUnknown });
     },
   };
 }

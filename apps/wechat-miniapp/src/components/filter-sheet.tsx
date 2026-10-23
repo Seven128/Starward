@@ -1,4 +1,5 @@
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { FILTER_OPTIONS, countAppliedFilters, type FilterCategoryId, type MapSceneData } from "@starward/miniapp-contracts";
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/state/app-store";
@@ -32,7 +33,7 @@ export function FilterSheet({ capabilities, initialCategory = "OBSERVATION" }: {
   return <View className="filter-sheet-layer modal-scrim" data-control="spot-search-filter-overlay" onClick={cancel}>
     <View className="filter-sheet" role="region" aria-label="搜索筛选条件" onClick={(event) => event.stopPropagation()}>
       <View className="filter-sheet__handle" />
-      <View className="filter-sheet__heading"><Text>筛选</Text><Button className="filter-sheet__close" ariaLabel="关闭并取消更改" onClick={cancel}><SemanticIcon name="close" /></Button></View>
+      <View className="filter-sheet__heading"><Text>筛选</Text><Button pressVariant="icon" className="filter-sheet__close" ariaLabel="关闭并取消更改" onClick={cancel}><SemanticIcon name="close" /></Button></View>
       <View className="filter-sheet__layout">
         <View className="filter-sheet__categories">{CATEGORIES.map((item) => { const hasSelection = selectedInCategory(item.id); return <Button key={item.id} id={`filter-category-${item.id.toLowerCase()}`} className={`filter-sheet__category${category === item.id ? " filter-sheet__category--active" : ""}${hasSelection ? " filter-sheet__category--selected" : ""}`} ariaLabel={`${item.label}${hasSelection ? "，有已选条件" : ""}`} onClick={() => setCategory(item.id)}>{item.label}</Button>; })}</View>
         <ScrollView scrollY enhanced showScrollbar={false} className="filter-sheet__options"><View className="filter-sheet__grid">

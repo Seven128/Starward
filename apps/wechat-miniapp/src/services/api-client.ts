@@ -1,5 +1,5 @@
 import { createAccountProfileClient } from "./account-profile-client";
-import { normalizeTerrainOverlayRequest } from "./terrain-overlay-request";
+import { terrainOverlayRequestQuery } from "./terrain-overlay-request";
 import { createSpotEnvironmentClient } from "./spot-environment-client";
 import { ADOPTED_SKY_REPORT_CATALOG_VERSION, projectAdoptedSkyCatalog } from "./sky-report-catalog";
 import { createPlanChecklistClient } from "./plan-checklist-client";
@@ -987,18 +987,17 @@ export function getMapNightLight(viewport: import("@starward/miniapp-contracts")
 }
 
 export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal) {
-  input = normalizeTerrainOverlayRequest(input);
-  const query = [
-    `purpose=${input.purpose}`,
-    `centerLat=${input.center.latitude.toFixed(7)}`,
-    `centerLng=${input.center.longitude.toFixed(7)}`,
-    ...(input.viewportBounds ? [`viewportBounds=${[input.viewportBounds.west, input.viewportBounds.south,
-      input.viewportBounds.east, input.viewportBounds.north].map(value => value.toFixed(7)).join(",")}`]
-      : [`radiusKm=${input.radiusKm!.toFixed(1)}`]),
-  ].join("&");
   return requestOperation(`terrain:${input.purpose}`, "terrainOverlayGet", {
-    query,
+    query: terrainOverlayRequestQuery(input),
     // The query owner handles immutable successes and partial-product failures.
+    cache: false,
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function getTerrainOverlayPreview(input: TerrainOverlayRequest, signal?: AbortSignal) {
+  return requestOperation("terrain:preview", "terrainOverlayPreviewGet", {
+    query: terrainOverlayRequestQuery(input),
     cache: false,
     ...(signal ? { signal } : {}),
   });

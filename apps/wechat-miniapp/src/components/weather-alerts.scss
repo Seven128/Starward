@@ -29,8 +29,11 @@
 .weather-alerts__times text:first-child { color: var(--text-secondary); }
 .weather-alerts__times text + text { margin-top: 2Px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .weather-alerts__instruction { margin: 10Px 0 0; font-size: 15Px; line-height: 24Px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.weather-alerts--compact .source-disclosure { margin-top: 14Px; }
-.weather-alerts--compact .source-disclosure__note { padding: 0; background: transparent; }
+.weather-alerts__details { margin-top: 14Px; border-top: 1Px solid var(--border); }
+.weather-alerts__details-toggle { display: flex; align-items: center; justify-content: space-between; gap: 8Px; width: 100%; min-height: 44Px; margin: 0; padding: 8Px 0; border: 0; border-radius: 0; background: transparent; color: var(--text-secondary); font-size: 13Px; line-height: 21Px; text-align: left; }
+.weather-alerts__details-toggle::after { border: 0; }
+.weather-alerts__details-toggle .semantic-icon { flex: 0 0 18Px; width: 18Px; height: 18Px; }
+.weather-alerts__description { display: block; padding: 10Px 0; color: var(--text-secondary); font-size: 13Px; line-height: 21Px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .theme-day .weather-alerts--compact .weather-alerts__item { background: #faf6ec; border-color: #eee7d7; color: #655d50; }
 .theme-day .weather-alerts__title { color: #263343; }
 .theme-day .weather-alerts__sender { color: #877b65; }

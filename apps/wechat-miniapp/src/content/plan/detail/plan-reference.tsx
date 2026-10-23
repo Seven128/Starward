@@ -1,6 +1,7 @@
 import { Text, View } from "@tarojs/components";
 import type { ObservationPlan, SkyReport } from "@starward/miniapp-contracts";
 import { SourceAttribution } from "@/components/source-attribution";
+import { SourceEntry } from "@/components/source-entry";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
@@ -20,7 +21,8 @@ export function PlanReference({ plan, report, loading, failed, stale = false, on
         <View><View className="plan-reference__label"><SemanticIcon name="wind" /><Text>风与气温</Text></View><Text>风速 {facts.wind}</Text><Text>气温 {facts.temperature}</Text></View>
       </View>
       <ForecastCoverageNote starts={facts.weatherStarts} timezone={plan.contextSnapshot.timezone} scopeKey={`${plan.planId}:${plan.revision}`} stale={stale} />
-      {facts.weatherStarts.length ? <SourceAttribution sources={report?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
+      {facts.weatherStarts.length ? <SourceAttribution presentation="credit" sources={report?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
+      <SourceEntry id="plan-reference-source" label="观测参考来源" sources={report?.sources ?? []} />
     </>}
   </View>;
 }

@@ -7,12 +7,13 @@ const settle = () => new Promise<void>(resolve => setImmediate(resolve));
 function harness(limits = { maximumFiles: 4, maximumBytes: 16, maximumConcurrent: 2 }) {
   const jobs: { input: RasterImageDescriptor; signal: AbortSignal; resolve(file: RasterImageFile): void; reject(error: Error): void }[] = [];
   const removed: string[] = [];
+  const removalAttempts: string[] = [];
   let removalFailures = 0;
   const owner = createRasterImageResources({
     download: (input, signal) => new Promise<RasterImageFile>((resolve, reject) => jobs.push({ input, signal, resolve, reject })),
-    remove: async path => { if (removalFailures) { removalFailures--; throw new Error("unlink failed"); } removed.push(path); },
+    remove: async path => { removalAttempts.push(path); if (removalFailures) { removalFailures--; throw new Error("unlink failed"); } removed.push(path); },
   }, limits);
-  return { owner, jobs, removed, failNextRemoval() { removalFailures++; } };
+  return { owner, jobs, removed, removalAttempts, failNextRemoval() { removalFailures++; } };
 }
 const descriptor = (key: string) => ({ key, url: `/v2/terrain/assets/${key}.png` });
 
@@ -67,6 +68,51 @@ test("invalidation and close keep pinned and unsuccessfully removed files owned 
   h.failNextRemoval(); releasePin(); await settle();
   assert.equal(h.owner.snapshot().failedRemovals, 1); assert.equal(h.owner.snapshot().readyBytes, 3);
   await h.owner.close(); assert.deepEqual(h.removed, ["/owned/a"]); assert.equal(h.owner.snapshot().readyBytes, 0);
+});
+
+test("later demand retries an idle failed deletion while retaining the live native file", async () => {
+  const h = harness({ maximumFiles: 2, maximumBytes: 6, maximumConcurrent: 2 });
+  const a = h.owner.acquire(descriptor("a")), b = h.owner.acquire(descriptor("b"));
+  await settle();
+  h.jobs[0]!.resolve({ path: "/owned/a", bytes: 3 }); h.jobs[1]!.resolve({ path: "/owned/b", bytes: 3 });
+  await Promise.all([a.promise, b.promise]);
+  const unpin = h.owner.retainPath("/owned/b"); a.release(); b.release();
+  h.failNextRemoval();
+  await assert.rejects(h.owner.acquire(descriptor("c")).promise, /budget_busy/);
+  assert.deepEqual(h.removalAttempts, ["/owned/a"]); assert.deepEqual(h.removed, []);
+  assert.equal(h.owner.snapshot().entries, 2); assert.equal(h.owner.snapshot().readyBytes, 6);
+  assert.equal(h.owner.snapshot().nativePins, 1); assert.equal(h.owner.snapshot().failedRemovals, 1);
+
+  const retry = h.owner.acquire(descriptor("c")); const result = retry.promise.catch(error => error);
+  await settle();
+  assert.deepEqual(h.removalAttempts, ["/owned/a", "/owned/a"]);
+  assert.equal(h.jobs.length, 3); assert.deepEqual(h.removed, ["/owned/a"]);
+  h.jobs[2]!.resolve({ path: "/owned/c", bytes: 3 });
+  assert.equal((await result).path, "/owned/c");
+  assert.equal(h.owner.snapshot().entries, 2); assert.equal(h.owner.snapshot().readyBytes, 6);
+  assert.equal(h.owner.snapshot().nativePins, 1); assert.equal(h.owner.snapshot().failedRemovals, 0);
+  retry.release(); unpin(); await h.owner.close(); assert.equal(h.owner.snapshot().readyBytes, 0);
+});
+
+test("one budget request does not repeat a failed physical deletion through idle aliases", async () => {
+  const h = harness({ maximumFiles: 2, maximumBytes: 4, maximumConcurrent: 2 }), hash = "a".repeat(64);
+  const a = h.owner.acquire(descriptor("a")), b = h.owner.acquire(descriptor("b")); await settle();
+  h.jobs[0]!.resolve({ path: "/owned/shared", bytes: 4, sha256: hash });
+  h.jobs[1]!.resolve({ path: "/owned/shared", bytes: 4, sha256: hash });
+  await Promise.all([a.promise, b.promise]); a.release(); b.release();
+  h.failNextRemoval(); h.failNextRemoval();
+  await assert.rejects(h.owner.acquire(descriptor("c")).promise, /budget_busy/);
+  assert.deepEqual(h.removalAttempts, ["/owned/shared"]);
+  assert.equal(h.owner.snapshot().entries, 2); assert.equal(h.owner.snapshot().readyBytes, 4);
+  await assert.rejects(h.owner.acquire(descriptor("c")).promise, /budget_busy/);
+  assert.deepEqual(h.removalAttempts, ["/owned/shared", "/owned/shared"]);
+  assert.deepEqual(h.removed, []);
+
+  const retry = h.owner.acquire(descriptor("c")); const result = retry.promise.catch(error => error); await settle();
+  assert.equal(h.jobs.length, 3); assert.deepEqual(h.removed, ["/owned/shared"]);
+  h.jobs[2]!.resolve({ path: "/owned/c", bytes: 4 }); assert.equal((await result).path, "/owned/c");
+  assert.equal(h.owner.snapshot().entries, 1); assert.equal(h.owner.snapshot().readyBytes, 4);
+  retry.release(); await h.owner.close();
 });
 
 test("wrong byte counts are rejected and removed without replacing a valid cached file", async () => {

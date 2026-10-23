@@ -4,7 +4,6 @@ export type NotificationPlacement = "inline" | "floating";
 export interface NotificationAction {
   label: string;
   route?: string;
-  navigation?: "navigateTo" | "switchTab";
 }
 
 export interface NotificationIntent {

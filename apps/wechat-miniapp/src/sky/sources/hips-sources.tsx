@@ -1,11 +1,10 @@
-import {ScrollView,Text,View} from "@tarojs/components";
+import {Text} from "@tarojs/components";
 import {useDidHide,useDidShow} from "@tarojs/taro";
 import {useState} from "react";
-import {CustomNav} from "@/components/custom-nav";
+import {SourcePage} from "@/components/source-page";
 import {Provenance} from "@/components/provenance";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
 import {useResourceQuery} from "@/hooks/use-resource-query";
-import {useThemeClass} from "@/hooks/use-theme";
 import {getOpticalHipsManifest,getOpticalHipsRights,opticalHipsTileUrl} from "@/services/optical-hips-client";
 import {opticalHipsSourceSelection,opticalHipsSources} from "@/services/optical-hips-source";
 import {useSkySourceRecovery} from "./use-sky-source-recovery";
@@ -19,7 +18,7 @@ export function SkyHipsSourcesPage({params}:{params:Record<string,string|undefin
     queryFn:async signal=>{const root=await getOpticalHipsManifest(signal,selected!.hash);
       if(!root||root.scope==="TRIAL"&&!__MINIAPP_DEVELOPMENT_FIXTURE_MODE__)throw new Error("optical_source_unavailable");
       opticalHipsSources(root,selected!.ids);return root;},enabled:visible&&Boolean(selected),staleTime:60_000,structuralSharing:false});
-  const theme=useThemeClass(),root=resource.data;
+  const root=resource.data;
   const bound=Boolean(selected&&root?.publicationHash===selected.hash&&
     (root.scope!=="TRIAL"||__MINIAPP_DEVELOPMENT_FIXTURE_MODE__)&&selected.ids.every(id=>root.sources.some(source=>source.id===id)));
   const rightsResource=useResourceQuery({queryKey:["optical-hips-rights",selected?.hash],
@@ -30,10 +29,7 @@ export function SkyHipsSourcesPage({params}:{params:Record<string,string|undefin
   const sourceKey=JSON.stringify(selected);
   const retrySource=useSkySourceRecovery(sourceKey,visible&&Boolean(selected),resource.refetch);
   const retryRights=useSkySourceRecovery(sourceKey,visible&&bound,rightsResource.refetch);
-  return <View className={`${theme} celestial-sources-page`}>
-    <CustomNav title="来源" subtitle="光学天空影像" back/>
-    <ScrollView scrollY enhanced showScrollbar={false} className="celestial-sources-scroll">
-      <View className="celestial-sources-content page-inset safe-bottom">
+  return <SourcePage subtitle="光学天空影像">
         {!selected?<StatusPanel state="EMPTY" detail="请从星图的影像来源入口打开"/>:
           resource.isError||root&&!bound?<StatusPanel state="ERROR" detail="此影像版本的来源暂不可用。" recoveryLabel="重试" onRecover={retrySource}/>:
           resource.isPending?<StatusPanel state="LOADING" detail="正在加载此版本的来源…"/>:bound?<>
@@ -46,10 +42,8 @@ export function SkyHipsSourcesPage({params}:{params:Record<string,string|undefin
               recoveryLabel="重试说明" onRecover={retryRights}/>:null}
             <Text className="type-secondary" selectable>{root!.processing}</Text>
             {root!.limitations.map(value=><Text className="type-caption" selectable key={value}>{value}</Text>)}
-            {sources.map(source=><Provenance key={source.id} source={source} showKind={false}
+            {sources.map((source,index)=><Provenance key={`${source.id}:${index}`} source={source} showKind={false} presentation="reading"
               downloadUrl={source.id.endsWith(":database")?opticalHipsTileUrl(rightsBound?rightsResource.data!.downloadUrl:`/v2/sky/optical/${selected.hash}/manifest`):undefined}/>)}
           </>:<StatusPanel state="EMPTY" detail="此版本暂无来源资料。"/>}
-      </View>
-    </ScrollView>
-  </View>;
+  </SourcePage>;
 }

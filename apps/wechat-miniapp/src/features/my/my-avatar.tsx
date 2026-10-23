@@ -1,5 +1,6 @@
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { Button, Image, Slider, Text, View } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { Image, Slider, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import type { AccountAvatarMimeType } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
@@ -11,7 +12,7 @@ import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { useAccountOperation } from "@/hooks/use-account-operation";
-import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
+import { usePresentedPageLifecycle } from "@/navigation/page-presentation";
 import { MINIAPP_DESIGN } from "@/theme/design-tokens";
 
 function avatarMime(path: string): AccountAvatarMimeType {
@@ -33,9 +34,6 @@ export function MyAvatar({ owner, onLogin }: { owner: string | null; onLogin?: (
   const sliderColors = mode === "DAY"
     ? { activeColor: "#365D67", backgroundColor: "#D8DEDF" }
     : { activeColor: theme.primary, backgroundColor: theme.border, blockColor: theme["text-primary"] };
-  const mediaHandoff = useRedLightHandoff({ nativeBackBoundary: false });
-  const profile = useResourceQuery({ queryKey: ["account-profile", owner], enabled: Boolean(owner), queryFn: signal => getAccountProfile(owner!, signal), staleTime: 30_000 });
-  const avatar = useResourceQuery({ queryKey: ["account-avatar", owner, profile.data?.data.avatar?.version ?? "none"], enabled: Boolean(owner && profile.data?.data.avatar), queryFn: signal => getAccountAvatar(owner!, signal), staleTime: Infinity });
   const notify = useAppStore(state => state.notify);
   const reset = useAppStore(state => state.mapResetVersion);
   const pending = useRef(false);
@@ -45,27 +43,30 @@ export function MyAvatar({ owner, onLogin }: { owner: string | null; onLogin?: (
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState(false);
   const visible = useRef(true);
+  const close = () => { if (!pending.current) { setSheet(false); setPreview(null); setZoom(1); } };
+  const page = usePresentedPageLifecycle({
+    show: () => { visible.current = true; },
+    hide: () => { visible.current = false; close(); },
+  });
+  const mediaHandoff = useRedLightHandoff({ nativeBackBoundary: false });
+  const profile = useResourceQuery({ queryKey: ["account-profile", owner], enabled: page.visible && Boolean(owner), queryFn: signal => getAccountProfile(owner!, signal), staleTime: 30_000 });
+  const avatar = useResourceQuery({ queryKey: ["account-avatar", owner, profile.data?.data.avatar?.version ?? "none"], enabled: page.visible && Boolean(owner && profile.data?.data.avatar), queryFn: signal => getAccountAvatar(owner!, signal), staleTime: Infinity });
   const operations = useAccountOperation("avatar", value => {
     pending.current = value;
     setBusy(value);
     if (!value) setSaving(false);
   });
-  const close = () => { if (!pending.current) { setSheet(false); setPreview(null); setZoom(1); } };
-  useDidHide(() => { visible.current = false; close(); });
-  useDidShow(() => { visible.current = true; });
   useEffect(() => () => { visible.current = false; }, []);
   // A controlled renewal can temporarily hide identity while this save still owns its intent.
   // Other account/reset changes retire through the shared owner, including batched A→B→A.
   const previewVisible = Boolean(preview && preview.owner === owner && (preview.reset === reset || saving));
-  const coversNavigation = sheet || previewVisible || mediaHandoff.active;
-  useEffect(() => coversNavigation ? retainPrimaryNavigationCover() : undefined, [coversNavigation]);
   useEffect(() => {
     if (saving) return;
     if (preview && (preview.owner !== owner || preview.reset !== reset)) { setPreview(null); setZoom(1); }
     setSheet(false);
   }, [owner, reset]);
   const pick = async (sourceType: "album" | "camera") => {
-    if (!owner || currentDraftUserId() !== owner) return;
+    if (!page.isCurrent() || !owner || currentDraftUserId() !== owner) return;
     const operation = operations.begin();
     if (!operation) return;
     try {
@@ -79,14 +80,14 @@ export function MyAvatar({ owner, onLogin }: { owner: string | null; onLogin?: (
       setPreview({ owner, reset: useAppStore.getState().mapResetVersion, path: file.tempFilePath, size: file.size, mimeType: avatarMime(file.tempFilePath) });
       setZoom(1); setSheet(false);
     } catch (error) {
-      if (!operation.isCurrent() || !visible.current) return;
+      if (!operation.isCurrent() || !page.isCurrent() || !visible.current) return;
       const message = error instanceof Error ? error.message : typeof (error as { errMsg?: unknown })?.errMsg === "string" ? String((error as { errMsg: string }).errMsg) : "请稍后重试。";
       if (/cancel/u.test(message)) return;
       notify({ owner: "my", placement: "floating", tone: "warning", title: "头像未选择", body: message, dismissible: true, dedupeKey: "my-avatar-pick" });
     } finally { operation.release(); }
   };
   const save = async () => {
-    if (!owner || !preview || preview.owner !== owner || preview.reset !== useAppStore.getState().mapResetVersion || currentDraftUserId() !== owner) return;
+    if (!page.isCurrent() || !owner || !preview || preview.owner !== owner || preview.reset !== useAppStore.getState().mapResetVersion || currentDraftUserId() !== owner) return;
     const operation = operations.begin();
     if (!operation) return;
     setSaving(true);
@@ -107,7 +108,7 @@ export function MyAvatar({ owner, onLogin }: { owner: string | null; onLogin?: (
       // A valid same-account renewal advances this retained draft, not an arbitrary reset.
       const retainedReset = useAppStore.getState().mapResetVersion;
       setPreview(current => current === preview ? { ...current, reset: retainedReset } : current);
-      if (visible.current) notify({ owner: "my", placement: "floating", tone: "warning", title: "头像未保存", body: /conflict/i.test(error instanceof Error ? error.message : "") ? "资料已更新，请确认后再次保存。" : "请检查图片或网络后重试，原头像保持不变。", dismissible: true, dedupeKey: "my-avatar-save" });
+      if (page.isCurrent() && visible.current) notify({ owner: "my", placement: "floating", tone: "warning", title: "头像未保存", body: /conflict/i.test(error instanceof Error ? error.message : "") ? "资料已更新，请确认后再次保存。" : "请检查图片或网络后重试，原头像保持不变。", dismissible: true, dedupeKey: "my-avatar-save" });
       if (operation.isCurrent()) await profile.refetch();
     } finally { operation.release(); }
   };
@@ -118,20 +119,20 @@ export function MyAvatar({ owner, onLogin }: { owner: string | null; onLogin?: (
   return <>
     <NativeBackBoundary active={sheet || previewVisible || mediaHandoff.active} onBack={() => mediaHandoff.active ? mediaHandoff.cancel() : close()} />
     {mediaHandoff.warning}
-    <Button className="profile-summary__avatar focus-ring" data-control="my-avatar-action" aria-label={!owner ? "微信快捷登录" : mode === "OBSERVATION" ? "更换头像；红光模式隐藏头像照片" : "更换头像"} disabled={busy} onClick={() => { if (!owner) onLogin?.(); else if (!pending.current) setSheet(true); }}>
+    <Button className="profile-summary__avatar focus-ring" data-control="my-avatar-action" aria-label={!owner ? "微信快捷登录" : mode === "OBSERVATION" ? "更换头像；红光模式隐藏头像照片" : "更换头像"} disabled={busy || !page.visible} onClick={() => { if (!page.isCurrent()) return; if (!owner) onLogin?.(); else if (!pending.current) setSheet(true); }}>
       {savedSrc ? <Image className="profile-summary__avatar-image" src={savedSrc} mode="aspectFill" style={{ transform: `scale(${saved!.zoom})` }} /> : <SemanticIcon name="account-user" />}
     </Button>
-    {sheet ? <View className="modal-scrim my-avatar-overlay" onClick={close}><View className="my-avatar-sheet" role="dialog" aria-modal="true" aria-label="更换头像" onClick={event => event.stopPropagation()}>
+    {sheet ? <View className="modal-scrim my-avatar-overlay" onClick={() => { if (page.isCurrent()) close(); }}><View className="my-avatar-sheet" role="dialog" aria-modal="true" aria-label="更换头像" onClick={event => event.stopPropagation()}>
       <Text className="type-section">更换头像</Text>
-      <Button data-control="my-avatar-album" disabled={busy} onClick={() => void pick("album")}>从相册上传</Button>
-      <Button data-control="my-avatar-camera" disabled={busy} onClick={() => void pick("camera")}>拍照</Button>
-      <Button disabled={busy} onClick={close}>取消</Button>
+      <Button data-control="my-avatar-album" disabled={busy || !page.visible} onClick={() => void pick("album")}>从相册上传</Button>
+      <Button data-control="my-avatar-camera" disabled={busy || !page.visible} onClick={() => void pick("camera")}>拍照</Button>
+      <Button disabled={busy || !page.visible} onClick={() => { if (page.isCurrent()) close(); }}>取消</Button>
     </View></View> : null}
-    {previewVisible && preview ? <View className="modal-scrim my-avatar-overlay" onClick={close}><View className="my-avatar-editor" role="dialog" aria-modal="true" aria-label="调整头像" onClick={event => event.stopPropagation()}>
+    {previewVisible && preview ? <View className="modal-scrim my-avatar-overlay" onClick={() => { if (page.isCurrent()) close(); }}><View className="my-avatar-editor" role="dialog" aria-modal="true" aria-label="调整头像" onClick={event => event.stopPropagation()}>
       <Text className="type-section">调整头像</Text>
       <View className="my-avatar-preview"><Image src={preview.path} mode="aspectFill" style={{ transform: `scale(${zoom})` }} /></View>
-      <View className="my-avatar-zoom"><Text>缩小</Text><Slider min={1} max={2.5} step={0.05} value={zoom} disabled={saving} {...sliderColors} blockSize={20} aria-label="头像缩放" onChanging={event => setZoom(Number(event.detail.value))} onChange={event => setZoom(Number(event.detail.value))} /><Text>放大</Text></View>
-      <View className="my-avatar-editor__actions"><Button disabled={saving} onClick={close}>取消</Button><Button className="my-avatar-save loading-button" aria-busy={saving} disabled={saving} data-control="my-avatar-save" onClick={() => void save()}>{saving ? <LoadingIndicator /> : null}使用此头像</Button></View>
+      <View className="my-avatar-zoom"><Text>缩小</Text><Slider min={1} max={2.5} step={0.05} value={zoom} disabled={saving || !page.visible} {...sliderColors} blockSize={20} aria-label="头像缩放" onChanging={event => { if (page.isCurrent()) setZoom(Number(event.detail.value)); }} onChange={event => { if (page.isCurrent()) setZoom(Number(event.detail.value)); }} /><Text>放大</Text></View>
+      <View className="my-avatar-editor__actions"><Button disabled={saving || !page.visible} onClick={() => { if (page.isCurrent()) close(); }}>取消</Button><Button className="my-avatar-save loading-button" aria-busy={saving} disabled={saving || !page.visible} data-control="my-avatar-save" onClick={() => void save()}>{saving ? <LoadingIndicator /> : null}使用此头像</Button></View>
     </View></View> : null}
   </>;
 }

@@ -7,6 +7,9 @@ import ts from 'typescript';
 import { skyResourceOriginTestOwner } from './sky-resource-origin-test-support';
 import {MINIAPP_API_BASE_PATH,galacticImageManifestPath} from '@starward/miniapp-contracts';
 import {assertGalacticImageManifest} from './galactic-image-publication';
+import {sourceCompositionTestScope} from '../sky/sources/source-recovery-test-support';
+import type * as sourceDocuments from '../features/sky/sky-source-documents';
+import type {SourceDocument} from '../utils/source-document';
 
 // Actual consumer and same-origin/cancellation boundary; transport callbacks
 // are controlled here. HTTP/runtime observations remain separate evidence.
@@ -69,17 +72,40 @@ test('accepted optical and retained infrared selections read only their exact me
   const invalid=consumer([]);await assert.rejects(invalid.get(undefined,'../manifest'),/selection_invalid/);assert.equal(invalid.requests.length,0);
 });
 
-test('the actual Sky source panel links the accepted edition instead of changing discovery',()=>{
+test('the actual Sky source entry renders and copies the painted optical or infrared edition instead of discovery',async()=>{
   const page=ts.createSourceFile('sky.tsx',readFileSync(new URL('../features/sky/spot-sky-page.tsx',import.meta.url),'utf8'),
     ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
-  const calls:ts.CallExpression[]=[];
-  function visit(node:ts.Node){if(ts.isCallExpression(node)&&node.expression.getText(page)==='galacticImageManifestUrl')calls.push(node);ts.forEachChild(node,visit);}
-  visit(page);assert.equal(calls.length,1);
-  const expression=ts.transpileModule(calls[0]!.getText(page),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
-  const c=consumer([]);
-  for(const publication of [optical,infrared]){
-    const url=vm.runInNewContext(expression,{galacticImageManifestUrl:c.metadataUrl,presentedGalacticPublication:publication});
-    assert.equal(url,'https://sky-test.starward.invalid'+galacticImageManifestPath(publication.publicationHash));
-    assert(!url.includes('/display/manifest'));
+  let entry:ts.Expression|undefined;
+  function visit(node:ts.Node){
+    if(ts.isVariableDeclaration(node)&&node.name.getText(page)==='openGalacticSources')entry=node.initializer;
+    ts.forEachChild(node,visit);
   }
+  visit(page);assert(entry,'the actual Sky source entry must exist');
+  const expression=ts.transpileModule(`(${entry.getText(page)})`,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+  const scope=sourceCompositionTestScope('https://sky-test.starward.invalid');
+  try{
+    const documents=scope.module<typeof sourceDocuments>('features/sky/sky-source-documents.ts');
+    const {SOURCE_READING_ROUTE}=scope.module('utils/source-document.ts');
+    let painted:any,opened:Array<{route:string;document:SourceDocument}>=[];
+    const image={};
+    const open=vm.runInNewContext(expression,{...documents,SOURCE_READING_ROUTE,
+      currentPaintedSkySourceFrame:()=>painted,skyNativeImageIsCurrent:(candidate:unknown)=>candidate===image,
+      openSkySources:(route:string,document:SourceDocument)=>{opened.push({route,document});},
+    }) as (publication:typeof optical)=>void;
+    for(const publication of [optical,infrared]){
+      painted={galacticImage:{publication,image}};open(publication);
+      assert.equal(opened.at(-1)?.route,SOURCE_READING_ROUTE);
+      await scope.document(opened.at(-1)!.document);
+      const url='https://sky-test.starward.invalid'+galacticImageManifestPath(publication.publicationHash);
+      assert(scope.text.includes(publication.source.credit),'the actual rights template keeps the full selected credit');
+      assert(scope.text.includes(publication.processing));
+      for(const limitation of publication.limitations)assert(scope.text.includes(limitation));
+      assert(scope.text.includes(url));assert(!scope.text.includes('/display/manifest'));
+      await scope.click('复制数据清单链接');assert.equal(scope.clipboard.at(-1),url);
+      const count=opened.length;
+      open(publication===optical?infrared:optical);assert.equal(opened.length,count,'another edition cannot borrow the painted entry');
+      painted.galacticImage.image={};open(publication);assert.equal(opened.length,count,'a retired native image cannot open old credit');
+    }
+    assert.equal(scope.transport.calls.length,0,'reading exact metadata must not discover a replacement or download images');
+  }finally{await scope.dispose();}
 });

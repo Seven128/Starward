@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro from "@tarojs/taro";
 import { useEffect, useRef, useState } from "react";
 import { currentDraftUserId, planReminderSubscription } from "@/services/api-client";

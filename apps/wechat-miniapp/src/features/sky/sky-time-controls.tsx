@@ -1,4 +1,5 @@
-import { Button, Input, Text, View } from "@tarojs/components";
+import { Input, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro, { useDidHide } from "@tarojs/taro";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { localParts } from "@starward/miniapp-contracts";
@@ -10,10 +11,12 @@ type TimeStepRect = { left: number; right: number; top: number; bottom: number }
 /** Civil text is an editing draft. The page's observation-time owner remains
  * authoritative for previews/playback and its Context owns explicit apply. */
 export function SkyTimeControls({ at, timezone, active, current, playing, canPlay, previewPending, previewFailed,
+  playbackPending, playbackFailed,
   onRetryPreview, onPreview, onApply, onTogglePlay, onPause }: {
   at: string; timezone: string; active: boolean; playing: boolean; canPlay: boolean;
   current: () => boolean;
   previewPending?: boolean; previewFailed?: boolean; onRetryPreview?: () => void;
+  playbackPending?: boolean; playbackFailed?: boolean;
   onPreview: (at: string) => boolean; onApply: (at: string) => void;
   onTogglePlay: () => void; onPause: () => void;
 }) {
@@ -92,7 +95,7 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
     {fields.map((field, index) => <View key={field} className="sky-time-field-group">
       {index ? <Text className="sky-time-separator">{separator}</Text> : null}
       <View className="sky-time-field">
-        {[1, -1].map(delta => <Button key={delta} id={`sky-time-step-${field}-${delta > 0 ? "up" : "down"}`} className={`sky-time-step sky-time-step--${delta > 0 ? "up" : "down"}`}
+        {[1, -1].map(delta => <Button pressVariant="icon" key={delta} id={`sky-time-step-${field}-${delta > 0 ? "up" : "down"}`} className={`sky-time-step sky-time-step--${delta > 0 ? "up" : "down"}`}
           ariaLabel={`${delta > 0 ? "增加" : "减少"}${fieldLabels[field]}`} disabled={!active}
           onTouchStart={() => startHold(`sky-time-step-${field}-${delta > 0 ? "up" : "down"}`, () => step(field, delta))}
           onTouchMove={event => { hold.current.point = event.touches[0] ?? null; moveOutside(); }} onTouchEnd={stopHold} onTouchCancel={stopHold}
@@ -115,9 +118,9 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
     <View className="sky-time-controls__grid">
       {group(["year", "month", "day"], "-")}
       <View className="sky-time-center-actions">
-        <Button className="sky-time-icon-action sky-time-icon-action--primary" ariaLabel="应用所选时刻" disabled={!active}
+        <Button pressVariant="icon" className="sky-time-icon-action sky-time-icon-action--primary" ariaLabel="应用所选时刻" disabled={!active}
           onClick={() => { stopHold(); const next = settleInput(); if (next) onApply(next); }}><SemanticIcon name="sky-apply" /></Button>
-        <Button className="sky-time-icon-action" ariaLabel={playing ? "暂停1倍播放" : "1倍播放"} disabled={!active || !playing && (!canPlay || draft !== at)}
+        <Button pressVariant="icon" className="sky-time-icon-action" ariaLabel={playing ? "暂停1倍播放" : "1倍播放"} disabled={!active || !playing && (!canPlay || draft !== at)}
           onClick={() => {
             stopHold(); if (!live.current.active || !live.current.current()) return;
             if (Object.keys(inputRef.current).length && !settleInput()) return;
@@ -126,10 +129,18 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
       </View>
       {group(["hour", "minute", "second"], ":")}
     </View>
-    {error || previewPending || previewFailed ? <Text className="sky-time-input-error">
-      {error || (previewFailed ? "此刻的天空未加载，当前星图时间见下方" : "正在更新天空，当前星图时间见下方")}
-    </Text> : null}
-    {previewFailed && onRetryPreview ? <Button className="sky-time-retry" disabled={!active}
-      onClick={onRetryPreview}>重试星图</Button> : null}
+    {/* Keep the bottom-anchored field targets stationary while a held arrow
+        changes preview status. Moving an Input under the finger can focus it
+        and open the native keyboard before the original touch is released. */}
+    <View className="sky-time-feedback">
+      <Text className="sky-time-input-error">
+        {error || (playbackFailed ? "播放未开始，请重试"
+          : playbackPending ? "正在准备播放"
+          : previewFailed ? "此刻的天空未加载，当前星图时间见下方"
+          : previewPending ? "正在更新天空，当前星图时间见下方" : "")}
+      </Text>
+      {(previewFailed || playbackFailed) && onRetryPreview ? <Button className="sky-time-retry" disabled={!active}
+        onClick={onRetryPreview}>{playbackFailed ? "重试播放" : "重试星图"}</Button> : null}
+    </View>
   </View>;
 }

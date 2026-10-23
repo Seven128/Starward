@@ -33,7 +33,7 @@ function harness(queryClient = new QueryClient(), transform = (source: string) =
     useQueryClient: () => queryClient,
     getSpotRecentWeather() {}, recentWeatherDetails, recentWeatherFacts, recentWeatherImplications, Date: TestDate, calendarDateInTimezone,
     useCalendarDay: (timezone: string) => calendarDateInTimezone(new TestDate(), timezone),
-    Button: "Button", Text: "Text", View: "View", SourceDisclosure: "SourceDisclosure", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceAttribution: "SourceAttribution",
+    Button: "Button", Text: "Text", View: "View", SourceEntry: "SourceEntry", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return {
@@ -162,17 +162,17 @@ test("partial evidence keeps dated facts, complete range disclosure and persiste
   assert.doesNotMatch(text(tree), /最高 0/);
   assert.match(text(tree), /可能湿滑/);
   assert.equal(h.notifications.length, 1);
-  const disclosure = find(tree, node => node.type === "SourceDisclosure");
+  const disclosure = find(tree, node => node.type === "SourceEntry");
   assert.equal(disclosure.props.label, "近期天气范围与来源");
-  assert.match(text(disclosure), /不含今天.*不是点位过去48小时/);
-  assert.match(text(disclosure), /暂无数据：2026-09-14/);
+  assert.match(JSON.stringify(disclosure.props.sections), /不含今天.*不是点位过去48小时/);
+  assert.match(JSON.stringify(disclosure.props.sections), /暂无数据：2026-09-14/);
   assert.ok(find(tree, node => node.props?.className === "recent-weather__day" && text(node) === "2026-09-14未返回"), "the missing day must be visible before expanding source details");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(h.notifications.length, 1, "rerenders do not restart transient notifications");
   h.hide(); h.render(); assert.equal(h.options.enabled, false);
   h.set({ data: undefined, isPending: true }); tree = h.render("spot:b");
   assert.doesNotMatch(text(tree), /区域甲|降水 12/);
-  assert.ok(!find(tree, node => node.type === "SourceDisclosure"), "inactive history must release the disclosure with its Geo data");
+  assert.ok(!find(tree, node => node.type === "SourceEntry"), "inactive history must release the source-page payload with its Geo data");
 });
 
 test("no coverage keeps a short regional placeholder without an exception notification; unpublished spots never query", () => {
@@ -192,9 +192,9 @@ test("daily temperature and precipitation stay brief while complete sampled wind
   const daily = find(tree, node => node.props?.className === "recent-weather__day" && /2026-09-13.*降水/.test(text(node)));
   assert.equal(text(daily), "2026-09-138–16°C · 降水 0 mm");
   assert.doesNotMatch(text(daily), /风速|多云|小雨|全天/);
-  const disclosure = find(tree, node => node.type === "SourceDisclosure");
-  assert.match(text(disclosure), /2026-09-13.*已返回 7 小时中最大风速 14 km\/h.*已返回时段：多云、小雨/s);
-  assert.doesNotMatch(text(disclosure), /全天最大风速/);
+  const disclosure = find(tree, node => node.type === "SourceEntry");
+  assert.match(JSON.stringify(disclosure.props.sections), /2026-09-13.*已返回 7 小时中最大风速 14 km\/h.*已返回时段：多云、小雨/s);
+  assert.doesNotMatch(JSON.stringify(disclosure.props.sections), /全天最大风速/);
 });
 
 test("sample history uses ordinary dated facts and recovery without test explanations", () => {

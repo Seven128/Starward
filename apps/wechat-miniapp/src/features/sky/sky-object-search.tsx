@@ -1,4 +1,5 @@
-import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
+import { Input, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro from "@tarojs/taro";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
@@ -53,7 +54,7 @@ export function SkyObjectSearch({ children, footer, onSelect, query, onQueryChan
         updateQuery(event.detail.value);
         setSettledQuery(event.detail.value.trim());
       }} />
-    {query ? <Button className="sky-object-search__clear focus-ring" aria-label="清空搜索"
+    {query ? <Button pressVariant="icon" className="sky-object-search__clear focus-ring" aria-label="清空搜索"
       onClick={() => { updateQuery(""); setSettledQuery(""); }}><SemanticIcon name="sky-cancel" /></Button> : null}
     </View>
     <ScrollView scrollY enhanced showScrollbar={false} className="sky-search-scroll" scrollIntoView={scrollAnchor} scrollWithAnimation={false}>

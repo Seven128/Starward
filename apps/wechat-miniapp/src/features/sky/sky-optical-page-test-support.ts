@@ -8,6 +8,7 @@ import * as bodyImages from "./sky-body-image-completion";
 import {createSkyViewBasis,sameSkyViewBasis} from "./sky-view-projection";
 import * as preparedRegions from "./sky-prepared-region-frame";
 import { createSkyStarTransitions } from "./sky-star-transition";
+import { createSkyStarDrawPreparation } from "./sky-star-draw-preparation";
 import { createSkyReadyImages } from "./sky-ready-presentation";
 import * as labelPresentation from "./sky-label-presentation";
 import { constellationVisibility } from "./sky-constellation-visibility";
@@ -40,6 +41,7 @@ export function skyPageCanvasTestBindings(bindings:Record<string,any>={}) {
     canvasSurfaceRef.current.measureText=measureText;
   return {...skyPageSceneTestDependencies,
     starTransitions:createSkyStarTransitions(),
+    starDrawing:createSkyStarDrawPreparation(),
     readyImages:createSkyReadyImages(),
     nameLayouts:createSkyNameLayouts(),
     skyTapRef:{current:null},

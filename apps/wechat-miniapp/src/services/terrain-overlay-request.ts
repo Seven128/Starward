@@ -11,6 +11,19 @@ export function normalizeTerrainOverlayRequest(input: TerrainOverlayRequest): Te
     : { purpose: input.purpose, center, radiusKm: Number(input.radiusKm!.toFixed(1)) };
 }
 
+/** Both the complete and ready-preview reads describe the same real viewport. */
+export function terrainOverlayRequestQuery(input: TerrainOverlayRequest) {
+  const request = normalizeTerrainOverlayRequest(input);
+  return [
+    `purpose=${request.purpose}`,
+    `centerLat=${request.center.latitude.toFixed(7)}`,
+    `centerLng=${request.center.longitude.toFixed(7)}`,
+    ...(request.viewportBounds ? [`viewportBounds=${[request.viewportBounds.west, request.viewportBounds.south,
+      request.viewportBounds.east, request.viewportBounds.north].map(value => value.toFixed(7)).join(",")}`]
+      : [`radiusKm=${request.radiusKm!.toFixed(1)}`]),
+  ].join("&");
+}
+
 /** Only valid, supported viewport requests can share a fixed product identity
  * or retain an older covering request. Keep that admission rule in one place. */
 export function terrainOverlayRequestWindow(input: TerrainOverlayRequest) {

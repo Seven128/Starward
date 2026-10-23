@@ -1,7 +1,7 @@
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import Taro from "@tarojs/taro";
-import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
-import { Button, Image, RootPortal, Text, View } from "@tarojs/components";
+import { Image, RootPortal, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { retainPhotoViewerNativeChrome } from "@/theme/native-chrome";
@@ -104,10 +104,8 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   useEffect(() => {
     const nativeChrome = retainPhotoViewerNativeChrome();
     void nativeChrome.ready.catch(error => console.warn("photo_viewer_native_chrome_failed", error));
-    const releaseNavigation = retainPrimaryNavigationCover();
     return () => {
       void nativeChrome.release().catch(error => console.warn("photo_viewer_native_chrome_restore_failed", error));
-      releaseNavigation();
     };
   }, []);
   const clearFlightTimers = () => {
@@ -306,7 +304,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
       ...(safeTop === undefined ? {} : { "--viewer-safe-top": `${safeTop}px` }),
     } as CSSProperties}
     role="dialog" ariaLabel={`${name}照片查看器，第 ${index + 1} 张，共 ${media.length} 张`} catchMove>
-    <Button className="spot-media-viewer__close" ariaLabel="关闭照片查看器" onClick={requestClose}><SemanticIcon name="close" /></Button>
+    <Button pressVariant="icon" className="spot-media-viewer__close" ariaLabel="关闭照片查看器" onClick={requestClose}><SemanticIcon name="close" /></Button>
     <View className="spot-media-viewer__counter" ariaLabel={`第 ${index + 1} 张，共 ${media.length} 张`}><Text>{index + 1} / {media.length}</Text></View>
     <View className="spot-media-viewer__content" style={{ "--viewer-drag-x": `${frame.x}px`, "--viewer-drag-y": `${frame.y}px`, "--viewer-scale": String(frame.scale),
       ...(imageHalfHeight === null ? {} : { "--viewer-image-half-height": `${imageHalfHeight}px` }),

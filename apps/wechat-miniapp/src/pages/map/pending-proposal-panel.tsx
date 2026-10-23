@@ -1,4 +1,5 @@
-import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
+import { Image, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro from "@tarojs/taro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
@@ -12,11 +13,12 @@ import { currentDraftUserId, getContributionMedia } from "@/services/api-client"
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
 
-export function PendingProposalPanel({ submission, variant = "PENDING", extent, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit, onPhotoIntent,
+export function PendingProposalPanel({ submission, variant = "PENDING", extent, visible = true, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit, onPhotoIntent,
   onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange, restorePosition, onPositionChange }: {
   submission: ContributionSubmission;
   variant?: "DRAFT" | "PENDING";
   extent: SpotPanelExtent;
+  visible?: boolean;
   documentScrollEnabled: boolean;
   phase: SpotPanelPhase;
   onExtent: (extent: SpotPanelExtent) => void;
@@ -47,11 +49,11 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   currentMediaScope.current = mediaScope;
   const { document: documentPosition, gallery: galleryPosition } = usePanelReturnPosition(
     `${owner ?? "none"}:${submission.submissionId}`, mediaScope,
-    { restorePosition, onPositionChange, ready: extent !== "small" });
+    { restorePosition, onPositionChange, visible, ready: extent !== "small" });
   useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
   useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];
-  const panelHandle = <View className="spot-panel__handle-band spot-panel__handle-band--document">
+  const panelHandle = <View className="spot-panel__handle-band spot-panel__handle-band--document" catchMove>
     <Button className="spot-panel__handle focus-ring" data-control="map-spot-panel-handle"
       ariaLabel={`拖动调整${draft ? "草稿" : "审核中"}观星点信息面板大小`}
       onTouchStart={onHandleTouchStart} onTouchMove={onHandleTouchMove}
@@ -59,13 +61,13 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       <View className="spot-panel__handle-bar" aria-hidden="true" />
     </Button>
     <View className="spot-panel__extent-actions" role="group" ariaLabel={`调整或关闭${draft ? "草稿" : "审核中"}观星点信息面板`}>
-      <Button className="spot-panel__extent-button" disabled={extent === "small"}
+      <Button pressVariant="icon" className="spot-panel__extent-button" disabled={extent === "small"}
         ariaLabel={extent === "large" ? "收起为中档面板" : "收起为小档面板"}
         onClick={() => onExtent(extent === "large" ? "medium" : "small")}><SemanticIcon name="chevron-down" /></Button>
-      <Button className="spot-panel__extent-button" disabled={extent === "large"}
+      <Button pressVariant="icon" className="spot-panel__extent-button" disabled={extent === "large"}
         ariaLabel={extent === "small" ? "展开为中档面板" : "展开为大档面板"}
         onClick={() => onExtent(extent === "small" ? "medium" : "large")}><SemanticIcon name="chevron-up" /></Button>
-      <Button className="spot-panel__extent-button spot-panel__extent-button--close" ariaLabel={`关闭${draft ? "草稿" : "审核中"}观星点信息面板`}
+      <Button pressVariant="icon" className="spot-panel__extent-button spot-panel__extent-button--close" ariaLabel={`关闭${draft ? "草稿" : "审核中"}观星点信息面板`}
         onClick={onClose}><SemanticIcon name="close" /></Button>
     </View>
   </View>;
@@ -130,14 +132,16 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
     <View className="spot-panel__scroll-frame">
       <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={documentScrollEnabled} type="custom" enhanced showScrollbar={false}
         {...(documentPosition.returnTop === undefined ? {} : { scrollTop: documentPosition.returnTop })}
+        onTouchStart={documentPosition.takeOver}
         onScroll={event => documentPosition.record(event.detail.scrollTop)}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
         {leadMedia ? <View className="spot-panel__media spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
-          <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
+          <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1}
+            {...(galleryPosition.returnLeft === undefined ? {} : { scrollLeft: galleryPosition.returnLeft })} onTouchStart={galleryPosition.takeOver} enhanced showScrollbar={false}
             ariaLabel={`${model.name}提交照片`}
             onScroll={(event) => {
               const width = Taro.getWindowInfo().windowWidth || 390;
-              galleryPosition.onScroll(event);
+              if (!galleryPosition.onScroll(event)) return;
               const start = Math.floor(event.detail.scrollLeft / (photoStripSlideWidth(width) + 8));
               if (Number.isFinite(start)) setMediaWindowStart(Math.max(0, Math.min(model.media.length - 1, start)));
             }}>

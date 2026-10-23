@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { userMapRegionStarted } from "./map-region-event.ts";
 import { spotNeighborhoodCamera } from "./map-camera.ts";
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 
 function code(name: "onRegionChange" | "onMarkerTap") {
   let source = fs.readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
@@ -30,6 +31,7 @@ function code(name: "onRegionChange" | "onMarkerTap") {
 test("actual native gesture begin cancels pending selection before the settled pan can commit", () => {
   let cancellations = 0;
   vm.runInNewContext(code("onRegionChange"), {
+    ...createMapPageTestBoundaries().scope,
     event: { type: "begin", causedBy: "gesture", detail: {} },
     nativeMap: { isCurrent: () => true }, editorPresentation: { isClosing: () => false },
     userMapRegionStarted, userMapRegionEnd: () => null, mapRegionEnded: () => false,
@@ -44,6 +46,7 @@ test("settled native camera commits immediately while conditions debounce keeps 
     const writes: unknown[] = [], resolves: unknown[] = [];
     const viewport = { center: { latitude: 22, longitude: 114 }, zoom: 10, loadedViewport: "initial" };
     vm.runInNewContext(code("onRegionChange"), {
+      ...createMapPageTestBoundaries().scope,
       event: {}, nativeMap: { mapId: "spot-map", isCurrent: () => current }, editorPresentation: {isClosing: () => false},
       mapPointIntent: { current: 1 }, invalidateMapPointIntent: () => 1, currentDraftUserId: () => "owner",
       failedMapRegion: { current: null },
@@ -71,6 +74,7 @@ for (const privateMarker of [false, true]) {
       const gate = new Promise<boolean>(resolve => { release = resolve; });
       const writes: unknown[] = [];
       vm.runInNewContext(code("onMarkerTap"), {
+        ...createMapPageTestBoundaries().scope,
         event: { detail: { markerId: privateMarker ? 100000 : 0 } }, nativeMap: { isCurrent: () => current },
         confirmEditorLeave: () => gate, editorPresentation: {isClosing: () => false},
         finishSpotEditorPresentation: (complete: () => void) => complete(),

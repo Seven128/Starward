@@ -4,6 +4,8 @@
 
 ## 云观星菜单设计资源（2026-10-16用户修订）
 
+- 六字段连续调时的箭头和输入框在空闲、更新中、失败及错误状态之间保持位置稳定；状态文案与重试共用固定提示区，不得在按住期间通过增删提示行移动触点。窄且矮的屏幕只压缩既有留白，保留44px操作目标、完整提示、取消和时间尺；提示仍区分请求时刻与已实际绘制的时刻。
+
 用户重新要求以当前实现和本次优化条件交由 Stitch 出新稿，取代此前菜单不走设计资源的决定；覆盖菜单、搜索/星体说明/时间/叠加弹窗及手动／随手机直接校准，不覆盖星图本身。全局红光状态和本次明确的入场转场一并出稿。外部 Map 工具位置/尺寸仅供比较、不新增外部菜单；用户后续明确允许仅Sky入口的必要Map接线/渐黑遮罩，具体边界见本节“进入边界”，其余Map保持。2026-10-17用户已直接采用十二项及后续时间/长内容细修的完整菜单批次。唯一完整采用源为[云观星菜单与弹窗｜已采用·完整交互·2026-10-17](https://stitch.google.com/projects/7144519510537620825?node-id=5385664345158066168)，包含十二项及后续控制/长内容细修的十一种状态；远端HTML已完整读回。旧02b及旧总览不再是当前基线，仓库不保设计副本；资源采用与同步不代表生产已迁移，实际验证/清理结果归任务证据。
 
 2026-10-17十二项修订后的当前菜单为三横/X开关，下方依次展开**返回、搜索、时间、叠加、手动／随手机、红光**六项。返回用门图标，叠加用层叠图标，圆形按钮不显示文字。上下线移动/旋转成X、中线退隐，关闭反向。前四个槽位与Map工具几何对应；本次返回置首覆盖此前按功能映射的旧顺序，额外两槽向下延伸。精确值沿 `pages/map/index.scss` 最后生效规则及 `native-metrics.ts` 安全区（52px命中、内缩4px的44px圆面、22px图标、8rpx间隔、24rpx右距），不改外部Map。搜索、天体说明、底部时间、叠加四类披露有实际设计稿，校准modal由本轮直接控制取代。
@@ -20,7 +22,7 @@
 
 本范围采用资源使用无背景采样的RGBA、静态薄高光/细边/短阴影及有限按压动效，不宣称实时折射或已测高性能。红光动作改为眼睛＋星星，普通状态图标红色，红光状态该图标白色；此为用户明确指定的**仅该图标**白色例外，圆面、其它图标、文字、阴影与按压/hover仍黑/暖红。真实模糊/折射须目标WEAPP合成支持并通过同设备动态负载成本对照；生产继续沿[共享材质责任](../../../../architecture/runtime-and-domain.md#shared-material-rendering-boundary)，不复制天空或引入第二Canvas。研究、实际候选与适配归[资源入口](https://stitch.google.com/projects/7144519510537620825?node-id=5385664345158066168)，本批已明确采用；原型与浏览器检查不证明生产完成。
 
-实现责任：`sky-overlay-motion.tsx` 的 `SkyDisclosureSurface` 统一四类外壳/外点边界，`SkyObjectDialog` 统一长正文与核心资料高度；异步位置状态经共享布局通知更新正文空间，普通坐标变化不触发布局查询。`sky-menu.tsx` 只拥有菜单呈现和有限运动锁，`sky-disclosure-commands` 仍拥有统一关闭/返回意图。六字段由 `sky-time-controls` 编辑草稿、`sky-time-input` 复用公共时区转换，预览/播放仍归 `sky-observation-time`，显式应用仍归公共 Context 事务；Sky 的现实当前时刻上限不修改 Map 的未来规划。运行图标由 `runtime-assets` 和既有配置复制，Sky 控件显式使用采用稿的普通/红光颜色，避免进入前的日间图标污染深色材质；该目录不是设计镜像。
+实现责任：`sky-overlay-motion.tsx` 的 `SkyDisclosureSurface` 统一四类外壳/外点边界，`SkyObjectDialog` 统一长正文与核心资料高度；普通View分配剩余视口、原生ScrollView填满该视口，异步位置状态直接经正常布局更新正文空间，不再查询header高度或另发共享测量通知。`sky-menu.tsx` 只拥有菜单呈现和有限运动锁，`sky-disclosure-commands` 仍拥有统一关闭/返回意图。六字段由 `sky-time-controls` 编辑草稿、`sky-time-input` 复用公共时区转换，预览/播放仍归 `sky-observation-time`，显式应用仍归公共 Context 事务；Sky 的现实当前时刻上限不修改 Map 的未来规划。运行图标由 `runtime-assets` 和既有配置复制，Sky 控件显式使用采用稿的普通/红光颜色，避免进入前的日间图标污染深色材质；该目录不是设计镜像。
 
 时间编辑交接：键盘草稿在箭头、播放或应用前由同一控件一次性消费；消费后迟到的 blur 不能重写新时刻。覆盖外草稿不能误播原公共时刻，关闭/反向重开后恢复公共时刻的可播放状态。没有键盘编辑的应用及箭头步进保留原瞬间的小数秒；明确六字段键盘编辑按用户输入的秒值解释。公共预览/播放及提交仍由原领域owner判定，不因UI交接增加第二个时钟。
 
@@ -32,7 +34,7 @@ Sky曲尺的`orientation-ruler-layout`只拥有原生布局投影：同批axis�
 
 完整应用内黑场包含浮动通知和原生custom Tab；Tab由自身cover责任渐黑/渐显，不靠页内z-index跨原生边界，也不通过隐藏Tab改变布局。新建页面的静态底色接续黑场，正常内容仍沿主题。两方向共用动效偏好：账号明确减弱或系统已确认reduce时减弱，尚未读回系统设置不等于要求省略返回渐显；原生渲染确认后才开始兜底计时。
 
-地图重建复用`app-store`的视口/缩放、正式点选择、筛选/图层和Observation Context，以及原查询缓存。`pages/map/sky-return-state.ts`只短暂保存面板档位、已选摘要或本人待审提案、正文/照片滚动位置；账号、地图重置、新选择或新打开意图立即使其失效，消费/丢弃即撤销订阅，不保留组件/原生地图/请求。恢复仍沿现有提案资格与Context核验，不以快照恢复授权。尚在提交的观测时间不能触发替换入口。返回Map的首次原生`onUpdated`允许揭开黑场；错误/缺回调沿现有恢复时限释放遮罩并保留地图重试，不能记为就绪。该事件仅是原生地图更新，不代表全部瓦片、图片或报告就绪。实际加载时间、是否需要用户提出的聚拢/拉开云层降级及目标设备缺口留在当前任务证据，未凭开发工具数值宣称手机速度。
+地图重建复用`app-store`的视口/缩放、正式点选择、筛选/图层和Observation Context，以及原查询缓存。`pages/map/sky-return-state.ts`只短暂保存面板档位、已选摘要或本人待审提案、正文/照片滚动位置；账号、地图重置、新选择或新打开意图立即使其失效，消费/丢弃即撤销订阅，不保留组件/原生地图/请求。恢复仍沿现有提案资格与Context核验，不以快照恢复授权。`usePanelReturnPosition`统一重建与保留页面hide/show的正文/照片两轴恢复。正式点正文以有界稳定内容块/来源入口ID及视口相对偏移保存阅读位置，数值top为后备；来源离开前同批读取native scrollOffset与矩形，不拼旧事件与新布局。隐藏冻结并取消在途测量；show及实际正文布局版本变化时有限校正，不以数字ack代替阅读位置保持。地形/轮廓、实时天气/空气质量、计划和预警仍由原owner释放资源，只报告影响几何的变化；快照不保停用payload。enhanced ScrollView公开scrollTo可重新应用同值命令，不用虚假偏移。真实触摸/章节意图立即退休校正，来源准备/隐藏取消旧章节timer；旧代次/布局读回失效。普通滚动只记录并在停稳后测量，不逐帧重发命令；触摸不撤native scrollTop以免复位，不另建固定定时恢复。尚在提交的观测时间不能触发替换入口。返回Map的首次原生`onUpdated`允许揭开黑场；错误/缺回调沿现有恢复时限释放遮罩并保留地图重试，不能记为就绪。该事件仅是原生地图更新，不代表全部瓦片、图片或报告就绪。实际加载时间、是否需要用户提出的聚拢/拉开云层降级及目标设备缺口留在当前任务证据，未凭开发工具数值宣称手机速度。
 
 ## 菜单、文案与弹窗（2026-10-15用户修订）
 
@@ -44,7 +46,7 @@ Sky曲尺的`orientation-ruler-layout`只拥有原生布局投影：同批axis�
 
 菜单与弹窗按名称/关键信息、主要动作、次要动作、详细资料及来源组织，避免重复状态、长链接与按钮堆积。搜索保持明确输入、轻量结果与可恢复的空错态；天体说明中来源收为“来源”加箭头，打开已有精确身份/版次的只读来源页，完整出处/许可/适用限制及返回恢复保留。方向引导明确区分授权、随手机转动与实景校准。此前直接实施的功能要求继续有效；本次菜单资源流程沿上方最新修订，不重启已撤销旧稿采用，实际完成情况和证据归任务交接。
 
-目录天体与报告目标继续共用`SkyObjectDialog`的内容滚动与测量责任；最新资源移除通用标题/关闭条，保正文身份、科学事实及完整来源。迁移时按实际无页头外壳核WEAPP的max-height与原生ScrollView高度，不能只flex缩外层而让滚动区仍占完整内容高度。报告目标的短类型、真实参考时段与位置仍在详细资料，地点/时区移至视口公共信息；完整计算说明随原目标身份进入只读来源页，历史/缺测/强度未知保留。
+目录天体与报告目标继续共用`SkyObjectDialog`的内容滚动与视口布局责任；最新资源移除通用标题/关闭条，保正文身份、科学事实及完整来源。迁移时按实际无页头外壳核WEAPP的max-height与原生ScrollView高度，不能只flex缩外层而让滚动区仍占完整内容高度。报告目标的短类型、真实参考时段与位置仍在详细资料，地点/时区移至视口公共信息；完整计算说明随原目标身份进入只读来源页，历史/缺测/强度未知保留。
 
 方向/高度的日常表述沿`sky-position-label.ts`，八方向沿共享`utils/compass-label.ts`；保同一已接受地点、时刻和精确角度，负高度明确在地平线下，未知不作北方或零高度。目录识别文案沿`skyObjectIdentityLabel`：HR/M/NGC/SAO等真实目录编号保留，PLANET/SOLAR运输ID不作普通用户识别信息；reference仍负责选择、请求、缓存和来源身份，不因文案简化改变。
 
@@ -423,6 +425,8 @@ M51/M63/M64/M81/M82/M87 现有一条受限的 [SDSS DR17 自托管光学定点�
 - `更多场地信息` follows the currently adopted Map resource's inline disclosure in the same spot document, not a navigation to the old standalone `场地资料` presentation. Show it only when additional platform/signal/facility/access/safety details exist; opening and closing retain the panel extent and scroll owner, invalidate chapter offsets, and switching spots closes the disclosure. Do not remove valid field facts while replacing the old navigation. Real guides remain optional supporting content with author/source and safe return. `我要反馈` is a distinct operable lightweight button, routed to the existing contribution owner with spot context, authorization and provisional-record rules. Standalone legacy field-route consumers require their own migration review; they are not evidence that the current Map interaction conforms.
 - Licensed, applicable, available site media precedes identity in the document and is visible only toward large. A single image uses a wide crop; multiple images form one horizontal strip with a visible continuation cue and accurate count, opening the shared viewer at the tapped index. A media list is not a nested Tab or separate sheet. The white identity/drag band follows this media and scrolls with the document. Small/medium consume no media height; no-media consumes no placeholder. Preserve the continuous media height/opacity reveal before near-top map-chrome fade and its reverse sequence. `RepresentativeMedia` attribution/rights/identity remain required; a design-only illustrative photo is not a verified site image.
 - `云观星` and active `想去` share a muted night-sky background family, with different sparse star positions. Star brightness continuously and gently varies at staggered rhythms within these buttons; the foreground favorite ritual remains a single reversible action, not a looping meteor. This explicit owner-approved decorative exception is not astronomical data, and changes neither navigation nor spot/Observation Context validity. All three actions have background surfaces and no outer borders; sharing uses a quiet complementary color owned by DESIGN. Decorative animation pauses offscreen/background and becomes static under reduced motion; Observation uses the closed warm-red palette.
+
+2026-10-22 已采用的[局部紧凑信息资源](../wechat-miniapp.md#stitch-design-authority)只调整天文/月相与气象分组、来源小入口及去底栏后的可用高度。原日期/日历/曲线时间尺、九项气象指标及缺测语义、夜光、目标和独立空气质量/警告事实保留；原三档同一连续文档、章节/媒体与想去/云观星/分享固定动作不变。布局紧凑不授权缩字、丢字段、填造缺测或改数据/时间责任；其他内容、图标、材质、配色和Sky内部构图维持原样。来源交互复用[共享owner](shared-state-and-recovery.md#公共按压与来源入口2026-10-22采用)。
 
 ## Astronomy Evidence Composition
 

@@ -53,8 +53,24 @@ export class NightLightService {
     const directory = path.join(this.root, dataset.datasetVersion);
     const result = await this.cache.get(`${version}:${dataset.payload.rasterInventory.sha256}`, async () => {
       const inventory = await readFixedNightLightInventory(directory, dataset, this.shutdown.signal);
-      const proofs: FixedNightLightRaster[] = [];
-      for (const entry of inventory.assets) proofs.push(await readFixedNightLightProof(directory, dataset, entry, this.shutdown.signal));
+      const proofs = new Array<FixedNightLightRaster>(inventory.assets.length);
+      const proofReads = new AbortController();
+      const proofSignal = AbortSignal.any([this.shutdown.signal, proofReads.signal]);
+      let next = 0;
+      // Validate every proof before publishing the release. Two metadata reads
+      // overlap filesystem waits without changing image/source read admission.
+      // A failed proof stops new work; drain both readers before retry can start.
+      const readProofs = async () => {
+        try {
+          while (next < inventory.assets.length) {
+            proofSignal.throwIfAborted();
+            const index = next++;
+            proofs[index] = await readFixedNightLightProof(directory, dataset, inventory.assets[index], proofSignal);
+          }
+        } catch (error) { proofReads.abort(error); throw error; }
+      };
+      await Promise.allSettled([readProofs(), readProofs()]);
+      proofSignal.throwIfAborted();
       return { directory, dataset, inventory, proofs };
     }, () => Infinity);
     this.shutdown.signal.throwIfAborted(); signal?.throwIfAborted();

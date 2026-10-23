@@ -8,7 +8,7 @@ import * as contracts from "@starward/miniapp-contracts";
 import { matchingCelestialInformationResponse } from "./celestial-information-response";
 import { celestialInformationPartialDetail } from "./celestial-information-presentation";
 import { transportHarness } from "./api-request-test-support";
-import {sourceRecoveryTestScope} from "../sky/sources/source-recovery-test-support";
+import {sourceCompositionTestScope,sourceRecoveryTestScope} from "../sky/sources/source-recovery-test-support";
 
 function actualFunction(file: string, name: string, bindings: object) {
   const source = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -148,32 +148,56 @@ test("actual cache fallback keeps explicit missing-source facts through STALE_US
   }
 });
 
-test("the actual source page passes original Prepared credit and its exact link to Provenance, retaining partial retry", () => {
-  const { response, source, hash } = selected(), requests: unknown[][] = [];
-  let retries = 0, current = response;
-  const render = actualFunction("../sky/sources/index.tsx", "CelestialObjectSourcesPage", {
-    React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
-    View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
-    useRouter: () => ({ params: { reference: "M%3A51", opticalPublicationHash: hash } }),
-    useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {}, useThemeClass: () => "mode-night",
-    isProductSource: () => true, deepSkyManifestUrl: manifestUrl(), celestialInformationPartialDetail,
-    useResourceQuery: (options: { enabled: boolean }) => { assert.equal(options.enabled, false); return { isPending: false, isError: false }; },
-    useCelestialInformation: (...args: unknown[]) => { requests.push(args); return { isPending: false, isError: false, refreshError: null,
-      data: current, refetch: () => { retries++; return Promise.resolve(); } }; },
-  });
-  function find(node: any, predicate: (item: any) => boolean): any {
-    if (Array.isArray(node)) { for (const child of node) { const value = find(child, predicate); if (value) return value; } return null; }
-    if (predicate(node)) return node;
-    for (const child of node?.children ?? []) { const value = find(child, predicate); if (value) return value; }
-    return null;
-  }
-  const tree = render(), credit = find(tree, item => item?.type === "Provenance" && item.props.source.id === source.id);
-  assert.ok(credit); assert.equal(credit.props.source, source);
-  assert.equal(credit.props.downloadUrl, `https://api.example.test/v2/sky/prepared-optical/${hash}/manifest`);
-  assert.deepEqual(Array.from(requests[0]!), ["M:51", true, undefined, hash]);
-  current = structuredClone(response); current.dataState = "PARTIAL"; current.warnings = ["prepared_optical_publication_unavailable"];
-  current.data.sources = current.data.sources.filter(item => !item.id.startsWith("prepared-optical-imagery:")); current.sources = current.data.sources;
-  const partial = find(render(), item => item?.type === "StatusPanel" && item.props.state === "PARTIAL");
-  assert.ok(partial); assert.match(partial.props.detail, /光学影像来源/u); partial.props.onRecover();
-  assert.equal(retries, 1); assert.deepEqual(Array.from(requests.at(-1)!), ["M:51", true, undefined, hash]);
+test("the actual source page renders original Prepared credit and copies its exact publication, retaining partial retry and selection fences", async () => {
+  const { response, source, hash } = selected(), scope=sourceCompositionTestScope();
+  const selectedParams={reference:"M%3A51",opticalPublicationHash:hash};
+  const expectedUrl=`https://api.example.test/v2/sky/prepared-optical/${hash}/manifest`;
+  const assertSelectedRequest=()=>{
+    const operation=scope.operationCalls.at(-1)!;
+    assert.equal(operation.operation,"celestialObjectGet");assert.equal(operation.options.pathParams.reference,"M:51");
+    assert(operation.key.includes(`:optical:${hash}:M:51`));
+    assert(new URLSearchParams(operation.options.query).get("opticalPublicationHash")===hash);
+    const url=new URL(scope.transport.calls.at(-1)!.url);
+    assert.equal(decodeURIComponent(url.pathname),"/v2/celestial-objects/M:51");
+    assert.equal(url.searchParams.get("opticalPublicationHash"),hash);
+    assert(!url.pathname.includes("/prepared-optical/"),"the source query must not acquire image bytes");
+  };
+  const assertCredit=()=>{
+    assert(scope.text.includes(source.attribution!.name));
+    assert(scope.text.includes(source.attribution!.url));
+    for(const statement of source.attribution!.statements)assert(scope.text.includes(statement),`missing original statement: ${statement}`);
+    assert(scope.text.includes(source.license));assert(scope.text.includes(source.precision));
+    for(const limitation of source.limitations)assert(scope.text.includes(limitation));
+  };
+  try{
+    await scope.object(selectedParams);assertSelectedRequest();await scope.respond(response);assertCredit();
+    const cached=scope.transport.queryClient.getQueryCache().find({queryKey:["celestial-object-information"],exact:false})?.state.data as typeof response;
+    assert.equal(cached.data.sources.find(item=>item.id===source.id),source,"the page query retains the admitted original credit record");
+    const downloads=scope.buttons().filter(button=>button.ariaLabel==="复制本次使用的数据下载链接");
+    assert(downloads.length>0);
+    for(let index=0;index<downloads.length;index++)await scope.click("复制本次使用的数据下载链接",index);
+    assert(scope.clipboard.includes(expectedUrl),"the actual Provenance copy action keeps the exact Prepared family/hash");
+    assert(!scope.clipboard.some(url=>url.includes("/display/manifest")));
+
+    const partial=structuredClone(response);partial.dataState="PARTIAL";partial.warnings=["prepared_optical_publication_unavailable"];
+    partial.etag=response.etag+":partial";
+    partial.data.sources=partial.data.sources.filter(item=>!item.id.startsWith("prepared-optical-imagery:"));partial.sources=partial.data.sources;
+    await scope.refreshInformation();assertSelectedRequest();await scope.respond(partial);
+    assert.match(scope.text,/光学影像来源暂不可用/u);assert(!scope.text.includes(source.attribution!.name));
+    const queuedRetry=scope.button("重试资料"),before=scope.transport.calls.length;
+    await scope.hide();queuedRetry.onClick({});assert.equal(scope.transport.calls.length,before,"hide fences a queued source retry");
+    await scope.show();await scope.click("重试资料");
+    assert.equal(scope.transport.calls.length,before+1);assertSelectedRequest();await scope.respond(response);assertCredit();
+
+    const other=hash==="0".repeat(64)?"1".repeat(64):"0".repeat(64);
+    await scope.object({...selectedParams,opticalPublicationHash:other});
+    const replaced=scope.transport.calls.length;queuedRetry.onClick({});assert.equal(scope.transport.calls.length,replaced,"an old button cannot retry a replacement edition");
+    assert(!scope.text.includes(source.attribution!.name),"old credit must leave while the new edition is unresolved");
+    await scope.respond(response);
+    assert(!scope.text.includes(source.attribution!.name),"a response for the previous hash cannot be relabelled as the new edition");
+    assert.match(scope.text,/来源暂时无法加载/u);
+    await scope.object({...selectedParams,opticalPublicationHash:"../outside"});
+    assert.equal(scope.transport.calls.length,replaced,"invalid identities cannot request a fallback edition");
+    assert.match(scope.text,/请从天体说明中的来源入口打开/u);
+  }finally{await scope.dispose();}
 });

@@ -102,8 +102,8 @@ test("actual Sources page admits only the separate body route and retains indepe
   const sources=["nasa-nssdca-moon-fact-sheet","usgs-clementine-uv750-v21-coverage","independent-open-data"]
     .map(id=>({id,kind:"OPEN_DATA",provider:id,title:id,limitations:[]}));
   const module=actualModule("../sky/sources/index.tsx",{
-    React:{createElement},View:"View",ScrollView:"ScrollView",CustomNav:"Nav",StatusPanel:"StatusPanel",
-    Provenance:"Provenance",SkyBodyImageSources:"BodySources",SkyHipsSourcesPage:"HipsSources",
+    React:{createElement},View:"View",ScrollView:"ScrollView",SourcePage:"SourcePage",CustomNav:"Nav",StatusPanel:"StatusPanel",
+    SourceDocumentContent:"SourceDocumentContent",Provenance:"Provenance",SkyBodyImageSources:"BodySources",SkyHipsSourcesPage:"HipsSources",
     useRouter:()=>({params}),useState:()=>[true,()=>{}],useDidHide:()=>{},useDidShow:()=>{},useThemeClass:()=>"theme",
     useResourceQuery:()=>({}),useCelestialInformation:(_ref:string,on:boolean)=>{enabled=on;return {data:{data:{displayName:"月球",sources},dataState:"FRESH"}};},
     celestialInformationPartialDetail:()=>null,isProductSource:()=>true,deepSkyManifestUrl:()=>undefined,
@@ -125,9 +125,9 @@ test("actual Sources page admits only the separate body route and retains indepe
 test("actual body Sources query partitions identities, preserves same-version stale credit, and exposes retry instead of replacement",async()=>{
   const {api}=owner(),moon=fixture(profiles[0]);let state:any={isError:true},query:any;
   const details=actualModule("../features/sky/sky-body-image-source.tsx",{React:{createElement,Fragment:"Fragment"},
-    Provenance:"Provenance",Text:"Text",skyBodyImageProfile,skyBodyImageSource:api.skyBodyImageSource,bodyImageUrl:(url:string)=>"http://127.0.0.1:8791"+url},["SkyBodyImageDetails"]);
+    SourceDocumentContent:"SourceDocumentContent",Provenance:"Provenance",Text:"Text",skyBodyImageProfile,skyBodyImageSource:api.skyBodyImageSource,bodyImageUrl:(url:string)=>"http://127.0.0.1:8791"+url},["SkyBodyImageDetails"]);
   const module=actualModule("../sky/sources/body-image-sources.tsx",{React:{createElement,Fragment:"Fragment"},
-    View:"View",Text:"Text",StatusPanel:"StatusPanel",Provenance:"Provenance",__MINIAPP_API_BASE__:"http://127.0.0.1:8791",
+    View:"View",Text:"Text",StatusPanel:"StatusPanel",SourceDocumentContent:"SourceDocumentContent",Provenance:"Provenance",__MINIAPP_API_BASE__:"http://127.0.0.1:8791",
     useResourceQuery:(value:any)=>{query=value;return {...state,refetch:()=>{state={data:moon};}};},
     SkyBodyImageDetails:details.SkyBodyImageDetails,getSkyBodyImagePublication:api.getSkyBodyImagePublication,skyBodyImageSource:api.skyBodyImageSource,
   },["SkyBodyImageSources"]);

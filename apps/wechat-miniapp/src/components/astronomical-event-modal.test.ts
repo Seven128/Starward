@@ -31,7 +31,7 @@ function harness(mutate = (source: string) => source, overrides: Record<string, 
   const context = { ...eventModel, calendarDateInTimezone, isProductSource, productSourceNames,
     React: { createElement: (type: any, props: any, ...children: any[]) => ({ type, props: props ?? {}, children }), Fragment: "Fragment" },
     Button: "Button", View: "View", Text: "Text", ScrollView: "ScrollView", RootPortal: "RootPortal", StatusPanel: "StatusPanel",
-    SemanticIcon: "SemanticIcon", Provenance: "Provenance", NativeBackBoundary: "NativeBackBoundary", FloatingNotificationHost: "FloatingNotificationHost",
+    SemanticIcon: "SemanticIcon", SourceEntry: "SourceEntry", SourceAttribution: "SourceAttribution", NativeBackBoundary: "NativeBackBoundary", FloatingNotificationHost: "FloatingNotificationHost",
     forwardRef: (fn: any) => fn, useEffect: () => {}, useDidHide: () => {}, useDidShow: () => {}, useImperativeHandle: () => {}, useMemo: (fn: any) => fn(),
     useRef: (initial: any) => ({ current: initial }),
     useState: (initial: any) => { const slot = cursor++; if (!(slot in states)) states[slot] = initial; return [states[slot], (value: any) => { states[slot] = value; }]; },
@@ -252,7 +252,7 @@ test("an eclipse without an observation location keeps the source's Beijing date
 test("fixture metadata never creates a source heading or catalog-version explanation", () => {
   const tree = harness().detail({ event: meteor, mode: "browse", previewDate: "2026-12-22", onPreviewDate: () => {}, timezone: "Asia/Shanghai", pending: false,
     source: { ...source, kind: "TEST_FIXTURE", state: "SAMPLE_DATA" }, catalogVersion: "test-version" });
-  assert.equal(find(tree, node => node.type === "Provenance").length, 0);
+  assert.equal(find(tree, node => node.type === "SourceEntry").length, 0);
   assert.doesNotMatch(text(tree), /资料来源|目录版本|test-version/);
 });
 
@@ -262,13 +262,13 @@ test("reviewed article keeps every paragraph and an independent source without c
   const props = { event: { ...meteor, article }, mode: "browse", previewDate: "2026-12-22", onPreviewDate: () => {}, timezone: "Asia/Shanghai", pending: false, source, articleSource };
   const tree = harness().detail(props);
   assert.match(text(tree), /测试文章题目作者：测试作者原文日期：2026-09-15开头与 <script> 都作为文字。独立第二段。/);
-  assert.deepEqual(find(tree, node => node.type === "Provenance").map(node => node.props.source.id), ["gmn", "article-source"]);
+  assert.deepEqual(find(tree, node => node.type === "SourceEntry").map(node => node.props.sources[0].id), ["gmn", "article-source"]);
   assert.doesNotMatch(text(tree), /测试数据说明|测试模式|示例数据说明/);
   const missing = harness().detail({ ...props, event: meteor, articleSource: undefined });
   assert.doesNotMatch(text(missing), /测试文章题目|独立第二段/);
 });
 
-test("DAY event sources use full disclosure while other themes retain their source presentation", () => {
+test("all event themes use separate source pages without merging scientific and article editions", () => {
   const article = { title: "独立文章", paragraphs: ["完整正文"], sourceId: "article-source" };
   const articleSource = Object.freeze({ ...source, id: article.sourceId, kind: "EDITORIAL_REFERENCE", provider: "文章作者" });
   const record = { event: { ...meteor, article }, source, articleSource, catalogVersion: "retained-version" };
@@ -281,16 +281,17 @@ test("DAY event sources use full disclosure while other themes retain their sour
       });
       const modal = ui.render({ open: true, mode: "browse", context: null, initialDetailId: meteor.occurrenceId, onClose() {} });
       const detail = ui.detail(find(modal, node => node.type === ui.detail)[0]!.props);
-      const cards = find(detail, node => node.type === "Provenance");
+      const cards = find(detail, node => node.type === "SourceEntry");
       assert.equal(cards.length, 2);
-      assert.equal(cards[0]!.props.source, source);
-      assert.equal(cards[1]!.props.source, articleSource);
-      assert.deepEqual(cards.map(node => node.props.presentation), Array(2).fill(theme === "DAY" ? "disclosure" : "default"));
+      assert.equal(cards[0]!.props.sources[0], source);
+      assert.equal(cards[1]!.props.sources[0], articleSource);
+      assert.equal(cards[0]!.props.sections[0].items[0].value, record.catalogVersion);
+      assert.equal(cards[1]!.props.sections, undefined, "a catalogue version does not belong to the independent article");
+      assert.equal(find(detail, node => node.type === "SourceAttribution").every(node => node.props.presentation === "credit"), true);
       assert.match(text(detail), /目录版本：retained-version.*独立文章完整正文/s);
     }
   };
   check();
-  assert.throws(() => check(value => value.replace('sourcePresentation={themeClass === "theme-day" ? "disclosure" : "default"}', 'sourcePresentation="default"')), assert.AssertionError);
 });
 
 test("article query and visible text survive local context failure and date changes", async () => {

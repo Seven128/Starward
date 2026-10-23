@@ -1,11 +1,14 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import Taro, { useDidHide, useDidShow, useRouter, useShareAppMessage } from "@tarojs/taro";
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import type { PlanPublicShareData, SpotPublicShareData } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
-import { Provenance } from "@/components/provenance";
+import { SourceAttribution } from "@/components/source-attribution";
+import { SourceEntry } from "@/components/source-entry";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
@@ -198,7 +201,7 @@ export default function SharedJourneyPage() {
         setViewport({ center: { latitude: data.spotGcj02.latitude, longitude: data.spotGcj02.longitude }, zoom: 11 });
         requestSpotOpen(data.spotId);
       }
-      void Taro.switchTab({ url: "/pages/map/index" }).then(undefined, attempt.fail).finally(attempt.release);
+      void openPrimaryPage("/pages/map/index").then(undefined, attempt.fail).finally(attempt.release);
     }
     catch { attempt.fail(); attempt.release(); }
   };
@@ -229,10 +232,13 @@ export default function SharedJourneyPage() {
               <Text className="type-caption">时间均为 {data.timezone}；计划结束不代表已到访或观测成功。</Text>
               {data.events.map(event => <View className="shared-journey__event" key={event.occurrenceId}>
                 <Text>关联天象：{event.displayName}</Text>
-                {event.source ? <Provenance source={event.source} /> : <Text className="type-caption">天象资料暂不可用</Text>}
+                {event.source ? <View><SourceAttribution presentation="credit" sources={[event.source]} />
+                  <SourceEntry id={`share-event-source-${event.occurrenceId}`} label={`${event.displayName}来源`} sources={[event.source]} />
+                </View> : <Text className="type-caption">天象资料暂不可用</Text>}
               </View>)}
               <Text className="type-caption">此链接有效至 {displayZonedShareExpiry(data.expiresAt, data.timezone)}；计划修改后需重新分享。</Text>
-              <Provenance source={data.spotSource} />
+              <SourceAttribution presentation="credit" sources={[data.spotSource]} />
+              <SourceEntry id="share-plan-spot-source" label="观星点来源" sources={[data.spotSource]} />
             </> : <>
               <Text className="type-secondary">{data.address}</Text>
               {data.status === "TEMPORARILY_CLOSED" ? <Text className="shared-journey__alert">此观星点暂时关闭，请勿按旧信息进入。</Text> : null}
@@ -241,7 +247,8 @@ export default function SharedJourneyPage() {
               <PublicSpotFact label="安全" value={data.safety} />
               <PublicSpotFact label="停车" value={data.parking} />
               <PublicSpotFact label="视野" value={data.horizon} />
-              <Provenance source={data.source} />
+              <SourceAttribution presentation="credit" sources={[data.source]} />
+              <SourceEntry id="share-spot-source" label="观星点来源" sources={[data.source]} />
             </>}
           </View>}
           <View className="shared-journey__actions">

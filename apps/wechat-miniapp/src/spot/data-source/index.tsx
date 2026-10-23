@@ -1,8 +1,6 @@
-import { SystemMotionProbe } from "@/components/system-motion-probe";
-import { FloatingNotificationHost } from "@/components/notification";
-import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { ScrollView, Text, View } from "@tarojs/components";
-import { CustomNav } from "@/components/custom-nav";
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
+import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
+import { Text, View } from "@tarojs/components";
 import { Provenance, SOURCE_KIND_LABEL, isProductSource } from "@/components/provenance";
 import { groupSources } from "./source-groups";
 import { StatusPanel } from "@/components/status-panel";
@@ -10,18 +8,24 @@ import { SoftButton } from "@/components/soft-button";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useAirQualityQuery } from "@/hooks/use-forecast-query";
 import { useRecentWeatherQuery } from "@/hooks/use-recent-weather-query";
-import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { getSpotAirQuality, getSpotOverview } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { useEffect, useState } from "react";
 import { uniqueSourceRecords } from "@starward/miniapp-contracts";
 import "./data-source.scss";
+import { SourceDocumentReadingPage } from "./document-reading";
+import { SourcePage } from "@/components/source-page";
 
 function safe(value?: string) {
   try { return decodeURIComponent(value ?? ""); } catch { return value ?? ""; }
 }
 
 export default function DataSourcePage() {
+  const { params } = useRouter();
+  return params.reading !== undefined ? <SourceDocumentReadingPage /> : <SpotDataSourcePage />;
+}
+
+function SpotDataSourcePage() {
   const router = useRouter();
   const spotId = safe(router.params.spotId);
   const contextId = safe(router.params.contextId);
@@ -50,7 +54,6 @@ export default function DataSourcePage() {
     notify({ owner: "data-source", placement: "floating", tone: "info",
       title: "部分来源暂未更新", body: "已取得的来源保留，可在对应资料中重试。", dedupeKey: `data-source-failed:${spotId}` });
   }, [notify, enabled, spotId, overviewFailed, airFailed, recent.failed]);
-  const themeClass = useThemeClass();
   const sources = uniqueSourceRecords([
     ...(detail?.dataDisclosure ?? []),
     ...(airEnvelope ? [...airEnvelope.sources, airEnvelope.data.current.source, airEnvelope.data.forecast.source] : []),
@@ -60,14 +63,13 @@ export default function DataSourcePage() {
   const pending = overview.isPending || air.isPending || recent.query.isPending && !recent.liveFailed;
   const confirmedEmpty = Boolean(detail && airEnvelope && recent.envelope) && !pending && !overviewFailed && !airFailed && !recent.failed && !incomplete && !sources.length;
 
-  return <><SystemMotionProbe /><View className={themeClass + " sources-page"}>
-    <FloatingNotificationHost />
-    <CustomNav title="来源与更新时间" subtitle={detail?.spot.name} back />
-    <ScrollView scrollY enhanced showScrollbar={false} className="sources-scroll">
-      <View className="sources-content page-inset safe-bottom">
+  return <SourcePage title="来源与更新时间" {...(detail?.spot.name ? { subtitle: detail.spot.name } : {})}
+    footer={validRoute ? <SoftButton label="返回观星点" onClick={() => void openPrimaryPage("/pages/map/index").catch(() => {
+      notify({ owner: "data-source", placement: "floating", tone: "error", title: "地图暂未打开", body: "来源资料已保留，请重试返回观星点。", dedupeKey: "sources-return-map" });
+    })}>返回观星点</SoftButton> : null}>
         {!validRoute ? <StatusPanel state="ERROR" title="来源入口不可用"
           detail="无法确认当前观星点，请返回地图重新选择正式观星点。" recoveryLabel="返回地图"
-          onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })} /> : <>
+          onRecover={() => void openPrimaryPage("/pages/map/index")} /> : <>
           {overview.isPending ? <StatusPanel state="LOADING" detail="正在加载地点与观测来源。" />
             : overviewFailed || !detail ? <StatusPanel state={detail ? "STALE" : "ERROR"}
               detail={detail ? "地点与观测来源更新失败，保留上次记录；请逐项核对适用时段。" : "地点与观测来源暂未取得，其余来源仍可查看。"}
@@ -91,10 +93,5 @@ export default function DataSourcePage() {
             <Text className="type-body">请结合每项资料的适用时段、精度和限制判断。预测会随时间变化；道路、开放条件与夜间安全仍需在出发前核实。图片与资料的转载使用须遵守各自许可。</Text>
           </View>
         </>}
-      </View>
-    </ScrollView>
-    {validRoute ? <View className="sources-footer"><SoftButton label="返回观星点" onClick={() => void Taro.switchTab({ url: "/pages/map/index" }).catch(() => {
-      notify({ owner: "data-source", placement: "floating", tone: "error", title: "地图暂未打开", body: "来源资料已保留，请重试返回观星点。", dedupeKey: "sources-return-map" });
-    })}>返回观星点</SoftButton></View> : null}
-  </View></>;
+  </SourcePage>;
 }

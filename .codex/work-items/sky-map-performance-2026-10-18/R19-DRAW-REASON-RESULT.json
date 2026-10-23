@@ -1,0 +1,677 @@
+{
+  "schemaVersion": "starward-r19-draw-reason-review-v1",
+  "date": "2026-10-21",
+  "kind": "independent-read-only-review",
+  "decision": "Necessary animation triggers full Scene paints. Current evidence locates the owner but does not select a production reuse/throttle fix.",
+  "binding": {
+    "mode": "normal",
+    "buildGeneration": 27,
+    "buildSourceSha256": "ba176fb416984bf3b2a05c40c2038c08dd477c0abc93b49994e7dd84219be155",
+    "windowId": 1,
+    "bundleSha256": "20bbc94bcbda9269ae134e34bd0fd75bc4386d814ec4b9d4564188da5d4b10e4",
+    "frozenDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r19-usb",
+    "manifestSha256": "2e0b5c14df11312c2d57122f8dc52a3901c58124c2825f2358f456d680835778",
+    "reviewedSources": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-star-transition.ts",
+        "sha256": "87dcfec42916bc6899cfa124d092bfd9d1ab5f79ca543148c4e35407b0d9f60a",
+        "frozenBindingVerified": true
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "sha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80",
+        "frozenBindingVerified": true
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "sha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977",
+        "frozenBindingVerified": true
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "sha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "frozenBindingVerified": true
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+        "sha256": "3aed31102c4ffd1437e3648f21d158a2893245112d24a0b9bf770cfb844a92c1",
+        "frozenBindingVerified": true
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "sha256": "d14ebe8697b3adff89110562ea4218497780d857b14ae59f45138cec2cbaf75c",
+        "frozenBindingVerified": true
+      }
+    ]
+  },
+  "evidence": {
+    "collector": {
+      "name": "baseline-r17-1-qjrmi38yd9.json",
+      "sha256": "9501a8c41269161ac2a7e6aafd76fe856e2f5f3065e5111a9407aadfb8da30b9"
+    },
+    "window": {
+      "startDelayMs": 0,
+      "durationLimitMs": 45000,
+      "elapsedMs": 15012,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 1468,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "viewport": {
+      "widthMin": 384,
+      "widthMax": 384,
+      "heightMin": 796.800048828125,
+      "heightMax": 796.800048828125,
+      "fovMin": 264.3550889449854,
+      "fovMax": 264.3550889449854
+    },
+    "scene": {
+      "baseRowsMin": 8404,
+      "baseRowsMax": 8404,
+      "saoRowsMin": 3086,
+      "saoRowsMax": 3147,
+      "selectedTilesMin": 103,
+      "selectedTilesMax": 104,
+      "catalogVersions": [
+        "bsc5p-bright-stars.v3"
+      ],
+      "saoPublicationHashes": [
+        "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+      ],
+      "modelAlgorithms": [],
+      "modes": [
+        "DAY"
+      ]
+    },
+    "counts": {
+      "timeIntentPublications": 14,
+      "preparedRequests": 74,
+      "paintAttempts": 57,
+      "nativeCallbacks": 57,
+      "acceptedCopies": 57,
+      "sceneFinishes": 57,
+      "glDrawSubmissions": 2720,
+      "bscSubmittedStars": 338970,
+      "saoSubmittedStars": 6867,
+      "acceptedBscObjects": 279413,
+      "acceptedSaoObjects": 2857,
+      "failedFrames": 0,
+      "invalidations": 0
+    },
+    "firstAccepted": {
+      "created": 14,
+      "accepted": 14,
+      "lateAfterSuperseded": 0,
+      "unconsumed": 0,
+      "latency": {
+        "observedCalls": 14,
+        "validCalls": 14,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1458,
+        "minMs": 73,
+        "maxMs": 139,
+        "keptSamples": 14,
+        "p50Ms": 109,
+        "p95Ms": 139,
+        "overflow": false
+      }
+    },
+    "repeat": {
+      "initialDelayMs": 416,
+      "subsequentMs": [
+        118,
+        141,
+        115,
+        100,
+        124,
+        124,
+        121,
+        124,
+        135,
+        128,
+        105,
+        139
+      ],
+      "medianMs": 124
+    },
+    "drawReasons": {
+      "requests": 74,
+      "paints": 57,
+      "merged": 17,
+      "paintMasks": [
+        {
+          "mask": 1,
+          "count": 4
+        },
+        {
+          "mask": 8,
+          "count": 23
+        },
+        {
+          "mask": 9,
+          "count": 15
+        },
+        {
+          "mask": 16,
+          "count": 9
+        },
+        {
+          "mask": 17,
+          "count": 1
+        },
+        {
+          "mask": 32,
+          "count": 5
+        }
+      ],
+      "continuationOnlyPaints": 37,
+      "containsEffectPaints": 20,
+      "unknown": 0,
+      "droppedPaintRows": 25,
+      "retainedEntries": [
+        [
+          26,
+          9,
+          7,
+          7
+        ],
+        [
+          27,
+          8,
+          7,
+          7
+        ],
+        [
+          28,
+          9,
+          8,
+          8
+        ],
+        [
+          29,
+          8,
+          8,
+          8
+        ],
+        [
+          30,
+          9,
+          9,
+          9
+        ],
+        [
+          31,
+          8,
+          9,
+          9
+        ],
+        [
+          32,
+          8,
+          9,
+          9
+        ],
+        [
+          33,
+          9,
+          10,
+          10
+        ],
+        [
+          34,
+          8,
+          10,
+          10
+        ],
+        [
+          35,
+          8,
+          10,
+          10
+        ],
+        [
+          36,
+          9,
+          11,
+          11
+        ],
+        [
+          37,
+          8,
+          11,
+          11
+        ],
+        [
+          38,
+          9,
+          12,
+          12
+        ],
+        [
+          39,
+          9,
+          12,
+          12
+        ],
+        [
+          40,
+          8,
+          12,
+          12
+        ],
+        [
+          41,
+          9,
+          13,
+          13
+        ],
+        [
+          42,
+          8,
+          13,
+          13
+        ],
+        [
+          43,
+          8,
+          14,
+          14
+        ],
+        [
+          44,
+          9,
+          14,
+          14
+        ],
+        [
+          45,
+          8,
+          14,
+          14
+        ],
+        [
+          46,
+          9,
+          14,
+          14
+        ],
+        [
+          47,
+          16,
+          14,
+          14
+        ],
+        [
+          48,
+          16,
+          14,
+          14
+        ],
+        [
+          49,
+          16,
+          14,
+          14
+        ],
+        [
+          50,
+          16,
+          14,
+          14
+        ],
+        [
+          51,
+          1,
+          14,
+          14
+        ],
+        [
+          52,
+          32,
+          14,
+          14
+        ],
+        [
+          53,
+          32,
+          14,
+          14
+        ],
+        [
+          54,
+          32,
+          14,
+          14
+        ],
+        [
+          55,
+          32,
+          14,
+          14
+        ],
+        [
+          56,
+          32,
+          14,
+          14
+        ],
+        [
+          57,
+          1,
+          14,
+          14
+        ]
+      ]
+    },
+    "stageElapsed": {
+      "presentation": {
+        "observedCalls": 14,
+        "validCalls": 7,
+        "unknownCalls": 7,
+        "unknown": {
+          "belowResolution": 7,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 10,
+        "minMs": 1,
+        "maxMs": 4,
+        "keptSamples": 7,
+        "p50Ms": 1,
+        "p95Ms": 4,
+        "overflow": false
+      },
+      "base": {
+        "observedCalls": 291,
+        "validCalls": 1,
+        "unknownCalls": 290,
+        "unknown": {
+          "belowResolution": 290,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "selection": {
+        "observedCalls": 16,
+        "validCalls": 4,
+        "unknownCalls": 12,
+        "unknown": {
+          "belowResolution": 12,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 4,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 4,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "supplement": {
+        "observedCalls": 17,
+        "validCalls": 3,
+        "unknownCalls": 14,
+        "unknown": {
+          "belowResolution": 14,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 3,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 3,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "constellations": {
+        "observedCalls": 14,
+        "validCalls": 14,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 36,
+        "minMs": 2,
+        "maxMs": 4,
+        "keptSamples": 14,
+        "p50Ms": 3,
+        "p95Ms": 4,
+        "overflow": false
+      },
+      "draw": {
+        "observedCalls": 57,
+        "validCalls": 57,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1765,
+        "minMs": 22,
+        "maxMs": 62,
+        "keptSamples": 57,
+        "p50Ms": 29,
+        "p95Ms": 45,
+        "overflow": false
+      },
+      "nativePaintOwner": {
+        "observedCalls": 57,
+        "validCalls": 57,
+        "unknownCalls": 0,
+        "unknown": {
+          "belowResolution": 0,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 1769,
+        "minMs": 22,
+        "maxMs": 62,
+        "keptSamples": 57,
+        "p50Ms": 29,
+        "p95Ms": 45,
+        "overflow": false
+      },
+      "displayCopy": {
+        "observedCalls": 57,
+        "validCalls": 5,
+        "unknownCalls": 52,
+        "unknown": {
+          "belowResolution": 52,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 5,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 5,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      },
+      "publishAccepted": {
+        "observedCalls": 57,
+        "validCalls": 22,
+        "unknownCalls": 35,
+        "unknown": {
+          "belowResolution": 35,
+          "clockUnavailable": 0,
+          "clockDiscontinuity": 0,
+          "outOfRange": 0,
+          "notObserved": 0
+        },
+        "knownSubtotalMs": 22,
+        "minMs": 1,
+        "maxMs": 1,
+        "keptSamples": 22,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "overflow": false
+      }
+    },
+    "typedUpload": 29089872,
+    "typedUploadCalls": 114,
+    "geometryRequests": 0
+  },
+  "video": {
+    "file": "recording-1792534286972.mp4",
+    "sha256": "6d2a3f4472593035d4585b92590022ced42a52f75c50a9bb00a3325b592bd56d",
+    "durationSeconds": 12.230289,
+    "size": [
+      1080,
+      2376
+    ],
+    "viewedSamples": [
+      {
+        "mediaSeconds": 2.4703,
+        "requested": "20:19:38",
+        "accepted": "20:19:38"
+      },
+      {
+        "mediaSeconds": 2.669956,
+        "requested": "20:20:38",
+        "accepted": "20:19:38"
+      },
+      {
+        "mediaSeconds": 2.969722,
+        "requested": "20:23:38",
+        "accepted": "20:22:38"
+      },
+      {
+        "mediaSeconds": 3.468622,
+        "requested": "20:27:38",
+        "accepted": "20:26:38"
+      },
+      {
+        "mediaSeconds": 4.168222,
+        "requested": "20:32:38",
+        "accepted": "20:31:38"
+      },
+      {
+        "mediaSeconds": 4.493078,
+        "requested": "20:32:38",
+        "accepted": "20:32:38"
+      },
+      {
+        "mediaSeconds": 9.209044,
+        "requested": "20:32:38",
+        "accepted": "20:32:38"
+      }
+    ],
+    "observation": "Intermediate sky position changes; final time agrees. Sparse video samples do not establish physical FPS or overall smoothness.",
+    "clockJoinedToCollector": false
+  },
+  "findings": [
+    "Star transition retains live opacity by Context/mode and catalog identity; exact-time change alone does not reset every star to zero.",
+    "Changed time changes coordinates and altitude transmission; 160 ms target retargeting plus names/images explains continuation requests, not redundant scheduling.",
+    "Same-time direction/position/transmission reuse already exists. Screen projection, display snapshots, pick/name collection and point packing still run on continuation.",
+    "base timer measures lazy resolveSkySceneFrame, excluding subsequent lazy transforms and per-star traversal inside draw. Near-zero base cannot exonerate stellar work.",
+    "Typed upload bytes lack matching elapsed ownership. Draw cost cannot be divided among reason masks.",
+    "Fine-target scene identity changes remain an unattributed candidate; no gen24 reopening."
+  ],
+  "nextObservation": {
+    "owner": "Existing bounded normal-preview metrics at actual paint",
+    "spans": [
+      "BSC+SAO traversal including transition/point submission (inclusive)",
+      "renderer submit typed packing and GL submission (inclusive)"
+    ],
+    "grouping": "same actual paint identity, contains effect versus continuation only",
+    "interpretation": "Nested spans must not be added or labelled pure CPU/GPU time; first disc can flush prior primitives.",
+    "branch": "Traversal dominant -> local exact-output reuse at that owner; submit dominant -> original packing/upload owner; neither -> remaining draw owner. Prefer current attributable CPU profile if the existing official GUI route becomes usable.",
+    "forbidden": [
+      "delete fade frames by count",
+      "blind debounce",
+      "new historical Scene cache/gen24",
+      "per-star recorder",
+      "new general profiler"
+    ]
+  },
+  "unverified": [
+    "cross-day supply/whole six-field extreme smoothness",
+    "normal Play complete acceptance",
+    "JS retainer/native memory leak",
+    "r13 crash cause",
+    "physical FPS"
+  ],
+  "preservation": {
+    "localOnly": true,
+    "files": 4,
+    "totalBytes": 2393302,
+    "record": "C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/r19-native-update/draw-review/preservation.json",
+    "originals": [
+      {
+        "name": "recording-1792534286972.mp4",
+        "bytes": 438960,
+        "sourceSha256": "6d2a3f4472593035d4585b92590022ced42a52f75c50a9bb00a3325b592bd56d",
+        "restoredSha256": "6d2a3f4472593035d4585b92590022ced42a52f75c50a9bb00a3325b592bd56d",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-05f90b5f-037c-4a8a-aea7-3651477e9983.png",
+        "bytes": 952121,
+        "sourceSha256": "8b672b6136568b21298ce27eaa077a57368126a0f3b2b6872166076d25abf308",
+        "restoredSha256": "8b672b6136568b21298ce27eaa077a57368126a0f3b2b6872166076d25abf308",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-3ece0c5e-ec75-457c-8183-7a1e94f1f798.png",
+        "bytes": 965218,
+        "sourceSha256": "50c6dc94bcdb886415859762e38d7fcf3e55f2bee8accecbb3b89f65ae910216",
+        "restoredSha256": "50c6dc94bcdb886415859762e38d7fcf3e55f2bee8accecbb3b89f65ae910216",
+        "readbackVerified": true
+      },
+      {
+        "name": "baseline-r17-1-qjrmi38yd9.json",
+        "bytes": 37003,
+        "sourceSha256": "9501a8c41269161ac2a7e6aafd76fe856e2f5f3065e5111a9407aadfb8da30b9",
+        "restoredSha256": "9501a8c41269161ac2a7e6aafd76fe856e2f5f3065e5111a9407aadfb8da30b9",
+        "readbackVerified": true
+      }
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import Taro, { useRouter } from "@tarojs/taro";
 import { View } from "@tarojs/components";
 import { useState } from "react";
@@ -21,7 +22,7 @@ export function EventModalHostPage({ detailRoute = false }: { detailRoute?: bool
   const selectionMode = Boolean(planId || returnTarget);
   const leave = () => {
     setOpen(false);
-    setTimeout(() => void Taro.navigateBack({ delta: 1 }).catch(() => Taro.switchTab({ url: "/pages/map/index" })), 180);
+    setTimeout(() => void Taro.navigateBack({ delta: 1 }).catch(() => openPrimaryPage("/pages/map/index")), 180);
   };
   return <View className={`${themeClass} event-modal-host`}>
     <AstronomicalEventModal open={open} mode={selectionMode ? "select-one" : "browse"}

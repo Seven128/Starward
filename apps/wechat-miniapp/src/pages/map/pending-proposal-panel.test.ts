@@ -22,7 +22,7 @@ test("private photo loading advances when the next adopted slide enters the stri
   const changes: number[] = [];
   const onScroll = vm.runInNewContext(`(${callback.getText(source)})`, {
     Taro: { getWindowInfo: () => ({ windowWidth: 390 }) },
-    galleryPosition: { onScroll() {} }, photoStripSlideWidth,
+    galleryPosition: { onScroll: () => true }, photoStripSlideWidth,
     model: { media: [{}, {}, {}, {}] }, setMediaWindowStart: (value: number) => changes.push(value),
   });
   onScroll({ detail: { scrollLeft: 257 } });
@@ -46,7 +46,10 @@ test("formal and private panel handles remain in the same scroll document as the
     const children = (ancestor as ts.JsxElement).children.flatMap(child => ts.isJsxElement(child) && child.openingElement.tagName.getText(source) === "Block" ? child.children : [child]);
     const index = children.findIndex(child => child.getText(source).includes("panelHandle"));
     const next = children.slice(index + 1).find(child => !ts.isJsxText(child) || child.getText(source).trim());
-    assert.ok(next?.getText(source).includes('className="spot-panel__identity"'), `${file}: handle and name share adjacent retained document content`);
+    const className = next && ts.isJsxElement(next) ? next.openingElement.attributes.properties.find(attribute =>
+      ts.isJsxAttribute(attribute) && attribute.name.getText(source) === "className") : undefined;
+    assert.ok(className && ts.isJsxAttribute(className) && className.initializer && ts.isStringLiteral(className.initializer)
+      && className.initializer.text.split(/\s+/u).includes("spot-panel__identity"), `${file}: handle and name share adjacent retained document content`);
   }
 });
 

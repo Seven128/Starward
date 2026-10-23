@@ -1,12 +1,5 @@
-.sources-page { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-.sources-scroll { flex: 1; min-height: 0; }
 .source-group { display: flex; flex-direction: column; gap: var(--space-group); }
-.sources-content { padding-top: 24rpx; display: flex; flex-direction: column; gap: 20rpx; }
 .source-principles { padding: 28rpx; display: flex; flex-direction: column; gap: 12rpx; }
-.sources-footer { flex: none; padding: 10Px 18Px max(16Px, env(safe-area-inset-bottom)); background: var(--surface); }
-.sources-footer > button { width: 100%; }
-.theme-day.sources-page { background: #f5f6f8; }
-.theme-day .sources-content { padding: 16Px 18Px 28Px; gap: 14Px; }
 .theme-day .source-group { gap: 14Px; }
 .theme-day .source-group > .type-section { font-size: 17Px; line-height: 1.5; }
 .theme-day .source-principles { padding: 18Px; border: 0; border-radius: 22Px; background: #fff; }

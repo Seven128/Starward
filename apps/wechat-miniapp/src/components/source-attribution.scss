@@ -33,3 +33,11 @@
 }
 .theme-day .source-attribution--rows:not(.source-attribution--disclosure) { color: #657383; }
 .theme-day .source-attribution--rows:not(.source-attribution--disclosure) .source-attribution__link.soft-button { color: #627386; }
+
+// Compact first-layer credit preserves every required statement verbatim.
+// Complete links and copying stay in the adjacent source-reading disclosure.
+.source-attribution--credit { gap: 4Px; color: var(--text-secondary); }
+.source-attribution--credit .source-attribution__credit { gap: 2Px; padding: 0; }
+.source-attribution--credit .source-attribution__name,
+.source-attribution--credit .type-caption { font-size: 11Px; line-height: 18Px; font-weight: 400; white-space: pre-wrap; overflow-wrap: anywhere; }
+.theme-day .source-attribution--credit { color: #778392; }

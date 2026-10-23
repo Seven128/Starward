@@ -44,7 +44,6 @@ test("a pending shared time commit suspends position requests and camera actions
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
     Text: "Text", View: "View", Button: "Button", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", skyDirectionLabel, skyHeightLabel,
-    useSkyObjectPriorityLayout: () => () => {}, useEffect: (effect: () => void) => effect(),
     useCelestialPosition: (_binding: unknown, _catalog: unknown, active: boolean) => {
       enabled.push(active);
       return { isPending: false, isError: false, data: { data: { position: { azimuthDeg: 45, altitudeDeg: 30 } } } };

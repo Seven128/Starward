@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "starward-task-adaptation-report-v1",
+  "date": "2026-10-21",
+  "scope": "TASK_ONLY_GEOMETRY_CURRENT_DEMAND_OBSERVER_ADAPTATION_NOT_PRODUCT_ACCEPTANCE",
+  "status": "passed_local_adaptation_checks_not_built_or_pushed",
+  "changedFiles": [
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/build-r17-normal-baseline-v3.mjs",
+      "sha256": "ba6b120e0e9149fdad2a377fa1f2c091c69b1ee36c7cfc34be99cef865e4c301"
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-instrumentation.mjs",
+      "sha256": "676ecd0eb8846844b2a5b6fa411cc7c7de8d4e3bda2938d5ee6d66beb47b5564"
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+      "sha256": "0cd45a76dc679318d421fd97f6695b32c29cae495b6c4045194b54899ca433de"
+    }
+  ],
+  "productionBindings": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts",
+      "sha256": "14f7c106243d5cae58dc299a46345d7513e3affad6a76baac1bf4eac31bce0f5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "8be2568d01fc26930456ddff93833da50861bac29ee9aaa4632a4334a2be3118"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/query-client.ts",
+      "sha256": "a7c61193100506626c5e2d5638e253342cfd850a5192c147a7550746d934e430"
+    }
+  ],
+  "unchangedContracts": [
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-geometry-stage-runtime.ts",
+      "sha256": "0efa5e5e7626fc6b804908f646b96372bbcea77828694277a25de69c2e8eafaf"
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input-protocol.mjs",
+      "sha256": "2e2b11135c7ed91dfc71673fdbb7d37f475192ef7db82eec762ddc09e6708b57"
+    },
+    {
+      "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-phone-probe-collector.mjs",
+      "sha256": "f7fd3c11da5a52681b52e794113434b7d3bea55c1137fd8c3ab9b5de357652d7"
+    }
+  ],
+  "checks": [
+    {
+      "command": "node --test .codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+      "passed": 41,
+      "failed": 0,
+      "durationMs": 62666.8522,
+      "strictInMemoryTypechecks": 4,
+      "note": "Before the final additional retained-assignment revocation test and call-parameter assertions; no production or instrumentation change afterward."
+    },
+    {
+      "command": "node --test --test-name-pattern '^r22' .codex/work-items/sky-map-performance-2026-10-18/scripts/r17-normal-input.test.mjs",
+      "passed": 5,
+      "failed": 0,
+      "durationMs": 921.7924,
+      "note": "Final differential subset; combined with full run, 42 distinct tests passed."
+    },
+    {
+      "name": "read-only builder import --observe-a1 --review-r22 --usb-reverse",
+      "passed": true,
+      "prepareOrBuildInvoked": false
+    },
+    {
+      "name": "git diff --check for three changed scripts",
+      "passed": true
+    }
+  ],
+  "limits": [
+    "No phone, IDE, service, prepare/build, preview push, commit or upload operations.",
+    "Hook differential fixture uses bounded UTC windows and hook slots; real Query scheduler verification is reused from the production independent review.",
+    "No target-runtime performance, leak or crash-fix claim."
+  ]
+}

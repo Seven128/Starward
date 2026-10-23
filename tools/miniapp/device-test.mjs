@@ -2,7 +2,7 @@ import { writeFile, rm } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { AdbDevice, findAdb, runTool, fail } from "./device-adb.mjs";
+import { AdbDevice, findAdb, runTool, fail, MAX_SWIPE_DURATION_MS } from "./device-adb.mjs";
 import { recordDeviceGesture, recordDeviceScreen } from "./device-record.mjs";
 import { startSession, withSession, saveSession, deviceBinding, assertCapture, stopSession } from "./device-session.mjs";
 import { automationEndpoint } from "./device-runtime.mjs";
@@ -16,7 +16,7 @@ const help = `Mini Program owner-assisted physical-device diagnostics (not accep
   capture-location --session <directory> [--transport usb|wireless] (known Android location prompt requested by WeChat only)
   capture-location-picker --session <directory> [--transport usb|wireless] (owned observed WeChat location picker; only Back return allowed)
   tap --session <directory> --x <0..1> --y <0..1> [--transport usb|wireless]
-  swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..2000> [--transport usb|wireless]
+  swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..${MAX_SWIPE_DURATION_MS}> [--transport usb|wireless]
   record-tap|record-swipe (same tap/swipe arguments; private Mini Program video, --seconds 6..15, default 6)
   record --session <directory> [--transport usb|wireless] [--seconds 6..15] (private Mini Program video; no input)
   back --session <directory> [--transport usb|wireless]

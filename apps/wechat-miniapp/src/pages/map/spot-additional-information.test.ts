@@ -15,7 +15,7 @@ function harness() {
   }).outputText, {
     useState: () => [expanded, (value: unknown) => { expanded = value; }],
     useEffect: (fn: () => void, deps: unknown[]) => { if (previousSpot !== deps[0]) effects.push(fn); previousSpot = deps[0]; },
-    Button: "Button", Text: "Text", View: "View", SemanticIcon: "Icon", Provenance: "Source", FacilityEvidenceDetails: "Facility",
+    Button: "Button", Text: "Text", View: "View", SemanticIcon: "Icon", SourceAttribution: "SourceAttribution", SourceEntry: "Source", FacilityEvidenceDetails: "Facility",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return { get layoutChanges() { return layoutChanges; }, render(spotId = "spot:a", empty = false) {

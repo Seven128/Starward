@@ -1,4 +1,5 @@
 import { Picker, Text, View } from "@tarojs/components";
+import { PickerTrigger } from "@/components/shared-button-press";
 import type { PlanTiming } from "@starward/miniapp-contracts";
 
 export const emptyPlanTiming = (): PlanTiming => ({
@@ -39,12 +40,12 @@ function PlanTimeRow({ label, dateKey, timeKey, value, disabled, onChange }: {
       <Picker mode="date" value={value[dateKey]} disabled={disabled}
         aria-label={`${label}日期：${value[dateKey] || "未选择"}`}
         onChange={(event) => onChange({ ...value, [dateKey]: event.detail.value })}>
-        <View className="plan-field-value focus-ring"><Text>{value[dateKey]?.replaceAll("-", "/") || "选择日期"}</Text></View>
+        <PickerTrigger disabled={disabled} className="plan-field-value focus-ring"><Text>{value[dateKey]?.replaceAll("-", "/") || "选择日期"}</Text></PickerTrigger>
       </Picker>
       <Picker mode="time" value={value[timeKey]} disabled={disabled}
         aria-label={`${label}时间：${value[timeKey] || "未选择"}`}
         onChange={(event) => onChange({ ...value, [timeKey]: event.detail.value })}>
-        <View className="plan-field-value focus-ring"><Text>{value[timeKey] || "选择时间"}</Text></View>
+        <PickerTrigger disabled={disabled} className="plan-field-value focus-ring"><Text>{value[timeKey] || "选择时间"}</Text></PickerTrigger>
       </Picker>
     </View>
   </View>;

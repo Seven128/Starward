@@ -35,7 +35,7 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
     detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 },
     mapPointIntent: { current: 0 }, regionTimer: { current: null },
     failedMapRegion: { current: null },
-    panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
+    panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, panelPosition: { current: null }, markerTapAt: { current: 0 },
     mapResetVersion: 0, bottomPresentation: "spot-panel", panelExtent: "medium", selectedSpotId: "a", analysisOverlay: "TOTAL_CLOUD",
     useAppStore: { getState: () => ({ selectedSpotId, mapResetVersion: 0, spotOpenRequestVersion: 0, observationContext,
       retiredObservationContextId, viewport: { zoom: 8 }, retireObservationContextEdit() {}, notifications: [] }) },

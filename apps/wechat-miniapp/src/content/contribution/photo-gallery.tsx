@@ -1,4 +1,5 @@
-import { Button, Image, Text, View } from "@tarojs/components";
+import { Image, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NativeBackBoundary } from "@/components/native-back-boundary";

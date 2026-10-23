@@ -1,5 +1,6 @@
 import { mediaSource } from "@/utils/media-source";
-import { Button, Image, Text, View } from "@tarojs/components";
+import { Image, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type {
   FacilityType,
   MapSpotEvaluation,

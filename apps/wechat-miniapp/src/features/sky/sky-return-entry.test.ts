@@ -5,6 +5,8 @@ import vm from "node:vm";
 import ts from "typescript";
 import { createSkyDisclosureCommands } from "./sky-disclosure-commands";
 import { createPageBlackoutTransition } from "../../navigation/page-blackout-transition";
+import { primaryPageNativeRuntimeForTest } from "../../navigation/primary-page-navigation-test-support";
+import { createSkyMapLifecycle } from "../../navigation/sky-map-lifecycle";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -45,26 +47,46 @@ test("context recovery recreates an unloaded Map and preserves legacy-stack fall
     const transition = createPageBlackoutTransition({getScope: () => "recovery", onPresentation: id => {presentation = id;},
       schedule: () => () => {}});
     const panel = { current: "menu" }, noop = () => {};
-    const callback = vm.runInNewContext(code, { skyPageVisibleCurrent:()=>true,skyReturnPendingRef:{current:null}, createSkyDisclosureCommands,
+    const sky = { route: "sky/detail/index" }, entry = { route: "content/spot/detail/index" };
+    const native = primaryPageNativeRuntimeForTest(restored ? [sky] : [entry, sky]);
+    const journey = createSkyMapLifecycle(), skyReturnPendingRef = { current: null };
+    if (restored) { journey.beginEntry(); journey.mapUnloaded(); journey.skyMounted(); }
+    const Taro = native.taro;
+    const callback = vm.runInNewContext(code, { skyPageVisibleCurrent:()=>true,skyReturnPendingRef, createSkyDisclosureCommands,
       skyExit: {transition}, routeReducedMotion: false,
-      skyMapLifecycle: {beginReturn: () => restored ? {} : null, cancelReturn: () => assert.fail("navigation succeeds")},
+      skyMapLifecycle: journey,
       skyTimeIntentCurrent:()=>false, skyTimeIntentRetirable:()=>true, orientationController:{snapshot:()=>({alignment:{mode:"auto"}})},
       contextComplete:false, activeContext:null, skyControlPanelRef:panel, orientationObjectListOpenRef:{current:false}, datePickerOpenRef:{current:false},
       selectedCatalogObjectRef:{current:null}, selectedTargetIdRef:{current:null}, catalogPickChoicesRef:{current:[]},
       setSkyControlPanel:(value:string|null)=>{panel.current=value as string;}, setOrientationObjectListOpen:noop,setDatePickerOpen:noop,
       closeSkyObjectDisclosure:noop,cancelSkyTimePreview:noop,pauseSkyTime:noop,
-      reportRuntimeError() {}, cancelSkyCalibration: () => calls.push("calibration-cancel"), Taro: {
-      getCurrentPages: () => [{}, {}],
-      navigateBack: () => { calls.push("entry"); return reject ? Promise.reject(new Error("empty stack")) : Promise.resolve(); },
-      switchTab: ({ url }: { url: string }) => { calls.push(url); return Promise.resolve(); },
-    } }) as () => void;
+      reportRuntimeError() {}, cancelSkyCalibration: () => calls.push("calibration-cancel"), Taro, ...native.dispatcher }) as () => void;
     callback();
     assert.deepEqual(calls, ["calibration-cancel"], "navigation waits until the actual exit fade completes");
+    assert.equal(native.calls.length, 0);
     assert.notEqual(presentation, null); transition.finishFade(presentation!);
     await new Promise(resolve => setImmediate(resolve));
-    assert.deepEqual(calls, restored ? ["calibration-cancel", "/pages/map/index"] :
-      reject ? ["calibration-cancel", "entry", "/pages/map/index"] : ["calibration-cancel", "entry"]);
+    if (!restored && reject) {
+      assert.equal(native.calls[0]?.kind, "navigateBack"); native.calls[0]!.reject(Error("empty stack"));
+      await new Promise(resolve => setImmediate(resolve));
+    }
+    const returning = native.calls.at(-1)!;
+    if (restored || reject) {
+      assert.equal(returning.kind, "reLaunch"); assert.equal(returning.url, "/pages/map/index");
+      returning.resolve(); await new Promise(resolve => setImmediate(resolve));
+      assert.notEqual(skyReturnPendingRef.current, null, "native acceptance cannot finish the return before the Map show");
+      const map = { route: "pages/map/index" }; native.setStack([map]);
+      if (restored) journey.mapMounted();
+      assert.equal(native.showMap(map), true); await new Promise(resolve => setImmediate(resolve));
+      assert.equal(native.taro.getCurrentPages().filter(page => page.route === "pages/map/index").length, 1);
+      if (restored) assert.equal(journey.mapReturnPending(), true, "the rebuilt Map owns readiness and reveal");
+    } else {
+      assert.equal(returning.kind, "navigateBack"); native.setStack([entry]); returning.resolve();
+      await new Promise(resolve => setImmediate(resolve));
+    }
+    assert.equal(native.calls.length, !restored && reject ? 2 : 1);
+    assert.equal(skyReturnPendingRef.current, null);
     assert.equal(panel.current, null, "the menu retires its disclosure before returning to the actual entry");
-    transition.dispose();
+    transition.dispose(); native.dispose();
   }
 });

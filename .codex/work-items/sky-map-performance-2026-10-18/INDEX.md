@@ -1,6 +1,54 @@
 # Starward 收口任务索引
 
-2026-10-19已收到本接手对话的明确继续指令，完整正文Goal无预算、未完成；实际工具状态由get_goal核对，不沿用索引中的历史active描述。跨机仓库恢复、路径适配及未随Git迁移的资料边界见[NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)，当前状态仍只由[HANDOFF](HANDOFF.md)拥有。接收机用户已恢复设备工作，优先三类叠层、正常播放和六字段连续调时；当前准备/传输边界见[本机设备恢复](RECEIVER-DEVICE-RESUME-20261020.md)。复用r10跨日pending白昼连续性及取消终态独审；普通Play/内存离线解读后仍保完整B缺口。原gen26仍UNKNOWN。唯一方案见[PLAN](PLAN.md)，不以交接摘要替代完整目标或全部剩余义务。
+[R28首accepted成本关联](R28-FIRST-ACCEPTED-COSTS-20261023.md)持同一A问题的有限观察合同；当前源码、检查、候选/手机在途和下一步仅由HANDOFF拥有。
+
+2026-10-22最新确认：用户已采用[本轮局部UI设计](https://stitch.google.com/projects/7144519510537620825?node-id=3995519477980461148)并要求Stitch同步及旧稿清理，随后明确**UI先做，叠层完整显示链路/连续操作/内存第二，Sky六字段点按/内存第三**。原[PLAN](PLAN.md)承接R19的责任/依赖/验收，原叠层交互结论和全部未撤销义务保留；[设计采用记录](../map-ui-design-2026-10-22/HANDOFF.md)持有资源回读与清理证据。本机已收到明确继续指令，原发送端paused只作历史；当前Goal、候选、进度和下一步只见[HANDOFF](HANDOFF.md)，不把执行日志放进PLAN。
+
+R19生产整合、目标画面、代码/输出独审及本批预览失败恢复的导航入口：[UI整合证据](R19-UI-INTEGRATION-20261022.md)。采用源与生产实现、开发反馈与最终验收继续分别判断。
+
+当前普通gen16的[手柄/正文原生移动边界修复](R19-HANDLE-DOCUMENT-BOUNDARY-REPAIR-20261023.md)、[真实自动推送及同点手机结果](R19-GEN16-HANDLE-DOCUMENT-PHONE-20261023.md)与[独立审阅](R19-HANDLE-DOCUMENT-BOUNDARY-REVIEW-20261023.md)已关闭限定正式点展开crop，正文滚动/保阅读位逐级Back仍工作。旧gen15全feedback先保全，新旧身份分开；手机当前完整Map、Root独占，具体身份和下一步只见HANDOFF。不是全UI/性能或Goal通过。
+
+同一普通包的[持续按下态实看](R19-GEN16-PRESS-HOLD-PHONE-20261023.md)补到Layer圆形图标按钮变暗/轻缩与释放恢复，位置保持。实际录像5.260078秒；该一次稳定触摸不冒普通短tap或精确80/140ms时序，不重复旧取消路径。
+
+[当前采用UI剩余范围独核](R19-REMAINING-UI-SCOPE-20261023.md)复用9采用图/源及gen13–16实际输出，无新增确认P1/P2；正常My/合法Picker、真实供应及必要生命周期保留各自未验条件，不重新选稿或增加逐毫秒/全主题矩阵。依赖阻塞后的独立下一步与手机当前owner只见HANDOFF。
+
+2026-10-23 Map/My生产与当前检查见[导航/有效前台整合](R19-MAP-MY-INTEGRATION-20261023.md)、[授权独审](R19-MY-NAVIGATION-AUTHORITY-AUDIT-20261023.md)及[实现独审](R19-PRESENTED-PAGE-INDEPENDENT-REVIEW-20261023.md)。同一Map承载独立My属于原PLAN委托，旧A/B待批前置已撤回；bar/cover/占高已退休。当前目标候选与实际未验仍只归HANDOFF，不把历史Picker全量或本机隔离check当手机新导航通过。
+
+gen13普通构建已在原Stable自动推送并绑定，作为已完成路径保留：[My返回修复真机结果](R19-GEN13-MY-BACK-NORMAL-PHONE-20261023.md)。[gen12有界观察](R19-GEN12-PANEL-TRACE-PHONE-20261023.md)定位误消费Map Back后，[owner修复/反例独审](R19-MY-BACK-REPAIR-REVIEW-20261023.md)及gen13普通包两种My返回/合法Map Back已成立；临时probe已从正常包退休。当前[Search/来源反馈](R19-GEN13-NAVIGATION-SOURCE-PHONE-20261023.md)继续同一普通构建，Root已实看Search右入右出，尚不代表完整UI通过。[My设计采用与精确清理](../map-ui-design-2026-10-22/MY-ADOPTION-CLEANUP-20261023.md)已核资源和依赖，不重新选稿；远端旧待审元文字的修正缺口保留。最新手机owner/下一步只见HANDOFF。
+
+gen14历史普通构建：[层叠返回阅读修复](R19-LAYER-PANEL-READING-REPAIR-20261023.md)、[独立生命周期复核](R19-LAYER-PANEL-LIFETIME-REPAIR-REVIEW-20261023.md)及[两种关闭的普通手机结果](R19-GEN14-LAYER-READING-PHONE-20261023.md)。叠层源读分支复用[r20原实际成本](OVERLAY-TERRAIN-SOURCE-NEXT-DECISION-20261023.md)，经[当前成品准入](TERRAIN-CURRENT-PUBLICATION-ADMISSION-20261023.md)找到并[零取源接入历史完整成品](TERRAIN-HISTORICAL-PRODUCT-REUSE-20261023.md)，不重复暖窗或native-region资格；本机接线与手机收益分开。
+
+gen14本轮[必要pan/关栅格手机批次](OVERLAY-GEN14-PAN-RETIRE-PHONE-20261023.md)及[同实例有限内存读回](OVERLAY-GEN14-MEMORY-RESULT-20261023.md)已结束。首次pan有效、反向未见位移；关terrain/LIGHT后5点先降后波动，不等于完整资源回收或无泄漏。当前状态/下一动作以HANDOFF顶部为准。
+
+上述原反向由[输入边界独审](OVERLAY-GEN14-REVERSE-PAN-BOUNDARY-REVIEW-20261023.md)核为不可靠起点；[一次避开工具的实际左移](OVERLAY-GEN14-CLEAR-MAP-PAN-PHONE-20261023.md)已产生位移，未复现锁图。Root已实际查看录像；没有因而追加压力。[内存独立读回](OVERLAY-GEN14-MEMORY-EVIDENCE-REVIEW-20261023.md)通过，首窗末点已更正为关层期间混合点。
+
+[当前SAO静态供给](SAO-CURRENT-SUPPLY-READINESS-20261023.md)通过本次有界读回；[普通gen14 Sky往返](R19-GEN14-SAO-NORMAL-RECOVERY-PHONE-20261023.md)未再见暗星失败，真实index/5个asset请求成功。历史原因/完整loaded与正常Play仍未认证，不能因其进入诊断压力或关闭完整Goal。
+
+[原生双指及紧接拖动准备](OVERLAY-GEN14-NATIVE-PINCH-PHONE-20261023.md)保留；时机问题仍待用户回复，未录像/执行双指。用户随后要求严格沿采用稿继续，Root已说明先自动完成必要UI普通包推送与实看，再重备地图；最新普通gen15与手机所有权见HANDOFF，不把继续UI当已准备好双指。
+
+[采用稿/既有真机输出独审](R19-ADOPTED-UI-CAPTURE-REVIEW-20261023.md)确认的LIGHT重复图例P2，已在[原责任合修](R19-LIGHT-LEGEND-COMPACT-REPAIR-20261023.md)/[DAY-only最终源独审](R19-LIGHT-LEGEND-DAY-FINAL-REVIEW-20261023.md)保全部五档/单位及未改主题；15相关检查/类型和最新普通构建通过。[gen15真实自动推送/五档/来源返回](R19-GEN15-LIGHT-COMPACT-PHONE-20261023.md)及[独立实看](R19-GEN15-LIGHT-COMPACT-PHONE-REVIEW-20261023.md)已闭合这个限定P2。原gen14完整先保全才退休，gen32仍是本次LIGHT合修前的冻结观察包；全UI与Goal仍未通过，最新在途UI批次及手机所有权见HANDOFF。
+
+[gen15月相/九项过期气象](R19-GEN15-ASTRONOMY-WEATHER-PHONE-20261023.md)、[公共按钮拖出释放](R19-GEN15-PRESS-CANCEL-PHONE-20261023.md)及[独立实看](R19-GEN15-COMPACT-PRESS-VISUAL-REVIEW-20261023.md)保限定结果。随后[有值气象/日期恢复](R19-GEN15-WEATHER-VALUES-PHONE-20261023.md)与[独审](R19-GEN15-WEATHER-VALUES-REVIEW-20261023.md)补到九项、方向/速度/单位及零值的真实手机样例排版，来源往返后恢复原10/22 20:18并回完整Map。测试数据不能认证真实天气，完整按压曲线/原生Picker等缺口仍保留，不据此关闭全UI。
+
+同一R27的[当前UI gen32准备/完整构建](R27-CURRENT-UI-PREPARATION-20261023.md)和[最终独审](R27-CURRENT-UI-FINAL-REVIEW-20261023.md)已完成，包/maps/完整源码原件冻结，未激活未发送。旧gen31及普通gen14完整保留；禁止再prepare/refresh/build已冻结代，下一实际边界为真实collector/目标观察，当前优先级与缺口仍见HANDOFF。
+
+后续[原桥接恢复只读准备](R27-LIVE-COLLECTOR-RESUME-PREPARATION-20261023.md)定位同一runtime/collector，19/32预算足够，无需清理或新服务；旧到达日志遗漏gen32的具体缺口已在[原watcher有限接线](R27-CURRENT-UI-ARRIVAL-WATCHER-20261023.md)及[独审](R27-CURRENT-UI-ARRIVAL-WATCHER-REVIEW-20261023.md)处理。该准备时服务/目标都未执行；后续实际恢复见下。
+
+Root后续已完成[原collector服务恢复/冻结源码适用范围核验](R27-LIVE-COLLECTOR-RESUME-RESULT-20261023.md)：新bridge56520，旧19件全同/余13位，host-only导入成功；真实watcher/手机R27/Play仍未执行。1597项绑定中1593同、4个Map UI差异及2个新增图例文件明确；336项Sky/查询绑定同，不能把gen32当最新UI。当前普通gen16仍在手机，不重放旧reload intent。
+
+随后[gen32有限适用性独审](R27-GEN32-APPLICABILITY-REVIEW-20261023.md)通过，但[实际官方预览拒包/终态恢复](R27-GEN32-PREVIEW-FAILURE-RESULT-20261023.md)确认2081KB>2048KB，未绑定/Play。[实际包图独审](R27-ACTUAL-PACKAGING-BOUNDARY-20261023.md)定位共享hook→完整Sky adapter的主包依赖；原静态统计不当平台准入。失败包/普通gen16完整保全，不重发同包或修改冻结gen32；新恢复工作及唯一owner只见HANDOFF。
+
+[gen33恢复实施](R27-SKY-PACKAGE-RECOVERY-IMPLEMENTATION-20261023.md)/[独审](R27-SKY-PACKAGE-RECOVERY-REVIEW-20261023.md)后，Root已[实际全构建/包图与私有冻结](R27-GEN33-SKY-PACKAGE-PREPARATION-20261023.md)：8观察模块留Sky、单一ports在main，bundle42db0d73…、344件/5,117,627 B，旧包保持。当前已冻结，禁止重建/refresh；静态2,036,467 B主包不冒实际微信准入，后续官方/手机状态只见HANDOFF。
+
+gen33后续已[实际自动推送、正常全天空Play及6检查点读回](R27-GEN33-TARGET-RESULT-20261023.md)/[目标独审](R27-GEN33-TARGET-RESULT-REVIEW-20261023.md)。8个旧Query wrapper被收集，5个aggregate及对应page callback仍活；相同生灭不是闭包强边，该包装链分支停止。原件完整保全并恢复普通UI，具体身份/在途只归HANDOFF；本轮未修复OOM或通过完整Goal。
+
+普通包官方余量仅2,783 B的新证据触发[去Tab后资产独核](R19-POST-TAB-ASSET-BUDGET-AUDIT-20261023.md)；Root已[迁唯一现用视觉API并精确退休六项打包](R19-POST-TAB-ASSET-RETIREMENT-IMPLEMENTATION-20261023.md)。保留源图及全部现用输出，新普通构建仅common.js和六项移除变化；实际推送/审查与手机owner归HANDOFF，不修改采用稿。
+
+[普通gen18持续单指结果](OVERLAY-SUSTAINED-SINGLE-FINGER-RESULT-20261023.md)与[公共边界/两段独立实看](OVERLAY-SUSTAINED-SWIPE-BOUNDARY-REVIEW-20261023.md)保留有限结论：8秒无可辨移动、唯一1.8秒对照真实pan，不能代替持续跟手验收；未据此改产品逻辑或继续扫时长。[真实pending可执行性](OVERLAY-GEN18-PENDING-READINESS-20261023.md)另保输入关联缺口，最新手机/在途只见HANDOFF。
+
+用户随后明确来源统一真实页面、共用按钮/跳转及内容模板；对应[实现与目标结果](R19-SOURCE-PAGES-IMPLEMENTATION-20261022.md)、[消费者独审](R19-SOURCE-CONSUMERS-REVIEW-20261022.md)、[正文返回修正独审](R19-SOURCE-RETURN-SCROLL-REVIEW-20261022.md)、[动态布局诊断](R19-SOURCE-ANCHOR-RETURN-REVIEW-20261022.md)及[阅读锚点实现独审](R19-SOURCE-READING-FIX-REVIEW-20261022.md)。原来源Sheet为被替代实现，不能作为当前设计或页面返回的通过证据。gen5官方日志恢复依据见[独审](R19-GEN5-PREVIEW-RECOVERY-REVIEW-20261022.md)，不将同一推断直接移用于其它未知调用。
+
+2026-10-21历史交接的[恢复研究](R22-HEAP-CAPTURE-RECOVERY-RESEARCH-20261021.md)保留当时来源与判断；其“服务均停止、Stable尚未执行”等状态已被后续恢复及[Stable实际终态](R24-STABLE-RESUMPTION-20261021.md)覆盖。当前候选、服务快照、未答问题及下一动作只见HANDOFF，不重放历史恢复清单。旧完整交接已保全到HANDOFF列出的本机私有目录。
 
 [Sky研究与实际基线](SKY-INTERACTION-RESEARCH.md)、[包含SAO的CPU样本](SKY-TIME-CPU-BASELINE.json)、[向量局部试验](SKY-VECTOR-RESEARCH.json)、[拖动边界](SKY-DRAG-BASELINE.json)、[几何窗口](SKY-TIME-WINDOW-PROBE.json)保留结论和限制。生产合批与独审见[R17审查](R17-INDEPENDENT-REVIEW.md)、[恒星集成](SKY-STELLAR-INTEGRATION.md)、[地景修复](R17-LANDSCAPE-REPAIR.md)、[稳定地形请求](OVERLAY-STABLE-WINDOW.md)；当前手机generation和剩余证据见HANDOFF。
 
@@ -142,6 +190,32 @@
 
 76. [接收机实际恢复](RECEIVER-20261020.json)及[发布前主机准入修复](STAGING-EARLY-HOST-ADMISSION.md)：同一私有包9,234文件已在本机逐件恢复验证；当前staging在镜像发布前复用既有host预检，保promotion前复检及原guard。恢复、代码检查、远端执行与服务健康分别记录；两项性能目标仍未整体验收。
 
+77. [接收机性能结果](RECEIVER-PERFORMANCE-20261020.md)、[短窗整合独审](R17-SHORT-GEOMETRY-REVIEW.md)和[剩余消费成本](R18-CONSUMPTION-COST-REVIEW.md)：日减短窗有中途改善仍未持续跟手，窗内分钟及完整NIGHT Play入口有局部有效结果，B内存仍缺实际强根图。[r19绘制原因](R19-DRAW-REASON-RESULT.md)区分真实渐变与未归因的投影/提交成本。叠层[单覆盖能力与资源缺口](OVERLAY-REPLACEMENT-LIFETIME-REVIEW-20261021.md)、[同ID候选独审](NATIVE-OVERLAY-REPLACEMENT-INDEPENDENT-REVIEW-20261021.md)、[受控退出修复独审](CONTROLLED-MAP-RETIREMENT-INDEPENDENT-REVIEW-20261021.md)及[r19实际换图](R19-NATIVE-OVERLAY-PHONE-REVIEW.md)区分代码检查、已证单覆盖更新与仍有的边缘等待；当前会话、候选及在途工作只由HANDOFF持有。
+
+78. [r20真实绘制成本](R20-DRAW-COST-RESULT.md)、[精确星点准备实现](EXACT-STAR-DRAW-PREPARATION-IMPLEMENTATION-20261021.md)、[生产独审](EXACT-STAR-DRAW-PREPARATION-REVIEW-20261021.md)及[r21计量适配](R21-DRAW-COST-ADAPTATION.md)：当前Canvas单份精确视图复用已实现/独审，保全部逐帧消费者；普通Play无命中额外分配、目标收益和B未关闭。[跨覆盖父图实现](TERRAIN-CROSS-COVERAGE-PREVIEW-IMPLEMENTATION-20261021.md)、[独审](TERRAIN-CROSS-COVERAGE-PREVIEW-REVIEW-20261021.md)及[r20实际补边](R20-CROSS-COVERAGE-PHONE-RESULT.md)确认一个西移样本中父图比细图提前约1.91秒可见，不替代完整三层连续交互和资源验收。
+
+79. [r20普通播放与暂停后资源](R20-NORMAL-PLAY-DRAIN-RESULT.md)：13行同owner观察，实际Pause后5行仍高残留；录像与PSS不提供保留链或无泄漏结论。本次成本回执因32KiB限额未发出，[现有导出修复](R21-BOUNDED-NORMAL-EXPORT-REPAIR.md)保首尾关联及全部统计、只裁中部样本，真实新候选发送仍须验证。
+
+80. [r21长按真实结果](R21-HOLD-RESULT.md)仅证明续帧局部下降，整体A未改善；已有阶段记录指向geometry过期启动与供给/显示衔接。[r21新退出](R21-PLAY-EXIT-RESULT.md)确认原生SIGABRT及allocation failure，缺少普通Play成本和保留链，不归因缓存、不重复压力。当前单份缓存仍是待验候选。
+
+81. [当前需求请求修复](GEOMETRY-CURRENT-DEMAND-IMPLEMENTATION-20261021.md)、[独立复核](GEOMETRY-CURRENT-DEMAND-INDEPENDENT-REVIEW-20261021.md)及[r22计量适配](R22-GEOMETRY-PROBE-ADAPTATION.md)：阻止过期排队请求，保真实失败与取消的不同重试语义。该实现/构建证据复用；后续r23输入与当前候选状态见HANDOFF，不能据旧r22手机未核状态重做已完成步骤。完整响应收益仍待验。
+
+82. [r22堆快照恢复研究](R22-HEAP-CAPTURE-RECOVERY-RESEARCH-20261021.md)：保存当时官方/社区研究及有限Stable候选。后来Stable对照已实际执行并在Heap请求前断连，见83；不把研究中的“尚未执行”当当前步骤，不重开原失败清单。
+
+83. [Stable同包对照终态](R24-STABLE-RESUMPTION-20261021.md)、[替代路线研究](R24-PERF-ALTERNATIVE-RESEARCH-20261021.md)与[实际路线验证](R24-PERFORMANCE-ROUTE-VALIDATION-20261021.md)：Stable进入高负载Sky后、Heap请求前断连；PerfDog仅研究，实际采用Perfetto/ADB及普通预览诊断。未确认断连根因。
+
+84. [r25提前保存/owner真机结果](R25-CHECKPOINT-PHONE-RESULT-20261022.md)、[真机独审](R25-CHECKPOINT-PHONE-REVIEW-20261022.md)与[实现独审](R25-CHECKPOINT-INTEGRATION-REVIEW-20261022.md)：提前保存和具体缓存/aggregate关系已测通。历史“工具资格成立”限于这些能力，不等于完整引用链、最终根因或两项结果通过。
+
+85. [r26使用/框架持有观察结果](R26-OWNER-PHONE-RESULT-20261022.md)及[实现独审](R26-OWNER-INTEGRATION-REVIEW-20261022.md)：gen30已上手机；实际使用关系、两处入口与六检查点有效，有限扫描无匹配且数组覆盖受限，未找到最终外层根。本轮记录结束前没有退出退休点。新交接重新核验48件本机原件，当前执行下一步归HANDOFF。
+
+86. [已确认叠层交互结论](OVERLAY-INTERACTION-DECISION-20261022.md)：Leaflet/MapLibre/微信一手依据、当前owner观察及已采用的途中补图/新输入接管/离页语义。只是方案确认，未实施或验收；规范合同归PLAN与Map Context，进度归HANDOFF。
+
+87. R19共同依赖与目标修复：[公共导航消费者](R19-PRIMARY-CONSUMERS-PREPARATION-20261022.md)、[导航独审](R19-PRIMARY-OWNER-REVIEW-20261022.md)、[来源整帧独审](R19-SOURCE-TARGET-REVIEW-20261022.md)、[媒体复制独审](R19-SOURCE-MEDIA-COPY-REVIEW-20261022.md)、[Sky正文视口修复](R19-SKY-OBJECT-BODY-REPAIR-20261022.md)/[独审](R19-SKY-OBJECT-BODY-REVIEW-20261022.md)、[照片供给首边界](R19-MEDIA-READINESS-BOUNDARY-20261022.md)/[只读恢复](R19-READONLY-MEDIA-REPAIR-20261022.md)、[当前Mini Program集成](R19-CURRENT-MINIAPP-INTEGRATION-20261022.md)。实现/检查、运行供给和目标验收分别判断；具体候选及下一动作只归HANDOFF。
+
+88. [Picker触发面公共按压](R19-PICKER-PRESS-IMPLEMENTATION-20261023.md)/[独审](R19-PICKER-PRESS-REVIEW-20261023.md)：共享同一反馈owner、原生Picker/布局/数据保留，当前源码全量/类型/完整本机check构建通过，尚未正常手机候选验收。[R27回调owner调查](R27-CALLBACK-OWNER-REVIEW-20261023.md)核实真实Query options持有与替换，保时序排除和原样本最小下一观察；未找到aggregate根、未改生产Sky或关闭OOM。
+
+89. [R27 Query回调集成](R27-QUERY-CALLBACK-INTEGRATION-20261023.md)、[观测器](R27-QUERY-CALLBACK-OBSERVER-20261023.md)、[独审](R27-QUERY-CALLBACK-INTEGRATION-REVIEW-20261023.md)及[旧collector fixture修复](R27-HISTORICAL-COLLECTOR-FIXTURE-REPAIR-20261023.md)：原8样本/一个回调站点/精确实际Query占位，严格兼容、有界弱寿命与正常产品语义；gen31已完整编译/保全但未激活。当前手机候选、真正采集准入和下一步归HANDOFF，不以本机通过关闭外层根或OOM。
+
 执行规则与架构入口：仓库[AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机owner](../../../project_context/areas/main/verification/wechat-device.md)。使用最新[开发skill](../../skills/starward-miniapp-development/SKILL.md)和[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)；设备操作再组合设备skill与同步后的官方wechatide场景。保留原委托决策/授权边界，具体工具行为以接手对话实际可用能力为准。
 
-恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后，按完整正文创建、不设token预算；已有等价Goal则续用，不以摘要替换或制造并行任务。本接手对话的明确继续指令已解除原暂停；恢复核源码/候选/在途状态和受影响的服务/窗口入口，历史文件的active或停止描述不覆盖新的人类指令。不要根据临时PID、过期截图/录屏或旧目录直接输入手机。保全部剩余义务、隐私与精确清理边界。
+恢复读取顺序：get_goal → 本索引 → GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、PLAN、HANDOFF → 最新开发skill/performance-investigation及将使用模块的证据。无Goal时仅在用户明确要求继续Goal后按完整正文创建、不设token预算；已有等价Goal则续用。本发送端为交接而paused，新对话用户明确继续提示词提供继续授权；历史active/blocked/paused不替代最新人类指令。当前状态归HANDOFF，进度/日志/下一步不写PLAN。核源码/候选/在途状态及所需服务/窗口，旧PID、截图和session不提供当前手机输入资格，完整义务和保护边界继续保留。

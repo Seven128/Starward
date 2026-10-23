@@ -1,4 +1,5 @@
-import { Button, Text, View } from '@tarojs/components';
+import { Text, View } from '@tarojs/components';
+import { SharedButton as Button } from '@/components/shared-button-press';
 import { useEffect,useRef,useState } from 'react';
 import { reverifyPlanReminderDestination } from '@/services/api-client';
 import { useAppStore } from '@/state/app-store';

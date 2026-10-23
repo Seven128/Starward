@@ -4,13 +4,14 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { uniqueSourceRecords } from "@starward/miniapp-contracts";
+import { primaryPageNavigationForTest } from "../../navigation/primary-page-navigation-test-support";
 
 type Node = { type: string; props: Record<string, any>; children: any[] };
 const source = ts.createSourceFile("source-page.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "DataSourcePage");
+const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotDataSourcePage");
 const safe = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "safe");
 assert.ok(page && safe);
-const code = ts.transpileModule(`${safe.getText(source)}\n${page.getText(source)}`, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, jsxFactory: "jsx", jsxFragmentFactory: "Fragment" } }).outputText;
+const code = ts.transpileModule(`${safe.getText(source)}\n${page.getText(source)}\nexport default SpotDataSourcePage;`, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, jsxFactory: "jsx", jsxFragmentFactory: "Fragment" } }).outputText;
 
 function render(dataState: string, sources: readonly { id: string; kind: string; [key: string]: unknown }[], refreshError = false, options: { overviewFailed?: boolean; recentFailed?: boolean; invalid?: boolean; airSources?: any[]; recentSources?: any[] } = {}) {
   const requests: any[] = [], retries: string[] = [];
@@ -19,7 +20,7 @@ function render(dataState: string, sources: readonly { id: string; kind: string;
     exports: {} as any,
     jsx: (type: string, props: any, ...children: any[]): Node => ({ type, props: props ?? {}, children }),
     Fragment: "Fragment", SystemMotionProbe: "SystemMotionProbe", View: "View", Text: "Text", ScrollView: "ScrollView",
-    SoftButton: "SoftButton", StatusPanel: "StatusPanel", Provenance: "Provenance", CustomNav: "CustomNav", FloatingNotificationHost: "FloatingNotificationHost",
+    SoftButton: "SoftButton", StatusPanel: "StatusPanel", Provenance: "Provenance", SourcePage: "SourcePage",
     useRouter: () => ({ params: { spotId: "spot:a", contextId: options.invalid ? "ctx:wrong" : "ctx:a" } }),
     useAppStore: (selector: (state: unknown) => unknown) => selector({ observationContext: { contextId: "ctx:a", location: { kind: "FORMAL_SPOT", spotId: "spot:a" } }, notify() {} }),
     useState: (value: unknown) => [value, () => {}], useDidShow() {}, useDidHide() {}, useEffect() {}, useThemeClass: () => "day",
@@ -33,7 +34,7 @@ function render(dataState: string, sources: readonly { id: string; kind: string;
     isProductSource: (item: { kind: string }) => item.kind !== "TEST_FIXTURE",
     uniqueSourceRecords,
     groupSources: (items: readonly { id: string; kind: string }[]) => items.map(item => ({ kind: item.kind, sources: [item] })),
-    SOURCE_KIND_LABEL: { OPEN_DATA: "开放数据" }, Taro: { switchTab: async () => {} },
+    SOURCE_KIND_LABEL: { OPEN_DATA: "开放数据" }, ...primaryPageNavigationForTest({ switchTab: async () => {} }),
   };
   vm.runInNewContext(code, scope);
   const tree = scope.exports.default();

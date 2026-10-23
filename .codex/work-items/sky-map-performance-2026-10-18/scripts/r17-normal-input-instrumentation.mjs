@@ -27,6 +27,10 @@ export function addR17NormalInput({ runtime, controls, page }) {
 
   controls = one(controls, 'import { useEffect, useRef, useState } from "react";',
     'import { useEffect, useMemo, useRef, useState } from "react";', 'scalar_scope_lifetime');
+  controls = one(controls, 'import { r17RulerEntry } from "./r17-ruler-entry-runtime";',
+    'import { r17RulerEntry, r17ProbePayloadBytes } from "./r17-ruler-entry-runtime";', 'same_utf8_writer_budget');
+  if (controls.split('serialized.length > 32768').length !== 3) throw Error('normal_input_boundary_changed:utf8_writer_guards');
+  controls = controls.replaceAll('serialized.length > 32768', 'r17ProbePayloadBytes(serialized) > 32768');
   controls = one(controls, 'const cases = ["wide-camera", "wide-time", "wide-play", "narrow-camera", "narrow-time", "narrow-play"] as const;',
     'const cases = ["manual-input", "wide-camera", "wide-time", "wide-play", "narrow-camera", "narrow-time", "narrow-play"] as const;', 'one_manual_arm');
   controls = one(controls, 'let armedPlay: CaseKey | null = null, status =',
@@ -73,4 +77,149 @@ export function addR17NormalInput({ runtime, controls, page }) {
     '              if (!skyTimeIntentCurrent() || !skyTimeInputAllowed(at, Date.now())) return false;\n' +
     '              r17NormalManualInputStarted(1);\n              cancelSkyCalibration(); setTimeIntent(observationTime.preview(at)); return true;', 'legal_six_field_onPreview');
   return { runtime, controls, page };
+}
+
+// r17 adds only the unresolved geometry boundary to the existing manual run.
+// No product source is edited. Observe the client's validated Promise while
+// preserving the production live-demand guard and its original Promise chain.
+export function addR17GeometryStages({ runtime, page, geometry }) {
+  runtime = 'import { createR17GeometryStages } from "./r17-geometry-stage-runtime";\n' + runtime;
+  runtime = one(runtime, 'export const r17Probe = {',
+    'const r17Geometry = createR17GeometryStages(now);\nexport const r17Probe = {\n' +
+    '  geometryRequest(at: string, windowAt: string, intent: number | null, signal?: AbortSignal) {\n' +
+    '    return r17Geometry.request(at, windowAt, getIntent(intent)?.scope === scopeGeneration ? intent : null, signal);\n  },\n' +
+    '  geometryWatch: r17Geometry.watch, geometryRejected: r17Geometry.rejected,\n' +
+    '  geometryAdmitted(response: object, at: string, windowAt: string, intent: number | null) {\n' +
+    '    r17Geometry.admitted(response, at, windowAt, getIntent(intent)?.scope === scopeGeneration ? intent : null);\n  },', 'geometry_probe_owner');
+  runtime = one(runtime, '  active = armed = false; if (wasRunning) reason = nextReason;',
+    '  r17Geometry.stop();\n  active = armed = false; if (wasRunning) reason = nextReason;', 'geometry_stop_listener_retirement');
+  runtime = one(runtime, '    binding = { ...configuration, windowId: sequence }; armedAt = now(); sealed = terminalSealed = false;',
+    '    binding = { ...configuration, windowId: sequence }; armedAt = now(); sealed = terminalSealed = false;\n' +
+    '    r17Geometry.start(selected === "manual-input" && configuration.mode === "normal" ? armedAt : null);', 'geometry_manual_window');
+  runtime = one(runtime, '    latestIntentSequence = next; rememberState(state, next); links.intentsCreated = add(links.intentsCreated); return next;',
+    '    r17Geometry.intent(next, state.at, stamp);\n' +
+    '    latestIntentSequence = next; rememberState(state, next); links.intentsCreated = add(links.intentsCreated); return next;', 'geometry_existing_intent_identity');
+  runtime = one(runtime, 'caseKey === "manual-input" ? "starward-r17-phone-probe-v3-manual-input" : "starward-r17-phone-probe-v3"',
+    'caseKey === "manual-input" ? "starward-r17-phone-probe-v3-manual-geometry-v1" : "starward-r17-phone-probe-v3"', 'geometry_explicit_receipt');
+  runtime = one(runtime, '    return r17RulerEntry.attach({ schemaVersion:',
+    '    return r17Geometry.attach(r17RulerEntry.attach({ schemaVersion:', 'geometry_scalar_snapshot_start');
+  runtime = one(runtime, 'aCorrelation: r17ACorrelation.snapshot(prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id)) } : {}) });',
+    'aCorrelation: r17ACorrelation.snapshot(prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id)) } : {}) }));', 'geometry_scalar_snapshot_end');
+  page = one(page, '      return { at: time.at, fullWindow: time.mode === "PLAYING" || time.playRequested };\n    });\n  const timeModel = carriedReport',
+    '      return { at: time.at, fullWindow: time.mode === "PLAYING" || time.playRequested };\n    },\n' +
+    '    timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt ? r17Probe.intentSequence(timeIntent) : null);\n  const timeModel = carriedReport', 'geometry_actual_intent');
+  geometry = 'import { r17Probe } from "./r17-phone-probe-runtime";\n' + geometry;
+  geometry = one(geometry, '  readDemand: () => { at: string; fullWindow: boolean } | null) {',
+    '  readDemand: () => { at: string; fullWindow: boolean } | null, r17Intent: number | null = null) {', 'geometry_task_parameter');
+  geometry = one(geometry, '      if (!demandCurrent()) return Promise.reject(new MiniappRequestCancelled("superseded"));\n' +
+    '      return getSkyGeometryWindow(binding!, signal).then(response => {',
+    '      if (!demandCurrent()) return Promise.reject(new MiniappRequestCancelled("superseded"));\n' +
+    '      const token = r17Probe.geometryRequest(binding!.at, queryKey[6], r17Intent, signal);\n' +
+    '      let result: ReturnType<typeof getSkyGeometryWindow>;\n' +
+    '      try { result = getSkyGeometryWindow(binding!, signal); }\n' +
+    '      catch (error) { r17Probe.geometryRejected(token, true); throw error; }\n' +
+    '      r17Probe.geometryWatch(token, result);\n' +
+    '      return result.then(response => {', 'geometry_validated_client_before_original_guard');
+  geometry = one(geometry, '  if (binding && query.data && demandCurrent()) retained.current = { scope, model: query.data.data.model, sources: query.data.sources,\n' +
+    '    windowMode: binding.windowMode ?? "NIGHT" };',
+    '  if (binding && query.data && demandCurrent()) {\n' +
+    '    retained.current = { scope, model: query.data.data.model, sources: query.data.sources,\n' +
+    '      windowMode: binding.windowMode ?? "NIGHT" };\n' +
+    '    r17Probe.geometryAdmitted(query.data, at, query.data.data.model.startAt, r17Intent);\n  }', 'geometry_actual_hook_admission');
+  return { runtime, page, geometry };
+}
+
+// r19 adds only request causes to the same normal recorder and native writer.
+// Apply after the existing manual/geometry transforms. No scheduler is added.
+export function addR19DrawReasons({ runtime, page, lifecycle }) {
+  runtime = 'import { createR19DrawReasons } from "./r17-normal-observations";\n' + runtime;
+  runtime = one(runtime, 'const r17Geometry = createR17GeometryStages(now);',
+    'const r17Geometry = createR17GeometryStages(now);\nconst r19DrawReasons = createR19DrawReasons();', 'draw_reason_owner');
+  runtime = one(runtime, '  r17Geometry.stop();',
+    '  r17Geometry.stop();\n  r19DrawReasons.stop();', 'draw_reason_stop');
+  runtime = one(runtime, '    r17ACorrelation.start(configuration.mode === "normal");',
+    '    r17ACorrelation.start(configuration.mode === "normal");\n    r19DrawReasons.start(configuration.mode === "normal");', 'draw_reason_run');
+  runtime = one(runtime, '  request(frame: unknown, token: number | null, sequence: number | null) {',
+    '  request(frame: unknown, token: number | null, sequence: number | null, reason = 2) {', 'draw_request_reason');
+  runtime = one(runtime, '    links.requests = add(links.requests);',
+    '    r19DrawReasons.request(frame, reason);\n    links.requests = add(links.requests);', 'draw_request_observation');
+  runtime = one(runtime, '  inheritFrame(resolved: unknown, original: unknown) {',
+    '  drawReasonMerged(frame: unknown, pending: unknown) { if (active) r19DrawReasons.merge(frame, pending); },\n' +
+    '  drawReasonReplay(frame: unknown) { if (active) r19DrawReasons.replay(frame); },\n' +
+    '  inheritFrame(resolved: unknown, original: unknown) {', 'draw_lifecycle_observers');
+  runtime = one(runtime, '    const value = frames.get(original); if (!value) return false;',
+    '    r19DrawReasons.inherit(resolved, original);\n    const value = frames.get(original); if (!value) return false;', 'draw_resolved_frame_identity');
+  runtime = one(runtime, '    if (!object(frame)) return;\n    const facts = frames.get(frame)',
+    '    if (!object(frame)) { r19DrawReasons.paint(frame, null, null); return; }\n    const facts = frames.get(frame)', 'draw_unknown_frame');
+  runtime = one(runtime, '    facts.attempt = now(); rememberFrame(frame, facts);',
+    '    r19DrawReasons.paint(frame, facts.intent, facts.token);\n    facts.attempt = now(); rememberFrame(frame, facts);', 'draw_actual_paint');
+  // Attach before the existing bounded ruler/geometry extensions so their
+  // export-only trimming still budgets the complete receipt at 32 KiB.
+  runtime = one(runtime, '    return r17Geometry.attach(r17RulerEntry.attach({ schemaVersion:',
+    '    return r17Geometry.attach(r17RulerEntry.attach(r19DrawReasons.attach({ schemaVersion:', 'draw_versioned_receipt_start');
+  runtime = one(runtime, 'aCorrelation: r17ACorrelation.snapshot(prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id)) } : {}) }));',
+    'aCorrelation: r17ACorrelation.snapshot(prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id)) } : {}) })));', 'draw_versioned_receipt_end');
+
+  page = one(page, '  const browsingDrawRef = useRef((_continuation = false) => {});',
+    '  const browsingDrawRef = useRef((_continuation = false, _r19Reason = 2) => {});', 'draw_reason_ref_argument');
+  page = one(page, '  const draw = useCallback((continuation = false) => {',
+    '  const draw = useCallback((continuation = false, r19Reason = 2) => {', 'draw_reason_argument');
+  page = one(page, '              browsingDrawRef.current(true);',
+    '              browsingDrawRef.current(true, (camera.animating ? 4 : 0) | (starTransitionFrame.animating ? 8 : 0) |\n' +
+    '                (nameLayout.animating ? 16 : 0) | (readyImageFrame.animating ? 32 : 0));', 'draw_original_continuation_reasons');
+  page = one(page, '    draw();\n  }, [activeIndex, activeContext, contextComplete, nativeCanvasMounted, canvasLifecycle, draw, reportData]);',
+    '    draw(false, 1);\n  }, [activeIndex, activeContext, contextComplete, nativeCanvasMounted, canvasLifecycle, draw, reportData]);', 'draw_actual_input_resource_effect');
+  page = one(page, '      r17UsesRequestedPreparation ? r17RequestPreparation.intentSequence : null);',
+    '      r17UsesRequestedPreparation ? r17RequestPreparation.intentSequence : null, r19Reason);', 'draw_reason_request_identity');
+  lifecycle = one(lifecycle, '      r17Probe.prepared(frame);\n      latest = frame;',
+    '      r17Probe.prepared(frame);\n      if (dirty) r17Probe.drawReasonMerged(frame, latest);\n      latest = frame;', 'draw_existing_pending_coalescing');
+  lifecycle = one(lifecycle, '  function reset() {\n    epoch++;',
+    '  function reset() {\n    r17Probe.drawReasonReplay(latest);\n    epoch++;', 'draw_reset_replay_unknown');
+  lifecycle = one(lifecycle, '    retry() { if (!disposed) { failed = false; dirty = latest !== undefined; schedule(); } },',
+    '    retry() { if (!disposed) { r17Probe.drawReasonReplay(latest); failed = false; dirty = latest !== undefined; schedule(); } },', 'draw_retry_replay_unknown');
+  return { runtime, page, lifecycle };
+}
+
+// r20 only fills the measured-cost gap left by r19. Two actual star traversal
+// blocks (including their pick/transition/vertex work and same-time exits) and
+// the nonempty renderer submit are inclusive spans, not independent phases.
+// r21 keeps that boundary around the complete preparation lookup/build/replay,
+// so a cache hit still includes every actual transition and paint operation.
+export function addR20DrawCosts({ runtime, scene, renderer }) {
+  runtime = one(runtime, 'import { r17RulerEntry } from "./r17-ruler-entry-runtime";',
+    'import { r17RulerEntry, r17ProbeBoundedReceipt } from "./r17-ruler-entry-runtime";', 'final_complete_receipt_budget');
+  runtime = one(runtime, 'import { createR19DrawReasons } from "./r17-normal-observations";',
+    'import { createR19DrawReasons, createR20DrawCosts } from "./r17-normal-observations";', 'draw_cost_import');
+  runtime = one(runtime, 'const r19DrawReasons = createR19DrawReasons();',
+    'const r19DrawReasons = createR19DrawReasons();\nconst r20DrawCosts = createR20DrawCosts(now, interval);', 'draw_cost_owner');
+  runtime = one(runtime, '  r19DrawReasons.stop();', '  r19DrawReasons.stop();\n  r20DrawCosts.stop();', 'draw_cost_stop');
+  runtime = one(runtime, '    r19DrawReasons.start(configuration.mode === "normal");',
+    '    r19DrawReasons.start(configuration.mode === "normal");\n    r20DrawCosts.start(configuration.mode === "normal");', 'draw_cost_run');
+  runtime = one(runtime, '  measure<T>(stage: Stage, work: () => T, after?: (result: T) => void): T {\n' +
+    '    if (!active) return work();\n    const started = now(); try { const result = work(); after?.(result); return result; } finally { if (active) record(stageElapsed[stage], interval(started, now())); }\n  },',
+    '  actualDrawCost<T>(stage: "starTraversal" | "rendererSubmit", work: () => T): T {\n' +
+    '    return active ? r20DrawCosts.measure(stage, work) : work();\n  },\n' +
+    '  measure<T>(stage: Stage, work: () => T, after?: (result: T) => void): T {\n' +
+    '    if (!active) return work();\n' +
+    '    const invoke = stage === "nativePaintOwner" ? () => r20DrawCosts.paint(r19DrawReasons.paintFacts(), work)\n' +
+    '      : stage === "draw" ? () => r20DrawCosts.measure("draw", work) : work;\n' +
+    '    const started = now(); try { const result = invoke(); after?.(result); return result; } finally { if (active) record(stageElapsed[stage], interval(started, now())); }\n  },', 'draw_cost_existing_paint_scope');
+  runtime = one(runtime, 'return r17Geometry.attach(r17RulerEntry.attach(r19DrawReasons.attach({ schemaVersion:',
+    'return r17ProbeBoundedReceipt(r17Geometry.attach(r17RulerEntry.attach(r20DrawCosts.attach(r19DrawReasons.attach({ schemaVersion:', 'draw_cost_budget_before_trimming');
+  runtime = one(runtime, 'aCorrelation: r17ACorrelation.snapshot(prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id)) } : {}) })));',
+    'aCorrelation: r17ACorrelation.snapshot(prepareRing.filter((value): value is Preparation => Boolean(value)).sort((a, b) => a.id - b.id)) } : {}) })))));', 'draw_cost_receipt_end');
+
+  scene = one(scene, '  const buildCatalogStars = ',
+    '  r17Probe.actualDrawCost("starTraversal", () => {\n  const buildCatalogStars = ', 'draw_cost_actual_bsc_start');
+  scene = one(scene, '  const currentSupplement=currentStellarSupplement(supplement,data.skyScene,frameAt);',
+    '  });\n\n  const currentSupplement=currentStellarSupplement(supplement,data.skyScene,frameAt);', 'draw_cost_actual_bsc_end');
+  scene = one(scene, '  const buildSupplementStars = ',
+    '  r17Probe.actualDrawCost("starTraversal", () => {\n  const buildSupplementStars = ', 'draw_cost_actual_sao_start');
+  scene = one(scene, '  const solarDisc=skySunDiscAt(data.hourly,frameAt,basis,width,height,verticalFovDeg,center);',
+    '  });\n\n  const solarDisc=skySunDiscAt(data.hourly,frameAt,basis,width,height,verticalFovDeg,center);', 'draw_cost_actual_sao_and_exit_end');
+  renderer = one(renderer, '      if (!data.length) return;\n      try {',
+    '      if (!data.length) return;\n      return r17Probe.actualDrawCost("rendererSubmit", () => {\n      try {', 'draw_cost_actual_nonempty_submit_start');
+  renderer = one(renderer, '    };\n    const flush = () => {',
+    '      });\n    };\n    const flush = () => {', 'draw_cost_actual_submit_end');
+  return { runtime, scene, renderer };
 }

@@ -6,13 +6,14 @@ import ts from "typescript";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { DISPLAY_RASTER_GRID, displayRasterWindowBounds, displayRasterWindowForBounds } from "@starward/coordinate-system";
 import { createRasterImageResources } from "../services/raster-image-resources.ts";
-import { normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity } from "../services/terrain-overlay-request.ts";
-import { terrainCoverageForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
+import { normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity, terrainOverlayRequestWindow } from "../services/terrain-overlay-request.ts";
+import { terrainCoverageForRequest, terrainPreviewForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
 import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
 
 function harness(liveMetadata = false) {
   const ast = ts.createSourceFile("hook.ts", readFileSync(process.env.TERRAIN_OVERLAY_TEST_SOURCE ?? new URL("./use-terrain-overlay.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useTerrainOverlay")!;
+  const declarations = ast.statements.filter(node => ts.isFunctionDeclaration(node))
+    .map(node => node.getText(ast).replace(/^export /, "")).join("\n");
   const imageAst = ts.createSourceFile("image.ts", readFileSync(new URL("./use-raster-image.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const imageDeclaration = imageAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useRasterImage")!;
   const states: any[] = [], dependencies: any[][] = [], cleanups: any[] = [];
@@ -22,17 +23,18 @@ function harness(liveMetadata = false) {
       .then(path => ({ path, bytes: 1 })),
     remove: async () => undefined,
   }, { maximumFiles: 8, maximumBytes: 16, maximumConcurrent: 2 });
-  let stateIndex = 0, effectIndex = 0, pending: (() => void)[] = [], retries = 0, nextTimer = 0;
+  let stateIndex = 0, effectIndex = 0, queryIndex = 0, pending: (() => void)[] = [], retries = 0, nextTimer = 0;
   const timers = new Map<number, () => void>();
   let options: any, requestedInput: TerrainOverlayRequest | undefined;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  let observer: QueryObserver<any> | undefined, unsubscribe: (() => void) | undefined;
-  const metadataRequests: { input: TerrainOverlayRequest; signal: AbortSignal; resolve(value: any): void }[] = [];
+  const observers: QueryObserver<any>[] = [], unsubscribes: (() => void)[] = [];
+  type MetadataRequest = { input: TerrainOverlayRequest; signal: AbortSignal; resolve(value: any): void; reject(error: Error): void };
+  const metadataRequests: MetadataRequest[] = [], previewRequests: MetadataRequest[] = [];
   let fetching = false, retryOptions: any;
   let data: any = { imageUrl: "/v2/terrain/assets/tile.png", publicationId: "publication:a", lightPollution: { state: "PARTIAL", cells: [{ id: "independent-light" }] } };
-  const fn = vm.runInNewContext(ts.transpileModule(imageDeclaration.getText(imageAst).replace(/^export /, "") + "\n" + declaration.getText(ast).replace(/^export /, "") + ";useTerrainOverlay;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-    mapRasterFiles: resources, AbortController, terrainCoverageForRequest, terrainRequestForCoverage,
-    normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity,
+  const fn = vm.runInNewContext(ts.transpileModule(imageDeclaration.getText(imageAst).replace(/^export /, "") + "\n" + declarations + ";useTerrainOverlay;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    mapRasterFiles: resources, AbortController, terrainCoverageForRequest, terrainPreviewForRequest, terrainRequestForCoverage,
+    normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity, terrainOverlayRequestWindow,
     useState(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = value;
       return [states[index], (next: any) => { states[index] = typeof next === "function" ? next(states[index]) : next; }]; },
     useRef(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = { current: value }; return states[index]; },
@@ -41,14 +43,20 @@ function harness(liveMetadata = false) {
       if (!prior || deps.some((value, n) => value !== prior[n])) pending.push(() => { cleanups[index]?.(); cleanups[index] = effect(); });
       dependencies[index] = deps; },
     useResourceQuery: (value: any) => {
-      options = value;
+      const index = queryIndex++, isFine = value.queryKey[0] === "terrain-overlay";
+      if (isFine) options = value;
       if (liveMetadata) {
         const queryOptions = { ...value, queryFn: ({ signal }: { signal: AbortSignal }) => value.queryFn(signal),
-          staleTime: (query: any) => value.staleTime(query.state.data) };
-        if (!observer) { observer = new QueryObserver(client, queryOptions); unsubscribe = observer.subscribe(() => undefined); }
-        else observer.setOptions(queryOptions);
-        return { ...observer.getCurrentResult(), refetch: () => observer!.refetch() };
+          staleTime: typeof value.staleTime === "function" ? (query: any) => value.staleTime(query.state.data) : value.staleTime };
+        if (!observers[index]) {
+          observers[index] = new QueryObserver(client, queryOptions);
+          unsubscribes[index] = observers[index]!.subscribe(() => undefined);
+        } else observers[index]!.setOptions(queryOptions);
+        const result = observers[index]!.getCurrentResult();
+        return { ...result, ...(result.data ? { error: null, isError: false, refreshError: result.error ?? undefined } : {}),
+          refetch: () => observers[index]!.refetch() };
       }
+      if (!isFine) return { data: undefined, isError: false, isPending: true, isFetching: false };
       // The controlled response still belongs to the request the real hook
       // issues; image/recovery tests inject native I/O independently below.
       void value.queryFn();
@@ -59,12 +67,14 @@ function harness(liveMetadata = false) {
     clearTimeout: (id: number) => timers.delete(id),
     getTerrainOverlay(input: TerrainOverlayRequest, signal: AbortSignal) {
       requestedInput = input;
-      return liveMetadata ? new Promise(resolve => metadataRequests.push({ input, signal, resolve })) : Promise.resolve({ data });
+      return liveMetadata ? new Promise((resolve, reject) => metadataRequests.push({ input, signal, resolve, reject })) : Promise.resolve({ data });
     },
+    getTerrainOverlayPreview: (input: TerrainOverlayRequest, signal: AbortSignal) =>
+      new Promise((resolve, reject) => previewRequests.push({ input, signal, resolve, reject })),
     isMiniappRequestCancelled: (error: Error) => error.message === "cancelled",
   });
   return {
-    requests, metadataRequests, get retries() { return retries; }, setPublication(id: string) { data = { ...data, publicationId: id }; },
+    requests, metadataRequests, previewRequests, get retries() { return retries; }, setPublication(id: string) { data = { ...data, publicationId: id }; },
     setFailure() { data = { ...data, imageUrl: null, failureCode: "TERRAIN_READ_FAILED" }; },
     setFetching(value: boolean) { fetching = value; }, get retryOptions() { return retryOptions; },
     setData(value: any) { data = value; },
@@ -73,10 +83,10 @@ function harness(liveMetadata = false) {
     freshness() { return options.staleTime({ data }); },
     runTimers() { const scheduled = [...timers.values()]; timers.clear(); scheduled.forEach(callback => callback()); },
     render(enabled = true, imageEnabled = true, input: TerrainOverlayRequest = {
-      purpose: "SPOT", center: { system: "GCJ02", latitude: 22, longitude: 114 }, radiusKm: 5 }) {
-      stateIndex = effectIndex = 0; fn(input, enabled, imageEnabled); pending.splice(0).forEach(effect => effect());
-      stateIndex = effectIndex = 0; return fn(input, enabled, imageEnabled); },
-    unmount() { cleanups.forEach(cleanup => cleanup?.()); unsubscribe?.(); client.clear(); void resources.close(); },
+      purpose: "SPOT", center: { system: "GCJ02", latitude: 22, longitude: 114 }, radiusKm: 5 }, allowPreview: boolean | ((identity: string) => boolean) = true) {
+      stateIndex = effectIndex = queryIndex = 0; fn(input, enabled, imageEnabled, allowPreview); pending.splice(0).forEach(effect => effect());
+      stateIndex = effectIndex = queryIndex = 0; return fn(input, enabled, imageEnabled, allowPreview); },
+    unmount() { cleanups.forEach(cleanup => cleanup?.()); unsubscribes.forEach(unsubscribe => unsubscribe()); client.clear(); void resources.close(); },
   };
 }
 const settle = () => new Promise<void>(resolve => setImmediate(resolve));
@@ -94,6 +104,10 @@ const publication = (input: TerrainOverlayRequest, id: string) => ({ data: { pur
   publicationId: id, imageUrl: `/v2/terrain/assets/${id}.png`,
   imageBoundsGcj02: displayRasterWindowBounds(displayRasterWindowForBounds(normalizeTerrainOverlayRequest(input).viewportBounds!)),
   lightPollution: {} } });
+const previewPublication = (input: TerrainOverlayRequest, id = "parent") => {
+  const result = publication(input, id), fine = terrainOverlayRequestWindow(input)!;
+  return { data: { ...result.data, preview: { requestedZoom: fine.zoom, imageZoom: fine.zoom - 1 } } };
+};
 
 test("same-window movement keeps one real pending metadata read, and cache coverage retains the actual issued rectangle", async () => {
   const h = harness(true), first = viewport(), jitter = viewport(.2, .02);
@@ -248,4 +262,164 @@ test("a late failure from an old publication cannot evict the current decoded im
   result.reportImageFailure(new Error("late old failure"), "/local/old.png");
   result = h.render(); assert.equal(result.imagePath, "/local/current.png"); assert.equal(result.imageError, null);
   h.unmount();
+});
+
+test("a ready parent supplies initial imagery while the independent fine read and download continue", async () => {
+  const h = harness(true), input = viewport();
+  try {
+    h.render(true, true, input); await settle();
+    assert.equal(h.metadataRequests.length, 1); assert.equal(h.previewRequests.length, 1);
+    h.previewRequests[0]!.resolve(previewPublication(input)); await settle();
+    let result = h.render(true, true, input); await settle();
+    assert.equal(h.requests[0]!.url, "/v2/terrain/assets/parent.png");
+    h.requests[0]!.resolve("/local/parent.png"); await settle();
+    result = h.render(true, true, input);
+    assert.equal(result.candidate.imagePath, "/local/parent.png");
+    assert.ok(result.candidate.data.preview); assert.equal(result.data, undefined); assert.equal(result.isPending, true);
+    assert.equal(result.imagePath, null, "the fine image contract does not silently become a parent");
+    h.metadataRequests[0]!.resolve(publication(input, "fine")); await settle();
+    result = h.render(true, true, input); await settle();
+    assert.equal(result.candidate.imagePath, "/local/parent.png", "fine metadata alone does not withdraw usable imagery");
+    assert.equal(h.requests[1]!.url, "/v2/terrain/assets/fine.png");
+    h.requests[1]!.resolve("/local/fine.png"); await settle();
+    result = h.render(true, true, input);
+    assert.equal(result.candidate.imagePath, "/local/fine.png"); assert.equal(result.candidate.data.preview, undefined);
+    assert.equal(result.data.data.publicationId, "fine"); assert.equal(h.metadataRequests.length, 1);
+  } finally { h.unmount(); }
+});
+
+test("fine imagery arriving first retires a pending preview and ignores its late response", async () => {
+  const h = harness(true), input = viewport();
+  try {
+    h.render(true, true, input); await settle();
+    h.metadataRequests[0]!.resolve(publication(input, "fine")); await settle();
+    h.render(true, true, input); await settle();
+    h.requests[0]!.resolve("/local/fine.png"); await settle();
+    assert.equal(h.render(true, true, input).candidate.imagePath, "/local/fine.png");
+    assert.equal(h.previewRequests[0]!.signal.aborted, true);
+    h.previewRequests[0]!.resolve(previewPublication(input, "late-parent")); await settle();
+    assert.equal(h.render(true, true, input).candidate.imagePath, "/local/fine.png");
+    assert.equal(h.requests.length, 1, "a late parent cannot allocate another image or lower the displayed detail");
+  } finally { h.unmount(); }
+});
+
+test("same-window preview shares its request, while viewport changes and hiding cancel only its own readers", async () => {
+  const h = harness(true), input = viewport(), jitter = viewport(.2, .02), crossed = viewport(.2, .5);
+  try {
+    h.render(true, true, input); await settle();
+    h.render(true, true, jitter); await settle();
+    assert.equal(h.previewRequests.length, 1);
+    h.previewRequests[0]!.resolve(previewPublication(input)); await settle();
+    h.render(true, true, jitter); await settle();
+    assert.equal(h.requests.length, 1);
+    h.render(true, true, crossed); await settle();
+    assert.equal(h.requests[0]!.signal.aborted, true, "the old viewport's parent download is released");
+    assert.equal(h.previewRequests.length, 2);
+    h.requests[0]!.resolve("/local/old-parent.png"); await settle();
+    assert.equal(h.render(true, true, crossed).candidate, null);
+    h.render(false, false, crossed); await settle();
+    assert.equal(h.previewRequests[1]!.signal.aborted, true, "hide unsubscribes from the optional metadata read");
+    h.previewRequests[1]!.resolve(previewPublication(crossed, "hidden-parent")); await settle();
+    assert.equal(h.render(false, false, crossed).candidate, null);
+    assert.equal(h.requests.length, 1);
+  } finally { h.unmount(); }
+});
+
+test("a missing parent or an older server's preview failure leaves the normal fine result intact", async () => {
+  for (const missing of [true, false]) {
+    const h = harness(true), input = viewport();
+    try {
+      h.render(true, true, input); await settle();
+      if (missing) h.previewRequests[0]!.resolve({ data: { ...publication(input, "none").data, state: "UNAVAILABLE", imageUrl: null } });
+      else h.previewRequests[0]!.reject(new Error("HTTP 404"));
+      await settle();
+      let result = h.render(true, true, input);
+      assert.equal(result.isError, false); assert.equal(result.candidate, null); assert.equal(h.requests.length, 0);
+      h.metadataRequests[0]!.resolve(publication(input, "fine")); await settle();
+      h.render(true, true, input); await settle();
+      h.requests[0]!.resolve("/local/fine.png"); await settle();
+      result = h.render(true, true, input);
+      assert.equal(result.candidate.imagePath, "/local/fine.png"); assert.equal(result.isError, false);
+      assert.equal(h.metadataRequests.length, 1); assert.equal(h.previewRequests.length, 1);
+    } finally { h.unmount(); }
+  }
+});
+
+test("a fine failure preserves the ready parent and its actual bounds without relabeling it as completed", async () => {
+  const h = harness(true), input = viewport();
+  try {
+    h.render(true, true, input); await settle();
+    const parent = previewPublication(input);
+    h.previewRequests[0]!.resolve(parent); await settle();
+    h.render(true, true, input); await settle();
+    h.requests[0]!.resolve("/local/parent.png"); await settle();
+    h.render(true, true, input);
+    h.metadataRequests[0]!.reject(new Error("fine offline")); await settle();
+    const result = h.render(true, true, input);
+    assert.equal(result.isError, true); assert.equal(result.data, undefined);
+    assert.equal(result.candidate.imagePath, "/local/parent.png");
+    assert.deepEqual(result.candidate.data.imageBoundsGcj02, parent.data.imageBoundsGcj02);
+    assert.ok(result.candidate.data.preview);
+  } finally { h.unmount(); }
+});
+
+test("a native failure of the parent retries that image without changing the pending fine read", async () => {
+  const h = harness(true), input = viewport();
+  try {
+    h.render(true, true, input); await settle();
+    h.previewRequests[0]!.resolve(previewPublication(input)); await settle();
+    h.render(true, true, input); await settle();
+    h.requests[0]!.resolve("/local/bad-parent.png"); await settle();
+    let result = h.render(true, true, input);
+    result.reportRasterImageFailure(new Error("parent decode failed"), "/local/bad-parent.png");
+    result = h.render(true, true, input);
+    assert.equal(result.candidate, null); assert.equal(result.imageError, null); assert.equal(result.isPending, true);
+    result.retryImage(); h.render(true, true, input); await settle();
+    assert.equal(h.requests.length, 2); assert.equal(h.requests[1]!.url, "/v2/terrain/assets/parent.png");
+    h.requests[1]!.resolve("/local/recovered-parent.png"); await settle();
+    result = h.render(true, true, input);
+    assert.equal(result.candidate.imagePath, "/local/recovered-parent.png");
+    assert.equal(h.metadataRequests.length, 1); assert.equal(h.metadataRequests[0]!.signal.aborted, false);
+  } finally { h.unmount(); }
+});
+
+test("a fresh layer-sheet result, a retained native target, and Spot consumers do not request a parent", async () => {
+  const h = harness(true), input = viewport();
+  try {
+    h.render(true, false, input); await settle();
+    h.metadataRequests[0]!.resolve(publication(input, "prefetched")); await settle();
+    h.render(true, false, input); h.render(true, true, input); await settle();
+    assert.equal(h.previewRequests.length, 0); assert.equal(h.requests.length, 1);
+    h.render(true, true, viewport(.2, .5), false); await settle();
+    assert.equal(h.previewRequests.length, 0, "the existing native target stays until the new fine image is ready");
+    h.render(); await settle();
+    assert.equal(h.previewRequests.length, 0, "Spot preserves its point/radius path");
+  } finally { h.unmount(); }
+});
+
+test("live installation admission can enable a cross-coverage parent and revoke it without restarting the fine read", async () => {
+  const h = harness(true), input = viewport();
+  let allowed = false;
+  const admission = (identity: string) => { assert.equal(identity, terrainOverlayRequestIdentity(input)); return allowed; };
+  try {
+    h.render(true, true, input, admission); await settle();
+    assert.equal(h.metadataRequests.length, 1); assert.equal(h.previewRequests.length, 0);
+    allowed = true; h.render(true, true, input, admission); await settle();
+    assert.equal(h.previewRequests.length, 1, "an actual native ack may qualify the existing viewport's optional read");
+    h.previewRequests[0]!.resolve(previewPublication(input)); await settle();
+    h.render(true, true, input, admission); await settle();
+    assert.equal(h.requests.length, 1);
+    allowed = false; h.render(true, true, input, admission); await settle();
+    assert.equal(h.requests[0]!.signal.aborted, true, "returning inside valid native coverage retires the optional file reader");
+    h.requests[0]!.resolve("/local/late-parent.png"); await settle();
+    assert.equal(h.render(true, true, input, admission).candidate, null);
+    assert.equal(h.metadataRequests.length, 1); assert.equal(h.metadataRequests[0]!.signal.aborted, false);
+    h.metadataRequests[0]!.resolve(publication(input, "fine")); await settle();
+    h.render(true, true, input, admission); await settle();
+    h.requests[1]!.resolve("/local/fine.png"); await settle();
+    assert.equal(h.render(true, true, input, admission).candidate.imagePath, "/local/fine.png");
+    allowed = true;
+    assert.equal(h.render(true, true, input, admission).candidate.imagePath, "/local/fine.png");
+    assert.equal(h.previewRequests.length, 1, "fine completion permanently closes this identity's optional read");
+  } finally { h.unmount(); }
 });

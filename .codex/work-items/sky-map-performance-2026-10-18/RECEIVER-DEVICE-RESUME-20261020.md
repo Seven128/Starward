@@ -1,11 +1,10 @@
 # 接收机设备恢复
 
-当前状态：`LOCAL_SERVICE_READY__USB_HTTP_VERIFIED__AUTO_PUSH_RESULT_UNKNOWN__PHONE_UNBOUND`。
-用户已恢复完整Goal并优先三类叠层、正常播放及六字段快速调时。以下仅是继续实际性能工作的准备，不关闭任何产品验收。
+本页保留接收机服务和网络恢复过程。**当前唯一候选、服务会话、手机输入资格、在途操作与必要人工恢复请读[HANDOFF页首](HANDOFF.md)，不要从本页历史端口/PID/session继续操作。** 用户已恢复完整Goal，优先三类叠层、正常播放及六字段快速调时，两项均要求无泄漏；用户休息时继续独立工作并后置必要人工动作。普通预览直接推送的授权持续有效，不重新请求人工代推。修复、实际原件和证据限制归[本轮性能结果](RECEIVER-PERFORMANCE-20261020.md)，本页不认证当前性能结果。
 
-## 当前候选与服务
+## 接收时的初始候选与服务
 
-- 当前源码完整构建：`tmp/r17-normal-a1-review-r10-usb/manifest.json`；source binding `09dca55e3c5f9421812d4602ce2ccedf53534b61b4bf4e9889122b98c57e6ca9`，bundle `669e8ee3ee2b5af0eac7807b15e5db57a582c5c705d61da150900da390a2ca4c`，337文件/5,003,598B，main余量103,220B，31份map留包外。沿原r10完整正常路径、15秒metrics和60秒同run Pause，不恢复gen24或gen26。
+- 接收时源码完整构建：`tmp/r17-normal-a1-review-r10-usb/manifest.json`；source binding `09dca55e3c5f9421812d4602ce2ccedf53534b61b4bf4e9889122b98c57e6ca9`，bundle `669e8ee3ee2b5af0eac7807b15e5db57a582c5c705d61da150900da390a2ca4c`，337文件/5,003,598B，main余量103,220B，31份map留包外。沿原r10完整正常路径、15秒metrics和60秒同run Pause，不恢复gen24或gen26。
 - 原builder仅补显式`STARWARD_R17_RUNTIME_CONFIG`、Windows模板CRLF归一，以及显式`--usb-reverse`输入和独立输出目录。LAN仍拒绝loopback；USB仅接受配置中明确`transport: usb-reverse`和`127.0.0.1:8798`。原LAN完整包及source保留，未送达手机。
 - 本机复用既有`data-handoff-20261018/isolated-pg-data`的r6恢复库；原逻辑dump841,634B、SHA `1199bd4710b7760795655dbf5deb63ca90037d6c315a5be4eb19d52fad74f5be`，先前独立恢复证明73表/22迁移，当前再次核PUBLISHED inventory和只读连接。更早working集群虽通过发布查询，但备份时缺系统文件；未拼文件/覆盖修复，未作为当前API数据源，确认无其他客户端后已正常停止本轮启动的该集群。
 - API loopback8799使用当前Postgres repository、独立MemoryCache和既有明确SAMPLE_DATA天气adapter。禁迁移、提醒、acceptance/fixture全局开关，连接默认只读。LAN/USB公共桥继续剥离身份头、限制路由和写入，沿同一32文件collector。原8791、账号、N05、R6不动。
@@ -22,12 +21,14 @@
 
 私有运行根为`%USERPROFILE%/.starward-private/sky-map-20261020/device-resume`，含runtime/API配置、collector、USB映射绑定、网络清理读回及HTTP输入。原件不入Git。当前loopback桥入口是任务`tmp/r17-normal-phone-bridge.mjs`，API入口`tmp/r17-normal-profile-api.mts`；这两件、完整USB候选和未完交付判断所需原件已通过原owner-only Drive保存、独立读回和新目录2,642文件恢复，见[恢复回执](RECEIVER-DEVICE-TRANSFER-20261020.json)。凭据/API私有配置、数据库、node_modules、活动日志和二维码未进入此包；未变输入继续复用原恢复owner。
 
-## 下一动作
+## 初次推送边界与后续恢复
 
 用户随后明确要求使用推送。原QR generation1已由现有feedback owner退役；同一feedback当前generation为`generation-000002-aU7Lag`，完整包哈希不变。legacy `auto-preview`进程退出0，但返回只有CLI进度形式，封装未取得结构化业务终态/任务号，当前`official.disposition=unknown / result_unrecognized`。没有把exit0或画面作为官方成功、没有重复推送。一次guarded只读capture见Starward已有Map和TW marker，USB桥只有root预检请求，尚不能绑定新包；该图不提供新候选输入授权。已请求用户说明是否收到并打开开发预览推送，不读取微信消息列表。
 
-已定位封装适配缺口：当前安装的公开`wechatide -c Codex auto_preview`提供结构化业务结果；旧兼容CLI只输出spinner。现有`device-feedback-official.mjs`已改为在同一明确Electron安装具备`skill-index.js`时使用该公开入口，保Codex client、pending任务号和未知/失败禁止自动fallback。独审发现的“调用前port拒绝误记UNKNOWN”已修，0次调用为not_invoked可恢复，真实调用后timeout仍保unknown；42项相关检查通过，独审无剩余P1/P2。这是后续调用的修复，不能倒推原generation2或gen26成功。实际推送结果/当前新包画面成立后，才绑定并开始原PLAN地形跨覆盖及正常Play/六字段观察。
+已定位封装适配缺口：当前安装的公开`wechatide -c Codex auto_preview`提供结构化业务结果；旧兼容CLI只输出spinner。现有`device-feedback-official.mjs`已改为在同一明确Electron安装具备`skill-index.js`时使用该公开入口，保Codex client、pending任务号和未知/失败禁止自动fallback。独审发现的“调用前port拒绝误记UNKNOWN”已修，0次调用为not_invoked可恢复，真实调用后timeout仍保unknown；42项相关检查通过，独审无剩余P1/P2。这是后续调用的修复，不能倒推原generation2或gen26成功。用户确认收到并打开，随后误按返回并明确要求重推；新r10、r11、r12调用均返回明确success，r10/r12分别实际见唯一标识后绑定。原UNKNOWN单独保留。
 
-memory watcher可显式第五参数`usb`；`STARWARD_R17_MEMORY_ROOT`选本机私有输出，禁止checkout内路径。沿原时钟锚点和取样语义，不补写旧r10记录。5项anchor和4项项目skill检查、Context结构检查已过；尚未运行手机memory watch。
+初次新推送在手机debug OFF时未见公共桥请求；经已授权原生开发调试菜单打开debug（会退出小程序），保全原session后重推同r10，实际请求和地形恢复。当前普通预览debug ON/vConsole是明确条件，不能写成debug OFF最终验收。最新r12已实际完成六字段长按及取消；后续沿HANDOFF，不再等待已经完成的打开确认。
+
+memory watcher可显式第五参数`usb`；`STARWARD_R17_MEMORY_ROOT`选本机私有输出，禁止checkout内路径。沿原时钟锚点和取样语义，不补写旧r10记录。5项anchor和4项项目skill检查、Context结构检查已过；本机三次watch已完成，实际窗口和PSS/Swap口径见本轮性能结果，均无在途采样进程。
 
 必要独审已核原LAN适配的原始模板哈希、LF/CRLF同1583输出、两份完整包，以及只读API/原桥精确边界；USB边界随后增补，仍需随实际运行核其输入/输出。未把准备或历史独审当当前手机验收。

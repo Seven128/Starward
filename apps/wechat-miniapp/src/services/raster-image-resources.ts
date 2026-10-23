@@ -74,11 +74,16 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
     finally { entry.removing = false; aliases.forEach(other => { other.removing = false; }); }
   };
   const makeRoom = async (additionalFiles: number, additionalBytes: number) => {
+    // Failed unlink keeps its file accounted for, but a later admission can
+    // retry. Bound this admission by physical path, including idle aliases.
+    const failedPaths = new Set<string>();
     while (entries.size + additionalFiles > limits.maximumFiles || readyBytes + additionalBytes > limits.maximumBytes) {
-      const idle = [...entries].filter(entry => entry.file && !entry.pins && !entry.readers.size && !entry.cleanupFailed && !entry.removing)
+      const idle = [...entries].filter(entry => entry.file && !entry.pins && !entry.readers.size
+        && !failedPaths.has(entry.file.path) && !entry.removing)
         .sort((a, b) => a.used - b.used)[0];
       if (!idle) throw new Error("raster_image_budget_busy");
-      await remove(idle);
+      const path = idle.file!.path;
+      if (!await remove(idle)) failedPaths.add(path);
     }
   };
   const retireAbandoned = (entry: Entry) => {

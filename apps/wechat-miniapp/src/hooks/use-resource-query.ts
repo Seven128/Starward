@@ -5,7 +5,9 @@ import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
 export interface QueryOptions<T> {
   queryKey: readonly unknown[];
   queryFn: (signal: AbortSignal | undefined) => Promise<T>;
-  enabled?: boolean;
+  /** Query evaluates a live eligibility predicate when its queued observer
+   * options are installed, not only when React renders them. */
+  enabled?: boolean | (() => boolean);
   staleTime?: number | ((data: T | undefined) => number);
   gcTime?: number;
   refetchInterval?: number | false;

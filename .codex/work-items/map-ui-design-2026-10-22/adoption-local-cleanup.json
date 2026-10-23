@@ -1,0 +1,68 @@
+{
+  "purpose": "Retired local design inputs after adopted Stitch source readback; current delivery images and final source readback retained temporarily",
+  "adoptedScreen": "3995519477980461148",
+  "recovery": "Windows Recycle Bin",
+  "items": [
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\source",
+      "directory": true,
+      "fileBytes": null
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\adoption-input",
+      "directory": true,
+      "fileBytes": null
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\remote-candidate-readback",
+      "directory": true,
+      "fileBytes": null
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\adopted-readback",
+      "directory": true,
+      "fileBytes": null
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\remote-source-library.html",
+      "directory": false,
+      "fileBytes": 77260252
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\stitch-candidate.html",
+      "directory": false,
+      "fileBytes": 759281
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\candidate-design-delta.zip",
+      "directory": false,
+      "fileBytes": 280337
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\preview-only.sqlite",
+      "directory": false,
+      "fileBytes": 16384
+    },
+    {
+      "path": "C:\\Users\\momoooo\\AppData\\Local\\Temp\\starward-design-20261022\\serve-preserved.py",
+      "directory": false,
+      "fileBytes": 2020
+    },
+    {
+      "path": "C:\\Users\\momoooo\\Downloads\\stitch_09_23.zip",
+      "directory": false,
+      "fileBytes": 58416643
+    },
+    {
+      "path": "C:\\Users\\momoooo\\Downloads\\stitch_09_23 (1).zip",
+      "directory": false,
+      "fileBytes": 359185
+    },
+    {
+      "path": "C:\\Users\\momoooo\\Downloads\\stitch_09_23 (2).zip",
+      "directory": false,
+      "fileBytes": 503661
+    }
+  ],
+  "remaining": 0
+}

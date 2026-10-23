@@ -1,5 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
-import { useEffect } from "react";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { CelestialObjectPositionData } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
@@ -7,7 +7,6 @@ import { useSkyPresentationPosition as useCelestialPosition } from "./use-sky-pr
 import type { SkyPositionPresentation } from "./sky-presentation-position";
 import type { CelestialPositionBinding } from "@/services/celestial-position-response";
 import { skyDirectionLabel, skyHeightLabel } from "./sky-position-label";
-import { useSkyObjectPriorityLayout } from "./sky-object-dialog";
 
 export function SkyObjectPositionAction({ binding, catalog, suspended, presentation, onLocate, onTrack, onRetrySky }: {
   binding: CelestialPositionBinding;
@@ -19,12 +18,7 @@ export function SkyObjectPositionAction({ binding, catalog, suspended, presentat
   onRetrySky: () => void;
 }) {
   const result = useCelestialPosition(binding, catalog, !suspended, presentation);
-  const measurePriority = useSkyObjectPriorityLayout();
-  const hasPosition = Boolean(result.data?.data.position);
   const stale = Boolean(result.refreshError || result.data?.dataState === "STALE_USABLE");
-  // Position loading/error/recovery changes the pinned priority area's height.
-  // Re-measure those layouts only; normal coordinate updates do not query it.
-  useEffect(measurePriority, [measurePriority, suspended, Boolean(catalog), result.isPending, result.isError, hasPosition, stale]);
   const retry = () => {
     // A new position publication can expose an old Infinity-cached catalogue.
     // Refresh its existing owner too, instead of repeating the rejected pair.
@@ -41,8 +35,8 @@ export function SkyObjectPositionAction({ binding, catalog, suspended, presentat
   const point = data.position!;
   return <View className="sky-object-position-action">
     <View className="sky-object-position-action__buttons">
-      <Button className="sky-object-locate" ariaLabel="在星图中查看位置" onClick={() => onLocate(data)}><SemanticIcon name="sky-target" /></Button>
-      <Button className="sky-object-track" ariaLabel="随时间跟踪此天体" onClick={() => onTrack(data)}><SemanticIcon name="sky-follow" /></Button>
+      <Button pressVariant="icon" className="sky-object-locate" ariaLabel="在星图中查看位置" onClick={() => onLocate(data)}><SemanticIcon name="sky-target" /></Button>
+      <Button pressVariant="icon" className="sky-object-track" ariaLabel="随时间跟踪此天体" onClick={() => onTrack(data)}><SemanticIcon name="sky-follow" /></Button>
     </View>
     <View className="sky-object-position-action__facts">
       <View><Text>方向</Text><Text>{skyDirectionLabel(point.azimuthDeg, 1)}</Text></View>

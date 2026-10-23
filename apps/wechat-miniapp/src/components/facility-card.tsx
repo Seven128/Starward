@@ -1,4 +1,5 @@
-import { Button, Image, Text, View } from "@tarojs/components";
+import { Image, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { FacilityEvidence, RepresentativeMedia } from "@starward/miniapp-contracts";
 import { useAppStore } from "@/state/app-store";
 import { mediaSource } from "@/utils/media-source";

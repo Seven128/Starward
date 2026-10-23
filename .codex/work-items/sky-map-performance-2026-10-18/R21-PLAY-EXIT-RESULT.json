@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "starward-r21-play-attempt-exit-v1",
+  "mode": "development_feedback",
+  "candidate": {
+    "sourceSha256": "502d9d644785e33af7ce1537bc1899a738725cc752d42daefaf95d66baee3448",
+    "bundleSha256": "5a9f4b6bc8eb3e9c4dc8c3595467476d74e4664cd4db0c959a060ee0a83f99c1"
+  },
+  "invocations": {
+    "firstRecordTap": "rejected_before_input_recent_capture_required",
+    "secondRecordTap": "failed_miniapp_foreground_required_after_running",
+    "actualPlayStartAndDuration": "unverified_no_metrics_or_video_returned",
+    "recordingPersisted": false,
+    "pauseOrDrainVerified": false
+  },
+  "memory": {
+    "rows": 12,
+    "validSameOwnerRows": 11,
+    "lastState": "miniapp_not_foreground",
+    "lastElapsedMs": 119022,
+    "first": {
+      "slot": 0,
+      "foregroundActivityOwner": true,
+      "totalPssKiB": 5244242,
+      "totalRssKiB": 1504900,
+      "totalSwapPssKiB": 4053081,
+      "nativeHeapPssKiB": 158037,
+      "dalvikHeapPssKiB": 90496,
+      "glMtrackPssKiB": 26680,
+      "eglMtrackPssKiB": 147092,
+      "unknownPssKiB": 460533,
+      "otherMmapPssKiB": 49574,
+      "soMmapPssKiB": 140347,
+      "javaHeapSummaryKiB": 89772,
+      "nativeHeapSummaryKiB": 150352,
+      "codeSummaryKiB": 160928,
+      "stackSummaryKiB": 4992,
+      "graphicsSummaryKiB": 173772,
+      "privateOtherSummaryKiB": 531608,
+      "systemSummaryKiB": 4132818
+    },
+    "lastValid": {
+      "slot": 0,
+      "foregroundActivityOwner": true,
+      "totalPssKiB": 5518021,
+      "totalRssKiB": 1780148,
+      "totalSwapPssKiB": 4052953,
+      "nativeHeapPssKiB": 174541,
+      "dalvikHeapPssKiB": 53964,
+      "glMtrackPssKiB": 26012,
+      "eglMtrackPssKiB": 147092,
+      "unknownPssKiB": 756689,
+      "otherMmapPssKiB": 49534,
+      "soMmapPssKiB": 139020,
+      "javaHeapSummaryKiB": 53264,
+      "nativeHeapSummaryKiB": 166840,
+      "codeSummaryKiB": 158664,
+      "stackSummaryKiB": 4996,
+      "graphicsSummaryKiB": 173104,
+      "privateOtherSummaryKiB": 827580,
+      "systemSummaryKiB": 4133573
+    },
+    "limits": "Long ready period before the second record attempt; do not label this full 60s Play/drain or compare as a matched r20 growth rate. Process binding is within this watch only."
+  },
+  "exit": {
+    "scope": "LATEST_RECENT_WECHAT_APPBRAND_EXIT",
+    "reason": 5,
+    "status": 6,
+    "importance": 100,
+    "nativeCrash": true,
+    "lowMemoryReason": false,
+    "rawSha256": "7d526bf2f8bfb80399abbb477e8ec6f453bd6350e94bff25b6adbb6a79d0e120",
+    "bytes": 315,
+    "inputSent": false
+  },
+  "native": {
+    "scope": "EXACT_RECENT_APPBRAND_NATIVE_CRASH",
+    "sameExitPidAndProcess": true,
+    "bytes": 7974,
+    "sha256": "bb31a8439336c83d7a7ba27f7dc8303eaf87bb3773afb24661c8301a67c8ee1c",
+    "signalAbort": true,
+    "allocationFailure": true,
+    "heapLimit": false,
+    "runtimeFramesPresent": true,
+    "gc": [
+      {
+        "kind": "Scavenge",
+        "beforeMB": 432.7,
+        "afterMB": 427.7,
+        "durationMs": 1.12
+      },
+      {
+        "kind": "Scavenge",
+        "beforeMB": 427.7,
+        "afterMB": 427.6,
+        "durationMs": 0.58
+      }
+    ],
+    "inputSent": false
+  },
+  "preservation": {
+    "directory": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r21-normal-play\\review",
+    "files": 10,
+    "bytes": 1960768,
+    "allReadbackMatched": true
+  },
+  "conclusion": "Native SIGABRT with V8 frames and allocation-failure GC near the failed attempt. No retained graph; do not attribute to the new cache or certify no leak. Do not restart pressure merely to recover missing telemetry."
+}

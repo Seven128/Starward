@@ -11,6 +11,9 @@ function harness() {
   const queries: { selector: string; callback: (rows: any) => void }[] = [];
   let s = 0, r = 0, e = 0, hidden = () => {}, shown = () => {}, unmounted = false, writesAfterUnmount = 0, opened = 0;
   let throwQuery = false;
+  let foreground = true;
+  let identity = {};
+  const presentation = { visible: true, isCurrent: () => foreground, identity: () => identity };
   const store = { mode: "DAY", accountOwnerId: "owner-a", mapResetVersion: 1, preferences: { largeText: false } };
   const jsx = (type: unknown, props: any) => ({ type, props }), exports: any = {};
   const taro = {
@@ -36,7 +39,10 @@ function harness() {
     useState: (value: unknown) => { const index = s++; if (!(index in states)) states[index] = value;
       return [states[index], (next: any) => { if (unmounted) writesAfterUnmount++; states[index] = typeof next === "function" ? next(states[index]) : next; }]; },
     useEffect: effect, useLayoutEffect: effect,
-  } : name === "@tarojs/taro" ? { __esModule: true, default: taro, useDidHide: (callback: () => void) => { hidden = callback; }, useDidShow: (callback: () => void) => { shown = callback; } }
+  } : name === "@tarojs/taro" ? { __esModule: true, default: taro }
+    : name.endsWith("page-presentation") ? { usePresentedPageLifecycle: ({ show, hide }: { show: () => void; hide: () => void }) => {
+      shown = show; hidden = hide; return presentation;
+    } }
     : name === "@tarojs/components" ? { Button: "Button", View: "View", Text: "Text", Image: "Image" }
     : name === "./plan-entry" ? planEntry : name.endsWith("semantic-asset") ? { SemanticIcon: "SemanticIcon" }
     : name.includes("app-store") ? { useAppStore: (select: (state: any) => unknown) => select(store) } : {},
@@ -48,7 +54,11 @@ function harness() {
   render(); flush();
   return { render, flush, queries, store, props,
     deliver(rect: any = { left: 24, top: 200, width: 344, height: 140 }) { const query = queries.shift(); assert.ok(query, "production must query actual geometry"); query.callback([rect]); },
-    hide: () => hidden(), show: () => shown(), resize: () => { for (const callback of resize) callback(); },
+    hide: () => { foreground = presentation.visible = false; hidden(); },
+    show: () => { foreground = presentation.visible = true; shown(); },
+    retireBeforeRender: () => { foreground = false; },
+    renewBeforeRender: () => { identity = {}; },
+    resize: () => { for (const callback of resize) callback(); },
     unmount: () => { unmounted = true; for (const item of effects) item.cleanup?.(); },
     writesAfterUnmount: () => writesAfterUnmount, listeners: () => resize.size, opened: () => opened,
     queryFailure: () => { throwQuery = true; },
@@ -126,11 +136,42 @@ test("layout changes and account generations reject pending and visible feedback
   }
 });
 
-test("tab hide and resize retire feedback and their pending query without blocking a fresh press", () => {
+test("presentation hide and resize retire feedback and their pending query without blocking a fresh press", () => {
   const h = harness(); h.render().props.onTouchStart(touch()); h.hide(); h.deliver(); assert.equal(active(h), "false");
   h.render().props.onTouchStart(touch()); assert.equal(h.queries.length, 0); h.show();
   h.render().props.onTouchStart(touch()); h.resize(); h.deliver(); assert.equal(active(h), "false");
   h.render().props.onTouchStart(touch()); h.deliver(); assert.equal(active(h), "true"); h.hide(); assert.equal(active(h), "false"); h.unmount();
+});
+
+test("logical foreground retirement rejects stale entry and geometry callbacks before lifecycle rendering", () => {
+  const h = harness(), card = h.render();
+  card.props.onTouchStart(touch());
+  h.retireBeforeRender();
+  h.deliver();
+  assert.equal(active(h), "false");
+  card.props.children.find((child: any) => child?.props?.className === "my-plan-card__header focus-ring").props.onClick();
+  assert.equal(h.opened(), 0, "the retained callback cannot open a plan from hidden My");
+  card.props.onTouchStart(touch());
+  assert.equal(h.queries.length, 0, "retired presentation cannot begin another native geometry read");
+  h.show();
+  h.render().props.children.find((child: any) => child?.props?.className === "my-plan-card__header focus-ring").props.onClick();
+  assert.equal(h.opened(), 1);
+  h.unmount();
+});
+
+test("a new My presentation cannot accept the previous presentation's native press geometry", () => {
+  const h = harness();
+  h.render().props.onTouchStart(touch());
+  h.renewBeforeRender();
+  h.deliver();
+  assert.equal(active(h), "false", "foreground alone does not restore a retired gesture's identity");
+  h.render().props.onTouchStart(touch());
+  h.deliver();
+  assert.equal(active(h), "true");
+  h.renewBeforeRender();
+  h.render().props.onTouchMove(touch());
+  assert.equal(active(h), "false");
+  h.unmount();
 });
 
 test("native failure keeps existing navigation usable and unmount releases the listener and stale query", () => {

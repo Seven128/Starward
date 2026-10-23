@@ -10,23 +10,28 @@ function harness() {
   const ast = ts.createSourceFile("air.tsx", readFileSync(new URL("./air-quality.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations = ast.statements.filter(ts.isFunctionDeclaration).map(fn => fn.getText(ast).replace(/^export /, "")).join("\n");
   let active = true, query: any, options: any, hide = () => {}, show = () => {}, retries = 0;
-  let previous: unknown[] | undefined;
+  const effects: unknown[][] = [];
+  let effectIndex = 0;
   const notifications: any[] = [], notify = (value: any) => notifications.push(value);
   class TestDate extends Date { static now() { return Date.parse("2026-09-15T00:00:00Z"); } }
   const component = vm.runInNewContext(ts.transpileModule(declarations + "; AirQuality;", {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, {
     useState: () => [active, (value: boolean) => { active = value; }],
-    useEffect(fn: () => void, dependencies: unknown[]) { if (!previous || dependencies.some((value, index) => value !== previous![index])) fn(); previous = dependencies; },
+    useEffect(fn: () => void, dependencies: unknown[]) {
+      const index = effectIndex++, previous = effects[index];
+      effects[index] = dependencies;
+      if (!previous || previous.length !== dependencies.length || dependencies.some((value, i) => !Object.is(value, previous[i]))) fn();
+    },
     useDidHide(fn: () => void) { hide = fn; }, useDidShow(fn: () => void) { show = fn; },
     useAirQualityQuery(value: any) { options = value; return query; }, useAppStore: () => notify,
     getSpotAirQuality() {}, airQualityState, Date: TestDate, calendarDateInTimezone, clockTimeInTimezone,
-    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", Provenance: "Provenance", SourceAttribution: "SourceAttribution", SourceDisclosure: "SourceDisclosure", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
+    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", Provenance: "Provenance", SourceAttribution: "SourceAttribution", SourceEntry: "SourceEntry", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
     React: { createElement: (type: any, props: any, ...children: any[]) => typeof type === "function" ? type(props) : ({ type, props, children }) },
   });
   return { notifications, get options() { return options; }, get retries() { return retries; }, hide: () => hide(), show: () => show(),
     set(data: any, extra = {}) { query = { data, isPending: false, isError: false, ...extra, refetch: async () => { retries++; } }; },
-    render(spotId = "spot:a", visible = true) { return component({ spotId, visible, selectedAt: "2026-09-15T01:30:00Z", timezone: "Asia/Shanghai" }); },
+    render(spotId = "spot:a", visible = true) { effectIndex = 0; return component({ spotId, visible, selectedAt: "2026-09-15T01:30:00Z", timezone: "Asia/Shanghai" }); },
   };
 }
 const text = (value: any): string => value == null || typeof value === "boolean" ? "" : Array.isArray(value) ? value.map(text).join("") : typeof value === "object" ? text(value.children) : String(value);
@@ -47,9 +52,11 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   assert.equal(h.notifications.length, 1);
   const order = typesInReadingOrder(tree);
   assert.ok(!find(tree, node => node.type === "Provenance"), "source details should be available on demand instead of covering the reading and retry");
-  assert.ok(order.indexOf("SoftButton") < order.indexOf("SourceDisclosure"), "failed readings must offer retry before the expandable source details");
+  assert.ok(order.indexOf("SoftButton") < order.indexOf("SourceEntry"), "failed readings must offer retry before the source-page entrance");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
-  assert.equal(find(find(tree, node => node.type === "SourceDisclosure"), node => node.type === "ForecastCoverageNote").props.scope, "air");
+  const coverage = find(tree, node => node.type === "SourceEntry").props.sections.find((section: any) => section.kind === "forecast");
+  assert.equal(coverage.scope, "air");
+  assert.deepEqual(Array.from(coverage.starts), ["2026-09-15T01:00:00Z"]);
   h.render(); assert.equal(h.notifications.length, 1);
   assert.equal(h.options.refetchInterval, 60_000);
   h.hide(); h.render(); assert.equal(h.options.enabled, false);
@@ -103,8 +110,8 @@ test("positive current retrieval and selected-hour heading remain separate readi
     /当前区域参考.*获取于/.test(text(node))));
   assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
     /所选时刻预报.*2026-09-15 09:30/.test(text(node))));
-  const disclosure = find(tree, node => node.type === "SourceDisclosure");
-  assert.match(text(disclosure), /获取时间不是点位实测时间.*不等于天文透明度或视宁度/);
+  const disclosure = find(tree, node => node.type === "SourceEntry");
+  assert.match(JSON.stringify(disclosure.props.sections), /获取时间不是点位实测时间.*不等于天文透明度或视宁度/);
   assert.match(text(tree), /对应小时：2026-09-15 09:00/);
 });
 

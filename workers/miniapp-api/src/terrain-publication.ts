@@ -270,6 +270,40 @@ export function validateTerrainAsset(bytes: Buffer, publication: TerrainPublicat
   return bytes;
 }
 
+/** One metadata projection for normal reads and already-published previews.
+ * The caller owns refinement status and independently read light pollution. */
+export function terrainOverlayData(input: TerrainOverlayRequest, publication: TerrainPublication | null, readFailed = false): TerrainOverlayData {
+  const covered = publication !== null && terrainRequestIsCovered(publication, input);
+  const unavailable = terrainUnavailable(input, readFailed ? "地形数据读取失败，请重试。" : "当前地区暂无可获取的地形数据。");
+  const failure = readFailed || Boolean(publication?.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND"));
+  return {
+    ...unavailable,
+    ...(covered ? {
+      state: publication.validPixelPercent < 99.9 || publication.sourceIssues?.length ? "PARTIAL" as const : "AVAILABLE" as const,
+      effectiveRadiusKm: input.radiusKm ?? null,
+      publicationId: publication.publicationId,
+      datasetVersion: publication.dataset,
+      sourceProvider: publication.sourceProvider,
+      sourceResolution: publication.sourceResolution,
+      derivedResolutionM: publication.derivedResolutionM,
+      derivedAt: publication.derivedAt,
+      coordinateTransformVersion: publication.transformVersion,
+      imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
+      imageBytes: publication.image.byteSize,
+      imageSha256: publication.image.sha256,
+      imageStyle: publication.imageStyle ?? "ELEVATION_COLOR",
+      imageBoundsGcj02: publication.boundsGcj02,
+      elevationM: publication.elevationM,
+      elevationColorEncoding: publication.elevationColorEncoding ?? null,
+      coverageLabel: input.viewportBounds ? `已读取当前地图视窗，有效地形${publication.validPixelPercent}%。`
+        : `已发布中心周边 ${publication.maximumRadiusKm!.toFixed(0)} km，当前查看 ${input.radiusKm!.toFixed(1)} km。`,
+      limitations: publication.limitations,
+      source: terrainPublicationSource(publication),
+    } : {}),
+    ...(failure ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
+  };
+}
+
 export function terrainUnavailable(input: TerrainOverlayRequest, reason: string): TerrainOverlayData {
   return {
     state: "UNAVAILABLE",

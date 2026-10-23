@@ -1,6 +1,7 @@
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { NotificationRecord } from "@/state/notification";
 import { selectNotification, selectNotifications } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
@@ -8,6 +9,9 @@ import { floatingNotificationNodeId, useFloatingNotificationVisibility } from ".
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { currentNotificationPageRoute } from "@/state/notification-page-route";
 import { SemanticIcon } from "./semantic-asset";
+import { isPrimaryPageUrl } from "@/navigation/primary-navigation";
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
+import { usePagePresentation } from "@/navigation/page-presentation";
 
 const ICON: Readonly<Record<NotificationRecord["tone"], "info" | "check">> = {
   error: "info",
@@ -41,8 +45,9 @@ export function NotificationComponent({
   const action = async () => {
     if (onAction) return onAction();
     if (!notification.action?.route) return;
-    const method = notification.action.navigation ?? "navigateTo";
-    await Taro[method]({ url: notification.action.route });
+    const url = notification.action.route;
+    if (isPrimaryPageUrl(url)) await openPrimaryPage(url);
+    else await Taro.navigateTo({ url });
   };
   return (
     <View
@@ -202,9 +207,10 @@ export function NotificationRegion({
 }
 
 export function FloatingNotificationHost() {
+  const presentation = usePagePresentation();
   const [visible, setVisible] = useState(true);
   const [safeTop, setSafeTop] = useState(() => nativeNavigationInsets().safeTop);
-  const pageRoute = currentNotificationPageRoute();
+  const pageRoute = presentation.route ?? currentNotificationPageRoute();
   const firstNodeId = useAppStore(state => {
     const first = pageRoute ? selectNotifications(state.notifications, "floating", undefined, pageRoute)[0] : undefined;
     return first ? floatingNotificationNodeId(first) : "";
@@ -215,7 +221,7 @@ export function FloatingNotificationHost() {
   });
   useDidHide(() => setVisible(false));
   useResize(() => setSafeTop(nativeNavigationInsets().safeTop));
-  if (!visible || !pageRoute) return null;
+  if (!visible || !presentation.visible || !pageRoute) return null;
   return (
     <View className="notification-host" aria-label="全局通知"
       style={{ ...(safeTop === undefined ? {} : { "--notification-top": `${safeTop}px` }) } as CSSProperties}>

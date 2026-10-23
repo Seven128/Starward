@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { CSSProperties } from "react";
 
 export interface SelectionTabItem<Id extends string> {

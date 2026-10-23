@@ -1,5 +1,6 @@
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { Button, Text, View, type ITouchEvent } from "@tarojs/components";
+import { Text, View, type ITouchEvent } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";

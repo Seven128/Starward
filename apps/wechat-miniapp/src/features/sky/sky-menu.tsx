@@ -1,17 +1,19 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useDidHide } from "@tarojs/taro";
 import { SemanticIcon, type SemanticIconName } from "@/components/semantic-asset";
 import { skyRetainedLayerStyle } from "./sky-retained-layer";
 import { ToggleField } from "@/components/toggle-field";
+import { SourceButton } from "@/components/source-button";
 
 export function SkyNavigationMenu({ open, disabled = false, hidden = false, onToggle, onLeave, children }: {
   open: boolean; disabled?: boolean; hidden?: boolean; onToggle: () => void; onLeave: () => void; children: ReactNode;
 }) {
   return <View className="sky-navigation-actions" style={skyRetainedLayerStyle(hidden)}>
-    <Button className="sky-menu-toggle focus-ring" disabled={disabled} aria-expanded={open}
-      aria-label={open ? "收起菜单" : "展开菜单"} hoverClass="sky-menu-pressed" onClick={onToggle}>
-      <View className={`sky-menu-burger${open ? " sky-menu-burger--open" : ""}`} aria-hidden>
+    <Button pressVariant="icon" pressFace="before" className="sky-menu-toggle focus-ring" disabled={disabled} aria-expanded={open}
+      aria-label={open ? "收起菜单" : "展开菜单"} onClick={onToggle}>
+      <View className={`shared-button-press__icon sky-menu-burger${open ? " sky-menu-burger--open" : ""}`} aria-hidden>
         <View /><View /><View />
       </View>
     </Button>
@@ -27,10 +29,10 @@ export function SkyMenuAction({ icon, label, expanded, disabled = false, onClick
   icon: SemanticIconName; label: string; expanded: boolean; disabled?: boolean;
   onClick: () => void; id: string;
 }) {
-  return <Button className={`sky-control-dock__button focus-ring${expanded ? " sky-control-dock__button--active" : ""}`}
+  return <Button pressVariant="icon" pressFace="child" className={`sky-control-dock__button focus-ring${expanded ? " sky-control-dock__button--active" : ""}`}
     id={id} aria-label={label} aria-expanded={expanded} disabled={disabled}
-    hoverClass="sky-menu-pressed" onClick={onClick}>
-    <View className="sky-menu-circle"><SemanticIcon name={icon} /></View>
+    onClick={onClick}>
+    <View className="sky-menu-circle shared-button-press__face"><SemanticIcon className="shared-button-press__icon" name={icon} /></View>
   </Button>;
 }
 
@@ -48,44 +50,37 @@ export function SkyBrowseControl({ following, editing, active, disabled, canCali
   useDidHide(finish);
   const renderedGeneration = generation.current;
   return <View className={`sky-browse-control${following ? " sky-browse-control--following" : ""}${reducedMotion ? " sky-browse-control--immediate" : ""}`}>
-    <Button className="sky-browse-sidecar" ariaLabel={editing ? "确定校准" : "校准"}
+    <Button pressFace="child" className="sky-browse-sidecar" ariaLabel={editing ? "确定校准" : "校准"}
       disabled={!active || !following || moving || !canCalibrate}
       onClick={() => { if (active && following && !lock.current && canCalibrate) onCalibrate(); }}>
-      <View>{editing ? "确定" : "校准"}</View>
+      <View className="shared-button-press__face">{editing ? "确定" : "校准"}</View>
     </Button>
-    <Button className="sky-control-dock__button sky-browse-mode-toggle" ariaLabel={following ? "切换为手动浏览" : "切换为随手机"}
+    <Button pressVariant="icon" pressFace="child" className="sky-control-dock__button sky-browse-mode-toggle" ariaLabel={following ? "切换为手动浏览" : "切换为随手机"}
       disabled={!active || disabled || moving} onClick={() => {
         if (!active || disabled || lock.current) return;
         if (!reducedMotion) { const expected = ++generation.current; lock.current = true; setMoving(true);
           timer.current = setTimeout(() => { if (generation.current === expected) finish(); }, 300); }
         onToggle();
       }}>
-      <View className="sky-menu-circle sky-browse-circle">
+      <View className="sky-menu-circle sky-browse-circle shared-button-press__face">
         <View id="sky-browse-rotor" className="sky-browse-rotor"
           onTransitionEnd={() => { if (generation.current === renderedGeneration) finish(); }}>
-          <View className="sky-browse-glyph"><SemanticIcon name="sky-hand" /></View>
-          <View className="sky-browse-glyph sky-browse-eye"><SemanticIcon name="sky-eye" /></View>
+          <View className="sky-browse-glyph"><SemanticIcon className="shared-button-press__icon" name="sky-hand" /></View>
+          <View className="sky-browse-glyph sky-browse-eye"><SemanticIcon className="shared-button-press__icon" name="sky-eye" /></View>
         </View>
       </View>
     </Button>
   </View>;
 }
 
-export function SkySourceLink({ onClick }: { onClick: () => void }) {
-  return <Button className="sky-source-link focus-ring" ariaLabel="来源" hoverClass="sky-menu-pressed" onClick={onClick}>
-    <SemanticIcon name="sky-source" />
-  </Button>;
-}
-
-/** The action stays short while attribution remains visible before expansion. */
-export function SkySourceDisclosure({ label, credit, expanded, onClick }: {
-  label: string; credit: string; expanded: boolean; onClick: () => void;
+/** Keep the selected credit beside the sky; only the common button navigates. */
+export function SkySourceSummary({ label, credit, disabled, onOpen }: {
+  label: string; credit: string; disabled?: boolean; onOpen: () => void | Promise<unknown>;
 }) {
-  return <Button className="sky-source-heading focus-ring" aria-expanded={expanded}
-    hoverClass="sky-menu-pressed" onClick={onClick}>
-    <View className="sky-source-heading__copy"><Text>{label}</Text><Text>{credit}</Text></View>
-    <SemanticIcon name={expanded ? "sky-up" : "sky-down"} />
-  </Button>;
+  return <View className="sky-source-summary">
+    <View className="sky-source-summary__copy"><Text>{label}</Text><Text>{credit}</Text></View>
+    <SourceButton label={`查看${label}来源`} disabled={disabled} onOpen={onOpen} />
+  </View>;
 }
 
 export function SkyLayerToggle({ icon, label, detail, selected, disabled = false, onClick }: {

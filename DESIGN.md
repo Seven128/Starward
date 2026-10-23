@@ -151,7 +151,7 @@ components:
 
 - Authored exact-value token source: selected — this file. The YAML front matter is scoped to the native App profile; the exact Mini Program tables and contracts live only in the named Mini Program section below.
 - Generation direction and generated token targets: App profile `DESIGN.md` YAML → `packages/ui-system/src/tokens.ts`; Mini Program profile `DESIGN.md#wechat-mini-program--sky-canvas-field-signal` → its single framework adapter. TypeScript, WXSS, CSS, JSON, HTML, kits, manifests, screenshots, and provider files are consumers, candidates or verification inputs, never co-equal token authorities.
-- Mini Program reference interpretation: pure-white day canvas and restrained near-black night surfaces carry compact, clearly tiered information; sky/periwinkle owns time and selection, meteor yellow owns final commitment/celestial events and the translucent filter ornament, trail green owns route/opportunity, and risk coral stays semantic. Vitality comes from semantic color, aligned bands, calibrated draggable ticks, compact proportion and causal motion—not tinted page foundations, deep-blue slabs, oversized type, generic sliders, decorative ambient meteors or excessive padding. The same language governs the stationary Map/Search field, compact suggestions/titleless filters, one-document marker-to-medium information panel, mutually exclusive image-backed bottom layer sheet, objective astronomy facts, raised arrowless ruler, one three-state celestial mode track, headerless orientation canvas, restrained colored-icon My hub and cell-based compact Contribution intake; native App, App/Admin targets and provider/basemap/native-map styling remain excluded inputs.
+- Mini Program reference interpretation: pure-white day canvas and restrained near-black night surfaces carry compact, clearly tiered information; sky/periwinkle owns time and selection, meteor yellow owns final commitment/celestial events and the translucent filter ornament, trail green owns route/opportunity, and risk coral stays semantic. Vitality comes from semantic color, aligned bands, calibrated draggable ticks, compact proportion and causal motion—not tinted page foundations, deep-blue slabs, oversized type, generic sliders, decorative ambient meteors or excessive padding. The same language governs the Map Search icon and dedicated Search field, compact suggestions/titleless filters, one-document marker-to-medium information panel, mutually exclusive image-backed bottom layer sheet, objective astronomy facts, raised arrowless ruler, one three-state celestial mode track, headerless orientation canvas, restrained colored-icon My hub and cell-based compact Contribution intake; native App, App/Admin targets and provider/basemap/native-map styling remain excluded inputs.
 - Product and Screen Contracts own page responsibilities, data and interaction meaning; this file owns the independent App and Mini Program visual profiles. Verify real runtime behavior separately.
 - Edit current rules and their generated adapters directly within the authorized implementation scope. Historical, unadopted prototype packages, Open Design projects, handoffs and hashes are not required inputs or synchronized deliverables; explicitly adopted Mini Program resources are required under the owning Screen Contract. Preserve useful production assets and behavior checks. Resource adoption alone does not trigger production token generation.
 - Mini Program work currently targets standard text at 320/375/390/430 logical pixels, day/night/observation modes, safe areas, 44px touch targets, reduced motion and actual loading/error/permission states. Large-text adaptation is paused by the user.
@@ -614,7 +614,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](https://stitch.google.com/projects/7144519510537620825)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](https://stitch.google.com/projects/7144519510537620825)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的192/224px页面派生和192px原生Tab派生；2026-10-11用户仅批准停车/洗手间两份主包专用96px派生，显示24px，其余源和派生尺寸保持，实际包预算仍须构建核验。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
 - 当前完整页面资源中的局部例外优先于通用 B 图标基线：最新 My 日间计划卡头和计划行保留源中的两种 16px 线性 chevron，由同一 `SemanticIcon` 的计划角色分发精确 SVG 提取；其他页面的 B chevron 以及 NIGHT/OBSERVATION 原主题素材不改。
-- 当前采用资源中的日间主导航是横排图标与文字，官方自定义 TabBar 保留 Map/My 两个原生路由。Map 使用 26px 图标、14px/21px 文本、6px 图文间距和两侧 40px；My 使用 28px 图标、14px/22.4px 文本、12px 实际图文间距和整行均分。Map 选中地图保留源中 default bitmap，My 选中头像用 selected bitmap。字距以当前源局部例外 Map −.35px、My +.35px 为准，选中600、未选中400。Map 白底中性深色选中/浅灰未选中，My 白色80%底中性深色选中/灰色未选中；夜间与观测保留原主题导航资产和调色。命中至少44px，导航和真实系统安全区由同一 geometry owner 提供，资源示意 home indicator 不作为产品绘制内容。
+- 2026-10-22采用[局部导航修订](project_context/areas/main/screen-contracts/wechat-miniapp.md#stitch-design-authority)：移除Map/My底栏与其占高，默认地图，地图左上我的图标，My左上地图图标+文字返回；原渐变/玻璃卡/内容位置保持。Map右侧搜索改为同族圆按钮，工具顺序与来源/紧凑布局沿该源；未涉及图标、配色、材质和内容维持原样。可见面与至少44px命中区分离，真实系统安全区由原geometry owner提供，资源示意home indicator不作为产品绘制内容。其他主题保留已有调色/资产，不重画夜间拟物。
 - 当前 Plan 日间完整源的详情／编辑文档保留灰蓝文字与 `#526f7d` 主操作。详情分享入口位于 hero，B share 保留源中的 256px 逻辑画布；观测参考先于出行安排，底部固定删除／编辑两操作，编辑页固定取消／保存。两种文档由同一 Plan 页面与滚动／footer 空间责任维护；时段、当地时区、恢复、通知状态和公开分享字段继续由既有业务 owner 提供。字段54px、标签13.5px、输入14.5px，辅助说明13px/1.65，不能把这些局部参数推广到未覆盖主题或其他页面。
 
 ### 4. 间距、密度、占用率与几何
@@ -628,7 +628,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 3. **组件内部留白**：文字、图标、thumb 与可见边缘之间必须保留稳定呼吸；compact 水平 6–8px、ordinary 8–10px、final 12–16px，卡片 6–8px compact / 8–10px normal。
 4. **视觉重量留白**：字号、字重、行高、边框明度、填色面积与 thumb 比例共同限制“占满感”。默认文字 400、动作/选中 500、结论/主标题 600；不能用更粗字、更深边或更大填色补偿层级不足。
 
-可见几何与命中几何分离：紧凑选择可见 `56rpx`，普通动作 60–68rpx，最终承诺 80–88rpx；交互包装始终至少 88rpx，扩展区不得与相邻目标重叠。不要为了命中合同把背景、描边、图标和文字一起撑到 88rpx。通用 text/search field 可见表面 `80rpx`，其 input wrapper/target 为 `88rpx`；日间 Map/Search 共用框采用 §5A.1 的44px可见面及52px独立命中区。textarea 自然更高。
+可见几何与命中几何分离：紧凑选择可见 `56rpx`，普通动作 60–68rpx，最终承诺 80–88rpx；交互包装始终至少 88rpx，扩展区不得与相邻目标重叠。不要为了命中合同把背景、描边、图标和文字一起撑到 88rpx。通用 text/search field 可见表面 `80rpx`，其 input wrapper/target 为 `88rpx`；日间 Search 页输入框继续采用原44px可见面及52px独立命中区；Map搜索入口改为§5A.1的同族按钮。textarea 自然更高。
 
 #### 4.2 语义圆角
 
@@ -691,7 +691,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 | Cards / containment 卡片容纳 | 留白、字级、分隔线是默认容纳；卡片只包一个可独立识别的对象 | 重复事实使用行/带/矩阵；长卡可容纳一个观星点对象并用内部分隔行组织 | 不嵌套卡片；不把每个状态/指标/选择做成卡；卡内不放多个竞争 CTA |
 | Buttons / actions 按钮动作 | 命中区至少 44px；可见面可更小但扩展区不重叠；一个局部主动作 | compact 28px、ordinary 30–34px、final 40–44px；只有最终承诺可全宽并使用 meteor | 不把每个按钮都做 44/48px 实心大面；不让普通重试/导航看起来像提交 |
 | Visual focus 视觉焦点 | 触摸反馈、编辑态与键盘焦点分流；pressed/selected/disabled 各自有语义 | touch=80ms press 后恢复；input=光标+1px 浅变化；keyboard=`:focus-visible` 内侧下边缘 | 不把焦点当普通移动状态展出；不用完整深蓝框、offset 外环、双框、光晕或命中盒描边 |
-| Mobile adaptation 移动适配 | 验证触控、键盘、读屏、长标签与安全区 | Search field 过渡前后保持同一可见面，日间采用 §5A.1 的44px框/52px target；large panel只填充主导航上方、名称/地点下方的轻量横向吸顶章节Tab、compact action rail与bottom layer sheet避让安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不显示 scrollbar chrome；不把桌面栏位仅缩小后塞进 320px |
+| Mobile adaptation 移动适配 | 验证触控、键盘、长标签与安全区 | Search页内输入保持原44px框/52px target，Map以按钮进入右入页面；large panel按去底栏后的真实可用高度布局，章节导航、compact action rail与bottom layer sheet避让安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不显示scrollbar chrome；不把桌面栏位仅缩小后塞进320px |
 
 ### 5. 布局、平台与可访问性
 
@@ -702,7 +702,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 每个触控目标至少 88rpx；重复选择可见 48–56rpx、普通动作 56–64rpx、最终承诺 76–84rpx；扩展命中区不得重叠，相邻目标可见间距至少 8rpx。
 - 顶部内容避让微信菜单胶囊与 `env(safe-area-inset-top)`；底部主操作/导航加 `env(safe-area-inset-bottom)`。
 - 键盘：所有交互可 Tab 到达；Choice Bar 支持方向键/Home/End；Escape 关闭 sheet/dialog；Enter/Space 激活。
-- 状态：pressed/active 用 80ms 轻微 tonal/边界变化与 scale .985，抬起即恢复；selected 使用 soft 语义底 + 单一移动指示 + 程序状态。触摸不留下持续焦点；文本编辑态只用光标与 1rpx 浅变化；外接键盘/桌面/辅助键盘的 `:focus-visible` 使用组件内侧下边缘并与相邻颜色 ≥3:1；hover 仅供文档浏览器且弱于 selected；disabled 保持可读且不似选中。
+- 状态：pressed/active 沿2026-10-22采用源：约80ms轻内凹/明度反馈，圆按钮图标约.94及1px轻压，约140ms释放；卡片/文字动作不整体缩字或缩命中区；selected 使用 soft 语义底 + 单一移动指示 + 程序状态。触摸不留下持续焦点；文本编辑态只用光标与 1rpx 浅变化；外接键盘/桌面/辅助键盘的 `:focus-visible` 使用组件内侧下边缘并与相邻颜色 ≥3:1；hover 仅供文档浏览器且弱于 selected；disabled 保持可读且不似选中。
 - 屏幕阅读器：数据带提供可读摘要和表格语义；状态变化使用适度 `aria-live="polite"`；错误与字段通过 `aria-describedby` 关联。
 - 长标签换行，数据值可保持一行但标签列加宽或转为上下结构，不裁切有效信息。
 - 每个移动 scroll owner 必须同时保留 touch/wheel/keyboard/programmatic/screen-reader reachability 并隐藏纵横 scrollbar chrome；不得用 `overflow:hidden` 或裁切正文代替。WEAPP/Taro 优先 `ScrollView enhanced + showScrollbar=false`；H5/prototype 同时覆盖 Firefox、旧 Edge 与 WebKit 的 scrollbar-hiding declarations。
@@ -735,7 +735,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.1 Map 主体与悬浮 Search
 
-- 地图连续铺满 route 的可用内容区，是唯一地图对象。顶部只放一个 fixed floating Search field。日间 Map/Search 共用框在当前舒适尺度修订下为左右16px、可见高44px、文字15px、圆角pill、浅边框、白色90%填色、无阴影，独立命中区52px；顶部按实际系统/微信安全区映射，资源中 top=90px 是示例设备值，不可硬编码到所有设备。两态使用相同位置与尺寸；其余具体组合见 Search 采用包。未覆盖主题仍沿用原 `24rpx` inset、`safe-top + 16rpx`、`80rpx` visible/`88rpx` target、`radius-panel` 和对应主题 surface/border/elevation。框不承载 filters、results、快捷入口或说明副标题；activation 进入专用 Search page。
+- 地图连续铺满route的可用内容区，是唯一地图对象。2026-10-22采用稿删除Map搜索长框和底栏：左上为My图标入口，右侧同族竖排搜索、定位、天文事件、添加、层叠；底部抽屉入口在末。Search按钮只进入原专用页面，不嵌入filters/results或查询摘要。Search页内原输入框继续保留左右16px、可见高44px、文字15px、pill/浅边/白色90%及52px独立命中区；精确级联值沿原完整源，顶部以实际系统/微信安全区映射。未改配色、图标、材质和内容保持，不把示例设备坐标硬编码到所有机型。
 - Location/layer edge actions 日间当前尺度为44px可见面、52px target、8px间距，glyph 22px；未覆盖主题沿用原 `52–56rpx` 可见面、`88rpx` target、`8rpx` 间距，glyph `24–28rpx`。Layer trigger 只打开第 5A.4 节的随内容伸缩 bottom sheet；原独立`观测条件`卡片并入sheet，不在地图右侧展开文字rail。普通底图、默认marker、卫星、交通、雷达、风、温度不得被补成choice。
 - Formal marker 默认 `32rpx` neutral core + `2rpx border-strong` + 下锚点；selected 使用 `40rpx`、`sky-soft` core、`2rpx sky` boundary 和 panel-visible/programmatic state。禁止 glow、pulse、particle。真实 hit geometry 由 native adapter 另证，Search result list/semantic list 是完整非手势替代。
 - Marker 直接以`medium`打开 `map-spot-information-panel`，不保留 selected callout、Finder Sheet 或独立 detail route。非 marker map tap 从 panel 当前 live position 执行 `220ms exit` 向下离场，完成后才移除 hit/semantics，不得瞬间消失。
@@ -744,7 +744,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 搜索页唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08用户确认[搜索页资源](https://stitch.google.com/projects/7144519510537620825)完成，采用A方向的日间紧凑尺度及最终交互、地址对齐修正。下述组合替换该页旧全换行筛选、统一结果卡描边、固定半宽文字区及大号选中星标表达；未覆盖主题和状态保留原规则。具体页面级联值、图片与完整组合以当前采用入口为准；生产主要布局与交互已迁移，实际已验范围及未验项以当前WEAPP证据解释，资源采用不代表完整目标平台验收。
 
-- 页面按 Search → titleless unified filters → `想去`/`其他观星点` partitions 排列，一个 keyboard-safe vertical scroll owner。Map entry 与 Search field 使用同一 visual frame和同一可见query/placeholder字符串：outer rect、fill、border、radius、shadow、text、type baseline、slot 与 caret origin不变；leading glyph只在相同`88rpx`slot内Search→Back交叉替换，两态均无trailing `x`/clear/chevron。Field默认autofocus；任意外部有效tap可blur、关闭suggestions/IME而保留route/query/filter/result/scroll，再次tap可重新focus。Back glyph、系统/微信Back与平台edge-back都pop Search child回Map。Field以下内容以clip/reveal + `translateY(-12px→0)` + opacity `0→1` / `180ms`向下展开，field自身不动；退出反向`160ms`。
+- 页面按Search → titleless unified filters → `想去`/`其他观星点` partitions排列，保原keyboard-safe vertical scroll owner、输入框、占位文案、leading Back、query/filter/result/scroll。Map为图标按钮，Search整页从右滑入，返回反向；不再要求跨页共享stationary frame或用向下reveal代替新方向。Search仍无trailing `x`/clear/chevron，原autofocus、外部有效tap的blur/suggestions/IME收起与再focus语义保持。Back glyph、系统/微信Back及支持的平台edge-back沿真实opener返回同一有用Map状态；不改搜索与选择业务。
 - Query suggestion overlay紧贴field下沿，保持紧凑可读行和至少44px目标，不移动原框。筛选只展示一行，按Screen Contract的14个终端值可横向滑动，末端具名筛选图标固定；不分quick/more，不显示“筛选条件”标题或额外介绍带。日间胶囊、间距、轻分隔线与首分组距离沿用采用稿；横滑结束不误触选项。未覆盖主题的overlay保留4rpx贴边、72rpx可见行/88rpx目标、22rpx图标、16rpx水平内距与1rpx行分隔；胶囊保留44rpx可见/88rpx目标、10rpx内距、20rpx图标、4rpx图文间距、10.5/14.5px文字，以及原4–6rpx贴边与12–16rpx首分组距离。
 - 筛选图标打开底部二级分类弹层，左侧五类为观测条件、到达方式、设施配套、场地偏好、资料更新，右侧为现行14项终端条件，不再嵌套第三层。横条项点击即时提交；已退役的驾车时长、道路距离及低云阈值不展示，也不从旧状态恢复其参数或选择。弹层基于同一committed选择建立draft，清空只改draft，确定一次提交，关闭/遮罩/Escape/系统Back取消并恢复入口焦点。具体分组、条件含义和旧状态投射由当前Screen Contract约束；弹层局部draft不成为第二筛选事实源。旧16/18项资源只保留其有效构图样本，未变的视觉组合仍由当前采用入口控制。
 - 日间selected使用采用稿的浅蓝填色、边界、文字和小星标，几何保持稳定；原大号半透星标不再约束本页日间稿。未覆盖Night保留 `48rpx` 圆润实心 ornament、`right:-4rpx; top:-8rpx`、meteor opacity `.30`及原sky-soft/`2rpx sky`inset boundary/checked表达，不参与inline sizing且文字仍可读；Observation映射暖红，不保留黄色。未覆盖主题保留原select `scale(.42) rotate(-14deg) opacity(0)`→`scale(1) rotate(5deg)` /170ms、deselect→`scale(.56) rotate(-7deg) opacity(0)` /140ms。选中/取消均从live状态反向接管，减少动态效果只保留≤80ms颜色/透明度变化；精确日间表达见采用源文件。
@@ -753,7 +753,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.3 Spot Information Panel
 
-- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与Map/My主导航之间的可用区域，不覆盖或替换主导航；small/medium保留顶部两角；large不论有无顶部图片均全宽方角，无外阴影。
+- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与底部真实安全区之间的可用区域，固定动作保独立可用空间，不再为已删除TabBar留白；small/medium保留顶部两角；large不论有无顶部图片均全宽方角，无外阴影。
 - 三档始终挂载同一份、同序、同identity的客观document：有效media→地点identity→route/access/facility/safety→guides/field/source→卡片外天文标题→日期/时间尺→月相/气象/夜光/目标/来源。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
 - Handle 保留短细圆头提示，整条面板宽度的紧凑白色 identity-header band 为拖动热区，触控高度至少44逻辑px。名称上移并可进入热区下部，不靠额外空白撑开；操作按钮不与热区重叠。Band 跟随同一document滚动，绝不fixed/sticky在panel可视区；有图时位于相册之后，无图时为首区。滚出视口后无替代热区，靠系统/平台Back或可用的edge-back返回档位；滚回真实header才恢复拖动。Pointer down仅改变press反馈，未过方向/距离阈值的tap为no-op。
 - Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。中/大档除实际可见header band以外的Panel body/content/media或泛化viewport top-edge均不发起extent drag。小档裁切正文上拖展开，下拖采用越界橡皮筋阻尼并回到小档、不关闭；三档按松手速度投影吸附，中/大档正文均可滚动。
@@ -942,9 +942,9 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 7.2 Search Field
 
-- **Anatomy**：范围标签、query input、搜索/返回glyph、必要helper/loading、suggestion/result region；日间Map/Search框按§5A.1采用值，未覆盖variant保留12px input与11–12px glyph。trailing clear/close只在不与Back重复且owner明确需要的其他variant中可选，当前Map/Search两态均无。
+- **Anatomy**：范围标签、query input、搜索/返回glyph、必要helper/loading、suggestion/result region；日间Search页输入框按§5A.1保留原值，Map仅使用独立搜索按钮，未覆盖variant保留12px input与11–12px glyph。trailing clear/close只在不与Back重复且owner明确需要的其他variant中可选，当前Search页仍无。
 - **Variants / states**：idle、editing、query、loading、suggestions、result、empty、error，以及inline scoped/filter search；editing用光标与1rpx浅色调变化，不展示持续“焦点框”状态。
-- **Geometry**：日间Map/Search使用§5A.1的44px可见框与52px独立target；未覆盖variant保留visible `80rpx`、wrapper/target `88rpx`。suggestion/result row≥`88rpx`；紧邻所筛选集合，不脱离上下文。Map→Search使用同一stationary frame；glyph在同一leading slot交叉替换，其余field几何不变。
+- **Geometry**：日间Search页输入框保留44px可见框与52px独立target；未覆盖input variant保留visible `80rpx`、wrapper/target `88rpx`。suggestion/result row≥`88rpx`；紧邻所筛选集合，不脱离上下文。Map为同族搜索按钮，Search从右入，输入框只在其所属页面保持原几何，不再采用跨页stationary frame。
 - **A11y / composition**：永久说明搜索范围；有用placeholder不替代label；listbox/option或等价列表语义；输入、建议和Back均可键盘操作并播报结果数。Entry可autofocus，但outside tap必须能blur/收IME/关suggestions且不离开Search，随后可重新focus；系统/微信Back和edge-back与leading Back同义。
 - **Do not**：不做无范围的全局搜索暗示；不把 search 藏进 generic Input；不以空白屏替代 empty/error 说明。
 
@@ -1068,7 +1068,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 | Recipe | Trigger / current → target | Timing | Interruption / reverse | Reduced motion | Haptic | Observation |
 |---|---|---|---|---|---|---|
-| Press | pointer/key down；scale 1 → .985，抬起 → 1 | 80/120ms standard | 从当前值反向，不排队 | 仅边界/底色即时变化 | 可选 light | 只改暖红明度/边界，无白闪 |
+| Press | 按下轻内凹/明度变化；圆按钮图标约.94及1px轻压，文字/布局/命中区不缩 | 80ms按下 / 140ms释放，沿当前采用源 | 从当前值复位，滚动/取消不触发，不延迟长按连发 | 仅明度/边界反馈 | 不新增触觉要求 | 沿已有主题，无白闪 |
+| Map/My/Search route | My左入左出；Search等新页右入反向返回；底部抽屉维持原方向 | 当前采用源约240ms，`cubic-bezier(.2,.7,.2,1)` | 新输入接管，保持真实路由/状态，不保留过期页面 | 取消位移 | 无新增要求 | 不改变其他主题资产或Sky既有入场 |
 | Selection | 选择变化；旧指示器位置 → 新位置；日间Search小星标按§5A.2采用稿，未覆盖主题保留原scale/rotation/opacity表达 | fill/border 160ms；日间filter按采用源文件；其余star select 170ms、deselect 140ms | 新选择从 live presentation 接管，不排队 | ≤80ms fill/opacity + 内侧 focus 边界 | 可选 selection | 同几何暖红 ornament，不保留黄色 |
 | Content/Search reveal | retained disclosure或Search child；普通content live measured height/clip/opacity→target；Search field固定、下方clip height0/`translateY(-12px)`/opacity0→full | ordinary 160ms；Search 180ms / exit160ms | 使用当前height/opacity反转，不remount/reset scroll，field geometry不动 | 内容即时显隐，保留状态/焦点 | 无 | 不经过白/灰中间token，不抖动/闪白 |
 | Panel extent/hide | marker/result/handle drag/edge-back/map tap；one retained document viewport→valid extent；media先拉出，近top后Search/Location/Layer淡出 | direct manipulation + velocity snap + bounded spring（见公共弹性抽屉资源）；non-marker hide 220ms exit；section align 200ms | pointer down/tap不切档；只由实际可见的全宽紧凑header band越过threshold后拖动；新拖动接管live value | 跟手；release即时snap；section直接对齐 | 到达端点可选 light | 黑底暖红边界先于内容；无白闪 |
@@ -1097,7 +1098,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 卡片套卡片、每指标一张卡、把所有选项做成 pill。
 - 以行政仪表盘密度代替移动决策流。
 - 用 generic linear slider或带框卡片代替Curved Time Ruler；重造scroll physics或引入flat React Native ruler作为第二基础；保留Finder Sheet、独立Spot Detail/Spot Night、quick/more split或稀疏tabs；用toast/snackbar/modal为每个普通点击重复反馈。
-- Panel覆盖primary nav、按extent维护不同内容树、whole-panel拖动、tap handle切档、灰色/过高的handle空白带、把handle固定在已滚动内容上方、pressed handle位移、rail占content width/有内外gap或深蓝阴影、过大的底部action bar、单阶段提前隐藏Map chrome、右侧展开layer rail、Search text/field跳变、非marker tap瞬间隐藏。
+- 按extent维护不同内容树、whole-panel拖动、tap handle切档、灰色/过高的handle空白带、把handle固定在已滚动内容上方、pressed handle位移、rail占content width/有内外gap或深蓝阴影、过大的底部action bar、单阶段提前隐藏Map chrome、右侧展开layer rail、Search页内query/field无因跳变、非marker tap瞬间隐藏。
 - 在移动端显示任意纵向/横向scrollbar chrome；为missing media保留占位图/空白区/“暂无图片”；用`overflow:hidden`禁止真实内容滚动。
 - 常驻“操作说明”“方向跟随中”“部分数据”“同一地图·一个分析图层·本地时间”或其他零决策价值实现/教程文案；为其新增长驻`?`或help chrome。
 - 当前Search同时显示Back与trailing `x`、进入后改写query/placeholder、suggestion rows或filter gaps过大；filter group显示“筛选条件”标题/无意义divider；layer sheet显示`x`/“关闭图层”或独立观测条件卡；panel与layer双active；current panel显示“谨慎出发”/推荐窗口/“尚未核实”。
@@ -1112,7 +1113,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 ### 11. 当前系统边界
 
 - 本节只描述一个当前 Mini Program 视觉系统，不在 handbook、candidate 或产品 UI 中维护 old/new 双轨或显示版本标签。
-- 当前视觉范围覆盖五个Mini Program Product Surfaces，以及stationary Map/Search field、compact suggestions/单行横滑筛选与二级弹层/stable disclosure/leading-readable image results、one-enum互斥image-backed layer selector、marker-to-medium one-document panel、presence-driven media/compact handle band、flush centered section rail/short action rail、objective basic/terrain/astronomy facts、raised draggable arrowless Taro-ScrollView-backed Curved Time Ruler、one animated three-state display-mode track、headerless Full-Sky、colored-icon existing-duty My hub、compact cell-based Contribution intake、reuse-first library/component/adaptation binding和bounded Favorite ritual；provider/basemap/tile/native-map appearance仍不属于本系统。Surface用于界定页面职责；当前实施范围由用户需求及所属Screen Contract确定。
+- 当前视觉范围覆盖五个Mini Program Product Surfaces，以及Map Search icon与独立Search field、compact suggestions/单行横滑筛选与二级弹层/stable disclosure/leading-readable image results、one-enum互斥image-backed layer selector、marker-to-medium one-document panel、presence-driven media/compact handle band、flush centered section rail/short action rail、objective basic/terrain/astronomy facts、raised draggable arrowless Taro-ScrollView-backed Curved Time Ruler、one animated three-state display-mode track、headerless Full-Sky、colored-icon existing-duty My hub、compact cell-based Contribution intake、reuse-first library/component/adaptation binding和bounded Favorite ritual；provider/basemap/tile/native-map appearance仍不属于本系统。Surface用于界定页面职责；当前实施范围由用户需求及所属Screen Contract确定。
 - 产品路线、Surface/Control ownership、interaction state、评分算法、数据来源、权限、安全、原生 App 与 owner-operations 权威均不因本视觉系统改变。
 
 ### 12. 实现与验证

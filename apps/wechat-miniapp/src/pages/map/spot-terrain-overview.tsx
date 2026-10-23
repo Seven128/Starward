@@ -1,10 +1,11 @@
-import { Button, Image, Slider, Text, View } from "@tarojs/components";
+import { Image, Slider, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { SpotSummary } from "@starward/miniapp-contracts";
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
-import { SourceDisclosure } from "@/components/source-disclosure";
+import { SourceEntry } from "@/components/source-entry";
 import { SourceAttribution } from "@/components/source-attribution";
 import { SoftButton } from "@/components/soft-button";
 import { useAppStore } from "@/state/app-store";
@@ -17,7 +18,7 @@ import { terrainLayerAvailability } from "./terrain-layer-availability";
 import { formalSpotMarkerIconPath } from "./map-markers";
 import { SpotTerrainHorizon } from "./spot-terrain-horizon";
 
-export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visible: boolean }) {
+export function SpotTerrainOverview({ spot, visible, onLayoutChange }: { spot: SpotSummary; visible: boolean; onLayoutChange?: (() => void) | undefined }) {
   const mode = useAppStore(state => state.mode);
   const observation = mode === "OBSERVATION";
   const sliderColor = observation ? "#ff6b58" : "#8ca89a";
@@ -75,6 +76,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
   const failed = (terrainVisible && terrainFailed) || (lightVisible && lightFailed);
   const hasPicture = terrainShown || lightShown;
   const pending = terrain.isPending || (terrainVisible && terrain.imagePending) || (lightVisible && lightImage.imagePending);
+  useEffect(() => { onLayoutChange?.(); }, [data, terrainShown, lightRasterShown, lightShown, pending, failed, terrainMissing, lightMissing, onLayoutChange]);
   const retryLayers = () => { lightImage.retryImage(); void terrain.refetch(); };
   useEffect(() => {
     if (visible && failed) notify({ owner: "spot-terrain", placement: "floating", tone: "info", title: "图层数据异常",
@@ -88,7 +90,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
     <Slider className="spot-terrain__slider" min={0} max={100} step={1} value={terrainSliderForRadius(radiusKm)} activeColor={sliderColor} backgroundColor={observation ? "#7a1e18" : "#dde4df"} blockColor={sliderColor} blockSize={18}
       ariaLabel={`查看半径 ${radiusText} 公里`} onChanging={updateRadius} onChange={updateRadius} />
     <View className="spot-terrain__ticks" aria-hidden="true">{TERRAIN_RADIUS_TICKS.map(value => <Text key={value} style={{ left: `${terrainSliderForRadius(value)}%` }}>{value}</Text>)}</View>
-    <View className="spot-terrain__map" ariaLabel={`${spot.name}周边 ${radiusText} 公里地形概览，真北向上`}>
+    <View id="spot-panel-reading-terrain-map" className="spot-terrain__map panel-reading-anchor" ariaLabel={`${spot.name}周边 ${radiusText} 公里地形概览，真北向上`}>
       {terrainShown ? <Image className="spot-terrain__image" src={terrain.imagePath!} mode="scaleToFill" style={terrainShown} aria-hidden="true"
         onError={() => terrain.reportImageFailure(new Error("terrain_image_decode_failed"), terrain.imagePath)} /> : null}
       {lightRasterShown ? <Image className="spot-terrain__light-image" src={lightImage.imagePath!} mode="scaleToFill" style={lightCropStyle} aria-hidden="true"
@@ -124,14 +126,16 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
       {lightVisible && lightImage.imagePending ? <Text className="spot-terrain__layer-state">光污染：正在加载年度夜光</Text> : null}
       {lightVisible && lightRaster && lightFailed ? <Text className="spot-terrain__layer-state">光污染：暂时无法显示，请重试</Text> : null}
     </View>
-    <SpotTerrainHorizon key={spot.spotId} query={horizon} visible={visible} />
-    <View className="spot-terrain__source" data-control="spot-terrain-source">
-      {displayedSources.length ? <SourceAttribution sources={displayedSources} /> : null}
-      {data?.datasetVersion ? <Text>{data.datasetVersion}</Text> : null}
-      {data?.sourceResolution && data.derivedResolutionM !== null ? <Text>源分辨率 {data.sourceResolution} · 派生约 {data.derivedResolutionM} m · {data.coverageLabel}</Text> : null}
+    <SpotTerrainHorizon key={spot.spotId} query={horizon} visible={visible} onLayoutChange={onLayoutChange} />
+    <View id="spot-panel-reading-terrain-source" className="spot-terrain__source panel-reading-anchor" data-control="spot-terrain-source">
+      {displayedSources.length ? <SourceAttribution presentation="credit" sources={displayedSources} /> : null}
       <Text>俯视图不表示逐方向遮挡角；近处树木、围墙及临时灯仍需现场核对。</Text>
       {lightVisible && lightRaster ? <Text>{data?.lightPollution.coverageLabel}</Text> : null}
-      <SourceDisclosure key={spot.spotId} id="terrain-data-source" label="地形与夜光来源" sources={[...(data?.source ? [data.source] : []), ...(data?.lightPollution.source ? [data.lightPollution.source] : [])]} />
+      {data ? <SourceEntry key={spot.spotId} id="terrain-data-source" label="地形与夜光来源" sources={[...(data.source ? [data.source] : []), ...(data.lightPollution.source ? [data.lightPollution.source] : [])]}
+        sections={[{ kind: "text", paragraphs: [
+          ...(data.datasetVersion ? [data.datasetVersion] : []),
+          ...(data.sourceResolution && data.derivedResolutionM !== null ? [`源分辨率 ${data.sourceResolution} · 派生约 ${data.derivedResolutionM} m · ${data.coverageLabel}`] : [data.coverageLabel]),
+        ] }]} /> : null}
     </View>
   </View>;
 }

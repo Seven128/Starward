@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { clearPlanDraft } from "./plan-draft";
 import { createPlanTestOperations } from "./plan-operation-test-support";
+import { primaryPageNavigationForTest } from "../../../navigation/primary-page-navigation-test-support";
 
 function runtime(afterDelete?: () => void) {
   const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -18,8 +19,17 @@ function runtime(afterDelete?: () => void) {
   const busy = { current: false }, notices: string[] = [], calls: string[] = [];
   let owner: string | null = "owner";
   const confirmations: Array<(value: { confirm: boolean }) => void> = [];
-  let currentPage = {};
+  let currentPage = { route: "content/plan/detail/index" };
   const operations = createPlanTestOperations(() => owner, busy, () => currentPage);
+  const taro = {
+    getCurrentPages: () => [currentPage],
+    showModal: () => { calls.push("confirm"); return new Promise(resolve => { confirmations.push(resolve); }); },
+    removeStorageSync: () => calls.push("cleanup"),
+    navigateBack: async () => { calls.push("back"); throw new Error("no history"); },
+    reLaunch: async ({ url }: { url: string }) => {
+      assert.equal(url, "/pages/map/index"); calls.push("root"); throw new Error("navigation unavailable");
+    },
+  };
   const remove = vm.runInNewContext(ts.transpileModule(declaration + "\nremove;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
@@ -30,17 +40,13 @@ function runtime(afterDelete?: () => void) {
     planChecklistStorageKey: (id: string) => id,
     announce: (_tone: string, title: string) => notices.push(title), errorMessage: () => "error",
     deleteObservationPlan: async () => { calls.push("delete"); if (afterDelete) { owner = null; afterDelete(); } return { data: { plans: [] } }; },
-    Taro: {
-      showModal: () => { calls.push("confirm"); return new Promise(resolve => { confirmations.push(resolve); }); },
-      removeStorageSync: () => calls.push("cleanup"),
-      navigateBack: async () => { calls.push("back"); throw new Error("no history"); },
-      switchTab: async () => { calls.push("tab"); throw new Error("navigation unavailable"); },
-    },
+    Taro: taro,
+    ...primaryPageNavigationForTest(taro),
   }) as () => Promise<void>;
   return { remove, busy, notices, calls, operations,
     confirm: (value: { confirm: boolean }) => { assert.ok(confirmations.length); confirmations.shift()!(value); },
     setOwner: (value: string | null) => { owner = value; operations.observe(); },
-    leavePage: () => { currentPage = {}; operations.hide(); } };
+    leavePage: () => { currentPage = { route: "content/article/detail/index" }; operations.hide(); } };
 }
 
 test("cancelled plan deletion releases its lock without a request or cleanup", async () => {
@@ -59,7 +65,7 @@ test("a deleted plan stays deleted when both return navigation paths fail", asyn
   const pending = page.remove();
   page.confirm({ confirm: true });
   await pending;
-  assert.deepEqual(page.calls, ["confirm", "delete", "replace", "cleanup", "back", "tab"]);
+  assert.deepEqual(page.calls, ["confirm", "delete", "replace", "cleanup", "back", "root"]);
   assert.ok(page.notices.every((title) => title === "计划已删除"));
   assert.equal(page.busy.current, false);
 });
@@ -113,7 +119,7 @@ test("known native confirmation preserves callback-before-show and show-before-c
     if (ordering === "show-first") page.operations.show();
     page.confirm({ confirm: true }); await pending;
     if (ordering === "callback-first") page.operations.show();
-    assert.deepEqual(page.calls, ["confirm", "delete", "replace", "cleanup", "back", "tab"]);
+    assert.deepEqual(page.calls, ["confirm", "delete", "replace", "cleanup", "back", "root"]);
     assert.equal(page.busy.current, false);
   }
 });

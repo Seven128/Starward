@@ -81,7 +81,8 @@ export async function createOrdinaryPreview(run, options, injected, retainResult
     }
     let official;
     try {
-      const output = await driver.preview(run.generation.project, qrOutput, infoOutput, options.port);
+      const output = await driver.preview(run.generation.project, qrOutput, infoOutput,
+        options.port, run.generation.directory);
       official = classifyOfficialPreviewResult(output, "create_preview_qrcode");
     } catch (error) {
       official = officialPreviewError(error, "create_preview_qrcode");
@@ -103,7 +104,7 @@ export async function createOrdinaryPreview(run, options, injected, retainResult
       }
       const completed = await validateCompletedPreviewQr(run.generation,
         official.disposition === "completed" ? official
-          : classifyOfficialPreviewResult({ success: true }, "create_preview_qrcode"));
+          : { ...official, ...classifyOfficialPreviewResult({ success: true }, "create_preview_qrcode") });
       keep = true;
       await retainResult(completed);
       return completed;

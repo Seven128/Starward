@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
+import fs from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { PNG } from "pngjs";
@@ -168,4 +170,56 @@ test("cancellation after actual prepared read cannot install a completed window"
     "the cancelled success must not be served from the completed window cache");
   await writeFile(imagePath, bytes);
   assert.ok((await service.layer(record.datasetVersion, view(w)))?.raster);
+}));
+
+test("release proof reads overlap at most two, fail atomically, drain and recover for all consumers", { timeout: 10_000 }, async t => fixture(async ({ record, fresh, directory, proofs }) => {
+  const expected = await fresh().layer(record.datasetVersion, view(w)); assert.ok(expected?.raster);
+  const files = new Set(proofs.map(proof => path.join(directory, proof.image.file + ".json")));
+  let openFirst!: () => void, openSecond!: () => void, twoStarted!: () => void, peerCancelled!: () => void;
+  const first = new Promise<void>(resolve => { openFirst = resolve; }), second = new Promise<void>(resolve => { openSecond = resolve; });
+  const started = new Promise<void>(resolve => { twoStarted = resolve; });
+  const cancelled = new Promise<void>(resolve => { peerCancelled = resolve; });
+  const originalRead = fs.readFile;
+  let reads = 0, active = 0, peak = 0, settled = false;
+  const intercepted = t.mock.method(fs, "readFile", async (...args: Parameters<typeof readFile>) => {
+    if (!files.has(String(args[0]))) return originalRead(...args);
+    const index = reads++; active++; peak = Math.max(peak, active);
+    if (reads === 2) twoStarted();
+    try {
+      const raw = await originalRead(...args);
+      if (index === 0) {
+        await first;
+        const damaged = Buffer.from(raw); damaged[damaged.length - 1] ^= 1;
+        return damaged;
+      }
+      // Deliberately hold an already-read peer after cancellation: failure must
+      // not expose a release or permit a retry while this reader is still live.
+      if (index === 1) {
+        const signal = (args[1] as { signal?: AbortSignal } | undefined)?.signal;
+        if (signal?.aborted) peerCancelled();
+        else signal?.addEventListener("abort", peerCancelled, { once: true });
+        await second;
+      }
+      return raw;
+    } finally { active--; }
+  });
+  syncBuiltinESMExports();
+  const service = fresh();
+  const pending = Promise.allSettled(Array.from({ length: 4 }, () => service.layer(record.datasetVersion, view(w))))
+    .then(result => { settled = true; return result; });
+  try {
+    await started; assert.equal(active, 2); assert.equal(peak, 2);
+    openFirst(); await cancelled;
+    assert.equal(settled, false, "the failed release waits for its in-flight peer to retire");
+    assert.equal(reads, 2, "a failed proof must not start the remaining inventory entries");
+    openSecond();
+    const failed = await pending;
+    assert.ok(failed.every(result => result.status === "rejected" && /nightlight_file_hash_invalid/u.test(String(result.reason))));
+    assert.equal(active, 0); assert.equal(peak, 2); assert.equal(reads, 2);
+  } finally {
+    openFirst(); openSecond(); await pending;
+    intercepted.mock.restore(); syncBuiltinESMExports();
+  }
+  const recovered = await service.layer(record.datasetVersion, view(w));
+  assert.deepEqual(recovered, expected, "the same service retries the complete original inventory after a failed release");
 }));

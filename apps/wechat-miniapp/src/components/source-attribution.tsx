@@ -8,7 +8,7 @@ import "./source-attribution.scss";
 
 /** Required credits beside supplied content; detailed provenance stays with its disclosure. */
 export function SourceAttribution({ sources, compact = false, presentation = "default" }: {
-  sources: readonly SourceSummary[]; compact?: boolean; presentation?: "default" | "disclosure";
+  sources: readonly SourceSummary[]; compact?: boolean; presentation?: "default" | "disclosure" | "credit";
 }) {
   const [message, setMessage] = useState("");
   const declared = sourceAttributions(sources).map(credit => ({ ...credit, declared: true }));
@@ -28,6 +28,12 @@ export function SourceAttribution({ sources, compact = false, presentation = "de
     catch { setMessage("复制未成功，请重试。"); }
   };
   if (!credits.length) return null;
+  if (presentation === "credit") return <View className="source-attribution source-attribution--credit" aria-label="数据来源声明">
+    {credits.map(credit => <View className="source-attribution__credit" key={JSON.stringify([credit.name, credit.url])}>
+      <Text className="source-attribution__name" selectable>{credit.name}</Text>
+      {credit.statements.map(statement => <Text className="type-caption" selectable key={statement}>{statement}</Text>)}
+    </View>)}
+  </View>;
   return <View className={`source-attribution${presentation === "disclosure" ? " source-attribution--disclosure" : ""}${compact || presentation === "disclosure" ? " source-attribution--rows" : ""}`} aria-label={presentation === "disclosure" ? "资料来源与声明" : "数据来源声明"}>
     {credits.map(credit => <View className="source-attribution__credit" key={JSON.stringify([credit.name, credit.url])}>
       {compact || presentation === "disclosure" ? <Text className="source-attribution__name" selectable>{credit.name}</Text> : null}

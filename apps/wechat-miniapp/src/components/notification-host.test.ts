@@ -3,91 +3,122 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { pagePresentationForTest } from "../navigation/page-presentation-test-support";
 
-test("passive floating feedback can be dismissed by tapping its full message", () => {
-  const source = readFileSync(new URL("./notification.tsx", import.meta.url), "utf8");
-  const ast = ts.createSourceFile("notification.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const component = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "NotificationComponent");
-  assert.ok(component);
-  const code = ts.transpileModule(component.getText(ast).replace(/^export /, ""), {
-    compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 },
-  }).outputText;
-  const render = vm.runInNewContext(code + "\nNotificationComponent", {
-    Button: "Button", Text: "Text", View: "View", SemanticIcon: "Icon", ICON: { info: "info" },
-    React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
-  });
-  let dismissed = 0;
-  const notification = { id: "empty", placement: "floating", tone: "info", title: "当前区域暂无观星点", body: "" };
-  const message = render({ notification, onDismiss: () => dismissed++ });
-  assert.equal(message.type, "Button");
-  message.props.onClick();
-  assert.equal(dismissed, 1);
-  // Recovery messages keep a separate action and cannot be dismissed by a body tap.
-  const actionable = render({ notification: { ...notification, action: { label: "重试", route: "/pages/map/index" } }, onDismiss: () => dismissed++ });
-  assert.equal(actionable.props.onClick, undefined);
-  assert.equal(dismissed, 1);
+async function notificationOwner(primary?: "map" | "my") {
+  const h = await pagePresentationForTest({ ...(primary ? { primary } : {}), modules: {
+    "@/components/shared-button-press": { SharedButton: "Button" },
+    "./semantic-asset": { SemanticIcon: "Icon" },
+    "@/theme/native-metrics": { nativeNavigationInsets: () => ({ safeTop: 97 }) },
+  } });
+  return { h, owner: h.load("components/notification.tsx") };
+}
+
+test("passive floating feedback can be dismissed by tapping its full message", async () => {
+  const { h, owner } = await notificationOwner();
+  try {
+    let dismissed = 0;
+    const notification = { id: "empty", placement: "floating", tone: "info", title: "当前区域暂无观星点", body: "" };
+    const message = owner.NotificationComponent({ notification, onDismiss: () => dismissed++ });
+    assert.equal(message.type, "Button");
+    message.props.onClick(); assert.equal(dismissed, 1);
+    const actionable = owner.NotificationComponent({ notification: { ...notification, action: { label: "重试", route: "/pages/map/index" } }, onDismiss: () => dismissed++ });
+    assert.equal(actionable.props.onClick, undefined, "a recovery message keeps a separate action instead of passive body dismissal");
+    assert.equal(dismissed, 1);
+  } finally { await h.dispose(); }
 });
 
-test("the production floating host stops rendering on page hide and resumes on show", () => {
-  const source = readFileSync(new URL("./notification.tsx", import.meta.url), "utf8");
-  const ast = ts.createSourceFile("notification.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const host = ast.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "FloatingNotificationHost");
-  assert.ok(host);
-  let cursor = 0;
-  const states: unknown[] = [];
+test("notification recovery reaches primary pages through their owner and ordinary pages through native push", async () => {
+  const { h, owner } = await notificationOwner("map");
+  try {
+    const action = (route: string, onAction?: () => void) => {
+      const tree = owner.NotificationComponent({ notification: { id: "recovery", placement: "inline", tone: "info", title: "恢复",
+        action: { label: "继续", route } }, onAction });
+      tree.props.children.find((child: any) => child?.type === "Button").props.onClick();
+    };
+    action("/pages/my/index"); await h.settle();
+    assert.equal(h.controller.getSnapshot().route, "pages/my/index");
+    action("/pages/map/index"); await h.settle();
+    assert.equal(h.controller.getSnapshot().route, "pages/map/index");
+    assert.equal(h.calls.length, 0, "primary actions reuse the physical Map through the real dispatcher");
+    action("/pages/auth/index"); await h.settle();
+    assert.equal(h.calls.length, 1); assert.equal(h.calls[0]!.kind, "navigateTo");
+    assert.equal(h.calls[0]!.url, "/pages/auth/index");
+    h.calls[0]!.succeed(); await h.settle();
+    let domainActions = 0;
+    action("/pages/my/index", () => { domainActions++; }); await h.settle();
+    assert.equal(domainActions, 1, "an explicit recovery command retains domain ownership");
+    assert.equal(h.controller.getSnapshot().route, "pages/map/index");
+    assert.equal(h.calls.length, 1);
+  } finally { await h.dispose(); }
+});
+
+test("the production floating host stops rendering on hide, resumes on show, and owns only its effective foreground", async () => {
   let safeTop: number | undefined = 97;
-  let route = "pages/map/index";
-  let notifications: { id: string; pageRoute: string }[] = [];
-  let show = () => {};
-  let hide = () => {};
-  let resize = () => {};
-  const code = ts.transpileModule(host.getText(ast).replace(/^export /, ""), {
-    compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 },
-  }).outputText;
-  const renderHost = vm.runInNewContext(code + "\nFloatingNotificationHost", {
-    useState: (initial: unknown) => {
-      const index = cursor++;
-      if (!(index in states)) states[index] = typeof initial === "function" ? initial() : initial;
-      return [states[index], (value: unknown) => { states[index] = value; }];
-    },
-    nativeNavigationInsets: () => ({ safeTop }),
-    currentNotificationPageRoute: () => route,
-    useResize: (callback: () => void) => { resize = callback; },
-    useDidShow: (callback: () => void) => { show = callback; },
-    useDidHide: (callback: () => void) => { hide = callback; },
-    useAppStore: (select: any) => select({ notifications }),
-    selectNotifications: (queue: any[], _placement: string, _owner: unknown, pageRoute: string) => queue.filter(item => item.pageRoute === pageRoute),
-    floatingNotificationNodeId: (item: any) => item.id,
-    React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
-    View: "View", ScrollView: "ScrollView", NotificationRegion: "NotificationRegion",
-  });
-  const render = () => { cursor = 0; return renderHost(); };
-  assert.ok(render());
-  assert.equal(render().props.style?.["--notification-top"], "97px", "native capsule clearance overrides unsupported CSS safe-area");
-  safeTop = 120; resize();
-  assert.equal(render().props.style?.["--notification-top"], "120px", "resize refreshes native navigation clearance");
-  hide();
-  assert.equal(render(), null);
-  safeTop = 105;
-  show();
-  assert.ok(render());
-  assert.equal(render().props.style?.["--notification-top"], "105px", "show rechecks the current native inset");
-  safeTop = undefined; resize();
-  assert.equal(render().props.style?.["--notification-top"], undefined, "unavailable metrics retain the stylesheet fallback");
-  notifications = [{ id: "first-notice", pageRoute: route }];
-  assert.equal(render().children[0].props.scrollIntoView, "first-notice");
-  notifications = [{ id: "new-head-after-scrolling", pageRoute: route }, ...notifications];
-  assert.equal(render().children[0].props.scrollIntoView, "new-head-after-scrolling", "new queue head asks native scroller to reveal it");
-  route = "pages/my/index";
-  assert.equal(render().children[0].props.scrollIntoView, "", "the destination must not scroll to a notice from the previous page");
-  notifications = [{ id: "my-notice", pageRoute: route }, ...notifications];
-  assert.equal(render().children[0].props.scrollIntoView, "my-notice");
+  const h = await pagePresentationForTest({ primary: "map", modules: {
+    "@/theme/native-metrics": { nativeNavigationInsets: () => ({ safeTop }) },
+    "@/components/shared-button-press": { SharedButton: "button" },
+    "./semantic-asset": { SemanticIcon: "icon" },
+  } });
+  h.modules["@tarojs/components"] = { View: h.leaf("view"), ScrollView: h.leaf("scroll"), Text: "text" };
+  Object.assign(h.taro, { createIntersectionObserver: () => ({ relativeTo() { return this; }, relativeToViewport() { return this; },
+    observe(_selector: string, callback: (result: { intersectionRatio: number }) => void) { callback({ intersectionRatio: 1 }); }, disconnect() {} }) });
+  const { FloatingNotificationHost } = h.load("components/notification.tsx");
+  const { enqueueNotification } = h.load("state/notification.ts");
+  const { currentNotificationPageRoute } = h.load("state/notification-page-route.ts");
+  const presentation = h.load("navigation/page-presentation.tsx");
+  const my = presentation.createPrimaryPagePresentation(h.controller, "pages/my/index", presentation.createPresentedPageBack());
+  const activeHost = () => h.leaves.get("view")?.filter(props => props.className === "notification-host") ?? [];
+  const scroll = () => h.leaves.get("scroll")?.at(-1);
+  const visibleTimers = () => [...h.timers.values()].filter(timer => timer.delay === 3000).length;
+  const add = async (id: string, pageRoute: string) => h.changeState({ notifications: enqueueNotification(h.store.getState().notifications,
+    { id, pageRoute, owner: "host-test", placement: "floating", tone: "info", title: id, body: "" }, h.store.getState().notifications.length + 1) });
+  function MyHost() {
+    h.React.useSyncExternalStore(h.controller.subscribe, h.controller.getSnapshot, h.controller.getSnapshot);
+    return h.create(presentation.PagePresentationProvider, { value: my.snapshot() }, h.create(FloatingNotificationHost));
+  }
+  function Fixture() { return h.create(h.React.Fragment, null, h.create(FloatingNotificationHost), h.create(MyHost)); }
+  try {
+    await h.render(Fixture);
+    assert.equal(activeHost().length, 1); assert.equal(currentNotificationPageRoute(), "pages/map/index");
+    assert.equal(activeHost()[0].style["--notification-top"], "97px");
+    safeTop = 120; await h.resize();
+    assert.equal(activeHost()[0].style["--notification-top"], "120px", "resize refreshes native capsule clearance");
+    await h.hide(); assert.equal(activeHost().length, 0); assert.equal(visibleTimers(), 0);
+    safeTop = 105; await h.show();
+    assert.equal(activeHost().length, 1); assert.equal(activeHost()[0].style["--notification-top"], "105px");
+    safeTop = undefined; await h.resize();
+    assert.equal(activeHost()[0].style["--notification-top"], undefined, "unavailable native metrics retain the CSS fallback");
+    await add("first-notice", "pages/map/index");
+    const nodeId = h.load("components/notification-visibility.ts").floatingNotificationNodeId;
+    assert.equal(scroll().scrollIntoView, nodeId(h.store.getState().notifications[0]));
+    await add("new-head-after-scrolling", "pages/map/index");
+    assert.equal(scroll().scrollIntoView, nodeId(h.store.getState().notifications[0]), "new queue head asks native scroller to reveal it");
+    assert.equal(visibleTimers(), 2);
+    const mapTimerCallbacks = [...h.timers.values()].filter(timer => timer.delay === 3000).map(timer => timer.callback);
+    await h.update(() => h.controller.openMy());
+    assert.equal(activeHost().length, 1); assert.equal(currentNotificationPageRoute(), "pages/my/index");
+    assert.equal(scroll().scrollIntoView, "", "My must not scroll to its retained Map host's notice");
+    assert.equal(visibleTimers(), 0, "the hidden physical Map host releases both notice timers");
+    await h.update(() => { for (const callback of mapTimerCallbacks) callback(); });
+    assert.equal(h.store.getState().notifications.length, 2, "late timers cannot dismiss hidden messages");
+    await add("my-notice", "pages/my/index");
+    assert.equal(scroll().scrollIntoView, nodeId(h.store.getState().notifications[0]));
+    assert.equal(visibleTimers(), 1, "only My's visible notification owns a timer");
+    await h.hide(); assert.equal(activeHost().length, 0); assert.equal(visibleTimers(), 0);
+    await h.show(); assert.equal(activeHost().length, 1); assert.equal(visibleTimers(), 1);
+    await h.update(() => h.controller.closeMy());
+    assert.equal(activeHost().length, 0); assert.equal(visibleTimers(), 0, "both hosts suspend through the exit transition");
+    await h.update(() => h.controller.finishTransition(h.controller.getSnapshot().transitionTicket));
+    assert.equal(activeHost().length, 1); assert.equal(currentNotificationPageRoute(), "pages/map/index");
+    assert.equal(visibleTimers(), 2); assert.equal(h.store.getState().notifications.length, 3);
+  } finally { await h.dispose(); }
 });
 
 test("page and event-modal composition keeps one floating host outside scroll content", () => {
   const owners = [
     "pages/map/index", "pages/map/search-page", "pages/auth/index", "features/my/my-library-page",
-    "features/sky/spot-sky-page", "features/spot/spot-detail-page", "spot/data-source/index",
+    "features/sky/spot-sky-page", "features/spot/spot-detail-page", "components/source-page",
     "content/article/detail/index", "content/plan/detail/plan-editor-page", "content/plan/list/index", "content/contribution/index",
     "content/event/modal-host-page",
     "content/settings/index", "content/profile/links/index", "content/import/index",
@@ -98,7 +129,9 @@ test("page and event-modal composition keeps one floating host outside scroll co
     let roots = 0;
     const visit = (node: ts.Node) => {
       if (ts.isJsxElement(node) && node.openingElement.attributes.properties.some((prop) =>
-        ts.isJsxAttribute(prop) && prop.name.getText(ast) === "className" && /\b(themeClass|presentationClass)\b/.test(prop.getText(ast)))) {
+        ts.isJsxAttribute(prop) && prop.name.getText(ast) === "className" &&
+        (owner === "components/source-page" ? /\bsource-page\b/.test(prop.getText(ast)) : /\b(themeClass|presentationClass)\b/.test(prop.getText(ast))) &&
+        !prop.getText(ast).includes("map-my-presentation"))) {
         roots += 1;
         const hosts = node.children.filter((child) => ts.isJsxSelfClosingElement(child) && child.tagName.getText(ast) === "FloatingNotificationHost");
         const conditionalHosts = node.children.filter((child): child is ts.JsxExpression => ts.isJsxExpression(child) && Boolean(child.expression?.getText(ast).includes("FloatingNotificationHost")));
@@ -111,7 +144,7 @@ test("page and event-modal composition keeps one floating host outside scroll co
         for (const eventModalPresent of [false, true]) {
           const conditionalCount = conditionalHosts.reduce((count, child) => {
             const code = ts.transpileModule(child.expression!.getText(ast), { compilerOptions: { jsx: ts.JsxEmit.React } }).outputText;
-            const value = vm.runInNewContext(code, { eventModalPresent, FloatingNotificationHost: "Host", React: { createElement: () => 1 } });
+            const value = vm.runInNewContext(code, { eventModalPresent, pageVisible: true, FloatingNotificationHost: "Host", React: { createElement: () => 1 } });
             return count + Number(Boolean(value));
           }, 0);
           // Compatibility routes leave after closing; ordinary callers resume their page host.
@@ -125,6 +158,30 @@ test("page and event-modal composition keeps one floating host outside scroll co
     };
     visit(ast);
     assert.ok(roots > 0, owner);
+    if (owner === "pages/map/index") {
+      let retainedMyPages = 0;
+      const retained = (node: ts.Node) => {
+        if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(ast) === "MyLibraryPage") retainedMyPages++;
+        ts.forEachChild(node, retained);
+      };
+      retained(ast);
+      assert.equal(retainedMyPages, 1, "Map's separate presentation must compose the one My page owner, including its host");
+    }
+  }
+  // Native source routes compose the shared page instead of mounting a second host.
+  for (const owner of ["spot/data-source/index", "spot/data-source/document-reading", "sky/sources/index"]) {
+    const ast = ts.createSourceFile(owner, readFileSync(new URL(`../${owner}.tsx`, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    let sharedPages = 0, localHosts = 0;
+    const visit = (node: ts.Node) => {
+      if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+        if (node.tagName.getText(ast) === "SourcePage") sharedPages++;
+        if (node.tagName.getText(ast) === "FloatingNotificationHost") localHosts++;
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(ast);
+    assert.ok(sharedPages > 0, `${owner} must use the shared source page`);
+    assert.equal(localHosts, 0, `${owner} must not duplicate its page host`);
   }
   const modal = ts.createSourceFile("modal", readFileSync(new URL("./astronomical-event-modal.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let modalHosts = 0;

@@ -43,15 +43,14 @@ const retainedLegacyIconFiles = [
   "images-night.svg", "images-observation.svg", "pencil-night.svg",
   "pencil-observation.svg", "proposal-marker.png", "settings-night.svg",
   "settings-observation.svg", "share-night.svg", "share-observation.svg",
-  "tab-map-night.png", "tab-map-observation.png", "tab-map-selected-night.png",
-  "tab-map-selected-observation.png", "tab-my-night.png", "tab-my-observation.png",
-  "tab-my-selected-night.png", "tab-my-selected-observation.png",
+  "tab-map-night.png", "tab-map-observation.png",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
   "telescope-night.svg", "telescope-observation.svg",
   "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
   "map-layer-choice-check.svg",
   "terrain-toggle-check.png",
   "warning-night.svg", "warning-observation.svg",
+  "source-normal.svg", "source-observation.svg",
 ] as const;
 // Search is in the spot package; these legacy filter glyphs have no main-page consumers.
 const spotIconFiles = ["filter-night.svg", "filter-observation.svg", "wifi-off-night.svg", "wifi-off-observation.svg"];

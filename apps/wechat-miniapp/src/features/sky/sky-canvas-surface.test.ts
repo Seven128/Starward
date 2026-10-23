@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createSkyCanvasSurface, type SkyDisplayCanvas, type SkyWebGLCanvas } from "./sky-canvas-surface";
+import { createSkyCanvasSurface, SKY_TEXT_MEASUREMENT_CACHE_ENTRIES, type SkyDisplayCanvas, type SkyWebGLCanvas } from "./sky-canvas-surface";
 import { createSkySelectionLayer } from "./sky-selection-reticle";
 
 function fixture() {
@@ -222,4 +222,139 @@ test("spaced constellation metrics and glyph positions describe the same complet
   assert.equal(300-metrics.width/2+metrics.right,321);
   assert.throws(()=>surface.measureText('仙王座','12px sans-serif',18,NaN),/caption_invalid/);
   surface.dispose();
+});
+
+function textFixture() {
+  const h = fixture(), context = h.display.getContext("2d")!;
+  const calls: Array<{ text: string; font: string | undefined }> = [], words: Array<[string, number, number]> = [];
+  const states: Array<{ font: string | undefined; align: string | undefined; baseline: string | undefined }> = [];
+  let native = (_text: string) => ({ width: 12 }), failRestore = false;
+  Object.assign(context, {
+    font: "10px sans-serif", textAlign: "start", textBaseline: "alphabetic",
+    save() { states.push({ font: context.font, align: context.textAlign, baseline: context.textBaseline }); },
+    restore() {
+      const state = states.pop()!;
+      Object.assign(context, { font: state.font, textAlign: state.align, textBaseline: state.baseline });
+      if (failRestore) throw Error("native_restore_failed");
+    },
+    measureText(text: string) {
+      calls.push({ text, font: context.font });
+      assert.equal(context.textAlign, "left"); assert.equal(context.textBaseline, "middle");
+      return native(text);
+    },
+    fillText(text: string, x: number, y: number) { words.push([text, x, y]); },
+  });
+  h.display.getContext = () => context;
+  const surface = createSkyCanvasSurface(h.display, { width: 750, height: 1000 }, 2, h.create);
+  return { ...h, context, surface, calls, words, states,
+    measure: (next: typeof native) => { native = next; }, failRestore: (value: boolean) => { failRestore = value; } };
+}
+
+test("layout and centered painting reuse native whole-string shaping without retaining native or caller-owned metrics", () => {
+  const h = textFixture(), native = { width: 17, actualBoundingBoxLeft: 2, actualBoundingBoxRight: 19,
+    actualBoundingBoxAscent: 10, actualBoundingBoxDescent: 4 };
+  h.measure(text => { assert.equal(text, "AV"); return native; });
+  const expected = { width: 17, left: 2, right: 19, ascent: 10, descent: 9 };
+  const first = h.surface.measureText("AV", "12px sans-serif", 18);
+  assert.deepEqual(first, expected);
+  (first as { width: number }).width = 999;
+  native.width = 888;
+  assert.deepEqual(h.surface.measureText("AV", "12px sans-serif", 18), expected);
+  for (const textAlign of ["center", "left"] as const) h.surface.present(null, [
+    { text: "AV", x: 100, y: 60, opacity: 1, letterSpacing: 0, textAlign },
+  ]);
+  assert.deepEqual(h.words, [["AV", 91.5, 60], ["AV", 100, 60]]);
+  assert.equal(h.calls.length, 1, "both consumers must use the same native whole-string result");
+  assert.equal(h.context.font, "10px sans-serif");
+  assert.equal(h.states.length, 0);
+  h.surface.dispose();
+});
+
+test("spaced layout and painting share exact Unicode code-point advances and keep complete input identity", () => {
+  const h = textFixture();
+  h.measure(text => ({ width: ({ A: 7, "🌌": 11, B: 9 } as Record<string, number>)[text] ?? 40 }));
+  const expected = { width: 29.5, left: 0, right: 29.5, ascent: 9, descent: 9 };
+  assert.deepEqual(h.surface.measureText("A🌌B", "12px sans-serif", 18, 1.25), expected);
+  h.surface.present(null, [{ text: "A🌌B", x: 100, y: 60, opacity: .5, letterSpacing: 1.25, textAlign: "center" }]);
+  assert.deepEqual(h.calls.map(call => call.text), ["A", "🌌", "B"]);
+  assert.deepEqual(h.words, [["A", 85.25, 60], ["🌌", 93.5, 60], ["B", 105.75, 60]]);
+  assert.deepEqual(h.surface.measureText("A🌌B", "12px sans-serif", 24, 1.25),
+    { ...expected, ascent: 12, descent: 12 });
+  assert.equal(h.calls.length, 6, "line-height fallbacks cannot reuse another complete metrics record");
+  h.surface.present(null, [{ text: "A🌌B", x: 100, y: 60, opacity: 1, lineHeight: 24, letterSpacing: 1.25 }]);
+  assert.equal(h.calls.length, 6, "explicit caption line-height shares the layout record");
+  h.surface.measureText("A🌌B", "12px sans-serif", 18, 2);
+  h.surface.measureText("A🌌B", "600 14px sans-serif", 21, 1.25);
+  h.surface.present(null, [{ text: "A🌌B", x: 100, y: 60, opacity: 1, font: "600 14px sans-serif", letterSpacing: 1.25 }]);
+  assert.equal(h.calls.length, 12, "the heading painter resolves its original 21px line-height");
+  h.surface.measureText("A🌌B", "12px sans-serif", 18, 0);
+  assert.equal(h.calls.at(-1)!.text, "A🌌B", "zero spacing always delegates complete shaping to native");
+  h.context.fontKerning = "none";
+  h.surface.measureText("A🌌B", "12px sans-serif", 18, 0);
+  assert.equal(h.calls.length, 14, "native shaping-state changes withdraw the previous key");
+  assert.equal(h.states.length, 0);
+  h.surface.dispose();
+});
+
+test("uncached custom fonts observe asynchronous replacement under the same requested font string", () => {
+  const h = textFixture();
+  let width = 10;
+  h.measure(() => ({ width }));
+  assert.equal(h.surface.measureText("星", "12px FutureFont", 18).width, 10);
+  width = 20;
+  assert.equal(h.surface.measureText("星", "12px FutureFont", 18).width, 20);
+  width = 30;
+  h.surface.present(null, [{ text: "星", x: 100, y: 60, opacity: 1, font: "12px FutureFont",
+    letterSpacing: 0, textAlign: "center" }]);
+  assert.deepEqual(h.words, [["星", 85, 60]]);
+  assert.equal(h.calls.length, 3);
+  h.surface.dispose();
+});
+
+test("native failure, invalid input and unavailable contexts cannot be hidden by a cache hit", () => {
+  const h = textFixture();
+  h.measure(() => ({ width: NaN }));
+  assert.throws(() => h.surface.measureText("星", "12px sans-serif", 18), /caption_invalid/);
+  h.measure(() => { throw Error("native_measure_failed"); });
+  assert.throws(() => h.surface.measureText("星", "12px sans-serif", 18), /native_measure_failed/);
+  h.measure(() => ({ width: 12 })); h.failRestore(true);
+  assert.throws(() => h.surface.measureText("星", "12px sans-serif", 18), /native_restore_failed/);
+  h.failRestore(false);
+  assert.equal(h.surface.measureText("星", "12px sans-serif", 18).width, 12);
+  assert.equal(h.calls.length, 4, "a failed restore must not publish a remembered measurement");
+  for (const [height, spacing] of [[0, 0], [NaN, 0], [18, NaN], [18, -1]]) {
+    assert.throws(() => h.surface.measureText("星", "12px sans-serif", height!, spacing!), /caption_invalid/);
+  }
+  assert.equal(h.calls.length, 4);
+  const native = h.context.measureText;
+  delete h.context.measureText;
+  assert.throws(() => h.surface.measureText("星", "12px sans-serif", 18), /text_context_unavailable/);
+  h.context.measureText = native!;
+  h.surface.dispose(); h.surface.dispose();
+  assert.throws(() => h.surface.measureText("星", "12px sans-serif", 18), /text_context_unavailable/);
+  const replacement = textFixture();
+  replacement.surface.measureText("星", "12px sans-serif", 18);
+  assert.equal(replacement.calls.length, 1, "a replacement native surface cannot inherit measurements");
+  replacement.surface.dispose();
+});
+
+test("the surface bounds both entry count and retained text while preserving exact native fallback", () => {
+  const h = textFixture();
+  for (let i = 0; i < SKY_TEXT_MEASUREMENT_CACHE_ENTRIES; i++) h.surface.measureText(`对象${i}`, "12px sans-serif", 18);
+  h.surface.measureText("对象0", "12px sans-serif", 18);
+  h.surface.measureText("another", "12px sans-serif", 18);
+  h.surface.measureText("对象0", "12px sans-serif", 18);
+  assert.equal(h.calls.length, SKY_TEXT_MEASUREMENT_CACHE_ENTRIES + 1, "the recently used entry survives");
+  h.surface.measureText("对象1", "12px sans-serif", 18);
+  assert.equal(h.calls.length, SKY_TEXT_MEASUREMENT_CACHE_ENTRIES + 2, "least recent entries are remeasured");
+  const large = "星".repeat(8192), larger = "星".repeat(16_385);
+  h.surface.measureText(large, "12px sans-serif", 18);
+  h.surface.measureText(`${large}月`, "12px sans-serif", 18);
+  const before = h.calls.length;
+  h.surface.measureText(large, "12px sans-serif", 18);
+  assert.equal(h.calls.length, before + 1, "the text budget evicts even before reaching the entry limit");
+  h.surface.measureText(larger, "12px sans-serif", 18);
+  h.surface.measureText(larger, "12px sans-serif", 18);
+  assert.equal(h.calls.length, before + 3, "oversize input is measured exactly without retention");
+  h.surface.dispose();
 });

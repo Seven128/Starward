@@ -1,0 +1,865 @@
+{
+  "schemaVersion": "starward-r20-draw-cost-review-v1",
+  "reviewer": "analyze_r20_star_traversal_fix",
+  "createdAt": "2026-10-20T23:28:20.866Z",
+  "scope": "READ_ONLY_PRODUCTION_REVIEW_AND_TASK_LOCAL_COMPARISON_NO_PHONE_SERVICE_OR_IDE_OPERATIONS",
+  "decision": {
+    "nextImplementation": "One current exact-input stellar drawing preparation at the existing Scene/Canvas lifetime; replay current transitions, picking/names and GPU submission every paint",
+    "status": "READY_FOR_LOCAL_IMPLEMENTATION_AND_INDEPENDENT_REVIEW_NOT_PRODUCT_ADOPTION",
+    "reason": "The target actual traversal is material in both effect and continuation paints; current transform already caches directions/transmission but repeated projection/appearance/raw-star assembly is outside that reuse. A bounded local equal-output comparison supports removing that repeated preparation, without another profile of the same level.",
+    "benefitScope": "Same exact time/view/appearance/catalogue inputs including resource/name/image continuation; no reuse across new precise time or real view changes. It may free work between inputs; does not guarantee faster first paint or all intents accepted.",
+    "alternatives": [
+      {
+        "name": "Per-frame or per-tile added projection arrays/global WeakMap history",
+        "decision": "Do not add; route all extra retention through one explicitly cleared current Canvas owner."
+      },
+      {
+        "name": "Transition snapshot pooling/in-place mutation",
+        "decision": "Do not adopt; changes accepted/rejected-state isolation, no attributed need versus simpler pure preparation reuse."
+      },
+      {
+        "name": "Typed-array pooling or skipping GL submissions",
+        "decision": "Do not adopt from this sample; submit has extensive below-resolution calls and remains live every frame."
+      },
+      {
+        "name": "Arbitrary throttle/debounce/time quantization/reduced star count/gen24 scene memo",
+        "decision": "Not authorized by these results; retain original work and scheduling."
+      }
+    ]
+  },
+  "binding": {
+    "mode": "normal",
+    "buildGeneration": 27,
+    "buildSourceSha256": "85fe0ba21c869c109581015a77fea4b641fc316de6ace548781ff0fdfb921bd2",
+    "windowId": 1,
+    "localBundleSha256": "d0e1a4500635629d1bfb631fd48fa089f50a66dded829ae065ba127b380a767e",
+    "frozenDirectory": "tmp/r17-normal-a1-review-r20-usb",
+    "sourceOwners": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "sha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80",
+        "matchesR20Production": true,
+        "currentSha256": "435cc24562dceef94efe3e7467881d32d84599dccb7c7b44c39d066122853d80"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+        "sha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453",
+        "matchesR20Production": true,
+        "currentSha256": "e80e1b130b9281c93b0308d92b1bb968b2fb359bfc0b5c606fe5430886989453"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "sha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977",
+        "matchesR20Production": true,
+        "currentSha256": "5dbaed765a64e78daf0f164eab16e3d265ffea0ddd88fc8d5b2ae0fbffa04977"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+        "sha256": "6e083c76bac46fa1122b6df3771502ec01cb12fc9d02c8cd53932736e9ff22c6",
+        "matchesR20Production": true,
+        "currentSha256": "6e083c76bac46fa1122b6df3771502ec01cb12fc9d02c8cd53932736e9ff22c6"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "sha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6",
+        "matchesR20Production": true,
+        "currentSha256": "7c294565b0414b89e48071476b6ee70d6ca175169c5451a7b3860b3283435ea6"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-star-appearance.ts",
+        "sha256": "4d8986cae546464a2f56be136bfdc22a0acd06644eba0b8cccceb02001e87412",
+        "matchesR20Production": true,
+        "currentSha256": "4d8986cae546464a2f56be136bfdc22a0acd06644eba0b8cccceb02001e87412"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-star-transition.ts",
+        "sha256": "87dcfec42916bc6899cfa124d092bfd9d1ab5f79ca543148c4e35407b0d9f60a",
+        "matchesR20Production": true,
+        "currentSha256": "87dcfec42916bc6899cfa124d092bfd9d1ab5f79ca543148c4e35407b0d9f60a"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+        "sha256": "3aed31102c4ffd1437e3648f21d158a2893245112d24a0b9bf770cfb844a92c1",
+        "matchesR20Production": true,
+        "currentSha256": "3aed31102c4ffd1437e3648f21d158a2893245112d24a0b9bf770cfb844a92c1"
+      }
+    ],
+    "phoneBundleBytesVerified": false,
+    "runtimeAppIdVerified": false
+  },
+  "sample": {
+    "rawName": "baseline-r17-1-16ekgolidx.json",
+    "bytes": 57152,
+    "sha256": "a3fa8643517eb5d5eb30da6fde21798a6cb165f4ee64e6247ce02167d4e5d259",
+    "compactBytes": 32566,
+    "strictProtocolValid": true,
+    "window": {
+      "startDelayMs": 0,
+      "durationLimitMs": 45000,
+      "elapsedMs": 15011,
+      "elapsedStatus": "valid",
+      "reason": "manual"
+    },
+    "clock": {
+      "source": "Date.now",
+      "unit": "ms",
+      "kind": "wall-elapsed",
+      "monotonic": false,
+      "availability": "available",
+      "nominalResolutionMs": 1,
+      "effectiveResolutionMs": null,
+      "reads": 5784,
+      "invalidReads": 0,
+      "backwardReads": 0
+    },
+    "scene": {
+      "baseRowsMin": 8404,
+      "baseRowsMax": 8404,
+      "saoRowsMin": 2675,
+      "saoRowsMax": 2842,
+      "selectedTilesMin": 103,
+      "selectedTilesMax": 105,
+      "catalogVersions": [
+        "bsc5p-bright-stars.v3"
+      ],
+      "saoPublicationHashes": [
+        "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10"
+      ],
+      "modelAlgorithms": [],
+      "modes": [
+        "DAY"
+      ]
+    },
+    "viewport": {
+      "widthMin": 384,
+      "widthMax": 384,
+      "heightMin": 796.800048828125,
+      "heightMax": 796.800048828125,
+      "fovMin": 264.3550889449854,
+      "fovMax": 264.3550889449854
+    },
+    "counters": {
+      "timeIntentPublications": 15,
+      "preparedRequests": 60,
+      "paintAttempts": 45,
+      "nativeCallbacks": 45,
+      "acceptedCopies": 45,
+      "sceneFinishes": 45,
+      "glDrawSubmissions": 2077,
+      "bscSubmittedStars": 255855,
+      "saoSubmittedStars": 3988,
+      "acceptedBscObjects": 212756,
+      "acceptedSaoObjects": 1910,
+      "failedFrames": 0,
+      "invalidations": 0
+    },
+    "input": {
+      "intents": 15,
+      "firstAccepted": 9,
+      "firstAcceptedAfterSuperseded": 4,
+      "consumedPreparations": 9,
+      "unconsumedPreparations": 15,
+      "latency": {
+        "intentToFirstAcceptedMs": {
+          "observedCalls": 9,
+          "validCalls": 9,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 1397,
+          "minMs": 118,
+          "maxMs": 203,
+          "keptSamples": 9,
+          "p50Ms": 151,
+          "p95Ms": 203,
+          "overflow": false
+        },
+        "unsupersededIntentToFirstAcceptedMs": {
+          "observedCalls": 5,
+          "validCalls": 5,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 715,
+          "minMs": 118,
+          "maxMs": 163,
+          "keptSamples": 5,
+          "p50Ms": 148,
+          "p95Ms": 163,
+          "overflow": false
+        },
+        "supersededIntentToFirstAcceptedMs": {
+          "observedCalls": 4,
+          "validCalls": 4,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          },
+          "knownSubtotalMs": 682,
+          "minMs": 130,
+          "maxMs": 203,
+          "keptSamples": 4,
+          "p50Ms": 198,
+          "p95Ms": 203,
+          "overflow": false
+        }
+      },
+      "costs": {
+        "consumed": {
+          "knownSubtotalMs": 10,
+          "validCalls": 7,
+          "unknownCalls": 2,
+          "unknown": {
+            "belowResolution": 2,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "unconsumed": {
+          "knownSubtotalMs": 1,
+          "validCalls": 1,
+          "unknownCalls": 14,
+          "unknown": {
+            "belowResolution": 14,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "expiredUnconsumed": {
+          "knownSubtotalMs": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        }
+      }
+    },
+    "geometry": {
+      "calls": 15,
+      "abortSignals": 4,
+      "validated": 11,
+      "rejected": 4,
+      "currentHookAssignments": 9
+    },
+    "draw": {
+      "observedCalls": 45,
+      "validCalls": 45,
+      "unknownCalls": 0,
+      "unknown": {
+        "belowResolution": 0,
+        "clockUnavailable": 0,
+        "clockDiscontinuity": 0,
+        "outOfRange": 0,
+        "notObserved": 0
+      },
+      "knownSubtotalMs": 1397,
+      "minMs": 23,
+      "maxMs": 55,
+      "keptSamples": 45,
+      "p50Ms": 30,
+      "p95Ms": 40,
+      "overflow": false
+    },
+    "drawCosts": {
+      "schemaVersion": "starward-r20-draw-costs-v1",
+      "metricsSchema": "starward-r19-phone-probe-draw-reasons-v1",
+      "meaning": "inclusive-wall-elapsed-synchronous-actual-paint-scope-not-CPU-GPU-or-pixels",
+      "nesting": "submit-may-overlap-starTraversal-both-inside-draw-do-not-add",
+      "classification": "unknown-bit-or-missing-first-then-effect-bit-else-continuation",
+      "scopedPaints": 45,
+      "missingAdmissionPaints": 0,
+      "nestedPaints": 0,
+      "scopeChangedSpans": 0,
+      "groups": [
+        {
+          "kind": "inputResourceEffect",
+          "paints": 22,
+          "stages": {
+            "draw": {
+              "observedCalls": 22,
+              "validCalls": 22,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 719,
+              "maxMs": 45,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "starTraversal": {
+              "observedCalls": 44,
+              "validCalls": 40,
+              "unknownCalls": 4,
+              "knownSubtotalMs": 404,
+              "maxMs": 27,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 4,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "rendererSubmit": {
+              "observedCalls": 1017,
+              "validCalls": 64,
+              "unknownCalls": 953,
+              "knownSubtotalMs": 202,
+              "maxMs": 10,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 953,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "continuationOnly",
+          "paints": 23,
+          "stages": {
+            "draw": {
+              "observedCalls": 23,
+              "validCalls": 23,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 677,
+              "maxMs": 55,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "starTraversal": {
+              "observedCalls": 46,
+              "validCalls": 45,
+              "unknownCalls": 1,
+              "knownSubtotalMs": 355,
+              "maxMs": 32,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 1,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "rendererSubmit": {
+              "observedCalls": 1060,
+              "validCalls": 57,
+              "unknownCalls": 1003,
+              "knownSubtotalMs": 195,
+              "maxMs": 13,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 1003,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "unknown",
+          "paints": 0,
+          "stages": {
+            "draw": {
+              "observedCalls": 0,
+              "validCalls": 0,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 0,
+              "maxMs": null,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "starTraversal": {
+              "observedCalls": 0,
+              "validCalls": 0,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 0,
+              "maxMs": null,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            },
+            "rendererSubmit": {
+              "observedCalls": 0,
+              "validCalls": 0,
+              "unknownCalls": 0,
+              "knownSubtotalMs": 0,
+              "maxMs": null,
+              "threwCalls": 0,
+              "unknown": {
+                "belowResolution": 0,
+                "clockUnavailable": 0,
+                "clockDiscontinuity": 0,
+                "outOfRange": 0,
+                "notObserved": 0
+              }
+            }
+          }
+        }
+      ],
+      "unbound": {
+        "draw": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "knownSubtotalMs": 0,
+          "maxMs": null,
+          "threwCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "starTraversal": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "knownSubtotalMs": 0,
+          "maxMs": null,
+          "threwCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        },
+        "rendererSubmit": {
+          "observedCalls": 0,
+          "validCalls": 0,
+          "unknownCalls": 0,
+          "knownSubtotalMs": 0,
+          "maxMs": null,
+          "threwCalls": 0,
+          "unknown": {
+            "belowResolution": 0,
+            "clockUnavailable": 0,
+            "clockDiscontinuity": 0,
+            "outOfRange": 0,
+            "notObserved": 0
+          }
+        }
+      }
+    },
+    "paintMasks": [
+      {
+        "mask": 1,
+        "count": 9
+      },
+      {
+        "mask": 8,
+        "count": 11
+      },
+      {
+        "mask": 9,
+        "count": 9
+      },
+      {
+        "mask": 24,
+        "count": 6
+      },
+      {
+        "mask": 25,
+        "count": 4
+      },
+      {
+        "mask": 32,
+        "count": 6
+      }
+    ],
+    "stageLimits": [
+      "draw/starTraversal/rendererSubmit are nested inclusive wall elapsed and must not be added",
+      "submit below-resolution calls are unknown, not free; no CPU/GPU or physical presentation decomposition",
+      "original draw subtotal1397ms versus drawCosts1396ms is separate boundary/resolution, not corrected or merged",
+      "source-specific CPU attribution was45deg and is reused as ownership evidence, not current wide-field proportions"
+    ]
+  },
+  "video": {
+    "file": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r20-draw-cost\\review\\recording-1792537679723.mp4",
+    "bytes": 401965,
+    "sha256": "009c209f20d128593e361346a82e0a93ffee880da0eac075702f14d738c01784",
+    "duration": 10.022878,
+    "width": 1080,
+    "height": 2376,
+    "frames": [
+      {
+        "name": "hold-0_050000.png",
+        "target": 0.05,
+        "currentTime": 0.05,
+        "media": {
+          "mediaTime": 0,
+          "presentedFrames": 2
+        }
+      },
+      {
+        "name": "hold-2_000000.png",
+        "target": 2,
+        "currentTime": 2,
+        "media": {
+          "mediaTime": 0,
+          "presentedFrames": 3
+        }
+      },
+      {
+        "name": "hold-2_500000.png",
+        "target": 2.5,
+        "currentTime": 2.5,
+        "media": {
+          "mediaTime": 2.473611,
+          "presentedFrames": 4
+        }
+      },
+      {
+        "name": "hold-3_000000.png",
+        "target": 3,
+        "currentTime": 3,
+        "media": {
+          "mediaTime": 2.9225,
+          "presentedFrames": 5
+        }
+      },
+      {
+        "name": "hold-3_500000.png",
+        "target": 3.5,
+        "currentTime": 3.5,
+        "media": {
+          "mediaTime": 3.464122,
+          "presentedFrames": 6
+        }
+      },
+      {
+        "name": "hold-4_000000.png",
+        "target": 4,
+        "currentTime": 4,
+        "media": {
+          "mediaTime": 3.987789,
+          "presentedFrames": 7
+        }
+      },
+      {
+        "name": "hold-5_000000.png",
+        "target": 5,
+        "currentTime": 5,
+        "media": {
+          "mediaTime": 4.987467,
+          "presentedFrames": 8
+        }
+      },
+      {
+        "name": "hold-6_000000.png",
+        "target": 6,
+        "currentTime": 6,
+        "media": {
+          "mediaTime": 5.939678,
+          "presentedFrames": 9
+        }
+      }
+    ],
+    "limits": "Local video media timestamps only. Decoded samples are not physical application FPS. Input release is not independently timestamped by this decoder.",
+    "viewedBeforeAndAfter": true,
+    "viewedSamples": [
+      {
+        "mediaTime": 2.473611,
+        "requestedDate": "2026-10-19",
+        "label": "updating"
+      },
+      {
+        "mediaTime": 2.9225,
+        "requestedDate": "2026-10-15",
+        "label": "updating"
+      },
+      {
+        "mediaTime": 3.464122,
+        "requestedDate": "2026-10-11",
+        "label": "updating"
+      },
+      {
+        "mediaTime": 3.987789,
+        "requestedDate": "2026-10-07",
+        "label": "updating"
+      },
+      {
+        "mediaTime": 4.987467,
+        "requestedDate": "2026-10-06",
+        "label": "preview"
+      }
+    ],
+    "observation": "Actual intermediate sky positions and final date are visible. The caption shows time-of-day, so it cannot identify the accepted date during cross-day waiting. Sparse decoded samples do not establish smoothness, physical FPS or absence of a crash throughout all sessions.",
+    "clockJoinedToCollector": false
+  },
+  "localComparison": {
+    "script": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r20-star-draw-local-check.mts",
+    "currentScriptSha256": "2e04abfb81b31f0d70f45c167f638c915faa05eb61ad967a06389ce0bf547b74",
+    "executedTimingScriptSha256": "483ea2a84cbf063ade309a572a39e07b79ab9cbe1a5c96a3014570b5362c7641",
+    "timingOriginal": "local-star-draw-check.json",
+    "consumerOriginal": "local-star-consumer-check.json",
+    "node": "v24.19.0",
+    "input": {
+      "baseRows": 8404,
+      "baseHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+      "saoPublicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "indexSha256": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "distinctVerifiedTiles": 107,
+      "selectedTiles": [
+        105,
+        105,
+        105,
+        104,
+        104,
+        104,
+        104,
+        104,
+        104,
+        104,
+        104,
+        105
+      ],
+      "view": {
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -1,
+            0
+          ],
+          "forward": [
+            0,
+            0,
+            1
+          ]
+        },
+        "width": 384,
+        "height": 796.800048828125,
+        "verticalFovDeg": 264.3550889449854
+      },
+      "sunAltitude": -24,
+      "source": "existing production BSC v3 and checked SAO v2 files; existing R17 site/date convention, no new dataset"
+    },
+    "equality": {
+      "frames": 48,
+      "submitted": 190272,
+      "picked": 154445,
+      "named": 2529,
+      "pickedBsc": 152809,
+      "pickedSao": 1636,
+      "maximumPrepared": 6265
+    },
+    "logicalRetention": {
+      "beforeReset": {
+        "builds": 8,
+        "hits": 40,
+        "maxPrepared": 6265,
+        "retainedModels": 1,
+        "retainedPrepared": 6261
+      },
+      "afterReset": {
+        "builds": 8,
+        "hits": 40,
+        "maxPrepared": 6265,
+        "retainedModels": 0,
+        "retainedPrepared": 0
+      }
+    },
+    "timings": [
+      {
+        "repeats": 1,
+        "interpretation": "new exact time every paint; no cache reuse",
+        "medianBaselineMs": 195.22450000000208,
+        "medianCandidateMs": 184.88380000000052,
+        "medianPairedReduction": 0.09918222354265638,
+        "pairedReductionRange": [
+          -0.08408837617345832,
+          0.18544022684782824
+        ],
+        "pairCount": 12,
+        "order": "alternating baseline/candidate; three warm-up blocks; no forced GC"
+      },
+      {
+        "repeats": 5,
+        "interpretation": "new exact time then four unchanged-view continuation paints; not measured phone hit ratio",
+        "medianBaselineMs": 606.6128999999928,
+        "medianCandidateMs": 448.7746999999872,
+        "medianPairedReduction": 0.2603850593582696,
+        "pairedReductionRange": [
+          0.14278919851470617,
+          0.34475045985698205
+        ],
+        "pairCount": 12,
+        "order": "alternating baseline/candidate; three warm-up blocks; no forced GC"
+      }
+    ],
+    "interpretation": "The five-paint case gives a useful local direction; the no-hit case has mixed-sign pairs and cannot establish a cold/new-time gain. Original transforms, appearance, transition and star paint block are reused; local output includes Float32 packing but no GL/native/React/copy/landscape filtering cost.",
+    "limitations": [
+      "Local star loop extraction with original production imports, not full Scene/native/React performance",
+      "Controlled night solar altitude, site and dates from existing R17 fixture convention; not phone snapshot replay",
+      "Candidate adds one array and owned star/projection records; logical item counts do not measure heap bytes or prove no leak",
+      "No production owner/lifecycle integration, no change to production source",
+      "No GPU calls, asset traffic, phone frame rate, heap/GC or retained graph measured",
+      "No-hit results include shorter preparation/replay callback shape and host/JIT noise; do not call them cache savings",
+      "Semantic cases confirm sampled star output, not all independent cache invalidation boundaries or real Canvas lifecycle",
+      "The local recording surface rebuilds its RGB map per draw, unlike retained production GPU colors; identical in both arms and not a GPU-owner performance measurement"
+    ]
+  },
+  "implementationContract": {
+    "owner": "One current prepare/replay object bound to the actual Sky Canvas generation, called synchronously from the existing drawSkyScene responsibility; no extra state writer/RAF/Query cache.",
+    "retained": "At most current eligible projected star inputs for existing BSC/SAO layers, plus existing transition accepted state. Replace on input change; no Map of prior times/views. Never store cache on each historical report/tile.",
+    "key": [
+      "current Context and Canvas generation",
+      "actual admitted BSC catalog and resolved exact-time frame identity",
+      "actual current SAO frame/geometry/publication and tile-arrival identity",
+      "exact numerical basis, width, height, FOV and effective projection center",
+      "display mode and actual solar-light altitude/absence"
+    ],
+    "live": [
+      "existing starTransitions.prepare/point/exits and successful-copy commit",
+      "fresh opacity-dependent pick/name eligibility and immutable output ownership",
+      "body/landscape occlusion filtering after stellar drawing",
+      "actual point vertices and GL submission, source credit and error handling"
+    ],
+    "invalidation": [
+      "time/view/source/appearance changes miss without rounding",
+      "invalid/missing layer withdraws only that layer and clears its reusable preparation",
+      "mutable or legacy unqualified input retains original uncached path",
+      "clear obsolete preparation before a miss build; throw cannot revive old key",
+      "hide/suspend/context-change/Canvas retirement/unmount clears references under existing owner",
+      "rejected paint cannot advance transitions or publish accepted picking; pure preparation alone grants no presentation"
+    ],
+    "checks": [
+      "Actual current BSC plus nonempty admitted SAO all draw/pick/name Float32 outputs, including same-time continuation and new time",
+      "Independent exact camera/center/FOV/mode/sun/source/SAO-arrival invalidations, mutable legacy fallback, time A→B→A",
+      "Rejected copy, failure/reset/hide/Canvas replacement clears preparation and preserves accepted transition fences",
+      "Bounded normal-preview matching full-sphere night day-hold and normalPlay checks using existing metrics; no new general profiler",
+      "Retainer/allocation/drain obligation remains open for B; one current logical model is not no-leak evidence"
+    ]
+  },
+  "unverified": [
+    "Current physical-device benefit of this unimplemented candidate",
+    "Full six-field rapid taps/holds and normal Play smoothness",
+    "JS strong-retainer/native/GPU allocation cause of r13 crash and whole-session leak freedom",
+    "True-debug Memory route remains blocked at current GUI interaction boundary",
+    "Map layers and complete Goal acceptance are separate"
+  ],
+  "preservation": {
+    "localOnly": true,
+    "originalFiles": [
+      {
+        "readbackVerified": true,
+        "sourceSha256": "a3fa8643517eb5d5eb30da6fde21798a6cb165f4ee64e6247ce02167d4e5d259",
+        "name": "baseline-r17-1-16ekgolidx.json",
+        "readbackSha256": "a3fa8643517eb5d5eb30da6fde21798a6cb165f4ee64e6247ce02167d4e5d259",
+        "bytes": 57152
+      },
+      {
+        "readbackVerified": true,
+        "sourceSha256": "b8463e4c7115bed85fe21e0c59e6c22e697d02b2cd3186a6080d6f1b190f8f25",
+        "name": "screen-1b715dca-f2dd-45c3-a7f4-1d9ad10da4ae.png",
+        "readbackSha256": "b8463e4c7115bed85fe21e0c59e6c22e697d02b2cd3186a6080d6f1b190f8f25",
+        "bytes": 957128
+      },
+      {
+        "readbackVerified": true,
+        "sourceSha256": "009c209f20d128593e361346a82e0a93ffee880da0eac075702f14d738c01784",
+        "name": "recording-1792537679723.mp4",
+        "readbackSha256": "009c209f20d128593e361346a82e0a93ffee880da0eac075702f14d738c01784",
+        "bytes": 401965
+      },
+      {
+        "readbackVerified": true,
+        "sourceSha256": "3e6d922ab61289a2d522bb6c5b0c13b57193484fbce0988f489381dd9f9bfbba",
+        "name": "screen-7a35bbe6-07a3-4c47-a1d9-3308b0953275.png",
+        "readbackSha256": "3e6d922ab61289a2d522bb6c5b0c13b57193484fbce0988f489381dd9f9bfbba",
+        "bytes": 984826
+      }
+    ],
+    "originalBytes": 2401071,
+    "record": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r20-draw-cost\\review\\preservation.private.json",
+    "supplementary": [
+      {
+        "name": "local-star-draw-check.json",
+        "bytes": 38218,
+        "sha256": "d9d151f3ddbb14294180fefb7440cd5b315a8ba8b71446fa7fe24c54783a19f8"
+      },
+      {
+        "name": "local-star-consumer-check.json",
+        "bytes": 21104,
+        "sha256": "324b3012fc8e95786e864bd1fda63ae50ef369d10692816ee1661be6529abc67"
+      },
+      {
+        "name": "local-star-draw-check-executed.mts",
+        "bytes": 13264,
+        "sha256": "483ea2a84cbf063ade309a572a39e07b79ab9cbe1a5c96a3014570b5362c7641"
+      },
+      {
+        "name": "inspect-video.cjs",
+        "bytes": 4468,
+        "sha256": "b689d10b6edaca13fa7cc6b9c0e707e475a9bea6defb50243a0f028d89d9cb6b"
+      },
+      {
+        "name": "additional-video-samples.json",
+        "bytes": 1885,
+        "sha256": "22583d14b46880e5bb6e963ee64c63b9801954f7796c4aa95a09f57e81bdff84"
+      }
+    ],
+    "unchangedFrozenSourceReused": true,
+    "uploaded": false
+  }
+}

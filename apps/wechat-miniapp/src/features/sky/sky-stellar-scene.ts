@@ -1,5 +1,5 @@
 import { assertStellarGeometryFrame, assertStellarCatalogPublication, assertStellarCatalogReference,
-  type StellarCatalogReference, type SkyGeometryReport, type SkyScene,
+  type StellarCatalogReference, type StellarGeometryFrame, type SkyGeometryReport, type SkyScene,
   type SkySceneCatalog, type SkySceneCatalogReference, type SkyScenePoint, type StellarCatalogPublication } from "@starward/miniapp-contracts";
 import { projectStellarMotion, type StellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import { exactSkyTimeFrame } from "./sky-time-frame";
@@ -9,7 +9,7 @@ import { isAdmittedStellarCatalogPublication } from "../../services/stellar-cata
 
 import { skyStarDisplayColor, skyStarDisplayTransmission } from "./sky-star-appearance";
 import { prepareSkyDirection, type PreparedSkyDirection, type SkyDirectionProjector, type SkyDirectionProjection } from "./sky-view-projection";
-import { createSkyStellarTransform } from "./sky-stellar-transform";
+import { createSkyStellarTransform, immutableSkyStellarGeometry } from "./sky-stellar-transform";
 
 // Palette projection belongs to this immutable local render model, not the
 // wire catalogue or report cache. Legacy controlled scenes may omit it.
@@ -35,7 +35,12 @@ export interface ResolvedStellarFrame {
 }
 const catalogs = new WeakMap<StellarCatalogPublication, RenderCatalog>();
 // One current time per report: gestures reuse it; scrubbing never retains an entire day of star arrays.
-const currentFrames = new WeakMap<ResolvedStellarScene, ResolvedStellarFrame>();
+const currentFrames = new WeakMap<ResolvedStellarScene, {frame:ResolvedStellarFrame;catalog:RenderCatalog;
+  publication:StellarCatalogPublication;geometry:StellarGeometryFrame;
+  latitude:number;longitude:number;elevationM:number}>();
+const reusableFrames = new WeakSet<ResolvedStellarFrame>();
+/** Only a locally resolved frame of immutable admitted input can reuse draws. */
+export function isReusableSkyStellarFrame(value:ResolvedStellarFrame):boolean {return reusableFrames.has(value);}
 
 /** Bind this scene's reference on every use; only the immutable original
  * transport object may reuse full publication admission. */
@@ -105,14 +110,23 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
   if (!scene || scene.state !== "AVAILABLE" || !scene.catalog || !scene.publication || !scene.observer) return undefined;
   const frame = exactSkyTimeFrame(scene.frames, at);
   if (!frame || frame.state !== "AVAILABLE" || !frame.geometry) return undefined;
+  const catalog=scene.catalog,publication=scene.publication,geometry=frame.geometry;
   const cached = currentFrames.get(scene);
-  if (cached?.at === at) return cached;
+  if (cached && cached.frame.at === at && cached.catalog===catalog && cached.publication===publication && cached.geometry===geometry &&
+    cached.latitude===scene.observer.latitude&&cached.longitude===scene.observer.longitude&&cached.elevationM===scene.observer.elevationM)
+    return cached.frame;
+  // A failed changed source must not leave the old A reusable on A -> B -> A.
+  currentFrames.delete(scene);
+  const retain=(resolved:ResolvedStellarFrame)=>{
+    currentFrames.set(scene,{frame:resolved,catalog,publication,geometry,latitude:scene.observer!.latitude,
+      longitude:scene.observer!.longitude,elevationM:scene.observer!.elevationM});return resolved;
+  };
   try {
     assertStellarGeometryFrame(frame.geometry, { catalog: scene.publication, at: at!, observer: scene.observer });
     if(scene.catalog.motionAt){
-      const pointCount=scene.publication.rows.length;
-      const transform=createSkyStellarTransform(pointCount,scene.catalog.motionAt,frame.geometry);
-      const magnitudeAt=(index:number)=>scene.publication!.rows[index]![2];
+      const pointCount=publication.rows.length;
+      const transform=createSkyStellarTransform(pointCount,catalog.motionAt!,geometry);
+      const magnitudeAt=(index:number)=>publication.rows[index]![2];
       const positioned:Array<SkyScenePoint|undefined>=new Array(pointCount);
       let allPoints:readonly SkyScenePoint[]|undefined;
       const pointAt=(index:number)=>{
@@ -123,7 +137,7 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
         return positioned[index]!;
       };
       const forEachProjected:NonNullable<ResolvedStellarFrame['forEachProjected']>=(projector,limit,visit)=>
-        transform.forEachProjected(projector,limit,magnitudeAt,(index,projection)=>visit(index,pointAt(index),projection),scene.catalog!.magnitudeOrdered);
+        transform.forEachProjected(projector,limit,magnitudeAt,(index,projection)=>visit(index,pointAt(index),projection),catalog.magnitudeOrdered);
       const resolved:ResolvedStellarFrame=Object.freeze({at:at!,state:"AVAILABLE",pointCount,forEachProjected,
         // Legacy list consumers still receive the complete original array.
         // Mere availability/count checks and the painter do not expand it.
@@ -132,7 +146,9 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
             allPoints=Object.freeze(positioned as SkyScenePoint[]);}
           return allPoints;
         },displayDirection:transform.displayDirection,displayTransmission:transform.displayTransmission});
-      currentFrames.set(scene,resolved);return resolved;
+      if(catalogs.get(publication)===catalog&&isAdmittedStellarCatalogPublication(publication)&&immutableSkyStellarGeometry(geometry))
+        reusableFrames.add(resolved);
+      return retain(resolved);
     }
     // Older controlled scenes lack the local immutable publication adapter.
     // Retain their original eager result and optional-accessor compatibility.
@@ -155,7 +171,6 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
     };
     const resolved: ResolvedStellarFrame = Object.freeze({ at: at!, state: "AVAILABLE", points: Object.freeze(points),
       displayTransmission, displayDirection });
-    currentFrames.set(scene, resolved);
-    return resolved;
+    return retain(resolved);
   } catch { return undefined; }
 }

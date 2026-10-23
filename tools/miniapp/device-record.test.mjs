@@ -108,6 +108,18 @@ test("permission scopes and invalid gestures cannot start a recorder or send inp
   }
 });
 
+test("one sustained swipe requires an explicit clip long enough for the whole gesture", async () => {
+  const values = [.3, .4, .7, .4, 8000];
+  const complete = recordingDriver();
+  const result = await recordDeviceGesture(complete.device, "swipe", values, capture, { seconds: 15 });
+  assert.deepEqual(complete.inputs, [{ action: "swipe", values, observed: capture }]);
+  assert.equal(result.requestedSeconds, 15);
+  const tooShort = recordingDriver();
+  await assert.rejects(recordDeviceGesture(tooShort.device, "swipe", values, capture), /recording_ended_before_input/);
+  assert.equal(tooShort.inputs.length, 0);
+  assert.equal(tooShort.kills.length, 1);
+});
+
 test("a recorder startup failure sends no gesture or media", async () => {
   const fixture = recordingDriver({ startFails: true });
   await assert.rejects(recordDeviceGesture(fixture.device, "tap", [.5,.5], capture), /device_test_tool_failed/);

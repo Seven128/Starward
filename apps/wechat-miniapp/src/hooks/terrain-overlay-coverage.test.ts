@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DISPLAY_RASTER_GRID, displayRasterWindowBounds } from "@starward/coordinate-system";
 import { MAP_TERRAIN_SUPPORTED_BOUNDS, type TerrainBounds, type TerrainOverlayRequest } from "@starward/miniapp-contracts";
-import { terrainCoverageForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
+import { terrainCoverageForRequest, terrainPreviewForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
+import { terrainOverlayRequestWindow } from "../services/terrain-overlay-request.ts";
 
 const bounds = displayRasterWindowBounds({ grid: DISPLAY_RASTER_GRID, zoom: 10, x: 836, y: 425,
   columns: 3, rows: 3, tilePixels: 256 });
@@ -70,4 +71,18 @@ test("invalid centre/bounds cannot inherit an older successful request or enter 
     assert.equal(terrainRequestForCoverage(invalid, coverage), invalid);
     assert.equal(terrainCoverageForRequest(invalid, available), null);
   }
+});
+
+test("a parent covers the complete requested fixed window but never satisfies its fine coverage", () => {
+  const fine = terrainOverlayRequestWindow(first)!;
+  const parent = { ...available, preview: { requestedZoom: fine.zoom, imageZoom: fine.zoom - 1 } };
+  assert.ok(terrainPreviewForRequest(first, parent as any));
+  assert.equal(terrainCoverageForRequest(first, parent), null, "temporary detail cannot suppress the fine request");
+  for (const invalid of [
+    { ...parent, preview: undefined },
+    { ...parent, preview: { requestedZoom: fine.zoom + 1, imageZoom: fine.zoom - 1 } },
+    { ...parent, preview: { requestedZoom: fine.zoom, imageZoom: fine.zoom } },
+    { ...parent, imageBoundsGcj02: first.viewportBounds },
+    { ...parent, failureCode: "TERRAIN_READ_FAILED" },
+  ]) assert.equal(terrainPreviewForRequest(first, invalid as any), null);
 });

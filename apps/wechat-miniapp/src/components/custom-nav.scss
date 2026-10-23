@@ -9,7 +9,6 @@
 .custom-nav__back-control { position: relative; width: var(--target-min); height: var(--target-min); }
 .custom-nav__side .soft-button { padding: 0; width: var(--target-min); min-width: var(--target-min); min-height: var(--target-min); }
 .custom-nav__back-control .soft-button { border-color: transparent; background: transparent; }
-.custom-nav__back-control .soft-button:active { background: var(--surface-subtle); }
 .custom-nav__side .semantic-icon { color: var(--text-primary); }
 .custom-nav__back-icon { position: absolute; width: var(--icon-medium); height: var(--icon-medium); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; pointer-events: none; }
 .custom-nav__title .type-section { font-size: var(--type-page-title-size); line-height: var(--type-page-title-line); overflow-wrap: anywhere; }
@@ -20,3 +19,9 @@
 .custom-nav--dismiss .custom-nav__title .type-section { font-size: 20Px; line-height: 28Px; font-weight: 700; }
 .custom-nav--dismiss .custom-nav__side--right { align-items: center; gap: 10Px; margin-right: -12Px; }
 .custom-nav--dismiss .custom-nav__back-icon { width: 22Px; height: 22Px; }
+.custom-nav--map { padding-left: 16Px; }
+.custom-nav--map .custom-nav__bar { grid-template-columns: max-content minmax(0, 1fr) max(var(--target-min), calc(var(--nav-menu-clearance, 100Px) - var(--map-inset))); }
+.custom-nav__back-control--map { width: auto; }
+.custom-nav__side .custom-nav__map-button { width: auto; min-width: var(--target-min); padding: 0 8Px; display: flex; align-items: center; gap: 6Px; font-size: 14Px; font-weight: 400; }
+.custom-nav__map-button .custom-nav__map-arrow { flex: none; font-size: 26Px; line-height: 1; }
+.custom-nav__map-button .custom-nav__map-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }

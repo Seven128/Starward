@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { validateTerrainAsset, validateTerrainPublication } from "./terrain-publication.ts";
-import type { RasterBounds } from "@starward/coordinate-system";
-import type { RenderedTerrain } from "./terrain-request.ts";
+import { DISPLAY_RASTER_GRID, type RasterBounds } from "@starward/coordinate-system";
+import { terrainFixedRequest, terrainWindowRequest, terrainRequestKey, type RenderedTerrain } from "./terrain-request.ts";
 
 export interface TerrainFixedInventory {
   schemaVersion: "starward-fixed-terrain-inventory-v1";
@@ -15,6 +15,20 @@ export interface TerrainFixedInventory {
   retainedAssets?: { key: string; file: string; publicationSha256: string }[];
 }
 const sha256 = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
+
+/** Discover geometry from the hash-bound inventory's existing identity before
+ * reading any image. A proof and its actual bytes still need normal validation. */
+export function terrainFixedInventoryRequest(entry: TerrainFixedInventory["assets"][number]) {
+  const fixed = /^terrarium-cn-v2-fixed-(\d{1,2})-(\d+)-(\d+)-(1|2|4)$/u.exec(entry.key);
+  const window = /^terrarium-cn-v2-window-(\d{1,2})-(\d+)-(\d+)-([1-5])-([1-5])$/u.exec(entry.key);
+  try {
+    const request = window ? terrainWindowRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256,
+      zoom: Number(window[1]), x: Number(window[2]), y: Number(window[3]), columns: Number(window[4]), rows: Number(window[5]) })
+      : fixed ? terrainFixedRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256,
+        zoom: Number(fixed[1]), x: Number(fixed[2]), y: Number(fixed[3]), span: Number(fixed[4]) as 1 | 2 | 4 }) : null;
+    return request && terrainRequestKey(request) === entry.key ? request : null;
+  } catch { return null; }
+}
 
 export function terrainInventoryVersion(inventory: Pick<TerrainFixedInventory, "targets" | "assets" | "retainedAssets">) {
   return `terrain-fixed:${sha256(JSON.stringify({ targets: inventory.targets, assets: inventory.assets,

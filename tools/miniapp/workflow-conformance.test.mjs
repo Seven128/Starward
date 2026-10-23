@@ -1251,14 +1251,9 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(map, /data-control="map-location-control"/u);
   assert.match(map, /data-control="map-layer-selector-trigger"/u);
   assert.doesNotMatch(map, /className=\{[\s\S]*map-analysis-trigger/u);
-  assert.match(
-    mapStyles,
-    /\.map-search-anchor\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 24rpx\);/su,
-  );
-  assert.match(
-    mapStyles,
-    /\.map-top-tools\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 136rpx\);/su,
-  );
+  // R19 retires the long search field. Its old top rule and an overridden
+  // rail rule cannot establish the live capsule/toolbar geometry; that
+  // geometry is checked through native metrics and target-runtime output.
   assert.match(
     mapStyles,
     /\.map-feedback-column\s*\{[^}]*z-index: 34;[^}]*right: calc\(24rpx \+ var\(--map-tool-size\) \+ 8Px\);[^}]*top: calc\(var\(--map-search-top\) \+ var\(--map-search-height\) \+ 116Px\);/su,

@@ -1,7 +1,7 @@
 import { Canvas, Text, View } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
-import { useLayoutEffect, useMemo, useState } from "react";
-import { SourceDisclosure } from "@/components/source-disclosure";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { SourceEntry } from "@/components/source-entry";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
 import type { useTerrainHorizon } from "@/hooks/use-terrain-horizon";
@@ -11,7 +11,7 @@ import "./spot-terrain-horizon.scss";
 
 let canvasSequence = 0;
 
-export function SpotTerrainHorizon({ query, visible }: { query: ReturnType<typeof useTerrainHorizon>; visible: boolean }) {
+export function SpotTerrainHorizon({ query, visible, onLayoutChange }: { query: ReturnType<typeof useTerrainHorizon>; visible: boolean; onLayoutChange?: (() => void) | undefined }) {
   const mode = useAppStore(state => state.mode);
   const [foreground, setForeground] = useState(true);
   const [revision, setRevision] = useState(0);
@@ -65,11 +65,12 @@ export function SpotTerrainHorizon({ query, visible }: { query: ReturnType<typeo
   const failed = query.isError || Boolean(query.refreshError) || Boolean(data?.failureCode);
   const blocking = !chart || drawnId !== frame.id;
   const loading = query.isPending || (Boolean(chart) && !canvasFailed && drawnId !== frame.id);
+  useEffect(() => { onLayoutChange?.(); }, [data, blocking, loading, failed, canvasFailed, onLayoutChange]);
   const retry = () => { if (chart && canvasFailed) setRevision(value => value + 1); else void query.refetch(); };
   const partial = data?.state === "PARTIAL";
   const chartLabel = model && chart ? `山体轮廓模型估算，真北顺时针，${model.knownSectors}个方向有高程采样，`
     + `最低${chart.minimumAngle?.toFixed(1)}度，最高${chart.maximumAngle?.toFixed(1)}度。${partial ? "斜线和断口表示未知方向。" : ""}` : "山体轮廓";
-  return <View className="spot-horizon" data-control="spot-terrain-horizon-profile">
+  return <View id="spot-panel-reading-horizon" className="spot-horizon panel-reading-anchor" data-control="spot-terrain-horizon-profile">
     <View className="spot-horizon__content" aria-hidden={blocking}>
       <View className="spot-horizon__header"><Text className="spot-horizon__title">山体遮挡</Text><Text className="spot-horizon__badge">模型估算</Text></View>
       <View className="spot-horizon__chart" role="img" ariaLabel={chartLabel}>
@@ -78,10 +79,8 @@ export function SpotTerrainHorizon({ query, visible }: { query: ReturnType<typeo
       {model ? <View className="spot-horizon__meta"><Text className="spot-horizon__range">分析范围 {model.radiusM / 1000} km</Text>
         <Text className={`spot-horizon__summary${partial ? " spot-horizon__summary--partial" : ""}`}>{partial ? "部分方向高程缺测" : "低空轮廓估算 · 近物情况待现场核对"}</Text></View> : null}
       <Text className="spot-horizon__disclaimer">依据历史高程估算；近处树木、围墙需结合现场资料。</Text>
-      {data ? <SourceDisclosure key={data.publicationId ?? "unavailable"} id="spot-horizon-source" label="数据源：Copernicus DEM GLO-30" sources={data.source ? [data.source] : []}>
-        <Text>{data.coverageLabel}</Text>
-        {data.limitations.map(limitation => <Text key={limitation}>{limitation}</Text>)}
-      </SourceDisclosure> : null}
+      {data ? <SourceEntry key={data.publicationId ?? "unavailable"} id="spot-horizon-source" label="山体遮挡来源" sources={data.source ? [data.source] : []}
+        sections={[{ kind: "text", paragraphs: [data.coverageLabel, ...data.limitations] }]} /> : null}
       {chart && failed ? <View className="spot-horizon__recovery"><Text>部分轮廓暂时无法更新，已保留可用方向。</Text>
         <SoftButton label="重新读取山体轮廓" disabled={query.isFetching} onClick={() => void query.refetch()}>{query.isFetching ? "正在重试…" : "重新获取"}</SoftButton></View> : null}
     </View>

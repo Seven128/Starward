@@ -17,6 +17,15 @@ CLI's spinner/exit code cannot supply that result. Do not fall back after an
 invocation with unknown effects; a local option rejection before any invocation
 must remain recoverable as `not_invoked`, rather than stranding a run as unknown.
 
+Within the user's authorized device-debugging task, ordinary official preview
+pushes and candidate refreshes are execution steps; do not request the same
+permission for each build. The user explicitly distinguishes sending the test
+Mini Program package to the current phone from uploading performance originals
+or committing code. Preserve the separate explicit-upload and batched-commit
+policy at the [artifact owner](resources-and-artifacts.md#each-commit-binds-the-required-development-inputs).
+Actual tool approval blocks still apply; report them precisely rather than
+inventing a new blanket confirmation requirement.
+
 ### Project source, snapshots and windows
 
 The canonical DevTools project is `apps/wechat-miniapp`: its `miniprogramRoot` selects the generated `dist/weapp`, not the authoring TypeScript. Importing registers a directory; it does not copy code or synchronize another directory. A prepared phone/candidate or isolated-service project is a separate snapshot whose API/configuration may intentionally differ. Refreshing that window does not pull repository changes into it. Update it through its existing build/generation owner and verify the resulting bytes and runtime identity; never edit the snapshot as a second source or overwrite an active frozen candidate in place.

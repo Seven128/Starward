@@ -8,30 +8,55 @@ import { createRequire } from 'node:module';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { addR17ACorrelation } from './r17-a-correlation-instrumentation.mjs';
+import { addR25MemoryLifetime } from './r25-memory-lifetime-instrumentation.mjs';
+import { addR25StellarOwnerObservation } from './r25-stellar-owner-instrumentation.mjs';
+import { addR26AggregateUse } from './r26-aggregate-use-instrumentation.mjs';
+import { addR26MemoryOwnerLinks } from './r26-memory-owner-instrumentation.mjs';
+import { addR27QueryCallbackSources, addR27QueryCallbackAdapter } from './r27-query-callback-instrumentation.mjs';
 import { addR17RulerEntry } from './r17-ruler-entry-instrumentation.mjs';
 import { addR17RulerEntryV2 } from './r17-ruler-entry-v2-instrumentation.mjs';
-import { addR17NormalInput } from './r17-normal-input-instrumentation.mjs';
+import { addR17NormalInput, addR17GeometryStages, addR19DrawReasons, addR20DrawCosts } from './r17-normal-input-instrumentation.mjs';
+import { addR28FirstAcceptedCosts } from './r28-first-accepted-instrumentation.mjs';
+import { instrumentNativeRegionProbe } from '../tmp/r17-native-region-probe-instrumentation.mjs';
 import { terrainWaitSourceFiles, transformTerrainWaitSources } from './inject-terrain-wait-observer.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), work = path.resolve(here, '..'), root = path.resolve(here, '../../../..');
 const revisionArgs = process.argv.slice(3), observationA1 = revisionArgs.includes('--observe-a1');
 const usbReverse = revisionArgs.includes('--usb-reverse');
-const reviewRevision = revisionArgs.includes('--review-r10') ? 10 : revisionArgs.includes('--review-r9') ? 9 : revisionArgs.includes('--review-r8') ? 8 : revisionArgs.includes('--review-r7') ? 7 : revisionArgs.includes('--review-r6') ? 6 : revisionArgs.includes('--review-r5') ? 5 : revisionArgs.includes('--review-r4') ? 4 : revisionArgs.includes('--review-r3') ? 3 : revisionArgs.includes('--review-r2') ? 2 : 1;
+const currentUi = revisionArgs.includes('--current-ui');
+const skyPackage = revisionArgs.includes('--r27-sky-package');
+const firstAcceptedCosts = revisionArgs.includes('--first-accepted-costs');
+const skyOnly = skyPackage || firstAcceptedCosts;
+const reviewFlags = Array.from({ length: 26 }, (_, index) => `--review-r${index + 2}`);
+const selectedReviews = revisionArgs.filter(value => reviewFlags.includes(value));
+const reviewRevision = selectedReviews.length ? Number(selectedReviews[0].slice('--review-r'.length)) : 1;
 const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6, retirementReceipt = reviewRevision >= 9;
-if (revisionArgs.some(value => !['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10', '--observe-a1', '--usb-reverse'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
-    revisionArgs.filter(value => ['--review-r2', '--review-r3', '--review-r4', '--review-r5', '--review-r6', '--review-r7', '--review-r8', '--review-r9', '--review-r10'].includes(value)).length > 1 || reviewRevision >= 3 && !observationA1)
+const geometryStages = reviewRevision >= 17, nativeRegion = reviewRevision >= 14 && !skyOnly;
+const terrainWait = observationA1 && !skyOnly;
+const drawReasons = reviewRevision >= 19;
+const drawCosts = reviewRevision >= 20;
+const memoryLifetime = reviewRevision >= 24 && !firstAcceptedCosts;
+const memoryCheckpoints = reviewRevision >= 25 && !firstAcceptedCosts;
+const memoryOwnerLinks = reviewRevision >= 26 && !firstAcceptedCosts;
+const queryCallbackLinks = reviewRevision >= 27 && !firstAcceptedCosts;
+const normalPlayTrialMs = memoryCheckpoints ? 20000 : retirementReceipt ? 60000 : 20000;
+if (revisionArgs.some(value => ![...reviewFlags, '--observe-a1', '--usb-reverse', '--current-ui', '--r27-sky-package', '--first-accepted-costs'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
+    selectedReviews.length > 1 || reviewRevision >= 3 && !observationA1 || reviewRevision >= 14 && !usbReverse ||
+    currentUi && (reviewRevision !== 27 || !observationA1 || !usbReverse) ||
+    skyPackage && (!currentUi || reviewRevision !== 27 || !observationA1 || !usbReverse) ||
+    firstAcceptedCosts && (!currentUi || reviewRevision !== 27 || !observationA1 || !usbReverse || skyPackage))
   throw Error('finite_normal_revision_required');
 const reviewSuffix = reviewRevision > 1 ? '-review-r' + reviewRevision : '';
-const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix + (usbReverse ? '-usb' : '');
+const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix + (usbReverse ? '-usb' : '') + (firstAcceptedCosts ? '-first-accepted-costs' : skyPackage ? '-sky-package' : currentUi ? '-current-ui' : '');
 const trial = path.join(work, 'tmp/' + trialName), sourceRoot = path.join(trial, 'source'), projectRoot = path.join(trial, 'project');
 const feature = 'apps/wechat-miniapp/src/features/sky/', pagePath = feature + 'spot-sky-page.tsx';
-const slot = observationA1 ? trialName : reviewRevision === 2 ? 'r17-normal-v3-r2' : trialName;
-const buildGeneration = observationA1 ? 27 : 25, bridgePort = 8798;
-const normalLabel = (observationA1 ? '正常Sky关联 A1' + (reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3') + (usbReverse ? ' USB' : '');
+const slot = firstAcceptedCosts ? 'r17-a1-first-accepted-usb' : skyPackage ? 'r17-a1-r27-sky-usb' : currentUi ? 'r17-a1-r27-ui-usb' : observationA1 ? trialName : reviewRevision === 2 ? 'r17-normal-v3-r2' : trialName;
+const buildGeneration = firstAcceptedCosts ? 34 : skyPackage ? 33 : currentUi ? 32 : observationA1 ? (queryCallbackLinks ? 31 : memoryOwnerLinks ? 30 : memoryCheckpoints ? 29 : memoryLifetime ? 28 : 27) : 25, bridgePort = 8798;
+const normalLabel = (observationA1 ? '正常Sky关联 A1' + (firstAcceptedCosts ? ' 首响应成本' : reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3') + (usbReverse ? ' USB' : '') + (currentUi ? ' 当前UI' : '');
 const protocolName = nativeAdmission ? 'r17-normal-input-protocol.mjs' : rulerEntry ? 'r17-ruler-entry-protocol.mjs' : observationA1 ? 'r17-a-correlation-protocol.mjs' : 'r17-phone-probe-v3-protocol.mjs';
 const preparationName = observationA1 ? 'R17-NORMAL-A1-PREPARATION.json' : 'R17-NORMAL-BASELINE-V3-PREPARATION.json';
 const bundleRoot = path.join(sourceRoot, 'apps/wechat-miniapp/dist/weapp-check-' + slot), manifestPath = path.join(trial, 'manifest.json');
-const scope = observationA1 ? 'TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : 'TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE';
+const scope = firstAcceptedCosts ? 'TASK_ONLY_NORMAL_SKY_A1_FIRST_ACCEPTED_COSTS_NOT_PRODUCT_ACCEPTANCE' : skyPackage ? 'TASK_ONLY_NORMAL_SKY_A1_R27_SKY_PACKAGE_NOT_PRODUCT_ACCEPTANCE' : observationA1 ? 'TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : 'TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE';
 const sha = value => createHash('sha256').update(value).digest('hex');
 const relative = value => path.relative(root, value).replaceAll('\\', '/');
 const historicalOwnerArchive = reviewRevision === 10
@@ -54,12 +79,33 @@ const templateNames = ['r17-phone-probe-v3-runtime.ts', 'r17-phone-probe-v3-prot
   'r17-phone-probe-v2-protocol.mjs', 'r17-phone-probe-protocol.mjs', 'r17-accepted-action-controls.tsx',
   'r17-page-bridge-observer.ts', 'r17-normal-observations.ts', 'r17-normal-baseline-v3-fixture.mjs'];
 if (observationA1) templateNames.push('r17-a-correlation-runtime.ts', 'r17-a-correlation-instrumentation.mjs',
-  'r17-a-correlation-protocol.mjs', 'r17-a-correlation.test.mjs', 'inject-terrain-wait-observer.mjs',
+  'r17-a-correlation-protocol.mjs', 'r17-a-correlation.test.mjs');
+if (terrainWait) templateNames.push('inject-terrain-wait-observer.mjs',
   'terrain-wait-observer.ts', 'terrain-wait-marker.tsx', 'terrain-wait-observer.test.mjs');
 if (rulerEntry) templateNames.push('r17-ruler-entry-runtime.ts', 'r17-ruler-entry-instrumentation.mjs',
   'r17-ruler-entry-protocol.mjs', 'r17-ruler-entry.test.mjs');
 if (nativeAdmission) templateNames.push('r17-ruler-entry-v2-instrumentation.mjs', 'r17-normal-input-instrumentation.mjs',
   'r17-normal-input-protocol.mjs', 'r17-normal-input.test.mjs');
+if (geometryStages) templateNames.push('r17-geometry-stage-runtime.ts');
+if (memoryLifetime) templateNames.push('r25-memory-lifetime-observer.ts', 'r25-memory-lifetime-adapter.ts',
+  'r25-memory-lifetime-protocol.mjs', 'r25-memory-lifetime-instrumentation.mjs', 'r25-memory-lifetime.test.mjs',
+  'r25-memory-lifetime-adapter.test.mjs');
+if (memoryCheckpoints) templateNames.push('r25-stellar-owner-observer.ts', 'r25-stellar-owner-instrumentation.mjs',
+  'r25-stellar-owner.test.mjs', 'r25-memory-checkpoint-protocol.mjs', 'r25-memory-checkpoint.test.mjs');
+if (memoryOwnerLinks) templateNames.push('r26-fiber-owner-observer.ts', 'r26-fiber-owner.test.mjs',
+  'r26-aggregate-use-observer.ts', 'r26-aggregate-use-instrumentation.mjs', 'r26-aggregate-use.test.mjs',
+  'r26-memory-owner-links.ts', 'r26-memory-owner-instrumentation.mjs', 'r26-memory-checkpoint-protocol.mjs',
+  'r26-memory-checkpoint.test.mjs', 'memory-checkpoint-test-support.mjs');
+if (queryCallbackLinks) templateNames.push('r27-query-callback-observer.ts', 'r27-query-callback-observer.test.mjs',
+  'r27-query-callback-links.ts', 'r27-query-callback-instrumentation.mjs', 'r27-memory-checkpoint-protocol.mjs', 'r27-memory-checkpoint.test.mjs');
+if (skyPackage) templateNames.push('r27-query-callback-ports.ts');
+if (firstAcceptedCosts) templateNames.push('r28-first-accepted-costs.ts', 'r28-first-accepted-costs.test.mjs',
+  'r28-first-accepted-instrumentation.mjs', 'r28-first-accepted-protocol.mjs', 'r28-first-accepted-protocol.test.mjs',
+  'r28-first-accepted-integration.test.mjs');
+if (nativeRegion) templateNames.push('../tmp/r17-native-region-probe.ts',
+  '../tmp/r17-native-region-probe-adapter.ts', '../tmp/r17-native-region-probe-instrumentation.mjs',
+  '../tmp/r17-native-region-probe-protocol.mjs', '../tmp/r17-native-region-probe.test.mjs',
+  'r17-phone-probe-collector.mjs');
 async function list(directory) {
   const files = [];
   for (const row of await fs.readdir(directory, { withFileTypes: true })) {
@@ -120,6 +166,10 @@ export function controls(source, binding, observeRetirement = retirementReceipt)
       '    r17Probe.controlResult("pauseAttempt", typeof paused === "boolean" ? paused : null);\n    r17NormalPauseResultReceipt(playGeneration, paused);', 'single_guarded_pause_scalar_receipt');
     source = one(source, '  }, 20000);', '  }, 60000);', 'finite_r9_same_run_sixty_second_trial');
   }
+  if (reviewRevision >= 18) {
+    source = one(source, '{[45, 10.8].map(fov =>', '{[360, 10.8].map(fov =>', 'full_sky_existing_prepare');
+    source = one(source, '>准备 {fov}°</Button>', '>{fov === 360 ? "准备全天空" : `准备 ${fov}°`}</Button>', 'full_sky_prepare_label');
+  }
   return source.replaceAll('__R17_BUILD_GENERATION__', String(buildGeneration)).replaceAll('__R17_BUILD_SOURCE_BINDING__', binding);
 }
 export function normalSurface(source, observeRetirement = retirementReceipt) {
@@ -141,7 +191,7 @@ export function normalSurface(source, observeRetirement = retirementReceipt) {
       '      selectionWidth: dimension(() => selectionDisplay?.width), selectionHeight: dimension(() => selectionDisplay?.height),\n' +
       '      selectionLayerPresent: selectionLayer !== null, contextPresent: gl !== null, contextLost };\n' +
       '  };\n  const retire = () => {', 'synchronous_boundary_reads_no_retained_native_probe');
-    source = one(source, '    r17NormalSurfaceRetired();\n    retireSelection();\n' +
+    source = one(source, '    retireSelection();\n' +
       '    // Each retirement step is independent; losing a native context must not\n' +
       '    // leave the other backing store or a retained Sources surface alive.\n' +
       '    try { gl?.getExtension("WEBGL_lose_context")?.loseContext(); } catch { /* already unavailable */ }\n' +
@@ -149,7 +199,6 @@ export function normalSurface(source, observeRetirement = retirementReceipt) {
       '    try { if (node) node.height = 0; } catch { /* native node retired */ }\n' +
       '    try { display.width = 0; } catch { /* native node retired */ }\n' +
       '    try { display.height = 0; } catch { /* native node retired */ }',
-      '    r17NormalSurfaceRetired();\n' +
       '    const observedSteps: Record<"selection" | "contextExtension" | "contextLoss" | "nodeWidth" | "nodeHeight" | "displayWidth" | "displayHeight",\n' +
       '      "not-attempted" | "attempted" | "absent" | "unavailable" | "returned" | "threw"> = { selection: "not-attempted", contextExtension: "not-attempted", contextLoss: "not-attempted",\n' +
       '      nodeWidth: "not-attempted", nodeHeight: "not-attempted", displayWidth: "not-attempted", displayHeight: "not-attempted" };\n' +
@@ -230,9 +279,28 @@ export function normalPage(source, requestedPreparation = source.includes('  con
   source = one(source, '  const toggleSkyTimePlayback = () => {', '  useR17NormalStop(runStartAt => {\n' +
     '    const time = observationTime.snapshot();\n    if (!skyTimeIntentCurrent() || datePickerOpenRef.current || time.mode !== "PLAYING" || time.runStartAt !== runStartAt) return false;\n' +
     '    pauseSkyTime(); return true;\n  });\n  const toggleSkyTimePlayback = () => {', 'same_run_guarded_pause');
-  source = one(source, '    setTimeIntent(observationTime.play(Date.now()));',
-    '    setTimeIntent(observationTime.play(Date.now()));\n    r17NormalProductPlayStarted(observationTime.snapshot().runStartAt);', 'normal_guarded_product_play');
-  return one(source, '  </SkyNavigationMenu>;', '    <R17PhoneProbeControls onPrepareFov={fov => { if (!skyDisplayCurrent()) return; stopBrowsingAnimation(); setVerticalFovDeg(fov); setSkyControlPanel(null); }} onStart={key => setSkyControlPanel(key.endsWith("-camera") ? null : "time")} />\n  </SkyNavigationMenu>;', 'task_only_menu');
+  source = one(source, '    if (previewGeometry.playbackReady && skyTimeIntentCurrent() && !datePickerOpenRef.current)\n' +
+    '      setTimeIntent(observationTime.play(Date.now()));',
+    '    if (previewGeometry.playbackReady && skyTimeIntentCurrent() && !datePickerOpenRef.current) {\n' +
+    '      setTimeIntent(observationTime.play(Date.now()));\n' +
+    '      if (observationTime.snapshot().mode === "PLAYING") r17NormalProductPlayStarted(observationTime.snapshot().runStartAt);\n' +
+    '    }', 'normal_ready_product_play');
+  source = one(source, '    setTimeIntent(previewGeometry.playbackReady && time.at === requestedAt\n' +
+    '      ? observationTime.play(Date.now()) : observationTime.requestPlay());',
+    '    setTimeIntent(previewGeometry.playbackReady && time.at === requestedAt\n' +
+    '      ? observationTime.play(Date.now()) : observationTime.requestPlay());\n' +
+    '    if (observationTime.snapshot().mode === "PLAYING") r17NormalProductPlayStarted(observationTime.snapshot().runStartAt);',
+    'normal_immediate_product_play');
+  const preparedFov = reviewRevision >= 18 ? 'clampSkyFieldOfView(fov, canvasSize.width, canvasSize.height)' : 'fov';
+  return one(source, '  </SkyNavigationMenu>;', '    <R17PhoneProbeControls onPrepareFov={fov => { if (!skyDisplayCurrent()) return; stopBrowsingAnimation(); setVerticalFovDeg(' + preparedFov + '); setSkyControlPanel(null); }} onStart={key => setSkyControlPanel(key.endsWith("-camera") ? null : "time")} />\n  </SkyNavigationMenu>;', 'task_only_menu');
+}
+export function normalLifecycle(source) {
+  source = one(source, '      latest = frame;\n      revision++;', '      r17Probe.prepared(frame);\n      latest = frame;\n      revision++;', 'normal_request');
+  source = one(source, '    const frame = latest, frameRevision = revision, frameSize = size, visibleGeneration = visibilityEpoch;',
+    '    const frame = latest, frameRevision = revision, frameSize = size, visibleGeneration = visibilityEpoch;\n    r17Probe.paintStarted(frame);', 'normal_paint');
+  source = one(source, '        finished = true;', '        finished = true;\n        r17Probe.callback(frame);', 'normal_callback');
+  return 'import { r17Probe } from "./r17-phone-probe-runtime";\n' + wrapCalls(source, value => value === 'port.paint',
+    call => 'r17Probe.measure("nativePaintOwner",()=>'+call.replace('port.paint(context,', 'port.paint(context!,')+')', 'normal_paint_span').source;
 }
 export async function preparedSources(normal, template, binding) {
   // Keep manifest hashes on the exact checked-out template bytes; normalize only
@@ -252,13 +320,7 @@ export async function preparedSources(normal, template, binding) {
     source = one(source, '  context.finish();\n  const contributingHipsGroups', '  context.finish();\n  r17Probe.sceneFinished(data,frameAt,frame,currentSupplement,width,height,verticalFovDeg,mode,__r17Bsc,__r17Sao);\n  const contributingHipsGroups', 'full_scene_finish');
     return probeImport(one(wrapNamed(source, 'drawSkyScene', 'draw'), 'return r17Probe.measure("draw",()=>{', 'return r17Probe.measure("draw",()=>{\n let __r17Bsc=0,__r17Sao=0;', 'scene_count_scope'));
   });
-  edit('sky-canvas-lifecycle.ts', source => {
-    source = one(source, '      latest = frame;\n      revision++;', '      r17Probe.prepared(frame);\n      latest = frame;\n      revision++;', 'normal_request');
-    source = one(source, '    const frame = latest, frameRevision = revision, frameSize = size, visibleGeneration = visibilityEpoch;',
-      '    const frame = latest, frameRevision = revision, frameSize = size, visibleGeneration = visibilityEpoch;\n    r17Probe.paintStarted(frame);', 'normal_paint');
-    source = one(source, '        finished = true;', '        finished = true;\n        r17Probe.callback(frame);', 'normal_callback');
-    return probeImport(wrapCalls(source, value => value === 'port.paint', call => 'r17Probe.measure("nativePaintOwner",()=>'+call.replace('port.paint(context,', 'port.paint(context!,')+')', 'normal_paint_span').source);
-  });
+  edit('sky-canvas-lifecycle.ts', normalLifecycle);
   for (const name of ['sky-gpu-renderer.ts', 'sky-gpu-artwork-contributions.ts']) edit(name, source => {
     const result = wrapCalls(source, value => ['drawBufferInfo', 'gl.drawArrays', 'gl.drawElements'].includes(value), call => '('+call+',r17Probe.count("glDrawSubmissions"))', name);
     instrumentation[name + ':drawCallSites'] = result.count; source = probeImport(result.source);
@@ -274,7 +336,7 @@ export async function preparedSources(normal, template, binding) {
     instrumentation['sky-canvas-surface.ts:measureTextCallSites'] = observed.measureTextCallSites;
     if (retirementReceipt) instrumentation.surfaceRetirement = { schemaVersion: 'starward-r17-normal-surface-retirement-v1',
       ownKey: `starward.r17.normal-surface-retirement.v1.${binding}`, lastSurfaceOnly: true,
-      nativeObjectsRetained: false, perFrameSerialization: false, normalPlayTrialMs: 60000, metricsExportMs: 15000,
+      nativeObjectsRetained: false, perFrameSerialization: false, normalPlayTrialMs, metricsExportMs: 15000,
       afterPauseDrainMinimumMs: 30000, drainOwner: 'root-existing-device-and-process-observation' };
     return observed.source;
   });
@@ -297,6 +359,8 @@ export async function preparedSources(normal, template, binding) {
     output[feature + 'r17-phone-probe-runtime.ts'] = correlated.runtime;
     output[feature + 'r17-page-bridge-observer.ts'] = correlated.pageObserver;
     output[feature + 'r17-a-correlation-runtime.ts'] = template['r17-a-correlation-runtime.ts'];
+  }
+  if (terrainWait) {
     const terrainInput = new Map(terrainWaitSourceFiles.map(file => [file, output[file].toString('utf8')]));
     const terrainEdits = transformTerrainWaitSources(terrainInput);
     terrainEdits.set('apps/wechat-miniapp/src/services/terrain-wait-observer.ts', template['terrain-wait-observer.ts']
@@ -335,6 +399,161 @@ export async function preparedSources(normal, template, binding) {
       caseKey: 'manual-input', startDelayMs: 0, boundary: 'legal-onPreview-before-preview-intent', triggers: { sixField: 1, ruler: 2 },
       sameRecorderAndCollector: true, scalarOnly: true };
   }
+  if (geometryStages) {
+    const geometryFile = feature + 'use-sky-time-geometry.ts';
+    const changed = addR17GeometryStages({ runtime: output[feature + 'r17-phone-probe-runtime.ts'], page: output[pagePath],
+      geometry: output[geometryFile].toString('utf8').replaceAll('\r\n','\n') });
+    const additions = { [feature + 'r17-phone-probe-runtime.ts']: changed.runtime, [pagePath]: changed.page,
+      [geometryFile]: changed.geometry, [feature + 'r17-geometry-stage-runtime.ts']: template['r17-geometry-stage-runtime.ts'] };
+    for (const [file, bytes] of Object.entries(additions)) {
+      instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+      output[file] = bytes;
+    }
+    instrumentation.geometryStages = { schemaVersion: 'starward-r17-geometry-stages-v1', caseKey: 'manual-input',
+      capacity: 128, pendingRequestLimit: 64, windowLimit: 64, weakResponseLimit: 128,
+      originalPromiseReturned: true, productStateWrites: false, inputOrRenderingThrottled: false,
+      networkCacheSource: 'not-observed', repeatedHookAssignment: 'distinct-response-window-target-intent-only' };
+  }
+  if (drawReasons) {
+    const observed = addR19DrawReasons({ runtime: output[feature + 'r17-phone-probe-runtime.ts'], page: output[pagePath],
+      lifecycle: output[feature + 'sky-canvas-lifecycle.ts'] });
+    for (const [name, bytes] of Object.entries({ 'r17-phone-probe-runtime.ts': observed.runtime,
+      'spot-sky-page.tsx': observed.page, 'sky-canvas-lifecycle.ts': observed.lifecycle })) {
+      const file = feature + name;
+      instrumentation[file] = { beforeSha256: sha(output[file]), afterSha256: sha(bytes) }; output[file] = bytes;
+    }
+    instrumentation.drawReasons = { schemaVersion: 'starward-r19-draw-reasons-v1', identityLimit: 256, ringCapacity: 32,
+      bits: { inputResourceEffect: 1, unknown: 2, camera: 4, stars: 8, names: 16, images: 32 },
+      frameMerging: 'existing-dirty-latest-only', paintBoundary: 'existing-paintStarted-before-port.paint',
+      requestOrPaintTimeInference: false, productStateWrites: false, additionalScheduling: false };
+  }
+  if (drawCosts) {
+    const observed = addR20DrawCosts({ runtime: output[feature + 'r17-phone-probe-runtime.ts'],
+      scene: output[feature + 'sky-scene-render.ts'], renderer: output[feature + 'sky-gpu-renderer.ts'] });
+    for (const [name, bytes] of Object.entries({ 'r17-phone-probe-runtime.ts': observed.runtime,
+      'sky-scene-render.ts': observed.scene, 'sky-gpu-renderer.ts': observed.renderer })) {
+      const file = feature + name;
+      instrumentation[file] = { beforeSha256: sha(output[file]), afterSha256: sha(bytes) }; output[file] = bytes;
+    }
+    instrumentation.drawCosts = { schemaVersion: 'starward-r20-draw-costs-v1',
+      stages: ['draw', 'starTraversal', 'rendererSubmit'],
+      grouping: 'same-actual-synchronous-port.paint-admission-effect-continuation-unknown',
+      nesting: 'submit-may-overlap-starTraversal-both-inside-draw-do-not-add',
+      fixedAggregateCount: 12, additionalIdentityOrFrameRetention: false, perStarTiming: false,
+      productStateWrites: false, additionalScheduling: false };
+  }
+  if (firstAcceptedCosts) {
+    const names = { runtime: 'r17-phone-probe-runtime.ts', observation: 'r17-normal-observations.ts',
+      lifecycle: 'sky-canvas-lifecycle.ts', page: 'spot-sky-page.tsx', scene: 'sky-scene-render.ts',
+      starPreparation: 'sky-star-draw-preparation.ts' };
+    const observed = addR28FirstAcceptedCosts(Object.fromEntries(Object.entries(names).map(([key, name]) =>
+      [key, output[feature + name].toString('utf8').replaceAll('\r\n', '\n')])));
+    for (const [key, name] of Object.entries(names)) {
+      const file = feature + name, bytes = observed[key];
+      instrumentation[file] = { beforeSha256: sha(output[file]), afterSha256: sha(bytes) }; output[file] = bytes;
+    }
+    output[feature + 'r28-first-accepted-costs.ts'] = template['r28-first-accepted-costs.ts'];
+    instrumentation.firstAcceptedCosts = { schemaVersion: 'starward-r28-first-accepted-costs-v1',
+      capacity: 8, identityLimit: 256, firstAcceptedGate: 'existing-acceptedIdentity-real-first-intent',
+      canvasIdentity: 'lifecycle-owner-sequence-and-original-epoch',
+      clocks: 'same-existing-interval-values-no-extra-clock',
+      productObjectsRetained: false, productStateWrites: false, additionalScheduling: false,
+      unrelatedMemoryAndTerrainObservers: false };
+  }
+  if (memoryLifetime) {
+    const names = { controls: 'r17-phone-probe-controls.tsx', observation: 'r17-normal-observations.ts',
+      time: 'sky-observation-time.ts', transform: 'sky-stellar-transform.ts', renderer: 'sky-gpu-renderer.ts' };
+    const observed = addR25MemoryLifetime({ ...Object.fromEntries(Object.entries(names).map(([key, name]) =>
+      [key, output[feature + name].toString('utf8').replaceAll('\r\n', '\n')])), playTrialMs: normalPlayTrialMs });
+    const additions = Object.fromEntries(Object.entries(names).map(([key, name]) => [feature + name, observed[key]]));
+    additions[feature + 'r25-memory-lifetime-observer.ts'] = template['r25-memory-lifetime-observer.ts'];
+    additions[feature + 'r25-memory-lifetime-adapter.ts'] = template['r25-memory-lifetime-adapter.ts']
+      .replace('__R25_BUILD_GENERATION__', String(buildGeneration)).replace('__R25_BUILD_SOURCE_HASH__', binding);
+    for (const [file, bytes] of Object.entries(additions)) {
+      instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+      output[file] = bytes;
+    }
+    instrumentation.memoryLifetime = { schemaVersion: 'starward-r25-memory-lifetime-v1',
+      owner: 'actual-stellar-transform-arrays-and-typed-GPU-upload-view-backing',
+      firstWitnessesPerSite: 32, recentWitnessesPerSite: 32, strideAfterFirst: 16,
+      checkpointLimit: 10, eventLimit: 8, exportDeadlineMs: 90000,
+      strongProductReferences: false, forceGc: false, wholeHeapOrRetainerClaim: false,
+      productStateWrites: false, serializedOnlyAtSeal: !memoryCheckpoints };
+    if (memoryCheckpoints) {
+      const file = feature + 'sky-stellar-supplement-scene.ts';
+      const bytes = addR25StellarOwnerObservation(output[file].toString('utf8').replaceAll('\r\n', '\n'));
+      instrumentation[file] = { beforeSha256: sha(output[file]), afterSha256: sha(bytes) }; output[file] = bytes;
+      const ownerFile = feature + 'r25-stellar-owner-observer.ts';
+      output[ownerFile] = template['r25-stellar-owner-observer.ts'];
+      instrumentation[ownerFile] = { beforeSha256: null, afterSha256: sha(output[ownerFile]) };
+      instrumentation.memoryCheckpoints = { schemaVersion: 'starward-r25-memory-checkpoint-v1',
+        checkpointLimit: 10, packetBudgetBytes: 32768, singleFlight: true, automaticAttemptsPerPacket: 2,
+        ownerTileLimit: 8, ownerAggregateLimit: 8, strongProductReferences: false, normalPlayTrialMs };
+    }
+  }
+  if (memoryOwnerLinks) {
+    const names = { lifecycle: 'sky-canvas-lifecycle.ts', drawPreparation: 'sky-star-draw-preparation.ts', page: 'spot-sky-page.tsx' };
+    const observed = addR26AggregateUse(Object.fromEntries(Object.entries(names).map(([key, name]) =>
+      [key, output[feature + name].toString('utf8').replaceAll('\r\n', '\n')])));
+    const additions = Object.fromEntries(Object.entries(names).map(([key, name]) => [feature + name, observed[key]]));
+    additions[feature + 'r25-memory-lifetime-adapter.ts'] = addR26MemoryOwnerLinks(output[feature + 'r25-memory-lifetime-adapter.ts']);
+    for (const name of ['r26-fiber-owner-observer.ts', 'r26-aggregate-use-observer.ts', 'r26-memory-owner-links.ts'])
+      additions[feature + name] = template[name];
+    for (const [file, bytes] of Object.entries(additions)) {
+      instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+      output[file] = bytes;
+    }
+    instrumentation.memoryOwnerLinks = { schemaVersion: 'starward-r26-memory-checkpoint-v1', aggregateSamples: 8,
+      exactSlots: ['lifecycle-latest', 'draw-preparation', 'accepted-command'],
+      frameworkScanPhases: ['active-5', 'first-drain-10'], knownCanvasEntrances: 2,
+      frameworkContract: 'taro-4.2.1-react-18.3.1-known-hook-fields-v1',
+      strongProductReferencesRetained: false, currentCommittedTreeClaim: false, wholeHeapClaim: false };
+  }
+  if (queryCallbackLinks) {
+    const queryPath = 'apps/wechat-miniapp/src/hooks/use-resource-query.ts';
+    const changed = addR27QueryCallbackSources({ page: output[pagePath].toString('utf8').replaceAll('\r\n', '\n'),
+      resourceQuery: output[queryPath].toString('utf8').replaceAll('\r\n', '\n') }, { sharedQueryPorts: skyPackage });
+    const additions = { [pagePath]: changed.page, [queryPath]: changed.resourceQuery,
+      [feature + 'r25-memory-lifetime-adapter.ts']: addR27QueryCallbackAdapter(output[feature + 'r25-memory-lifetime-adapter.ts'], { sharedQueryPorts: skyPackage }) };
+    if (skyPackage) additions['apps/wechat-miniapp/src/hooks/r27-query-callback-ports.ts'] = template['r27-query-callback-ports.ts'];
+    for (const name of ['r27-query-callback-observer.ts', 'r27-query-callback-links.ts']) additions[feature + name] = template[name];
+    for (const [file, bytes] of Object.entries(additions)) {
+      instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+      output[file] = bytes;
+    }
+    instrumentation.queryCallbackLinks = { schemaVersion: 'starward-r27-memory-checkpoint-v1', aggregateSamples: 8,
+      callbackSite: 'fine-target-queryFn', observationPhases: ['active-5', 'first-drain-10'],
+      sourceReturns: ['loading', 'recovery', 'normal'], currentRenderSlots: 1, strongProductReferencesRetained: false,
+      originalFunctionsAndRenderValuesReturned: true, additionalScheduling: false, closureEdgeClaim: false,
+      ...(skyPackage ? { sharedQueryPorts: 'two-fixed-methods-registered-at-sky-adapter-module-load',
+        sharedRuntimeImports: 0, trackingAndReleaseOwnerUnchanged: true } : {}) };
+  }
+  if (nativeRegion) {
+    const mapPage = 'apps/wechat-miniapp/src/pages/map/index.tsx';
+    const markerPath = 'apps/wechat-miniapp/src/pages/map/terrain-wait-marker.tsx';
+    const observeNativeUpdates = reviewRevision >= 15;
+    const observed = instrumentNativeRegionProbe({ page: output[mapPage], marker: output[markerPath], observeNativeUpdates });
+    const additions = {
+      [mapPage]: observed.page, [markerPath]: observed.marker,
+      'apps/wechat-miniapp/src/services/r17-native-region-probe.ts': template['../tmp/r17-native-region-probe.ts'],
+      'apps/wechat-miniapp/src/services/r17-native-region-probe-adapter.ts': one(
+        template['../tmp/r17-native-region-probe-adapter.ts'], 'const observeNativeUpdates = false;',
+        `const observeNativeUpdates = ${observeNativeUpdates};`, 'native_region_updates_mode')
+        .replace('__R17_REGION_SOURCE_SHA256__', binding).replace('__R17_REGION_BUILD_GENERATION__', String(buildGeneration)),
+    };
+    for (const [file, bytes] of Object.entries(additions)) {
+      instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+      output[file] = bytes;
+    }
+    const terrainBinding = JSON.parse(output['terrain-wait-source.json']);
+    for (const row of terrainBinding.files) if (additions[row.file] !== undefined) row.afterSha256 = sha(output[row.file]);
+    output['terrain-wait-source.json'] = JSON.stringify(terrainBinding, null, 2) + '\n';
+    instrumentation.terrainWait = terrainBinding;
+    instrumentation.nativeRegionProbe = { schemaVersion: observeNativeUpdates ? 'starward-r17-native-region-v2' : 'starward-r17-native-region-v1',
+      gestureCount: 1, maximumGetRegionReads: 3, midpointDelayMs: 500, deadlineMs: 5000,
+      ...(observeNativeUpdates ? { nativeUpdates: 'existing-handler-count-first-last-only' } : {}),
+      productStateWrites: false, terrainSourceReads: false, privateUsbCollectorOnly: true };
+  }
   return { output, instrumentation };
 }
 async function verifyBindings(directory, bindings) {
@@ -370,7 +589,7 @@ async function verifyCurrent(manifest, template) {
   const { verifyNormalBaselineV3Fixture } = await import(pathToFileURL(path.join(here, 'r17-normal-baseline-v3-fixture.mjs')));
   return verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot: root, feature, ts, buildGeneration,
     protocolPath: path.join(here, protocolName), allowACorrelation: observationA1, allowRulerEntry: rulerEntry,
-    retirementObservation: retirementReceipt, requestedPreparation: reviewRevision >= 10 });
+    retirementObservation: retirementReceipt, normalPlayTrialMs, requestedPreparation: reviewRevision >= 10 });
 }
 async function deltaTypecheck() {
   const diagnostics = directory => {
@@ -424,7 +643,16 @@ async function main() {
       const prior = await readJson(manifestPath);
       if (prior.scope !== scope || prior.result !== null || prior.buildGeneration !== buildGeneration || path.resolve(root, prior.sourceDirectory) !== sourceRoot) throw Error('only_own_unbuilt_preparation_can_refresh');
       await absent(bundleRoot); await absent(projectRoot);
-      const archive = path.join(trial, 'preparation-attempt-1'); await fs.mkdir(archive);
+      // Preserve each unbuilt preparation attempt; never reuse an archive or
+      // rebuild a frozen candidate. A few integration repairs are still one
+      // source candidate, not a chain of new phone generations.
+      let archive;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const next = path.join(trial, 'preparation-attempt-' + attempt);
+        try { await fs.mkdir(next); archive = next; break; }
+        catch (error) { if (error.code !== 'EEXIST') throw error; }
+      }
+      if (!archive) throw Error('unbuilt_preparation_attempt_limit');
       for (const name of ['manifest.json', 'delta-typecheck.json', 'affected-contract-checks.log']) {
         let bytes;
         try { bytes = await fs.readFile(path.join(trial, name)); }
@@ -441,9 +669,15 @@ async function main() {
     const bindingInput = { meaning: 'pre-build-current-production-source-and-task-template-binding-not-bundle-bytes', mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
       productionHead: stdout.trim(), productionSourceSha256: sha(JSON.stringify(productionSourceBindings)), builderSha256, templateBindings,
       bridgePort, transport: usbReverse ? 'usb-reverse' : 'lan', compiledBridgeOriginSha256: selectedOrigin.sha256,
-      ...(observationA1 ? { observationRevision: 'observe-a1', terrainWaitAction: 'gesture', ...(rulerEntry ? { rulerEntry: nativeAdmission ? 'immediate-wide-time-v2' : 'immediate-wide-time-v1' } : {}),
+      ...(currentUi ? { uiSource: 'current-production-source' } : {}),
+      ...(skyPackage ? { r27SkyPackage: 'shared-query-ports-without-map-task-observers' } : {}),
+      ...(firstAcceptedCosts ? { firstAcceptedCosts: 'same-accepted-identity-existing-spans-v1-without-memory-or-map-observers' } : {}),
+      ...(observationA1 ? { observationRevision: 'observe-a1', ...(terrainWait ? { terrainWaitAction: 'gesture' } : {}), ...(rulerEntry ? { rulerEntry: nativeAdmission ? 'immediate-wide-time-v2' : 'immediate-wide-time-v1' } : {}),
         ...(nativeAdmission ? { manualInput: 'legal-onPreview-start-delay-0-v1' } : {}),
-        ...(retirementReceipt ? { surfaceRetirement: 'single-source-bound-ready-retire-v1', normalPlayTrialMs: 60000 } : {}),
+        ...(nativeRegion ? { nativeRegionProbe: reviewRevision >= 15
+          ? 'one-gesture-begin-mid-end-and-native-updates-v2-local-usb-only' : 'one-gesture-begin-mid-end-v1-local-usb-only' } : {}),
+        ...(geometryStages ? { geometryStages: 'logical-client-validated-current-hook-admission-v1' } : {}),
+        ...(retirementReceipt ? { surfaceRetirement: 'single-source-bound-ready-retire-v1', normalPlayTrialMs } : {}),
         ...(reviewRevision > 1 ? { reviewRevision } : {}) } : {}) };
     const buildSourceSha256 = sha(JSON.stringify(bindingInput)), prepared = await preparedSources(productionSourceBindings, template, buildSourceSha256);
     const manifest = { scope, createdAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3, bridgePort,
@@ -473,7 +707,7 @@ async function main() {
     if (Object.values(inspection.checks).some(value => value !== true)) throw Error('static_inspection_failed');
     await fs.mkdir(projectRoot); const config = await readJson(path.join(sourceRoot, 'apps/wechat-miniapp/project.config.json'));
     config.miniprogramRoot = 'weapp/'; delete config.srcMiniprogramRoot;
-    config.projectname = observationA1 ? 'starward-r17-normal-a1' + reviewSuffix + '-gen27' : 'starward-r17-normal-baseline-v3-gen25';
+    config.projectname = observationA1 ? 'starward-r17-normal-a1' + reviewSuffix + '-gen' + buildGeneration : 'starward-r17-normal-baseline-v3-gen25';
     if (config.setting) delete config.setting.useCompilerPlugins;
     await fs.writeFile(path.join(projectRoot, 'project.config.json'), JSON.stringify(config, null, 2) + '\n', { flag: 'wx' });
     await fs.cp(bundleRoot, path.join(projectRoot, 'weapp'), { recursive: true, errorOnExist: true, force: false });
@@ -491,7 +725,7 @@ async function main() {
   for (const row of manifest.result.sourceMaps.records) if (sha(await fs.readFile(path.join(trial, 'source-maps', row.file))) !== row.sha256) throw Error('external_source_map_changed');
   const sourceDeltas = Object.keys(manifest.sourceBindings).filter(file => manifest.sourceBindings[file] !== manifest.productionSourceBindings[file]).map(file => ({ file, productionSha256: manifest.productionSourceBindings[file] ?? null, diagnosticSha256: manifest.sourceBindings[file] }));
   const evidence = { scope, status: observationA1 ? 'BUILD_READY_NORMAL_A1_UNACTIVATED_PHONE_UNVERIFIED' : 'BUILD_READY_NORMAL_BASELINE_V3_UNACTIVATED_PHONE_UNVERIFIED',
-    ...(observationA1 ? { observationRevision: 'observe-a1', diagnosticLabel: normalLabel, terrainWaitAction: 'gesture', protocol: protocolName,
+    ...(observationA1 ? { observationRevision: 'observe-a1', diagnosticLabel: normalLabel, ...(terrainWait ? { terrainWaitAction: 'gesture' } : {}), protocol: protocolName,
       ...(reviewRevision > 1 ? { reviewRevision,
         historicalA1OwnerArchive: historicalOwnerArchive,
         historicalA1Manifest: relative(path.join(work, reviewRevision >= 3 ? `tmp/r17-normal-a1-review-r${reviewRevision - 1}/manifest.json` : 'tmp/r17-normal-a1/manifest.json')) } : {}),
@@ -506,7 +740,7 @@ async function main() {
       'v3 Date.now intervals are approximate wall elapsed, not thread CPU or physical presentation; unknown and sub-resolution coverage stay null.',
       'Page observer latency retains its legacy producer clock semantics and is not calibrated by probe v3; key count is not payload bytes; 16 bounded serialization samples add observer cost.',
       'Native measureText and returned-copy counters add numeric call-site overhead, no native method replacement/cache/history/context retention; unobserved scalar fields stay null.',
-      retirementReceipt ? '15s metrics retain their historical window; r9 and r10 use a 60s guarded same-run Pause. Pause relative timestamps beyond the existing 60s clock range stay null. Root owns at least 30s paused drain and source-bound own-key readback; no full-B or GPU-retention claim follows from this receipt.' : '15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.',
+      skyPackage ? 'R27 retains 15s metrics, the 20s guarded same-run product Pause and the 90s seal. Original active-5/first-drain-10 observations, eight aggregate IDs and bounded exports remain; no Map task observer is injected. This does not establish official package admission or a retaining root.' : retirementReceipt ? '15s metrics retain their historical window; r9 and r10 use a 60s guarded same-run Pause. Pause relative timestamps beyond the existing 60s clock range stay null. Root owns at least 30s paused drain and source-bound own-key readback; no full-B or GPU-retention claim follows from this receipt.' : '15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.',
       'Hidden source maps are external diagnostic artifacts, absent from both phone bundle copies.',
       'Static budget/inspection and portable fixtures do not establish official upload size, current bridge admission, real nonempty Sky, target clock coverage, sustainable playback or R17 A/B acceptance.'] };
   await fs.writeFile(path.join(work, preparationName), JSON.stringify(evidence, null, 2) + '\n');

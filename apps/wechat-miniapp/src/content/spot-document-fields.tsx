@@ -1,4 +1,5 @@
-import { Button, Input, Text, Textarea, View } from "@tarojs/components";
+import { Input, Text, Textarea, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { ReactNode } from "react";
 import { SemanticIcon } from "@/components/semantic-asset";
 import type {
@@ -94,7 +95,7 @@ export function SpotDocumentAddressControl({ children, disabled, changed = false
     <View className={`formal-feedback-address__control${changed ? " is-changed" : ""}`}>
       <SemanticIcon name="search" className="formal-feedback-address__search" />
       {children}
-      <Button className="formal-feedback-address__clear" disabled={disabled} ariaLabel="清除地址" onClick={onClear}>
+      <Button pressVariant="icon" className="formal-feedback-address__clear" disabled={disabled} ariaLabel="清除地址" onClick={onClear}>
         <SemanticIcon name="close" />
       </Button>
     </View>

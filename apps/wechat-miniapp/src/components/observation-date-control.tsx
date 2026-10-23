@@ -1,4 +1,5 @@
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { NativeBackBoundary } from "./native-back-boundary";
 import "./observation-date-control.scss";
 
@@ -90,7 +91,7 @@ export function ObservationDateControl({
       </View>
       {open ? (
         <View className="observation-calendar" role="dialog" aria-modal="true" aria-label="选择观测日期">
-          <Button className="observation-calendar__backdrop modal-scrim" ariaLabel="关闭日期选择" onClick={() => onOpenChange(false)} />
+          <Button pressVariant="none" className="observation-calendar__backdrop modal-scrim" ariaLabel="关闭日期选择" onClick={() => onOpenChange(false)} />
           <View className="observation-calendar__sheet">
             <View className="observation-calendar__header">
               <Text>选择日期</Text>

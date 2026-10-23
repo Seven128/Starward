@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "starward-task-repair-review-v1",
+  "date": "2026-10-21",
+  "scope": "task-only complete normal Play metrics export budget",
+  "status": "implemented-local-checks-passed-awaiting-independent-review-and-phone-export",
+  "protocolChanged": false,
+  "maxUtf8Bytes": 32768,
+  "observedCountercheck": {
+    "fixture": "400 linked distinct normal Play intents/preparations/requests/paints/accepted frames with nonempty Page and Scene facts",
+    "beforeUtf8Bytes": 34040,
+    "afterUtf8Bytes": 32464,
+    "linkSamplesBefore": 32,
+    "linkSamplesAfter": 29,
+    "retainedPreparations": 400,
+    "firstAcceptedIntents": 400,
+    "correlationSamples": 8,
+    "allNonSampleFieldsEqual": true,
+    "failedBeforeAndPassedAfter": true
+  },
+  "boundary": {
+    "largeMetadataUtf8Bytes": 32346,
+    "largeMetadataLinks": 13,
+    "irreducibleGenericContractUtf8Bytes": 32927,
+    "irreducibleCorrelationLinks": 8,
+    "irreducibleOutcome": "explicit-refusal-no-fixed-facts-dropped",
+    "sameSaturatedFixtureWithProductDayNightModesUtf8Bytes": 31637,
+    "sameSaturatedFixtureWithProductDayNightModesValid": true
+  },
+  "checks": {
+    "currentNormalInputUniquePassed": 38,
+    "v3Passed": 10,
+    "collectorPassed": 1,
+    "finalFocusedPassed": 5,
+    "typecheckedCurrentMaterializations": 4,
+    "diffCheckPassed": true,
+    "historicalSetupFailuresNotRepaired": [
+      { "file": "scripts/r17-a-correlation.test.mjs", "boundary": "raw CRLF input does not match old literal transformation" },
+      { "file": "scripts/r17-ruler-entry.test.mjs", "boundary": "position_revision_boundary differs from current source" }
+    ]
+  },
+  "preserved": [
+    "existing 32 KiB UTF-8 envelope",
+    "first four and last four preparation associations",
+    "all aggregate counts, distributions and unknown coverage",
+    "historical schema and validator",
+    "15-second metrics and 60-second same-run normal Pause",
+    "sealed metrics and 503/424 byte-identical retries",
+    "existing r21 draw preparation instrumentation"
+  ],
+  "files": [
+    { "path": "scripts/r17-ruler-entry-runtime.ts", "sha256": "18a24ab8f02359b5a94bfc4e620b597e2adc32eee25606e53c722d6e1537e5f5" },
+    { "path": "scripts/r17-normal-input-instrumentation.mjs", "sha256": "94d65e11d887f6c192f2fc576537307e1ee4ef31977b14efa748a90cea547308" },
+    { "path": "scripts/r17-normal-input.test.mjs", "sha256": "b9ab878917a3394351180456ee94db4c522181cfdc83219730fe1e5faecdb6b3" }
+  ],
+  "productionChanged": false,
+  "builderChanged": false,
+  "frozenDirectoriesChanged": false,
+  "liveServiceOrPhoneTouched": false,
+  "committedOrUploaded": false,
+  "limitations": [
+    "Local fixture is not a successful new phone export",
+    "Irreducible metadata over budget still fails closed",
+    "This repair does not establish rendering improvement or no memory leak"
+  ]
+}

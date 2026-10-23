@@ -1,0 +1,653 @@
+{
+  "schemaVersion": "starward-r20-normal-play-drain-review-v1",
+  "reviewer": "review_r20_normal_play_drain",
+  "createdAt": "2026-10-21T00:29:04.295Z",
+  "scope": "READ_ONLY_ORIGINAL_REVIEW_WITH_LOCAL_PRIVATE_PRESERVATION_NO_DEVICE_IDE_SERVICE_CODE_OPERATIONS",
+  "result": {
+    "status": "BOUNDED_PLAY_AND_POST_PAUSE_PROCESS_OBSERVATION_VALID_NO_LEAK_VERDICT_UNRESOLVED",
+    "summary": "Normal Play visibly advances and is later paused at +61 displayed seconds. This watch includes five samples after an actually observed Pause, with high residual reported PSS. No 15-second draw-cost or accepted-result receipt was collected; screenshots do not reconstruct it.",
+    "fullyAccepted": false
+  },
+  "binding": {
+    "mode": "normal",
+    "candidate": "r20",
+    "buildGeneration": 27,
+    "buildSourceSha256": "85fe0ba21c869c109581015a77fea4b641fc316de6ace548781ff0fdfb921bd2",
+    "localBundleSha256": "d0e1a4500635629d1bfb631fd48fa089f50a66dded829ae065ba127b380a767e",
+    "frozenBundleReadbackSha256": "d0e1a4500635629d1bfb631fd48fa089f50a66dded829ae065ba127b380a767e",
+    "sourceManifestSha256": "501843d2228004cde698e6a6182604ad026c22f31ffa34ec48b742b889492af0",
+    "fileCount": 337,
+    "totalBytes": 5030591,
+    "frozenDirectory": "tmp/r17-normal-a1-review-r20-usb",
+    "physicalCandidateLabelObserved": true,
+    "identityLimit": "Local bytes plus r20 phone label and root-controlled unchanged session associate this observation. There is no new self-describing metrics receipt for this run.",
+    "target": {
+      "kind": "Android WeChat foreground Appbrand process",
+      "binding": "Exact resumed Activity ProcessRecord pid/name/activity bound within this watch; each MEMINFO header and foreground checked; all 13 samples pass",
+      "sameProcessAcrossCandidatesEstablished": false,
+      "rawDeviceIdentityExported": false
+    }
+  },
+  "screenshots": [
+    {
+      "role": "before",
+      "name": "screen-59cb902d-1db4-4ad4-83b1-3ecd705832dd.png",
+      "sha256": "06e4c6e26073bd9cb356f12787b89ba43a37b664f3b4abbf096dfd834f94bf36",
+      "bytes": 970614,
+      "hostReceiptAtElapsedApproxMs": -17804.509,
+      "observed": "preview 2026-10-20 20:18:38; Play icon; 264.4 degrees; visible stars and landscape"
+    },
+    {
+      "role": "afterVideo",
+      "name": "screen-a9de2c59-0e2c-4e00-8cd1-d76b10710c16.png",
+      "sha256": "15c21f80d991b569f989d8cd8c92f7b12fcbee5f82daf2a512783f6dc4630f4a",
+      "bytes": 970070,
+      "hostReceiptAtElapsedApproxMs": 27431.491,
+      "observed": "playing 20:18:51; Pause icon"
+    },
+    {
+      "role": "firstObservedPause",
+      "name": "screen-67fa6b6f-3a43-4f58-bd81-56a9154703c0.png",
+      "sha256": "76a9673c4678cb20a5ca003606994ad5a00919a5a136ec0a36b735c5d8d0d5b4",
+      "bytes": 971120,
+      "hostReceiptAtElapsedApproxMs": 80509.491,
+      "observed": "preview 20:19:39; Play icon"
+    },
+    {
+      "role": "latePaused",
+      "name": "screen-257432db-34ef-4c5a-8d5d-026eb339671d.png",
+      "sha256": "bd0fa019acf81f3a926dd9f81e5a799b096f88678aad3f18fe514210274185dd",
+      "bytes": 971086,
+      "hostReceiptAtElapsedApproxMs": 214985.491,
+      "observed": "still preview 20:19:39; Play icon"
+    },
+    {
+      "role": "terminalPending",
+      "name": "screen-d06a4230-7511-4c85-91d4-86ab7a4e1734.png",
+      "sha256": "0f1cc745300653d9e1ef90d62dabb19abed8dc88a56117a612e9a8363f0466e3",
+      "bytes": 613162,
+      "hostReceiptAtElapsedApproxMs": 262489.491,
+      "observed": "r20 panel says same-run Pause receipt awaits metrics export"
+    },
+    {
+      "role": "exportRejected",
+      "name": "screen-d7a74d01-007e-4b25-a4e5-226334c5680c.png",
+      "sha256": "d507a145cc01dfe0bacba56a1fe6576dcf9d4dc7342df310c88df560b28c2f28",
+      "bytes": 616970,
+      "hostReceiptAtElapsedApproxMs": 286797.491,
+      "observed": "r20 panel says data exceeds limit"
+    }
+  ],
+  "video": {
+    "name": "recording-1792541647949.mp4",
+    "sha256": "0395cc11b1d737d7b6c4610c6d6c847dafb85938e67a8ae79fcb2b233c1c1e88",
+    "bytes": 549913,
+    "durationSeconds": 15.000044,
+    "width": 1080,
+    "height": 2376,
+    "readbackVerified": true,
+    "decodedFrames": [
+      {
+        "name": "hold-0_050000.png",
+        "requestedSeconds": 0.05,
+        "mediaTimeSeconds": 0
+      },
+      {
+        "name": "hold-0_700000.png",
+        "requestedSeconds": 0.7,
+        "mediaTimeSeconds": 0.489256
+      },
+      {
+        "name": "hold-1_050000.png",
+        "requestedSeconds": 1.05,
+        "mediaTimeSeconds": 0.489256
+      },
+      {
+        "name": "hold-1_400000.png",
+        "requestedSeconds": 1.4,
+        "mediaTimeSeconds": 0.489256
+      },
+      {
+        "name": "hold-2_000000.png",
+        "requestedSeconds": 2,
+        "mediaTimeSeconds": 0.489256
+      },
+      {
+        "name": "hold-3_000000.png",
+        "requestedSeconds": 3,
+        "mediaTimeSeconds": 2.977067
+      },
+      {
+        "name": "hold-5_000000.png",
+        "requestedSeconds": 5,
+        "mediaTimeSeconds": 4.974933
+      },
+      {
+        "name": "hold-7_000000.png",
+        "requestedSeconds": 7,
+        "mediaTimeSeconds": 6.947344
+      },
+      {
+        "name": "hold-9_000000.png",
+        "requestedSeconds": 9,
+        "mediaTimeSeconds": 8.957656
+      },
+      {
+        "name": "hold-11_000000.png",
+        "requestedSeconds": 11,
+        "mediaTimeSeconds": 10.967722
+      },
+      {
+        "name": "hold-13_000000.png",
+        "requestedSeconds": 13,
+        "mediaTimeSeconds": 12.972911
+      },
+      {
+        "name": "hold-14_950044.png",
+        "requestedSeconds": 14.950044,
+        "mediaTimeSeconds": 14.909222
+      }
+    ],
+    "reviewedSamples": [
+      {
+        "mediaTimeSeconds": 0,
+        "visible": "20:18:38 preview with Play icon"
+      },
+      {
+        "mediaTimeSeconds": 0.489256,
+        "visible": "20:18:38 preview with Play icon; same encoded frame persists at requested 2.0s"
+      },
+      {
+        "mediaTimeSeconds": 2.977067,
+        "visible": "20:18:39 playing with Pause icon"
+      },
+      {
+        "mediaTimeSeconds": 6.947344,
+        "visible": "20:18:43 playing with Pause icon"
+      },
+      {
+        "mediaTimeSeconds": 14.909222,
+        "visible": "20:18:51 playing with Pause icon"
+      }
+    ],
+    "interpretation": "The 15.000044-second recording shows the real normal Play control transition, advancing displayed seconds, and a nonempty wide night scene. It covers only the opening portion, not the entire 60-second owner window or Pause. Sparse media samples and the small 1x displacement do not establish physical FPS, every-frame acceptance, or extreme six-field smoothness.",
+    "absoluteStartKnown": false,
+    "filenameIsStartTimestamp": false
+  },
+  "operationAndClockAssociation": {
+    "watchElapsedClock": "host.performance.now",
+    "hostReceiptClock": "host.Date.now",
+    "unit": "ms",
+    "watchElapsedCovered": [
+      2,
+      132091
+    ],
+    "sampleWindowsAreSequentialAdbBrackets": true,
+    "clockAnchorStatus": "host_endpoints_only",
+    "endpointOffsetChangeReadBracketMs": [
+      0.780029296875,
+      0.791748046875
+    ],
+    "intermediateWallClockDriftBoundKnown": false,
+    "wallAndMonotonicResolutionKnown": false,
+    "operationOrder": "Root started watch; exec returned only first sample after its 10s wait, then root immediately invoked record-tap. Second sample arrived only on later polling and is not classified as ready-idle. Root sent no subsequent input before actual Pause and drain observation.",
+    "firstSampleBeforeInput": true,
+    "secondSamplePhase": "UNKNOWN_START_OR_EARLY_PLAY",
+    "exactProductStartElapsedMs": null,
+    "exactProductPauseElapsedMs": null,
+    "configuredProductPauseDelayMs": 60000,
+    "pauseOwnerVerifiedFromFrozenSource": true,
+    "pauseOwnerSourceSha256": "b00b21b8b113c661cce336fa1a68c8cf55023456d0492ec7e822ae5998a7d6d3",
+    "actualPauseEvidence": "The +80.509s host receipt visibly shows Play/preview at 20:19:39; later +214.985s receipt is unchanged. Do not turn the intended 60000ms timer into an exact measured pause event.",
+    "postPauseSampleIndexesOneBased": [
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "postPauseSampleBracketsMs": [
+      87479,
+      132091
+    ],
+    "postPauseSampleSpanMs": 44612,
+    "postPauseMeaning": "These sample brackets follow the first observed paused screenshot under the recorded host-clock association and operator sequence. Rows 2–8 are kept as the start/play/termination envelope; exact active/drain split is not reconstructed."
+  },
+  "memory": {
+    "unit": "KiB",
+    "watchHash": "494f4bc6def77fad32162e0cffbee2da65869b45bf63c626618ef6df6edea062",
+    "watchCompleted": true,
+    "sampleCount": 13,
+    "allForegroundOwnerVerified": true,
+    "samples": [
+      {
+        "index": 1,
+        "sampleStartElapsedMs": 2,
+        "sampleEndElapsedMs": 971,
+        "phase": "PRE_INPUT_FIRST_SAMPLE",
+        "totalPssKiB": 3764653,
+        "totalRssKiB": 1762084,
+        "totalSwapPssKiB": 2315477,
+        "unknownPssKiB": 729513,
+        "nativeHeapPssKiB": 181189,
+        "glMtrackPssKiB": 23336,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 2,
+        "sampleStartElapsedMs": 10975,
+        "sampleEndElapsedMs": 11821,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 3700346,
+        "totalRssKiB": 1699764,
+        "totalSwapPssKiB": 2314805,
+        "unknownPssKiB": 729609,
+        "nativeHeapPssKiB": 179089,
+        "glMtrackPssKiB": 23336,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 3,
+        "sampleStartElapsedMs": 21836,
+        "sampleEndElapsedMs": 22758,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 4609578,
+        "totalRssKiB": 2603332,
+        "totalSwapPssKiB": 2318013,
+        "unknownPssKiB": 1612469,
+        "nativeHeapPssKiB": 203409,
+        "glMtrackPssKiB": 22548,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 4,
+        "sampleStartElapsedMs": 32770,
+        "sampleEndElapsedMs": 33718,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 4566956,
+        "totalRssKiB": 2412464,
+        "totalSwapPssKiB": 2457569,
+        "unknownPssKiB": 1456269,
+        "nativeHeapPssKiB": 199141,
+        "glMtrackPssKiB": 22548,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 5,
+        "sampleStartElapsedMs": 43730,
+        "sampleEndElapsedMs": 44679,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 4635924,
+        "totalRssKiB": 2463532,
+        "totalSwapPssKiB": 2468109,
+        "unknownPssKiB": 1536357,
+        "nativeHeapPssKiB": 197933,
+        "glMtrackPssKiB": 22612,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 6,
+        "sampleStartElapsedMs": 54691,
+        "sampleEndElapsedMs": 55620,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 4820780,
+        "totalRssKiB": 2535960,
+        "totalSwapPssKiB": 2580397,
+        "unknownPssKiB": 1623193,
+        "nativeHeapPssKiB": 186289,
+        "glMtrackPssKiB": 22516,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 7,
+        "sampleStartElapsedMs": 65628,
+        "sampleEndElapsedMs": 66459,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 4872520,
+        "totalRssKiB": 2537856,
+        "totalSwapPssKiB": 2630065,
+        "unknownPssKiB": 1643077,
+        "nativeHeapPssKiB": 169301,
+        "glMtrackPssKiB": 22556,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 8,
+        "sampleStartElapsedMs": 76469,
+        "sampleEndElapsedMs": 77477,
+        "phase": "START_PLAY_TERMINATION_ENVELOPE",
+        "totalPssKiB": 4906983,
+        "totalRssKiB": 2540944,
+        "totalSwapPssKiB": 2653981,
+        "unknownPssKiB": 1675381,
+        "nativeHeapPssKiB": 167561,
+        "glMtrackPssKiB": 24416,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 9,
+        "sampleStartElapsedMs": 87479,
+        "sampleEndElapsedMs": 88374,
+        "phase": "AFTER_OBSERVED_PAUSE",
+        "totalPssKiB": 4906035,
+        "totalRssKiB": 2540144,
+        "totalSwapPssKiB": 2653833,
+        "unknownPssKiB": 1675429,
+        "nativeHeapPssKiB": 167553,
+        "glMtrackPssKiB": 24416,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 10,
+        "sampleStartElapsedMs": 98388,
+        "sampleEndElapsedMs": 99353,
+        "phase": "AFTER_OBSERVED_PAUSE",
+        "totalPssKiB": 4862339,
+        "totalRssKiB": 2496604,
+        "totalSwapPssKiB": 2653757,
+        "unknownPssKiB": 1628341,
+        "nativeHeapPssKiB": 169317,
+        "glMtrackPssKiB": 24416,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 11,
+        "sampleStartElapsedMs": 109365,
+        "sampleEndElapsedMs": 110236,
+        "phase": "AFTER_OBSERVED_PAUSE",
+        "totalPssKiB": 4861827,
+        "totalRssKiB": 2496092,
+        "totalSwapPssKiB": 2653757,
+        "unknownPssKiB": 1628653,
+        "nativeHeapPssKiB": 169317,
+        "glMtrackPssKiB": 24416,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 12,
+        "sampleStartElapsedMs": 120251,
+        "sampleEndElapsedMs": 121185,
+        "phase": "AFTER_OBSERVED_PAUSE",
+        "totalPssKiB": 4862023,
+        "totalRssKiB": 2496364,
+        "totalSwapPssKiB": 2653705,
+        "unknownPssKiB": 1628937,
+        "nativeHeapPssKiB": 169321,
+        "glMtrackPssKiB": 24416,
+        "eglMtrackPssKiB": 127772
+      },
+      {
+        "index": 13,
+        "sampleStartElapsedMs": 131197,
+        "sampleEndElapsedMs": 132091,
+        "phase": "AFTER_OBSERVED_PAUSE",
+        "totalPssKiB": 4862743,
+        "totalRssKiB": 2497136,
+        "totalSwapPssKiB": 2653653,
+        "unknownPssKiB": 1629733,
+        "nativeHeapPssKiB": 169325,
+        "glMtrackPssKiB": 24416,
+        "eglMtrackPssKiB": 127772
+      }
+    ],
+    "aggregates": {
+      "totalPssKiB": {
+        "initial": 3764653,
+        "min": 3700346,
+        "max": 4906983,
+        "last": 4862743,
+        "deltaLastInitial": 1098090,
+        "drainFirst": 4906035,
+        "drainMin": 4861827,
+        "drainMax": 4906035,
+        "drainLast": 4862743,
+        "drainDelta": -43292
+      },
+      "totalRssKiB": {
+        "initial": 1762084,
+        "min": 1699764,
+        "max": 2603332,
+        "last": 2497136,
+        "deltaLastInitial": 735052,
+        "drainFirst": 2540144,
+        "drainMin": 2496092,
+        "drainMax": 2540144,
+        "drainLast": 2497136,
+        "drainDelta": -43008
+      },
+      "totalSwapPssKiB": {
+        "initial": 2315477,
+        "min": 2314805,
+        "max": 2653981,
+        "last": 2653653,
+        "deltaLastInitial": 338176,
+        "drainFirst": 2653833,
+        "drainMin": 2653653,
+        "drainMax": 2653833,
+        "drainLast": 2653653,
+        "drainDelta": -180
+      },
+      "unknownPssKiB": {
+        "initial": 729513,
+        "min": 729513,
+        "max": 1675429,
+        "last": 1629733,
+        "deltaLastInitial": 900220,
+        "drainFirst": 1675429,
+        "drainMin": 1628341,
+        "drainMax": 1675429,
+        "drainLast": 1629733,
+        "drainDelta": -45696
+      },
+      "nativeHeapPssKiB": {
+        "initial": 181189,
+        "min": 167553,
+        "max": 203409,
+        "last": 169325,
+        "deltaLastInitial": -11864,
+        "drainFirst": 167553,
+        "drainMin": 167553,
+        "drainMax": 169325,
+        "drainLast": 169325,
+        "drainDelta": 1772
+      },
+      "glMtrackPssKiB": {
+        "initial": 23336,
+        "min": 22516,
+        "max": 24416,
+        "last": 24416,
+        "deltaLastInitial": 1080,
+        "drainFirst": 24416,
+        "drainMin": 24416,
+        "drainMax": 24416,
+        "drainLast": 24416,
+        "drainDelta": 0
+      },
+      "eglMtrackPssKiB": {
+        "initial": 127772,
+        "min": 127772,
+        "max": 127772,
+        "last": 127772,
+        "deltaLastInitial": 0,
+        "drainFirst": 127772,
+        "drainMin": 127772,
+        "drainMax": 127772,
+        "drainLast": 127772,
+        "drainDelta": 0
+      }
+    },
+    "interpretation": [
+      "Reported total PSS rises from 3764653 KiB initially to a watch maximum 4906983 KiB; last is 4862743 KiB, +1098090 KiB versus the first sample. The initial process was already warm and used earlier in r20; this is not a fresh-process baseline.",
+      "Five samples after the observed Pause span 44.612 seconds, from total PSS 4906035 to 4862743 KiB (-43292 KiB), with a late plateau around 4862xxx KiB. This is a useful high-residual warning, not proof of a leak or proof of recovery.",
+      "Unknown row increases by 900220 KiB from first to last; it does not identify V8, a JS isolate, the new not-yet-installed cache, or any particular allocator. Native Heap PSS and GL/EGL rows do not show comparable first-to-last growth in this run, but that does not exclude native/GPU retention.",
+      "TOTAL PSS, RSS, Swap PSS and provider subrows remain separate reported measures; no overlapping fields are added and no JS heap size is inferred. No per-paint or per-second allocation/leak rate is computed from this watch.",
+      "No foreground-owner replacement is detected at sampled points. The bounded observation does not establish whole-session stability, absence of crash between observations, or leak freedom."
+    ]
+  },
+  "collection": {
+    "metrics15s": "UNAVAILABLE",
+    "terminalMachineReceipt": "UNAVAILABLE_DEPENDS_ON_METRICS",
+    "observedFailure": "After the configured automatic export, the actual task panel says same-run Pause receipt awaits metrics; the one explicit retry then says data exceeds limit.",
+    "screenshotSummaryUsedAsMetrics": false,
+    "excludedMetrics": [
+      "draw-cost stage totals",
+      "paint counts or reasons",
+      "intent-to-accepted latency",
+      "star cache hit ratio",
+      "exact measured pause/start timestamps"
+    ],
+    "decision": "Preserve the original baseline once. Fix the bounded export owner before subsequent measurements; do not rerun old pressure merely to recreate absent metrics and do not compare a new draw-cost receipt against screenshot abbreviations."
+  },
+  "sourceReview": {
+    "watcherBindings": [
+      {
+        "key": "watcherSha256",
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-sky-memory.mjs",
+        "sha256": "b52414418dcc9bfe21c8bdbc4a22491bed00734a630ea96fa50c0360a6519ae2",
+        "matchesCaptured": true
+      },
+      {
+        "key": "anchorSha256",
+        "path": ".codex/work-items/sky-map-performance-2026-10-18/scripts/r17-memory-watch-anchor.mjs",
+        "sha256": "87655eff96f51dc2667b69b514c05b966d22ffc0e2e13661e87709863fd9ad00",
+        "matchesCaptured": true
+      },
+      {
+        "key": "adbSha256",
+        "path": "tools/miniapp/device-adb.mjs",
+        "sha256": "b59b0a2d411fdab2d178059498c7b5cb09f39237341822e4f8e842af5b808023",
+        "matchesCaptured": true
+      }
+    ],
+    "deviceRecordSource": {
+      "path": "tools/miniapp/device-record.mjs",
+      "sha256": "c53eca67027dda3cb567e6919e2279655092131da2006af80a9327ce0ee9c556"
+    },
+    "deviceTestSource": {
+      "path": "tools/miniapp/device-test.mjs",
+      "sha256": "7d99f92f4c7edcb763d535e47811b2a60df33efc090aadda07fe635a7f73e960"
+    }
+  },
+  "preservation": {
+    "localOnly": true,
+    "uploaded": false,
+    "privateDirectory": "C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/r20-normal-play/review",
+    "record": "preservation.private.json",
+    "originalFileCount": 15,
+    "originalBytes": 5675432,
+    "originals": [
+      {
+        "name": "screen-59cb902d-1db4-4ad4-83b1-3ecd705832dd.png",
+        "bytes": 970614,
+        "sourceSha256": "06e4c6e26073bd9cb356f12787b89ba43a37b664f3b4abbf096dfd834f94bf36",
+        "readbackSha256": "06e4c6e26073bd9cb356f12787b89ba43a37b664f3b4abbf096dfd834f94bf36",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-59cb902d-1db4-4ad4-83b1-3ecd705832dd.png.json",
+        "bytes": 391,
+        "sourceSha256": "65de3f0680363e424ba9ff4062d339577eb64f7df8fe8fda709d6633cb0e0ba7",
+        "readbackSha256": "65de3f0680363e424ba9ff4062d339577eb64f7df8fe8fda709d6633cb0e0ba7",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-a9de2c59-0e2c-4e00-8cd1-d76b10710c16.png",
+        "bytes": 970070,
+        "sourceSha256": "15c21f80d991b569f989d8cd8c92f7b12fcbee5f82daf2a512783f6dc4630f4a",
+        "readbackSha256": "15c21f80d991b569f989d8cd8c92f7b12fcbee5f82daf2a512783f6dc4630f4a",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-a9de2c59-0e2c-4e00-8cd1-d76b10710c16.png.json",
+        "bytes": 391,
+        "sourceSha256": "35b515c155ef942e5023939ea38b9bcb6ed896e00907cd3f49c422ca81cd5703",
+        "readbackSha256": "35b515c155ef942e5023939ea38b9bcb6ed896e00907cd3f49c422ca81cd5703",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-67fa6b6f-3a43-4f58-bd81-56a9154703c0.png",
+        "bytes": 971120,
+        "sourceSha256": "76a9673c4678cb20a5ca003606994ad5a00919a5a136ec0a36b735c5d8d0d5b4",
+        "readbackSha256": "76a9673c4678cb20a5ca003606994ad5a00919a5a136ec0a36b735c5d8d0d5b4",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-67fa6b6f-3a43-4f58-bd81-56a9154703c0.png.json",
+        "bytes": 391,
+        "sourceSha256": "9d4a0961c92687a546c679ba572244e49a5f6b491f045007ba9b62f7c664e657",
+        "readbackSha256": "9d4a0961c92687a546c679ba572244e49a5f6b491f045007ba9b62f7c664e657",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-257432db-34ef-4c5a-8d5d-026eb339671d.png",
+        "bytes": 971086,
+        "sourceSha256": "bd0fa019acf81f3a926dd9f81e5a799b096f88678aad3f18fe514210274185dd",
+        "readbackSha256": "bd0fa019acf81f3a926dd9f81e5a799b096f88678aad3f18fe514210274185dd",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-257432db-34ef-4c5a-8d5d-026eb339671d.png.json",
+        "bytes": 391,
+        "sourceSha256": "8f718d116b7f71198496a5516dc945f962867fb27328740d80d1b9c670742e19",
+        "readbackSha256": "8f718d116b7f71198496a5516dc945f962867fb27328740d80d1b9c670742e19",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-d06a4230-7511-4c85-91d4-86ab7a4e1734.png",
+        "bytes": 613162,
+        "sourceSha256": "0f1cc745300653d9e1ef90d62dabb19abed8dc88a56117a612e9a8363f0466e3",
+        "readbackSha256": "0f1cc745300653d9e1ef90d62dabb19abed8dc88a56117a612e9a8363f0466e3",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-d06a4230-7511-4c85-91d4-86ab7a4e1734.png.json",
+        "bytes": 391,
+        "sourceSha256": "a9370f273ca6664f5bb26c87ff3cd7babe340ca117cfa8a712e1333bb30477c6",
+        "readbackSha256": "a9370f273ca6664f5bb26c87ff3cd7babe340ca117cfa8a712e1333bb30477c6",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-d7a74d01-007e-4b25-a4e5-226334c5680c.png",
+        "bytes": 616970,
+        "sourceSha256": "d507a145cc01dfe0bacba56a1fe6576dcf9d4dc7342df310c88df560b28c2f28",
+        "readbackSha256": "d507a145cc01dfe0bacba56a1fe6576dcf9d4dc7342df310c88df560b28c2f28",
+        "readbackVerified": true
+      },
+      {
+        "name": "screen-d7a74d01-007e-4b25-a4e5-226334c5680c.png.json",
+        "bytes": 391,
+        "sourceSha256": "99660bb895a15685816c31546f8ff188920b918382cb07357c1ab26ae04d33e5",
+        "readbackSha256": "99660bb895a15685816c31546f8ff188920b918382cb07357c1ab26ae04d33e5",
+        "readbackVerified": true
+      },
+      {
+        "name": "recording-1792541647949.mp4",
+        "bytes": 549913,
+        "sourceSha256": "0395cc11b1d737d7b6c4610c6d6c847dafb85938e67a8ae79fcb2b233c1c1e88",
+        "readbackSha256": "0395cc11b1d737d7b6c4610c6d6c847dafb85938e67a8ae79fcb2b233c1c1e88",
+        "readbackVerified": true
+      },
+      {
+        "name": "r20-normal-play-before-r21-5aed332e-28ed-46d7-bc55-ac31439b5cb8.ndjson",
+        "bytes": 8487,
+        "sourceSha256": "494f4bc6def77fad32162e0cffbee2da65869b45bf63c626618ef6df6edea062",
+        "readbackSha256": "494f4bc6def77fad32162e0cffbee2da65869b45bf63c626618ef6df6edea062",
+        "readbackVerified": true
+      },
+      {
+        "name": "r20-normal-play-before-r21-5aed332e-28ed-46d7-bc55-ac31439b5cb8.ndjson.anchor.private.ndjson",
+        "bytes": 1664,
+        "sourceSha256": "f2932c8b0748ee39cb2aab7216aa14ba899a318d53a4c6fadfaf27836bf854bd",
+        "readbackSha256": "f2932c8b0748ee39cb2aab7216aa14ba899a318d53a4c6fadfaf27836bf854bd",
+        "readbackVerified": true
+      }
+    ],
+    "existingFrozenSourceAndMapsReused": true
+  },
+  "remaining": [
+    "Actual JS allocation/retainer evidence and attribution for the original crash/growth; an empty Snapshotting timeline is not evidence.",
+    "Normal Play draw-cost comparison for this exact r20 run is unavailable; new-candidate metrics alone cannot establish improvement against it.",
+    "Candidate-cache no-hit/normal Play overhead and lifetime must remain explicit; this baseline predates that production change.",
+    "Full six-field extreme taps/holds, all-layer rapid movement/zoom, physical smoothness and whole Goal acceptance remain open."
+  ]
+}

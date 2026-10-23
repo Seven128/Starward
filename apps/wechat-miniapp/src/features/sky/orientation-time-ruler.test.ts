@@ -42,6 +42,24 @@ test('actual page previews the fractional public time and withholds fine target 
   'a geometry-only day cannot borrow advice from the committed night');
 });
 
+test('the actual page ruler selects beyond a short model as a pending intent instead of clamping to its supplied cell',()=>{
+ const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+ const page=source.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='SpotSkyPage') as ts.FunctionDeclaration;
+ const declaration=page.body!.statements.filter(ts.isVariableStatement).flatMap(n=>[...n.declarationList.declarations])
+   .find(n=>n.name.getText(source)==='onPreview');assert(declaration?.initializer);
+ const start='2026-09-29T04:00:00.000Z',end='2026-09-30T04:00:00.000Z';
+ const time=createSkyObservationTime();time.bind('current',start,{startAt:start,endAt:'2026-09-29T06:00:00.000Z'});
+ const rows=Array.from({length:49},(_,i)=>({at:new Date(Date.parse(start)+i*1_800_000).toISOString()}));
+ const preview=vm.runInNewContext(ts.transpileModule(`(${declaration.initializer.getText(source)})`,
+   {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
+   skyTimeIntentCurrent:()=>true,datePickerOpenRef:{current:false},timeRows:rows,
+   timeModel:{startAt:start,endAt:'2026-09-29T06:00:00.000Z'},skyRulerTime,
+   cancelSkyCalibration:()=>{},setTimeIntent:()=>{},observationTime:time});
+ preview(8.5);assert.equal(time.snapshot().at,'2026-09-29T08:15:00.000Z');
+ assert.equal(time.snapshot().committedAt,start);assert.equal(time.snapshot().mode,'PREVIEW');
+ preview(48);assert.equal(time.snapshot().at,end);
+});
+
 function render(saving=false, interactionLocked=false, isPreviewing=false) {
   const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
   const declaration=source.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='OrientationTimeRuler');

@@ -1,9 +1,7 @@
 .public-share-card { box-sizing: border-box; width: 100%; padding: 28Px 24Px 22Px; border: 1Px solid var(--border); border-radius: 24Px; background: var(--surface-elevated); color: var(--text-primary); overflow: hidden; }
 .public-share-card text { overflow-wrap: anywhere; }
 .public-share-card .semantic-icon { flex: none; }
-.public-share-card .source-disclosure { margin-top: 18Px; padding-top: 8Px; }
-.public-share-card .source-disclosure__summary { font-size: 13Px; line-height: 1.6; color: #8899a6; }
-.public-share-card .source-disclosure__note { padding: 0; background: transparent; border-radius: 0; font-size: 13Px; line-height: 1.6; color: #738491; }
+.public-share-card__notes { margin-top: 18Px; font-size: 13Px; line-height: 1.6; color: var(--text-secondary); }
 .public-share-card__brand { display: flex; justify-content: space-between; align-items: center; gap: 8Px; padding-bottom: 12Px; border-bottom: 1Px dashed var(--border); }
 .public-share-card__brand > view { display: flex; align-items: center; gap: 8Px; }
 .public-share-card__brand .semantic-icon { width: 22Px; height: 22Px; }

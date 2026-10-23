@@ -1,5 +1,6 @@
 import { Text, View } from "@tarojs/components";
-import { useEffect } from "react";
+import { SharedButton as Button } from "./shared-button-press";
+import { useEffect, useState } from "react";
 import type { WeatherEvidenceSummary } from "@starward/miniapp-contracts";
 import { useWeatherAlertClock } from "./use-weather-alert-clock";
 import { useAppStore } from "@/state/app-store";
@@ -7,7 +8,7 @@ import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date"
 import { weatherAlertState } from "./weather-alert-state";
 import { StatusPanel } from "./status-panel";
 import { SourceAttribution } from "./source-attribution";
-import { SourceDisclosure } from "./source-disclosure";
+import { SourceEntry } from "./source-entry";
 import { SemanticIcon } from "./semantic-asset";
 
 export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = false, refreshFailed = false, refreshing = false, reportHandlesFailure = false, onRecover, onContentChange }: {
@@ -28,8 +29,12 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
   const now = useWeatherAlertClock(evidence, active, onRecover);
   const view = weatherAlertState(evidence, now, refreshFailed);
   const notify = useAppStore(state => state.notify);
+  const [expandedWarnings, setExpandedWarnings] = useState<readonly string[]>([]);
+  // Reading a source hides this page; returning keeps the same warning reading.
+  useEffect(() => setExpandedWarnings([]), [scopeKey]);
   const visibleAlertIds = view.alerts.map(alert => alert.id).join("\0");
-  useEffect(() => { onContentChange?.(); }, [evidence, view.failed, visibleAlertIds, refreshing, onContentChange]);
+  const expandedWarningIds = expandedWarnings.join("\0");
+  useEffect(() => { onContentChange?.(); }, [evidence, view.failed, visibleAlertIds, refreshing, expandedWarningIds, onContentChange]);
   useEffect(() => {
     // The report owner reports transport failure once. A due feed being
     // revalidated is not a failed request; only a settled child failure notifies.
@@ -43,7 +48,7 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
     {view.failed ? <StatusPanel state={refreshing ? "LOADING" : "ERROR"}
       detail={refreshing ? "正在更新官方预警…" : "官方预警暂未确认最新状态，不能据此判断没有预警。"}
       recoveryLabel={refreshing ? undefined : "重试官方预警"} onRecover={onRecover} /> : null}
-    {view.alerts.map((alert, index) => <View className="weather-alerts__item" role="alert" key={alert.id}>
+    {view.alerts.map(alert => <View className="weather-alerts__item" role="alert" key={alert.id}>
       {compact ? <>
         <View className="weather-alerts__heading">
           <SemanticIcon name="warning" presentation="forecast" />
@@ -56,10 +61,15 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
             .map(([name, value]) => <View key={name}><Text>{name}</Text><Text>{value}</Text></View>)}
         </View>
         {alert.instruction?.trim() ? <Text className="weather-alerts__instruction">{alert.instruction}</Text> : null}
-        <SourceDisclosure id={`weather-warning-${index}`} key={`${scopeKey}:${alert.id}`} label="完整预警与防御指引" sources={evidence.warningSource ? [evidence.warningSource] : []}>
-          <Text>{alert.description}</Text>
-        </SourceDisclosure>
-        <SourceAttribution compact sources={evidence.warningSource ? [evidence.warningSource] : []} />
+        <View className="weather-alerts__details">
+          <Button className="weather-alerts__details-toggle focus-ring" ariaLabel="完整预警与防御指引"
+            aria-expanded={expandedWarnings.includes(`${scopeKey}:${alert.id}`)} onClick={() => setExpandedWarnings(current => current.includes(`${scopeKey}:${alert.id}`)
+              ? current.filter(id => id !== `${scopeKey}:${alert.id}`) : [...current, `${scopeKey}:${alert.id}`])}>
+            <Text>完整预警与防御指引</Text><SemanticIcon name={expandedWarnings.includes(`${scopeKey}:${alert.id}`) ? "chevron-up" : "chevron-down"} />
+          </Button>
+          {expandedWarnings.includes(`${scopeKey}:${alert.id}`) ? <Text className="weather-alerts__description">{alert.description}</Text> : null}
+        </View>
+        <SourceAttribution presentation="credit" compact sources={evidence.warningSource ? [evidence.warningSource] : []} />
       </> : <>
         <Text className="type-label">{alert.headline}</Text>
         <Text className="type-caption">{alert.description}</Text>
@@ -68,6 +78,7 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
         <Text className="type-caption">生效：{label(alert.effectiveAt ?? alert.issuedAt)} · {alert.expiresAt ? `截至 ${label(alert.expiresAt)}` : "结束时间未提供"}</Text>
       </>}
     </View>)}
-    {!compact || !view.alerts.length ? <SourceAttribution compact={compact} sources={evidence.warningSource ? [evidence.warningSource] : []} /> : null}
+    {!compact || !view.alerts.length ? <SourceAttribution presentation="credit" compact={compact} sources={evidence.warningSource ? [evidence.warningSource] : []} /> : null}
+    <SourceEntry key={scopeKey} id="weather-warning-source" label="官方预警来源" sources={evidence.warningSource ? [evidence.warningSource] : []} />
   </View>;
 }

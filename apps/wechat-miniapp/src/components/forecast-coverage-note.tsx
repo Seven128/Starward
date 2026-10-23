@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useId, useState } from "react";
 import { forecastCoverage } from "./forecast-coverage";
 import { StatusPanel } from "./status-panel";

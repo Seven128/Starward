@@ -2,9 +2,19 @@
 
 This on-demand subdomain node normatively continues `Cross-Control And State Invariants` for Map, dedicated Search, the spot information panel and shared Observation Context behavior.
 
+## 已采用的地图导航与紧凑层叠（2026-10-22）
+
+沿[当前局部采用源](../wechat-miniapp.md#stitch-design-authority)，Map搜索框改为与其他工具同族的图标按钮；右侧依次为搜索、定位、天文事件、添加、层叠，后两项底部抽屉入口排末。Search独立页面和原输入/筛选/结果不改，进入从右、返回反向；不再要求Map与Search共享一个静止输入框。My由地图左上图标进入，从左滑入，My左上地图入口返回时左出；默认Map且无底栏。原Map状态、选择/中档聚焦、正文位置、Search选择提交与事件modal职责保留。
+
+层叠将地形开关置于标题行并收紧布局，保原两项选择图标、云量日期/日历/曲线时间尺与图例，年度夜光仍无时刻控制。来源仅以小按钮进入完整披露，必要短署名和有效覆盖/错误/缺失状态仍可读。删除底栏后的面板高度由真实安全区和可用视口计算，不沿用旧TabBar占高。公共按钮按压和来源披露由[共享owner](shared-state-and-recovery.md#公共按压与来源入口2026-10-22采用)维护，其他区域维持当前资源原样。
+
 地形、云量与年度光害叠层的性能要求覆盖首次开启、拖动跨覆盖、缩放和回访：缩短真实可用覆盖的等待，减少新内容到达前的空白，保留仍有效且正确配准的旧覆盖。优化须在当前原生地图能力内按完整链路实测瓶颈，复用已有发布、采样、缓存、下载与安装责任；成熟分块、预取和渐进显示机制须先核适用性，不能把其它地图SDK的能力当作微信已支持。保地形必要细节、年度光害的版本/数值/颜色/质量与零值/缺测区分，以及云量的实际采样位置、所选时刻、来源和有效期；不得拉伸旧图填补未覆盖区、涂满未查询云格或仅隐藏loading来宣称变快。缓存、预取、并发及CDN优化仍受现有资源、供应权益和成本边界约束，实际收益与原生连续体验须有对应证据。
 
+叠层连续操作合同：地图和已有有效覆盖在手势中持续跟手，不因加载而清空、重挂或锁住地图。快速短手势优先最终视野；长时间持续跨新区域时，在可靠原生视野观察、平台能力及实测成本允许且不损害跟手的条件下逐步补图，松手后及时完成最终所需细节。新拖动/缩放随时接管，旧结果须经当前地图/页面、图层/时刻、来源版本及真实范围校验才可再用，不得覆盖新视野、拉回旧相机或用粗图降级已就绪细节。切“我的”的Map隐藏和进入云观星的受控卸载分别退休页面需求、回调、计时器与订阅；不等待无关网络结束才响应导航，仍保原生确认释放前的文件pin、有界清理与失败恢复。返回恢复用户状态并重核当前需求。上述交互已确认；具体途中采集频率/能力及流畅、正确、资源回落须由目标运行时实证，不假定regionchange提供逐帧视野。
+
 Map viewport地形在读取metadata前经共享raster-grid形成稳定窗口身份；HTTP边界沿同一向外小数精度规则保实际请求范围，不改原生相机。相同有效窗口的在途/新鲜回访共用查询，每份结果保实际发出请求，coverage按该请求与真实图片边界/层级准入，不能由后来中心重标。支持范围和窗口准入归共享合同，越界/无效请求不污染有效窗口缓存，也不能借旧coverage跳过恢复。SPOT点位/radius保独立语义；更细或未覆盖需求继续请求，下载、文件pin、原生安装和退休仍归现owner。
+
+首次开启地形且尚无原生目标时，可先显示当前发布中完整覆盖所需窗口的较粗成品，明确标为临时覆盖，并继续获取所需细图。跨覆盖时，仅在真实可见视窗超出保留图片范围且当前原生安装支持同 ID 更新时，允许当前请求的父图临时接替；请求缓冲区超出、同范围放大或抖动不能因此降低已有细节。父图保真实范围、来源与分辨率，不计作细图就绪，也不进入细图 coverage；当前请求已有或已排队细图不能被迟到父图覆盖。来源及完成提示随真实 native ack 更新，跨覆盖父图不得回退为两个透明图叠加。缺少更新能力保留初始父图及正常细图的兼容路径；父图不存在、读取失败或旧服务不支持时，正常细图继续。细图失败保留已有有效覆盖并说明细节未完成。首个覆盖、最终细节等待和持续资源回落分别验证；有界代码检查不证明这三项已经完成。
 
 小档静止高度必须容纳完整身份信息与固定动作，不能把采用资源的样例高度当内容上限。正式点还必须保留原采用的路线摘要与具名导航：Map 现有原生几何 owner 测量文档手柄起点到路线块末端的实际跨度，包含现有计划入口、恢复卡及其间距；私人草稿/待审提案继续测量文档手柄、身份区和动作栏，不合成正式路线。两者由 `panel-snap.panelIdentityMinimumHeight` 保留固定动作及既有内容间距，同一 CSS 内容下限同时用于面板与吸附标尺，仍受三档有序视口边界约束，保留当前已采用字号、状态和原动作。异步详情、Context 恢复或计划入口内容改变高度、真实 resize 或完整点位/账号/提案身份切换时，退休旧拖动、回弹与缓存，再读取当前标尺，迟到或无效的必需测量不得安装旧标尺。短视口边界不足不能通过裁掉有效路线或缩字掩盖；连续释放、窄屏、真机或完整设计一致性仍需各自证据。
 
@@ -36,13 +46,13 @@ Map的场景失败反馈由 `pages/map/map-layer-selection.layerSheetOwnsSceneRe
 
 FilterSheet的分类、选项与底部动作在各自命中盒内显式垂直居中；分类保留左对齐，选项与“确定＋计数”组合保持水平居中。几何由`components/filter-sheet.scss`承担，正式DAY遵循当前舒适尺度采用源，未交付模式保持既有范围；不依赖原生Button的默认行高，也不改全局Button reset。保留现行14项、换行、选中星标、禁用、草稿取消及清空/应用责任；源码接线不等于整个筛选面板、其它宽度/主题或连续过程验收。
 
-Search 的浮动 Info 在固定原生输入框下方留8px避让，位置与可滚高度共用当前 `--search-safe-top`、`--search-control-height` 推导的同一边界；不移动输入框、丢查询、偷焦点或移除失败通知/行内重试。几何投射归Search页面，通知可见计时与去重仍归共享宿主。Map已有搜索框/右侧工具与large档避让保持各自责任。原生输入与消息不相交须用真实目标输出核验，CSS接线本身不证明通过。
+Search 的浮动 Info 在固定原生输入框下方留8px避让，位置与可滚高度共用当前 `--search-safe-top`、`--search-control-height` 推导的同一边界；不移动输入框、丢查询、偷焦点或移除失败通知/行内重试。几何投射归Search页面，通知可见计时与去重仍归共享宿主。Map左上我的/右侧工具与large档避让保持各自责任。原生输入与消息不相交须用真实目标输出核验，CSS接线本身不证明通过。
 
 Search筛选条位于固定输入与结果滚动区之间，不随结果文档滚动。原生选地点入口由聚焦输入后的建议层承载；正常结果页不重复同一入口占据筛选前的整行。通常结果数量沿分组计数与既有live announcement表达；DAY计数徽标紧随分组标题，展开箭头朝下、折叠朝右，展开及内容生命周期仍由`SearchResultPartition`负责。更新中、资料过期、未知候选及失败状态仍保留对应可见说明，不把这些状态当作普通数量隐藏。查询、筛选提交、平台选择、恢复与正式点身份仍由各自既有owner负责。
 
 同一14项筛选的语义图标由`components/filter-icon.ts`供横向条与DAY分类Sheet共用；采用源的DAY具体图标与未交付模式的既有映射分开维护。`SemanticIcon`负责资源/主题回退与分包路径，不以位置、罗盘或Info替代当前已采用的停车、厕所、驾车、徒步等DAY角色。搜索及创建/反馈记录的点位身份共同使用`SpotIdentityContent`与`spot-identity-card.scss`，DAY按当前共享卡片源投射，地址使用place-pin、其它模式保留既有location呈现；导航、审核扩展和媒体授权仍在消费者。
 
-Map/Search 的固定搜索锚点由同一占位文案与文本色责任维护：`pages/map/finder-field.ts` 供 Map trigger 与 Search 原生 Input 使用；`pages/map/_finder-field.scss` 将两端 query/placeholder 映射到既有 `text-secondary`，遵循 DESIGN 普通文本对比度要求，不复制旧浅灰低对比。同一样式责任也维护两页的日间品牌标题；各页保留当前采用源的不同标题行框。Search 通过 WEAPP `placeholderClass` 显式控制原生占位样式。建议层仍由现有 ScrollView 承担滚动，并显式限定为父层宽度减去两侧各16Px，与搜索框同边界；保留键盘、外点收起、原生选点、筛选与返回责任。Map 路线动作通过 `SemanticIcon` 的 `navigation` 角色使用当前日间导航资源，云观星入口日间复用 `telescope`；其他模式保留既有呈现，方向/罗盘消费者继续使用 `compass`。源码与尺寸公式不认证实际连续过渡、窄屏或全部主题输出。
+Search 页的固定原生输入框继续由既有占位文案与文本色责任维护；Map入口已采用图标按钮，不再复制query/placeholder或承诺跨页静止字段。`pages/map/finder-field.ts` 与 `_finder-field.scss` 的剩余Search消费者映射到既有 `text-secondary`，遵循 DESIGN 普通文本对比度要求，不复制旧浅灰低对比。同一样式责任也维护两页的日间品牌标题；各页保留当前采用源的不同标题行框。Search 通过 WEAPP `placeholderClass` 显式控制原生占位样式。建议层仍由现有 ScrollView 承担滚动，并显式限定为父层宽度减去两侧各16Px，与搜索框同边界；保留键盘、外点收起、原生选点、筛选与返回责任。Map 路线动作通过 `SemanticIcon` 的 `navigation` 角色使用当前日间导航资源，云观星入口日间复用 `telescope`；其他模式保留既有呈现，方向/罗盘消费者继续使用 `compass`。源码与尺寸公式不认证实际连续过渡、窄屏或全部主题输出。
 
 正式点面板底部动作的装饰呈现由 `pages/map/spot-panel-actions` 负责：想去/云观星/分享顺序保留；正式点日间动作尺寸遵循当前舒适尺度采用源，其他模式及私有呈现保持既有范围；想去背景沿独立360ms实时进度原位淡化，不延迟共享820ms星体。DAY为修复正常取消文字近消失，含装饰的日/夜层在前/后半段分别淡出/淡入，中点为整面#757575；前半黑字、后半白字即时切换，不增加文字贴片或进度owner。普通字号DAY夜星的右侧点移至上下边缘，既有largeText使用左侧点集，真实避字矩形与窄屏仍须目标验证；当前设置无大字入口，不展开暂停的大字整组设计。日云与两套稀疏夜星为装饰，不代表天气；NIGHT/OBSERVATION原层轨迹与点集保持。仅在可见前台播放星点呼吸，隐藏、照片查看器、退出及减弱动效结束呈现工作；Map将同一可见性传给共享`FavoriteStar`，换点重建局部呈现身份。私有草稿/审核中面板保留静态动作背景与原业务。此前74058f6a/d056背景批已取得三主题未选中静态及账户偏好减弱的DAY添加/取消与样式/关系读回，本次整面修订未重验这些组合；2026-09-29本机normal DAY的新包添加识别序列及可见代绑定后的正常取消原生序列经独立实看，旧文字近消失缺陷在已观测范围复测通过。普通开发反馈不证明手机包字节/AppID、逐帧4.5、精确820ms/360ms/.94/360°、途中反向、largeText/≤340px、其它主题连续、隐藏返回及私有消费者，代码/静态样本不替代验收。最新实现与证据边界同见[采用资源记录](https://stitch.google.com/projects/7144519510537620825)。系统级减弱输入缺口由[共享状态与恢复](shared-state-and-recovery.md)记录，不以账户样本替代。
 
@@ -78,9 +88,11 @@ The visible TOTAL_CLOUD label is `云量`; the domain key and percentage meaning
 
 正式设施的名称和状态文案由 `utils/facility-presentation` 供 Map、场地资料和文章设施引用共用；洗手间沿已采用名称，UNKNOWN 保持 `暂无数据`，不可用和季节性保留其独立意义。Map设施卡正文优先展示真实设施 `detail`，无说明时才使用 `summary`，不能以默认摘要遮掉审核合并后的停车/洗手间说明。共享设施资料的缺失开放时间、使用条件沿同一普通缺值表达，既有来源、核验、许可和媒体关联不变。
 
+My的新增返回地图入口只替代旧底栏返回方式；原渐变、玻璃计划卡、头像/昵称/设置及计划回顾/记录构图保持。范围以[当前局部采用源](../wechat-miniapp.md#stitch-design-authority)为准。
+
 ## My account and plans
 
-The sole daytime adopted resource is [My resource entry](https://stitch.google.com/projects/7144519510537620825). Root has no visible 我的 page title; retain native capsule, editable avatar and nickname, one Settings gear, one 观星计划 card and one 观星点创建与反馈 entry. No personal/external-profile link summary or entry, content-import entry, direct contribution form entry, or pending-count strip remains on My. External-profile management is retired from the Mini Program product topology; removing UI does not authorize deleting stored account data. Existing import infrastructure is not a visible My feature and has no newly approved replacement entry.
+The sole daytime adopted resource is the comfortable-scale My page in the [current complete source, with the adopted navigation increment](../wechat-miniapp.md#stitch-design-authority). The 2026-10-23 authorized selection retains that My composition and its upper-left map return; there is no pending My candidate selection. Unchanged background, glass plan card, icons, content and child pages keep their current adopted basis. Root has no visible 我的 page title; retain native capsule, editable avatar and nickname, one Settings gear, one 观星计划 card and one 观星点创建与反馈 entry. No personal/external-profile link summary or entry, content-import entry, direct contribution form entry, or pending-count strip remains on My. External-profile management is retired from the Mini Program product topology; removing UI does not authorize deleting stored account data. Existing import infrastructure is not a visible My feature and has no newly approved replacement entry.
 
 Avatar opens album / camera / cancel actions, then preview and explicit save; nickname has edit / save / cancel. Cancellation or failure preserves the current saved identity. Production must persist changes through the current authenticated account owner, not change WeChat profile or use a local sample as account truth. Native media permissions, upload and recovery remain implementation work; prototype success is not backend completion.
 
@@ -122,7 +134,7 @@ Avatar opens album / camera / cancel actions, then preview and explicit save; ni
 唯一采用入口为 [Map ADOPTED](https://stitch.google.com/projects/7144519510537620825) 的 add-spot 包。此采用不表示生产实现完成。
 
 当前生产呈现责任由 Map 的 `bottomPresentation` 与 `pages/map/spot-editor-presentation.ts` 协作：阶段仅描述同一个编辑器的入场、打开、退出，不成为第二可见状态。退出节点保留到动画完成，随后才清候选、切点，或处理成功提交后的居中与 medium 面板。表单忙碌/未保存确认及红光媒体交接仍归 contribution；Map 的唯一原生返回 owner 委派这些动作。隐藏、卸载及身份变化必须取消迟到的退出消费者；平台返回能力仍按实际嵌入形态和设备验证，不能由独立编辑页或合成事件替代。
-- 地图工具栏增加与定位、图层同尺寸的加号。点击后加号、搜索框及其余工具淡出；新增弹层上滑至原加号顶部位置，无拖动横杠、无拖动改变高度，关闭和系统返回下滑退出。
+- 地图工具栏增加与定位、图层同尺寸的加号。点击后加号、搜索按钮及其余工具淡出；新增弹层上滑至原加号顶部位置，无拖动横杠、无拖动改变高度，关闭和系统返回下滑退出。
 - 地图保持可平移/缩放；选择地址只提交坐标和地址元数据并将候选点居中于弹层上方可见地图。候选灰色简化标记的名称实时来自“地点名称”，不是地址；空名称显示未命名状态，不生成正式点身份。手动地图操作不与自动居中竞争。
 - 新增/编辑表单、点信息、图层由同一个 bottomPresentation 协调器互斥，spot-editor 内区分新建与编辑，不新增旁路可见布尔。点击其他点、关闭或返回时，有未保存修改先确认放弃；确认前不提交选点、相机移动、Observation Context 或依赖请求切换。取消保留表单、媒体、候选位置和原呈现；确认后才关闭编辑并切到目标点的 medium 信息组件。关闭、切点和返回不触发隐式保存。常规正式点信息的搜索/工具可见性仍遵守其既有 extent 规则。
 - 表单为一个垂直滚动文档，地点/到达/设施/说明 Tab 仅定位章节；不折叠分组。停车、洗手间分别收集说明与对应照片；不要求到访时间，不强制补充说明20字。必要的结构化安全/联系状态仍按 Shared State 的 intake 要求，未知不等于允许进入或安全。

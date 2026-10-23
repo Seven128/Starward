@@ -1,5 +1,6 @@
-import { useDidHide } from "@tarojs/taro";
-import { Button, RootPortal, Text, View } from "@tarojs/components";
+import { usePresentedPageLifecycle } from "@/navigation/page-presentation";
+import { RootPortal, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "./native-back-boundary";
@@ -22,7 +23,7 @@ export function useRedLightHandoff({ nativeBackBoundary = true, title = "微信�
     setDetail(null);
     request?.resolve(accepted);
   }, []);
-  useDidHide(() => finish(false));
+  usePresentedPageLifecycle({ hide: () => finish(false) });
   useEffect(() => () => { pending.current?.resolve(false); pending.current = null; }, []);
   useEffect(() => { if (mode !== "OBSERVATION" && pending.current) finish(false); }, [finish, mode]);
 

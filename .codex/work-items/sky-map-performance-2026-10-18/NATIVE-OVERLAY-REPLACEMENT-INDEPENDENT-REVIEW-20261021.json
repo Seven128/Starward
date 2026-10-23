@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "reviewer": "/root/review_native_overlay_replacement",
+  "mode": "independent read-only production review; task-local report writes only",
+  "scope": [
+    "map-ground-overlay coordinator",
+    "shared raster installation hook",
+    "terrain and annual-light callers",
+    "three changed test files",
+    "existing raster pin owner and Map generation owner"
+  ],
+  "assessment": "Candidate's intra-coordinator same-ID sequencing/pins passed bounded review. Known teardown ownership P2 remains unresolved. Target native capability and memory acceptance remain unverified.",
+  "findings": [
+    {
+      "id": "P2-retired-owner-cleanup",
+      "priority": "P2",
+      "introducedByCurrentCandidate": false,
+      "status": "confirmed-unresolved",
+      "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts",
+      "line": 78,
+      "title": "The hook discards unresolved native cleanup ownership after Map retirement",
+      "detail": "dispose now honestly returns {complete, remainingIds}, but effect cleanup still voids it. A terminal remove failure leaves native pins held with no reachable business retry owner after replacement/unmount. The current low-level coordinator can recover when retained and dispose is retried; hook does not hand that responsibility onward.",
+      "consequence": "Repeated failed retirements can exhaust eight raster file slots and reject later useful imagery; this does not prove unbounded native/GPU memory growth or explain the Sky crash.",
+      "requiredRepair": "Retain the exact retired Map/coordinator ownership and resolve cleanup through a valid old-instance operation or verified destruction boundary; do not release pins solely on JS cleanup/generation change."
+    }
+  ],
+  "checks": {
+    "existingTestFiles": 3,
+    "passed": 27,
+    "failed": 0,
+    "command": "node tools/run-node.cjs --import tsx --test apps/wechat-miniapp/src/pages/map/terrain-ground-overlay.test.ts apps/wechat-miniapp/src/pages/map/use-map-raster-installation.test.ts apps/wechat-miniapp/src/pages/map/map-native-compatibility.test.ts",
+    "reproduction": {
+      "scope": "current coordinator and raster resource owners; synthetic native/file adapter; no phone evidence",
+      "retained": {
+        "entries": 8,
+        "readyBytes": 800,
+        "activeDownloads": 0,
+        "queued": 0,
+        "nativePins": 8,
+        "failedRemovals": 0
+      },
+      "ninthFailure": "raster_image_budget_busy",
+      "disposals": [
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        },
+        {
+          "complete": false,
+          "remainingIds": [
+            120
+          ]
+        }
+      ],
+      "afterRetry": {
+        "entries": 8,
+        "readyBytes": 800,
+        "activeDownloads": 0,
+        "queued": 0,
+        "nativePins": 0,
+        "failedRemovals": 0
+      },
+      "retryComplete": true,
+      "closed": {
+        "retainedPinnedFiles": 0,
+        "failedRemovals": 0
+      }
+    }
+  },
+  "verifiedInLocalScope": [
+    "Only a confirmed displayed slot receives update; method absence alone selects the old two-slot fallback.",
+    "Dispatched update withdraws installed source identity until acknowledgment.",
+    "Old and replacement pins stay held until successful update/removal boundaries; superseded not-yet-dispatched candidate pins retire.",
+    "Update failure/timeout cannot blindly dispatch a new update or reuse the uncertain id.",
+    "Late mutation cleanup checks captured File object identity; current tests cover a newer request queued before the late acknowledgment.",
+    "disposed owners reject further apply calls; late success/failure can still retire their reserved slot.",
+    "Both callback and actual Promise acknowledgment paths remain exercised.",
+    "Explicit repeated dispose works when native removal recovers."
+  ],
+  "remainingEvidence": [
+    "Same-ID update actual phone src+bounds registration, transient blank/double-color behavior and callback-to-visible relationship remain unverified.",
+    "An old captured MapContext's isolation from a newly mounted same-named Map is not established by local mocks or JS generation guards.",
+    "The installation hook's test harness substitutes the coordinator and returns an empty dispose Promise; it cannot close the cleanup handoff gap.",
+    "Logical pin release does not prove GPU/native reclamation, ordinary-session no-leak behavior or Sky memory/crash repair.",
+    "Current r18 phone Play sample is separate from this not-yet-delivered Map source."
+  ],
+  "files": [
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/map-ground-overlay.ts",
+      "sha256": "9582ec700deefd5125e431dc2d100742998a3f063eec61e1abace7d52db8680b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts",
+      "sha256": "66817d51e51ed66caf24e17a777d32018d501035fcd2003d9b2d663e3d3c9912"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/terrain-ground-overlay.test.ts",
+      "sha256": "633396f2aa9f0bd70f0a22660751ae80aa64845a5a3606a6c5e3f53208e7d0b0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.test.ts",
+      "sha256": "2bed31b2a6a059f80fa28f5a2f627d52a672dd7c53068da4d945a717577b3372"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/map-native-compatibility.test.ts",
+      "sha256": "76a2ce91011e067ce502de75fa0fa0b2f3f7d1e1c63512b1f9f1450b6a282f57"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/terrain-ground-overlay.ts",
+      "sha256": "057c6822f2d52e5947939c98f8dbd06157b75212fa2be5c60758137d9c018581"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/native-map-recovery.ts",
+      "sha256": "2830d6403c97d10e8b65a2b7e60bbbf6814214c2aa18faacf538ed62a299c184"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+      "sha256": "122fd9b6c05b2b72577ec84dbfb23c453f5c83fd332184107ff85a58faa49bd8"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/raster-image-resources.ts",
+      "sha256": "2ae75bcb7233097f5d17783de3c692a848aeee26a3c409b28ec3330da4a5457e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/map-raster-files.ts",
+      "sha256": "d3ad99cc48e9a569efe1c9cd32a9a4bc361678448584360c89c17744f70e00d9"
+    }
+  ],
+  "restrictionsObserved": [
+    "No production edits",
+    "No phone or IDE actions",
+    "No service/build changes",
+    "No upload, commit, or push"
+  ]
+}

@@ -1,8 +1,8 @@
 import { FloatingNotificationHost } from "@/components/notification";
 import { MyNickname } from "./my-nickname";
 import { MyAvatar } from "./my-avatar";
-import { useDidShow, useDidHide } from "@tarojs/taro";
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import { MyPlanCard } from "./my-plan-card";
 import { CustomNav } from "@/components/custom-nav";
@@ -12,7 +12,8 @@ import { useAccountResourceQuery } from "@/hooks/use-account-resource-query";
 import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
-import { usePrimaryNavigation } from "@/hooks/use-primary-navigation";
+import { usePresentedPageLifecycle } from "@/navigation/page-presentation";
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import {
   currentDraftUserId,
   getUserLibrary,
@@ -27,34 +28,35 @@ import "./my-library-page.scss";
  * owns the quiet favorite toggle; keeping those relations out of this route is
  * part of the current surface contract.
  */
-export function MyLibraryPage() {
+export function MyLibraryPage({ onReturnMap = () => openPrimaryPage("/pages/map/index") }: {
+  onReturnMap?: () => void | Promise<void>;
+} = {}) {
   const themeClass = useThemeClass();
-  const primaryNavigation = usePrimaryNavigation("pages/my/index");
   const [now, setNow] = useState(() => new Date());
   const clock = useRef<ReturnType<typeof setInterval> | null>(null);
   const stopClock = () => {
     if (clock.current !== null) clearInterval(clock.current);
     clock.current = null;
   };
-  useDidShow(() => {
-    stopClock();
-    setNow(new Date());
-    clock.current = setInterval(() => setNow(new Date()), 1000);
+  const page = usePresentedPageLifecycle({
+    show: () => {
+      stopClock();
+      setNow(new Date());
+      clock.current = setInterval(() => setNow(new Date()), 1000);
+      const owner = currentDraftUserId();
+      if (!owner) return;
+      // The retained My content refreshes expired summaries on each foreground.
+      void miniappQueryClient.refetchQueries({
+        queryKey: ["user-library", owner], exact: true, type: "active", stale: true,
+      });
+    },
+    hide: stopClock,
   });
-  useDidHide(stopClock);
   useEffect(() => stopClock, []);
   const { notify, replacePlans, applyServerPreferences } = useAppStore.getState();
-  const { owner: libraryOwner, query: library } = useAccountResourceQuery("user-library", getUserLibrary);
+  const { owner: libraryOwner, query: library } = useAccountResourceQuery("user-library", getUserLibrary, { enabled: page.visible });
   const navigation = useAccountNavigation(libraryOwner);
   const login = useWechatLogin();
-  useDidShow(() => {
-    const owner = currentDraftUserId();
-    if (!owner) return;
-    // Tab pages stay mounted: returning to My must refresh expired summaries.
-    void miniappQueryClient.refetchQueries({
-      queryKey: ["user-library", owner], exact: true, type: "active", stale: true,
-    });
-  });
   const plans = library.data?.data.plans ?? [];
   const unavailable = library.isError || !!library.refreshError || library.data?.dataState === "STALE_USABLE";
 
@@ -71,6 +73,7 @@ export function MyLibraryPage() {
   ]);
 
   const navigatePage = (url: string, label: string, entry: string, authenticatedOwner?: string) => {
+    if (!page.isCurrent()) return;
     const diagnostic = "my-" + entry + "-navigation";
     const dedupeKey = diagnostic + "-failed";
     const prior = useAppStore.getState().notifications.filter(
@@ -90,25 +93,28 @@ export function MyLibraryPage() {
       }
     }, authenticatedOwner);
   };
-  const openPage = (url: string, label: string, entry: string) =>
-    login.requireAccount(owner => { void navigatePage(url, label, entry, owner); });
+  const openPage = (url: string, label: string, entry: string) => {
+    if (!page.isCurrent()) return;
+    login.requireAccount(owner => { if (page.isCurrent()) void navigatePage(url, label, entry, owner); });
+  };
   const openSettings = () =>
     navigatePage("/content/settings/index", "设置", "settings");
   const openPlan = () => openPage("/content/plan/list/index", "观星计划", "plan");
   const openAchievements = () => openPage("/content/achievement/index", "计划回顾", "achievements");
   const openContribution = () =>
     openPage("/content/contribution/index?manage=1", "观星点创建与反馈", "contribution");
+  const returnMap = () => { if (page.isCurrent()) return onReturnMap(); };
   return (
     <View
       className={themeClass + " my-page"}
-      style={primaryNavigation.style}
       data-route="my-account-center"
       data-od-id="my-account-center"
     >
       <FloatingNotificationHost />
       {login.dialog}
       <View data-control="my-account-header">
-        <CustomNav title="" odId="my-account-header" />
+        <CustomNav title="" odId="my-account-header" back backPresentation="map"
+          backOdId="my-return-map" backAction={returnMap} />
       </View>
       <ScrollView
         scrollY
@@ -129,15 +135,15 @@ export function MyLibraryPage() {
             <View className="profile-summary__header">
               <MyAvatar owner={libraryOwner} onLogin={() => login.requireAccount()} />
               <MyNickname owner={libraryOwner} onLogin={() => login.requireAccount()} />
-              <Button className="my-settings-gear focus-ring" data-od-id="my-settings-action" data-control="my-settings-action" aria-label="打开设置" onClick={openSettings}><SemanticIcon name="settings" /></Button>
+              <Button pressVariant="icon" className="my-settings-gear focus-ring" data-od-id="my-settings-action" data-control="my-settings-action" aria-label="打开设置" disabled={!page.visible} onClick={openSettings}><SemanticIcon name="settings" /></Button>
             </View>
             <View className="my-focus-actions" data-od-id="my-focus-actions">
               <MyPlanCard plans={plans} spots={library.data?.data.planSpots ?? []} now={now}
                 guest={!libraryOwner} loading={Boolean(libraryOwner && library.isPending)} unavailable={unavailable}
-                onRetry={() => void library.refetch()}
+                onRetry={() => { if (page.isCurrent()) void library.refetch(); }}
                 onOpenAll={openPlan}
                 onOpen={(plan) => void openPage("/content/plan/detail/index?planId=" + encodeURIComponent(plan.planId), "观星计划", "plan")} />
-              <Button className="routine-entry routine-entry--achievements focus-ring" ariaLabel="打开计划回顾" onClick={openAchievements}>
+              <Button className="routine-entry routine-entry--achievements focus-ring" ariaLabel="打开计划回顾" disabled={!page.visible} onClick={openAchievements}>
                 <View className="routine-entry__icon" aria-hidden="true"><SemanticIcon name="telescope" /></View>
                 <View className="account-row__copy"><Text className="type-section">计划回顾</Text><Text className="type-caption">查看已结束的观星计划</Text></View>
                 <View className="account-row__chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
@@ -147,6 +153,7 @@ export function MyLibraryPage() {
                 data-od-id="my-contribution-entry"
                 data-control="my-contribution-entry"
                 ariaLabel="打开观星点创建与反馈"
+                disabled={!page.visible}
                 onClick={openContribution}
               >
                 <View className="routine-entry__icon" aria-hidden="true">

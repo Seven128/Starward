@@ -46,6 +46,30 @@ test("HTTP cross-date geometry reuses the authorized observer without weather or
     matchingSkyGeometryWindow(response, binding);
     assertSkyTimeModel(response.data.model, { observer, hourlyAt: window.hourlyAt });
     assert.equal(response.data.model.knots.length, 49);
+    const explicitNight = await fetch(root + query + "&window=NIGHT");
+    assert.equal(explicitNight.status, 200);
+    assert.deepEqual((await explicitNight.json()).data, response.data);
+    const shortReply = await fetch(root + query + "&window=TWO_HOURS");
+    assert.equal(shortReply.status, 200);
+    const short = await shortReply.json();
+    const shortWindow = skyGeometryWindow(at, context.timezone, "TWO_HOURS");
+    assertSkyTimeModel(short.data.model, { observer, hourlyAt: shortWindow.hourlyAt });
+    assert.equal(short.validAt, shortWindow.startAt);
+    assert.equal(short.data.model.knots.length, 5);
+    assert.equal(short.data.model.algorithmVersion, response.data.model.algorithmVersion);
+    assert.deepEqual(short.data.model.knots, response.data.model.knots.filter((knot: { at: string }) =>
+      knot.at >= shortWindow.startAt && knot.at <= shortWindow.endAt), "all nine bodies use the unchanged scientific samples");
+    assert.deepEqual(evaluateSkyTimeModel(short.data.model, at), evaluateSkyTimeModel(response.data.model, at));
+    assert.equal(evaluateSkyTimeModel(short.data.model, window.startAt), null, "short supply cannot claim the rest of the night");
+    assert.deepEqual({ ...short.data, model: response.data.model }, response.data, "scope and authorization bindings stay identical");
+    assert.notEqual(short.sources[0].id, response.sources[0].id, "different model coverage has a different source identity");
+    const inSameCell = await service.getSkyGeometryWindow(spotId, context.contextId,
+      "2026-09-28T13:59:59.999Z", undefined, "TWO_HOURS");
+    assert.deepEqual(inSameCell.data.model, short.data.model);
+    assert.equal(inSameCell.sources[0]!.id, short.sources[0].id);
+    const nextCell = await service.getSkyGeometryWindow(spotId, context.contextId, shortWindow.endAt, undefined, "TWO_HOURS");
+    assert.equal(nextCell.data.model.startAt, shortWindow.endAt);
+    assert.deepEqual(nextCell.data.model.knots[0], short.data.model.knots.at(-1), "adjacent models share the exact boundary sample");
     assert.equal(weatherCalls, 0, "a geometry preview cannot wait for or bill a weather report");
     assert.deepEqual(await service.observationContexts.get(context.contextId), context);
     assert.equal("targets" in response.data, false); assert.equal("hourly" in response.data, false);
@@ -73,5 +97,12 @@ test("HTTP cross-date geometry reuses the authorized observer without weather or
     assert.equal((await fetch(root.replace(encodeURIComponent(spotId), "spot%3Aother") + query)).status, 400);
     assert.equal((await fetch(root + query.replace(encodeURIComponent(at), encodeURIComponent("2999-01-01T00:00:00.000Z")))).status, 400);
     assert.equal((await fetch(root + query.replace(encodeURIComponent(at), "invalid"))).status, 400);
+    assert.equal((await fetch(root + query.replace(encodeURIComponent(at), encodeURIComponent("2999-01-01T00:00:00.000Z")) +
+      "&window=TWO_HOURS")).status, 400);
+    for (const suffix of ["&window=", "&window=two_hours", "&window=OTHER", "&window=NIGHT&window=TWO_HOURS"]) {
+      const invalid = await fetch(root + query + suffix);
+      assert.equal(invalid.status, 400);
+      assert.equal((await invalid.json()).code, "INVALID_INPUT");
+    }
   } finally { await app.close(); }
 });

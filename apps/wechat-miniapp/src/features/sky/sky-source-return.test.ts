@@ -47,7 +47,7 @@ test("the actual Sources navigator keeps only a successful hidden return and cle
       orientationController:{snapshot:()=>({alignment:{mode:"auto"}})},
       canvasNodeRef:{current:{}},viewportActiveRef:viewport,setSourceReturn:(value:boolean)=>{state=value;},
       canvasLifecycle:{hide:()=>{releases++;}},notify:()=>{notifications++;},
-      Taro:{async navigateTo(){if(outcome!=="failed-visible")viewport.current=false;if(outcome!=="opened")throw Error("route failed");}}});
+      navigateToSource:async()=>{if(outcome!=="failed-visible")viewport.current=false;if(outcome!=="opened")throw Error("route failed");}});
     await navigate("/sky/sources/index?reference=M%3A82");
     assert.equal(opening.current,null);assert.equal(retained.current,outcome==="opened");assert.equal(state,outcome==="opened");
     assert.equal(releases,outcome==="failed-hidden"?1:0);assert.equal(notifications,outcome==="failed-visible"?1:0);
@@ -64,7 +64,7 @@ test("a queued Sources callback checks latest calibration state before navigatio
     orientationController:{snapshot:()=>({alignment:{mode:editing?"editing":"auto"}})},
     canvasNodeRef:{current:{}},viewportActiveRef:{current:true},setSourceReturn:()=>{retentionWrites++;},
     canvasLifecycle:{hide(){assert.fail("blocked action cannot release Canvas");}},notify(){assert.fail("blocked action cannot notify navigation error");},
-    Taro:{async navigateTo(){calls++;}}});
+    navigateToSource:async()=>{calls++;}});
   // The callback predates begin(), as a queued native tap can. React props are not the gate.
   editing=true;await navigate("/sky/sources/index?reference=M%3A82");
   assert.equal(calls,0);assert.equal(retentionWrites,0);assert.equal(opening.current,null);assert.equal(retained.current,false);

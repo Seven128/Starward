@@ -5,6 +5,7 @@ import test from "node:test";
 import ts from "typescript";
 import { semanticIconRenderer } from "./semantic-asset-test-support";
 import { loadPosterIcons } from "./share-poster-icons";
+import { sharedButtonTestBoundary } from "./shared-button-test-support";
 
 test("the content-page poster decodes its actual package-local and shared icons before drawing", async () => {
   const paths: string[] = [];
@@ -30,13 +31,15 @@ test("the content-page poster decodes its actual package-local and shared icons 
   let draw: (...args: any[]) => void = () => { throw new Error("poster_owner_not_created"); };
   let painted = false;
   const exports: Record<string, any> = {};
+  const buttons = sharedButtonTestBoundary(() => null);
   const code = ts.transpileModule(readFileSync(new URL("./share-poster.tsx", import.meta.url), "utf8"), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React },
   }).outputText;
-  vm.runInNewContext(code, { exports, React: { createElement: () => null },
+  vm.runInNewContext(code, { exports, React: { createElement: buttons.element },
     require(name: string) {
       if (name === "@tarojs/taro") return { default: {}, useRouter: () => ({ path: "content/share/index" }), useDidShow() {}, useDidHide() {} };
       if (name === "@tarojs/components") return {};
+      if (name === "@/components/shared-button-press") return buttons;
       if (name === "react") return { useRef: (current: unknown) => ({ current }), useState: (value: unknown) => [value, () => {}],
         useMemo: (read: () => unknown) => read(), useLayoutEffect() {} };
       if (name === "@/state/app-store") return { useAppStore: (select: (state: unknown) => unknown) => select({ mode: "DAY" }) };

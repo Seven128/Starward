@@ -49,10 +49,6 @@
   font-weight: 500;
 }
 
-.plan-editor .custom-nav__side .soft-button:active {
-  background: transparent;
-  color: var(--primary-pressed);
-}
 
 .plan-content {
   display: flex;
@@ -258,9 +254,6 @@
   border-top: 0;
 }
 
-.plan-checklist__row:active {
-  background: var(--pressed-overlay);
-}
 
 .plan-checklist__check {
   position: relative;

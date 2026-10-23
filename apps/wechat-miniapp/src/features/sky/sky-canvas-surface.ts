@@ -34,6 +34,13 @@ export interface SkyDisplayCanvas extends SkyCanvasFrameCanvas {
     font?: string;
     textAlign?: string;
     textBaseline?: string;
+    direction?: string;
+    fontKerning?: string;
+    fontStretch?: string;
+    fontVariantCaps?: string;
+    textRendering?: string;
+    letterSpacing?: string;
+    wordSpacing?: string;
     fillStyle?: string;
     shadowColor?: string;
     shadowBlur?: number;
@@ -54,6 +61,7 @@ export interface SkyCanvasCaption {
   readonly y: number;
   readonly opacity: number;
   readonly font?: string;
+  readonly lineHeight?: number;
   readonly color?: string;
   readonly letterSpacing?: number;
   readonly textAlign?: "left" | "center";
@@ -61,6 +69,17 @@ export interface SkyCanvasCaption {
 }
 export interface SkyCanvasTextMetrics { readonly width: number; readonly left: number; readonly right: number;
   readonly ascent: number; readonly descent: number }
+interface MeasuredCaption {
+  readonly metrics: SkyCanvasTextMetrics;
+  readonly advances: readonly number[] | null;
+  readonly textUnits: number;
+}
+// This bounded working set covers all 88 constellation names plus changing
+// object/target labels. Eviction only repeats exact measurement, never drops text.
+export const SKY_TEXT_MEASUREMENT_CACHE_ENTRIES = 256;
+// Bound long labels/advances as well as entry count; this is not a text limit.
+const TEXT_MEASUREMENT_CACHE_UNITS = 16_384;
+const systemLineHeight = (font: string) => font === "12px sans-serif" ? 18 : font === "600 14px sans-serif" ? 21 : null;
 export interface SkyCanvasSurface<Image = object> {
   readonly node: SkyWebGLCanvas<Image>;
   readonly gl: WebGLRenderingContext;
@@ -85,6 +104,8 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
     !Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0)
     throw new Error("sky_canvas_surface_size_invalid");
   let node: SkyWebGLCanvas<Image> | undefined, gl: WebGLRenderingContext | null = null, disposed = false;
+  const textMeasurements = new Map<string, MeasuredCaption>();
+  let retainedTextUnits = 0;
   let selectionLayer: ReturnType<typeof createSkySelectionLayer> | null = null;
   const retireSelection = () => {
     selectionLayer?.dispose(); selectionLayer = null;
@@ -96,6 +117,7 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
   const retire = () => {
     if (disposed) return;
     disposed = true;
+    textMeasurements.clear(); retainedTextUnits = 0;
     retireSelection();
     // Each retirement step is independent; losing a native context must not
     // leave the other backing store or a retained Sources surface alive.
@@ -118,6 +140,64 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
       try { selectionLayer = createSkySelectionLayer(selectionDisplay, width, height, pixelRatio); }
       catch (error) { reportRuntimeError("native", "sky_selection_layer_unavailable", error); retireSelection(); }
     }
+    const measureCaption = (text: string, font: string, lineHeight: number, letterSpacing: number): MeasuredCaption => {
+      if (disposed || !context.measureText) throw new Error("sky_canvas_text_context_unavailable");
+      if (!Number.isFinite(letterSpacing) || !Number.isFinite(lineHeight) || lineHeight <= 0)
+        throw new Error("sky_canvas_caption_invalid");
+      // Only these existing system fonts are stable for the surface lifetime.
+      // There is no application font loader. Custom/unknown fonts always take
+      // the native path, including after asynchronous load/replacement under
+      // the same family string. Do not enroll them without their loader owner.
+      const key = systemLineHeight(font) !== null && letterSpacing >= 0 && text.length <= TEXT_MEASUREMENT_CACHE_UNITS
+        ? JSON.stringify([font, text, lineHeight, letterSpacing, "left", "middle",
+          context.direction, context.fontKerning, context.fontStretch, context.fontVariantCaps,
+          context.textRendering, context.letterSpacing, context.wordSpacing]) : null;
+      const cached = key === null ? undefined : textMeasurements.get(key);
+      if (cached) {
+        textMeasurements.delete(key!); textMeasurements.set(key!, cached);
+        return cached;
+      }
+      let result: MeasuredCaption;
+      context.save();
+      try {
+        context.font = font; context.textAlign = "left"; context.textBaseline = "middle";
+        const positive = (value: number | undefined, fallback: number) =>
+          Number.isFinite(value) && value! >= 0 ? value! : fallback;
+        let metrics: SkyCanvasTextMetrics, advances: readonly number[] | null = null;
+        if (letterSpacing !== 0) {
+          const values = Array.from(text, glyph => context.measureText!(glyph));
+          if (!values.length || values.some(value => !Number.isFinite(value.width) || value.width < 0))
+            throw new Error("sky_canvas_caption_invalid");
+          advances = Object.freeze(values.map(value => value.width));
+          const width = advances.reduce((sum, value) => sum + value, 0) + (values.length - 1) * letterSpacing;
+          const last = values.at(-1)!;
+          metrics = { width, left: positive(values[0]!.actualBoundingBoxLeft, 0),
+            right: Math.max(width, width - last.width + positive(last.actualBoundingBoxRight, last.width)),
+            ascent: Math.max(lineHeight / 2, ...values.map(value => positive(value.actualBoundingBoxAscent, lineHeight / 2))),
+            descent: Math.max(lineHeight / 2, ...values.map(value => positive(value.actualBoundingBoxDescent, lineHeight / 2))) };
+        } else {
+          // Keep native whole-string shaping/kerning when manual spacing is zero.
+          const value = context.measureText(text);
+          if (!Number.isFinite(value.width) || value.width < 0) throw new Error("sky_canvas_caption_invalid");
+          metrics = { width: value.width, left: positive(value.actualBoundingBoxLeft, 0),
+            right: Math.max(value.width, positive(value.actualBoundingBoxRight, value.width)),
+            ascent: Math.max(lineHeight / 2, positive(value.actualBoundingBoxAscent, lineHeight / 2)),
+            descent: Math.max(lineHeight / 2, positive(value.actualBoundingBoxDescent, lineHeight / 2)) };
+        }
+        // Retain only plain numeric copies, never native TextMetrics.
+        result = { metrics: Object.freeze(metrics), advances, textUnits: text.length };
+      } finally { context.restore(); }
+      if (key !== null && Object.values(result.metrics).every(value => Number.isFinite(value) && value >= 0)) {
+        while (textMeasurements.size >= SKY_TEXT_MEASUREMENT_CACHE_ENTRIES ||
+          retainedTextUnits + text.length > TEXT_MEASUREMENT_CACHE_UNITS) {
+          const oldest = textMeasurements.keys().next().value!;
+          retainedTextUnits -= textMeasurements.get(oldest)!.textUnits;
+          textMeasurements.delete(oldest);
+        }
+        textMeasurements.set(key, result); retainedTextUnits += text.length;
+      }
+      return result;
+    };
     return {
       node: ownedNode, gl: ownedGl,
       isCurrent(next, nextSize, nextRatio, nextSelection) {
@@ -128,30 +208,12 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
       },
       measureText(text, font, lineHeight, letterSpacing=0) {
         if (disposed || !context.measureText) throw new Error("sky_canvas_text_context_unavailable");
-        context.save();
-        try {
-          context.font = font;context.textAlign = "left";context.textBaseline = "middle";
-          if(!Number.isFinite(letterSpacing)||letterSpacing<0)throw new Error("sky_canvas_caption_invalid");
-          if(letterSpacing!==0){
-            const glyphs=Array.from(text),values=glyphs.map(glyph=>context.measureText!(glyph));
-            if(!values.length||values.some(value=>!Number.isFinite(value.width)||value.width<0)||!Number.isFinite(lineHeight)||lineHeight<=0)
-              throw new Error("sky_canvas_caption_invalid");
-            const positive=(value:number|undefined,fallback:number)=>Number.isFinite(value)&&value!>=0?value!:fallback;
-            const width=values.reduce((sum,value)=>sum+value.width,0)+(values.length-1)*letterSpacing,last=values.at(-1)!;
-            return {width,left:positive(values[0]!.actualBoundingBoxLeft,0),
-              right:Math.max(width,width-last.width+positive(last.actualBoundingBoxRight,last.width)),
-              ascent:Math.max(lineHeight/2,...values.map(value=>positive(value.actualBoundingBoxAscent,lineHeight/2))),
-              descent:Math.max(lineHeight/2,...values.map(value=>positive(value.actualBoundingBoxDescent,lineHeight/2)))};
-          }
-          const metrics = context.measureText(text);
-          if (!Number.isFinite(metrics.width) || metrics.width < 0 || !Number.isFinite(lineHeight) || lineHeight <= 0)
-            throw new Error("sky_canvas_caption_invalid");
-          const positive = (value:number|undefined,fallback:number) => Number.isFinite(value) && value! >= 0 ? value! : fallback;
-          return {width:metrics.width,left:positive(metrics.actualBoundingBoxLeft,0),
-            right:Math.max(metrics.width,positive(metrics.actualBoundingBoxRight,metrics.width)),
-            ascent:Math.max(lineHeight/2,positive(metrics.actualBoundingBoxAscent,lineHeight/2)),
-            descent:Math.max(lineHeight/2,positive(metrics.actualBoundingBoxDescent,lineHeight/2))};
-        } finally { context.restore(); }
+        if (letterSpacing < 0) throw new Error("sky_canvas_caption_invalid");
+        // A caller can retain/mutate its result without changing the painter's
+        // private copy or a subsequent layout's bounds.
+        const metrics = measureCaption(text, font, lineHeight, letterSpacing).metrics;
+        return { width: metrics.width, left: metrics.left, right: metrics.right,
+          ascent: metrics.ascent, descent: metrics.descent };
       },
       present(reticle, captions = []) {
         if (disposed || ownedGl.isContextLost() || display.width !== width || display.height !== height ||
@@ -175,7 +237,8 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
             // The full-viewport display matches the original 1rpx spacing.
             // Native Canvas2D does not require a non-portable letterSpacing API.
             for (const caption of captions) {
-              context.font = caption.font ?? "12px sans-serif";
+              const font = caption.font ?? "12px sans-serif";
+              context.font = font;
               context.fillStyle = caption.color ?? "#becbdf";
               const spacing = caption.letterSpacing ?? size.width / 750;
               context.globalAlpha = caption.opacity;
@@ -187,14 +250,15 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
                 context.fillStyle=caption.color??"#becbdf";
               }
               // Natural, measured whole names use no maxWidth or glyph scaling.
-              if (spacing === 0) { const x=caption.textAlign==='center'?caption.x-context.measureText(caption.text).width/2:caption.x;
+              const lineHeight = caption.lineHeight ?? systemLineHeight(font) ?? 18;
+              if (spacing === 0) { const x=caption.textAlign==='center'
+                ?caption.x-measureCaption(caption.text,font,lineHeight,spacing).metrics.width/2:caption.x;
                 context.fillText(caption.text,x,caption.y);continue; }
               const glyphs = Array.from(caption.text);
-              const advances = glyphs.map(glyph => context.measureText!(glyph).width);
-              if (![caption.x, caption.y, caption.opacity, ...advances].every(Number.isFinite) ||
-                advances.some(advance => advance < 0)) throw new Error("sky_canvas_caption_invalid");
+              if (!glyphs.length) continue;
+              const measured = measureCaption(caption.text,font,lineHeight,spacing), advances = measured.advances!;
               let x = caption.textAlign === "left" ? caption.x : caption.x -
-                (advances.reduce((sum, advance) => sum + advance, 0) + Math.max(0, glyphs.length - 1) * spacing) / 2;
+                measured.metrics.width / 2;
               for (let index = 0; index < glyphs.length; index++) {
                 context.fillText(glyphs[index]!, x, caption.y);
                 x += advances[index]! + spacing;

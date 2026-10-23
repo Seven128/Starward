@@ -1,6 +1,7 @@
 import { createRulerScrollPosition } from "@/components/ruler-scroll-position";
 import { createScrollSettlement } from "@/components/scroll-settlement";
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MapSceneTimeFrame } from "@starward/miniapp-contracts";

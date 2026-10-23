@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { access, lstat, realpath, rm } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { access, lstat, open, realpath, rm } from "node:fs/promises";
 import path from "node:path";
 import { errorCode } from "./device-feedback-command.mjs";
 import {
@@ -105,8 +106,23 @@ export async function resolveOfficialCli(explicit, environment = process.env) {
   fail("official_cli_unavailable");
 }
 
-// Official output may contain a QR, project path, account state or service detail.
-export function runOfficialProcess(
+const processDiagnostic = Symbol("officialProcessDiagnostic");
+
+function withProcessDiagnostic(value, diagnostic) {
+  if (diagnostic) Object.defineProperty(value, processDiagnostic, { value: diagnostic });
+  return value;
+}
+
+function diagnosticOptions(directory) {
+  return directory ? {
+    diagnosticPath: path.join(directory, `.official-process-${randomUUID()}.json`),
+  } : {};
+}
+
+// Raw official output may contain a QR, project path, account state or service
+// detail. Keep it only in the owning generation's private diagnostic, never in
+// an Error message or the public result. Successful callers still receive stdout.
+export async function runOfficialProcess(
   file,
   args,
   {
@@ -114,48 +130,97 @@ export function runOfficialProcess(
     maxBytes = 64 * 1024,
     cwd,
     env,
+    diagnosticPath,
   } = {},
 ) {
+  let diagnosticFile;
+  if (diagnosticPath) {
+    try {
+      diagnosticFile = await open(diagnosticPath, "wx", 0o600);
+    } catch {
+      // This guard runs before spawn; it cannot hide an invoked mutation.
+      fail("official_diagnostic_unavailable");
+    }
+  }
+  const startedAt = new Date().toISOString();
   return new Promise((resolve, reject) => {
-    const child = spawn(file, args, {
-      shell: false,
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "pipe"],
-      ...(cwd ? { cwd } : {}),
-      ...(env ? { env: { ...process.env, ...env } } : {}),
-    });
-    const chunks = [];
+    const stdoutChunks = [], stderrChunks = [];
     let bytes = 0;
+    let retainedBytes = 0;
     let failure = null;
     let finished = false;
-    const finish = (callback) => {
+    let timer;
+    const finish = async (code, signal, processError) => {
       if (finished) return;
       finished = true;
       clearTimeout(timer);
-      callback();
+      const stdout = Buffer.concat(stdoutChunks);
+      const stderr = Buffer.concat(stderrChunks);
+      const codeName = processError ?? (failure || code !== 0
+        ? `device_feedback_${failure ?? "official_failed"}` : null);
+      let diagnostic;
+      if (diagnosticFile) {
+        diagnostic = { path: diagnosticPath, retained: false, exitCode: code,
+          errorCode: codeName };
+        try {
+          await diagnosticFile.writeFile(`${JSON.stringify({
+            schema: "starward-miniapp-official-process-diagnostic-v1",
+            startedAt, completedAt: new Date().toISOString(),
+            exitCode: code, signal, errorCode: codeName,
+            maxBytes, observedBytes: bytes, retainedBytes,
+            truncated: bytes > retainedBytes,
+            encoding: "base64", stdout: stdout.toString("base64"), stderr: stderr.toString("base64"),
+          }, null, 2)}\n`);
+          diagnostic.retained = true;
+        } catch {
+          diagnostic.retentionError = "device_feedback_official_diagnostic_write_failed";
+        } finally {
+          await diagnosticFile.close().catch(() => {
+            diagnostic.retained = false;
+            diagnostic.retentionError = "device_feedback_official_diagnostic_write_failed";
+          });
+        }
+      }
+      if (codeName) reject(withProcessDiagnostic(new Error(codeName), diagnostic));
+      else resolve(withProcessDiagnostic(stdout, diagnostic));
     };
-    const timer = setTimeout(() => {
-      failure = "official_timeout";
+    let child;
+    try {
+      child = spawn(file, args, {
+        shell: false,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+        ...(cwd ? { cwd } : {}),
+        ...(env ? { env: { ...process.env, ...env } } : {}),
+      });
+    } catch {
+      void finish(null, null, "device_feedback_official_unavailable");
+      return;
+    }
+    timer = setTimeout(() => {
+      failure ??= "official_timeout";
       child.kill();
     }, timeout);
-    const consume = (chunk, keep) => {
+    const consume = (chunk, chunks) => {
       bytes += chunk.length;
+      const available = Math.max(0, maxBytes - retainedBytes);
+      const retained = chunk.subarray(0, available);
+      if (retained.length) {
+        chunks.push(retained);
+        retainedBytes += retained.length;
+      }
       if (bytes > maxBytes) {
-        failure = "official_output_limit";
+        failure ??= "official_output_limit";
         child.kill();
-      } else if (keep) chunks.push(chunk);
+      }
     };
-    child.stdout.on("data", (chunk) => consume(chunk, true));
-    child.stderr.on("data", (chunk) => consume(chunk, false));
+    child.stdout.on("data", (chunk) => consume(chunk, stdoutChunks));
+    child.stderr.on("data", (chunk) => consume(chunk, stderrChunks));
     child.once("error", () =>
-      finish(() => reject(new Error("device_feedback_official_unavailable"))),
+      void finish(null, null, "device_feedback_official_unavailable"),
     );
-    child.once("close", (code) =>
-      finish(() => {
-        if (failure || code !== 0)
-          reject(new Error(`device_feedback_${failure ?? "official_failed"}`));
-        else resolve(Buffer.concat(chunks));
-      }),
+    child.once("close", (code, signal) =>
+      void finish(code, signal),
     );
   });
 }
@@ -226,7 +291,7 @@ export class OfficialWechatDevtools {
     return { officialTool: "available", automaticUpdate, ordinaryPreview, login };
   }
 
-  async autoPreview(project, infoOutput, port) {
+  async autoPreview(project, infoOutput, port, diagnosticDirectory) {
     if (this.invocation.autoPreviewInvocation) {
       // The current official skill returns a business result/task handle.
       // Its legacy auto-preview CLI only prints spinner text on success.
@@ -235,6 +300,10 @@ export class OfficialWechatDevtools {
       const invocation = this.invocation.autoPreviewInvocation;
       return this.run(invocation.file, [...invocation.prefix, "auto_preview", "--project", project], {
         cwd: invocation.cwd, env: invocation.env,
+        // The observed successful official upload can exceed two minutes
+        // (135.7s including COS retries). Retain a bounded receipt window.
+        timeout: 360_000,
+        ...diagnosticOptions(diagnosticDirectory),
       });
     }
     const args = [
@@ -242,20 +311,22 @@ export class OfficialWechatDevtools {
     ];
     if (port !== undefined) args.push("--port", String(port));
     try {
-      return await this.run(this.invocation.file, this.args(args), this.options());
+      return await this.run(this.invocation.file, this.args(args),
+        this.options({ timeout: 360_000, ...diagnosticOptions(diagnosticDirectory) }));
     } finally {
       await rm(infoOutput, { force: true });
     }
   }
 
-  async preview(project, qrOutput, infoOutput, port) {
+  async preview(project, qrOutput, infoOutput, port, diagnosticDirectory) {
     const args = [
       "preview", "--project", project, "--qr-format", "image",
       "--qr-output", qrOutput, "--info-output", infoOutput, "--lang", "zh",
     ];
     if (port !== undefined) args.push("--port", String(port));
     try {
-      return await this.run(this.invocation.file, this.args(args), this.options());
+      return await this.run(this.invocation.file, this.args(args),
+        this.options(diagnosticOptions(diagnosticDirectory)));
     } finally {
       await rm(infoOutput, { force: true });
     }
@@ -356,16 +427,19 @@ export function classifyOfficialPreviewResult(output, tool = "auto_preview", { r
     disposition = "authorization_ready";
     boundary = "authorization_completed_preview_not_invoked";
   }
-  return { disposition, boundary, result };
+  return { disposition, boundary, result,
+    ...(output?.[processDiagnostic] ? { diagnostic: output[processDiagnostic] } : {}) };
 }
 
 export function officialPreviewError(error, tool = "auto_preview", { notInvoked = false } = {}) {
+  notInvoked ||= errorCode(error) === "device_feedback_official_diagnostic_unavailable";
   const official = classifyOfficialPreviewResult(undefined, tool);
   if (notInvoked) official.result.status = "not_invoked";
   return {
     ...official,
     disposition: notInvoked ? "manual_required" : "error",
     boundary: manualBoundary(error),
+    ...(error?.[processDiagnostic] ? { diagnostic: error[processDiagnostic] } : {}),
   };
 }
 
@@ -408,6 +482,7 @@ export async function invokeOfficial(generation, options, injected) {
       generation.project,
       infoOutput,
       options.port,
+      generation.directory,
     );
     return classifyOfficialPreviewResult(result);
   } catch (error) {

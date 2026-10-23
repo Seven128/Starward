@@ -1,0 +1,69 @@
+{
+  "status": "MISSING",
+  "requiredCellCount": 4,
+  "validCellCount": 1,
+  "cellIdentityMatchCount": 0,
+  "originalCellIdentityMatchCount": 1,
+  "publishedExactCount": 1,
+  "cacheCompleteCount": 0,
+  "missingCount": 4,
+  "invalidCount": 0,
+  "expiredCount": 0,
+  "unavailableSourceCount": 0,
+  "partialPixelCount": 0,
+  "inventoryInvalidCount": 0,
+  "inventoryMissingCount": 0,
+  "changedDuringReadCount": 0,
+  "fetchAttemptCount": 0,
+  "selectedPublicationSha256": "c84ef25094e6455c81003900636d08c515485258c3e5c884e19aa6b051908722",
+  "inventorySha256": "f8903922eb14702d5de6325c903fac296bbc69d94019c9d7844ee03ac71ea774",
+  "originalFinalSha256": "494729bb12cfd4209552f43fe44417abed79e475f00b286c1f47f8125745dd9f",
+  "finalSha256": null,
+  "originalFinalMatchCount": 0,
+  "originalProofSha256": "42ac8c46118cbb60729a6aff1426266d25b65aba44cc5539b70522ea31c46fe9",
+  "requiredFileCount": 3,
+  "requiredFileBytes": 88292,
+  "checkedFileCount": 5,
+  "products": [
+    {
+      "ordinal": 0,
+      "status": "MISSING",
+      "imageSha256": null,
+      "fileCount": 0,
+      "fileBytes": 0,
+      "expiredCount": 0
+    },
+    {
+      "ordinal": 1,
+      "status": "MISSING",
+      "imageSha256": null,
+      "fileCount": 0,
+      "fileBytes": 0,
+      "expiredCount": 0
+    },
+    {
+      "ordinal": 2,
+      "status": "MISSING",
+      "imageSha256": null,
+      "fileCount": 0,
+      "fileBytes": 0,
+      "expiredCount": 0
+    },
+    {
+      "ordinal": 3,
+      "status": "MISSING",
+      "imageSha256": null,
+      "fileCount": 0,
+      "fileBytes": 0,
+      "expiredCount": 0
+    },
+    {
+      "ordinal": 4,
+      "status": "PUBLISHED_EXACT",
+      "imageSha256": "304d5257e7dcc1990259adb05fbc83e48f2e9622574db4079ba27090e134790f",
+      "fileCount": 2,
+      "fileBytes": 82745,
+      "expiredCount": 0
+    }
+  ]
+}

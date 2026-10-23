@@ -3,6 +3,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import type { SemanticIcon, adoptedBIconPath } from "./semantic-asset";
+import { primaryMapIconPath } from "../navigation/primary-navigation";
 
 type IconProps = Parameters<typeof SemanticIcon>[0];
 type RenderedIcon = { type: string; props: Record<string, any> };
@@ -29,6 +30,7 @@ export function semanticIconRenderer(route: string, mode: DisplayMode = "DAY", u
         default: { getCurrentPages: () => [{ route: topRoute }] },
       };
       if (name === "@/state/app-store") return { useAppStore: (select: (state: { mode: DisplayMode }) => unknown) => select({ mode }) };
+      if (name === "@/navigation/primary-navigation") return { primaryMapIconPath };
       if (name === "./main-b-icon-files.json") return { default: JSON.parse(readFileSync(new URL("./main-b-icon-files.json", import.meta.url), "utf8")) };
       throw Error(`unexpected_semantic_icon_dependency:${name}`);
     },

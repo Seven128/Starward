@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "starward-geometry-current-demand-independent-review-v1",
+  "reviewDate": "2026-10-21",
+  "status": "P2_FIXED_AND_RECHECKED_NO_OPEN_P1_P2",
+  "frozenBaseline": {
+    "source": "502d9d644785e33af7ce1537bc1899a738725cc752d42daefaf95d66baee3448",
+    "bundle": "5a9f4b6bc8eb3e9c4dc8c3595467476d74e4664cd4db0c959a060ee0a83f99c1",
+    "path": "tmp/r17-normal-a1-review-r21-usb/source",
+    "taskInstrumentationExcludedFromProductionDelta": true
+  },
+  "sourceFiles": [
+    { "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts", "sha256": "14f7c106243d5cae58dc299a46345d7513e3affad6a76baac1bf4eac31bce0f5", "bytes": 6045 },
+    { "path": "apps/wechat-miniapp/src/hooks/use-resource-query.ts", "sha256": "ac6abd7bfbbad287fc74240085f1dcac6042b205e58881a4531b13be04adc8ce", "bytes": 4118 },
+    { "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx", "sha256": "8be2568d01fc26930456ddff93833da50861bac29ee9aaa4632a4334a2be3118", "bytes": 246314 },
+    { "path": "apps/wechat-miniapp/src/services/query-client.ts", "sha256": "a7c61193100506626c5e2d5638e253342cfd850a5192c147a7550746d934e430", "bytes": 1131 },
+    { "path": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.test.ts", "sha256": "cb0372d69f3eba51d5858dca667d145cb50168fb6db689102694e1a12bae792a", "bytes": 42665 }
+  ],
+  "installedDependencies": { "reactQuery": "5.90.21", "queryCore": "5.90.20", "resolutionOwner": "apps/wechat-miniapp" },
+  "findings": [
+    {
+      "severity": "P2",
+      "status": "FIXED_AND_INDEPENDENTLY_RECHECKED",
+      "title": "Superseded geometry response held returned A behind network retry backoff",
+      "owner": "apps/wechat-miniapp/src/services/query-client.ts",
+      "trigger": "A in flight; authoritative clock B before B render; A response rejected; clock A and fresh A render while B render is coalesced",
+      "beforePolicySha256": "d7e5526713f84c1932dd87c10320c3c24f4bbf4be7434d68033bb2f8a5c2ecd5",
+      "before": { "fetchStatusAfterRejection": "fetching", "callsAfter40Ms": 1, "secondCallHostElapsedMs": 1014.7687000000005 },
+      "repair": "Reuse existing MiniappRequestCancelled classifier in default Query retry; no automatic retry for explicit cancellation, failureCount < 1 for ordinary failures",
+      "after": { "fetchStatusAfterRejection": "idle", "callsAfter40Ms": 2, "secondCallHostElapsedMs": 7.317199999999957, "correctFinalModel": true },
+      "timingScope": "Local installed Query owner counterexample, not phone performance or a product budget"
+    }
+  ],
+  "verification": {
+    "independentObservationsPassed": 5,
+    "existingSharedResourceTestsPassed": 3,
+    "unhandledRejections": 0,
+    "actualProductionRetryPolicyRead": true,
+    "optimisticResultsEnabled": true,
+    "cases": [
+      "Superseded in-flight A followed by coalesced B and returned A resumes immediately",
+      "Optimistic observer suppresses queued stale A and restarts fresh A",
+      "New-window commit leaves no stale retry transport call",
+      "Fresh cached same-window model supplies the current exact instant without another request",
+      "Synchronous current transport exception retains one ordinary retry and recovers"
+    ],
+    "commands": [
+      "node tools/run-node.cjs --import tsx .codex/work-items/sky-map-performance-2026-10-18/tmp/review-geometry-live-demand-20261021.mts --expect-fixed",
+      "node ../../tools/run-node.cjs --import tsx --test src/hooks/use-resource-query.test.ts"
+    ],
+    "harnessScope": "Existing synthetic hook slots/effect boundary with real installed QueryClient/QueryObserver and production geometry/Resource/time/policy owners; not full React/Taro or target-runtime evidence"
+  },
+  "localEvidence": [
+    { "path": "tmp/review-geometry-live-demand-20261021-before.json", "sha256": "5453b22b556f856d6e4fbf16d32b24bd8097cf4345cbdda155ca248ba0156fa4", "bytes": 977 },
+    { "path": "tmp/review-geometry-live-demand-20261021-after.json", "sha256": "81a2a163086f3e4a2f54f997c7a6a5172ea113c4133c5d35e59a67b5becce82f", "bytes": 1238 },
+    { "path": "tmp/review-geometry-live-demand-20261021.mts", "sha256": "6b46018782325a63e1f8210cd35de608bf0a407ea8afc9c7dabfad7e0ab2c712", "bytes": 10280 }
+  ],
+  "unverified": [
+    "Updated task instrumentation against the final dispatch/validated/admission boundaries",
+    "Target input-to-accepted improvement including repeated enabled predicate cost",
+    "Ordinary Play and six-field extreme physical interaction acceptance",
+    "Heap retention/allocation churn and native exit cause",
+    "No-memory-leak conclusion and full Goal"
+  ],
+  "reviewerDidNotPerform": ["production edits", "shared Context/PLAN/HANDOFF edits", "phone or IDE control", "service changes", "build", "preview push", "commit", "upload"]
+}

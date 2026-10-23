@@ -1,15 +1,17 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import type {
   ObservationContext,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
-import { Provenance } from "@/components/provenance";
+import { SourceAttribution } from "@/components/source-attribution";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { FavoriteStar } from "@/components/selected-card-star";
@@ -34,7 +36,7 @@ import "./spot-detail-page.scss";
 import { guideThumbnail } from "./guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
 import { FacilityCard } from "@/components/facility-card";
-import { SourceDisclosure } from "@/components/source-disclosure";
+import { SourceEntry } from "@/components/source-entry";
 import { uniqueSourceRecords } from "@starward/miniapp-contracts";
 import { useFacilityGallery } from "./use-facility-gallery";
 import { ReadingImage } from "@/components/reading-image";
@@ -217,7 +219,7 @@ export function SpotDetailPage({
     if (detailPagePending.current) return;
     detailPagePending.current = true;
     try {
-      await Taro.switchTab({ url: "/pages/map/index" });
+      await openPrimaryPage("/pages/map/index");
       setMapReturnFailed(false);
     } catch { setMapReturnFailed(true); }
     finally { detailPagePending.current = false; }
@@ -458,14 +460,13 @@ export function SpotDetailPage({
                         </View>)}
                         {!facilities.length ? <Text className="type-secondary">设施资料待核验</Text> : null}
                         {sharedFacilityVerification ? <Text className="type-caption">以上设施最近核验：{formatDisplayDate(sharedFacilityVerification)}</Text> : null}
-                        {sharedFacilitySource ? <View><Text className="type-secondary">以上设施来源</Text><Provenance source={sharedFacilitySource} compact /></View> : null}
+                        {sharedFacilitySource ? <View><SourceAttribution presentation="credit" sources={[sharedFacilitySource]} /><SourceEntry id="site-facility-sources" label="设施来源" sources={[sharedFacilitySource]} /></View> : null}
                       </>}
                     {siteMediaState === "NO_SITE_MEDIA_VERIFIED" ? <Text className="type-caption">现场照片尚未核验</Text> : null}
                   </View>
                   <View className="site-reading-card card">
-                    <SourceDisclosure id="site-reading-source" label="资料来源与核验"
+                    <SourceEntry id="site-reading-source" label="资料来源与核验"
                       sources={uniqueSourceRecords([detail.spot.source, detail.route.source, ...(site.data?.data.sources ?? []), ...facilities.map(item => item.source)])} />
-                    <SoftButton label="全部来源与更新时间" onClick={() => openDetailPage(`/spot/data-source/index?spotId=${encodeURIComponent(spotId)}&contextId=${encodeURIComponent(observationContext.contextId)}`, "来源资料")}>全部来源与更新时间</SoftButton>
                   </View>
 
                 </View>

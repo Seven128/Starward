@@ -5,6 +5,10 @@ import path from "node:path";
 
 export function fail(code) { throw new Error(`device_test_${code}`); }
 
+// One sustained pointer gesture still fits the existing 15-second command
+// deadline; recording separately checks its remaining window before dispatch.
+export const MAX_SWIPE_DURATION_MS = 10_000;
+
 // Never surface a child's stderr: it may contain a serial, URL, token or user text.
 export function runTool(file, args, { timeout = 15_000, maxBytes = 16 * 1024 * 1024, onStdout } = {}) {
   return new Promise((resolve, reject) => {
@@ -149,7 +153,7 @@ export function screenGestureArguments(action, values, size) {
   if (action === "tap") return ["tap", ...normalizedPoint(...values, size)];
   if (action === "swipe") {
     const [x1, y1, x2, y2, ms] = values;
-    if (!Number.isInteger(ms) || ms < 100 || ms > 2000) fail("swipe_duration_invalid");
+    if (!Number.isInteger(ms) || ms < 100 || ms > MAX_SWIPE_DURATION_MS) fail("swipe_duration_invalid");
     return ["swipe", ...normalizedPoint(x1, y1, size), ...normalizedPoint(x2, y2, size), ms];
   }
   fail("unsupported_input");

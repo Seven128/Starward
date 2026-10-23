@@ -1,5 +1,6 @@
 import Taro, { useDidShow, useDidHide } from "@tarojs/taro";
-import { Button, Text } from "@tarojs/components";
+import { Text } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import type { SpotId } from "@starward/miniapp-contracts";
 import { useAccountPlans } from "@/hooks/use-account-plans";

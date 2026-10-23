@@ -1,91 +1,97 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createPrimaryNavigationController, type PrimaryNavigationState } from "./primary-navigation-controller";
-import { primaryNavigationLayout } from "./primary-navigation";
 
-function deferred() {
-  let resolve!: () => void, reject!: (error: unknown) => void;
-  const promise = new Promise<void>((yes, no) => { resolve = yes; reject = no; });
-  return { promise, resolve, reject };
-}
+const MAP = "pages/map/index", MY = "pages/my/index";
 function harness() {
-  const map = { route: "pages/map/index" }, my = { route: "pages/my/index" };
-  let page = map, next = deferred();
-  const changes: PrimaryNavigationState[] = [], calls: string[] = [];
-  const navigation = createPrimaryNavigationController({
-    currentPage: () => page,
-    switchTab: url => { calls.push(url); return next.promise; },
-    changed: state => changes.push(state),
-  });
-  return { map, my, navigation, changes, calls, current: () => changes.at(-1)!, next: () => next,
-    setPage(value: { route: string }) { page = value; }, renew() { next = deferred(); } };
+  const map = { route: MAP }, child = { route: "spot/search/index" };
+  let current = map;
+  const changes: PrimaryNavigationState[] = [];
+  const controller = createPrimaryNavigationController({ currentPage: () => current, changed: state => changes.push(state) });
+  return { map, child, controller, changes, setCurrent(page: { route: string }) { current = page; } };
 }
 
-test("selection comes from a real page show, including an independent tab instance", async () => {
-  const h = harness(); h.navigation.show(h.map);
-  const opened = h.navigation.open("pages/my/index");
-  assert.equal(h.current().route, "pages/map/index"); assert.equal(h.current().pending, "pages/my/index");
-  h.setPage(h.my); h.next().resolve(); await opened;
-  assert.equal(h.current().route, "pages/map/index", "a successful promise cannot invent a selected page");
-  const other = harness(); other.setPage(h.my); other.navigation.show(h.my);
-  assert.equal(other.current().route, "pages/my/index");
-  other.navigation.show(other.map); assert.equal(other.current().route, "pages/my/index", "hidden pages cannot claim selection");
+test("one exact native Map show admits a logical presentation; hidden or replacement Pages cannot", () => {
+  const h = harness();
+  assert.equal(h.controller.openMy(), false); assert.equal(h.controller.presentationIdentity(MAP), null);
+  assert.equal(h.controller.show(h.child), false);
+  assert.equal(h.controller.show(h.map), true);
+  assert.equal(h.controller.isForeground(MAP), true); assert.equal(h.controller.owns(h.map), true);
+  const original = h.controller.presentationIdentity(MAP);
+  h.setCurrent(h.child);
+  assert.equal(h.controller.isForeground(MAP), false); assert.equal(h.controller.openMy(), false);
+  const replacement = { route: MAP }; h.setCurrent(replacement);
+  assert.equal(h.controller.show(replacement), false);
+  assert.equal(h.controller.presentationIdentity(MAP), original);
 });
 
-test("a failed switch retains the current page, presents retry, and permits a new attempt", async () => {
-  const h = harness(); h.navigation.show(h.map);
-  const first = h.navigation.open("pages/my/index"); h.next().reject(new Error("route rejected")); await first;
-  assert.deepEqual(h.current(), { route: "pages/map/index", pending: null, failed: "pages/my/index" });
-  h.renew(); const retry = h.navigation.open("pages/my/index");
-  assert.equal(h.current().failed, null); h.setPage(h.my); h.navigation.hide(); h.next().resolve(); await retry;
-  assert.deepEqual(h.calls, ["/pages/my/index", "/pages/my/index"]);
+test("My opens and closes through explicit root completion with independent activation identities", () => {
+  const h = harness(); h.controller.show(h.map); const mapActivation = h.controller.presentationIdentity(MAP);
+  assert.equal(h.controller.openMy(), true);
+  const opening = h.controller.getSnapshot(), myActivation = h.controller.presentationIdentity(MY);
+  assert.equal(opening.phase, "opening"); assert.equal(opening.route, MY); assert.equal(opening.foregroundRoute, MY);
+  assert.ok(myActivation && myActivation !== mapActivation); assert.equal(h.controller.presentationIdentity(MAP), null);
+  assert.equal(h.controller.finishTransition(opening.transitionTicket!), true);
+  assert.equal(h.controller.getSnapshot().phase, "open");
+  assert.equal(h.controller.closeMy(), true);
+  const closing = h.controller.getSnapshot(); assert.equal(closing.phase, "closing"); assert.equal(closing.route, MAP);
+  assert.equal(closing.foregroundRoute, null); assert.equal(h.controller.isForeground(MAP), false);
+  assert.equal(h.controller.isForeground(MY), false, "exiting My cannot accept input or resume Map demands");
+  assert.notEqual(h.controller.presentationIdentity(MAP), mapActivation);
+  assert.equal(h.controller.presentationIdentity(MY), null);
+  assert.equal(h.controller.finishTransition(closing.transitionTicket!), true);
+  assert.equal(h.controller.getSnapshot().phase, "closed");
+  assert.equal(h.controller.isForeground(MAP), true); assert.equal(h.controller.getSnapshot().foregroundRoute, MAP);
 });
 
-test("repeat taps cannot dispatch concurrent switches or reselect the current page", async () => {
-  const h = harness(); h.navigation.show(h.map); await h.navigation.open("pages/map/index");
-  assert.equal(h.calls.length, 0);
-  const first = h.navigation.open("pages/my/index"); await h.navigation.open("pages/my/index");
-  assert.equal(h.calls.length, 1); h.next().reject(new Error("fail")); await first;
+test("repeated intents are no-ops while reverse commands replace the ticket and retire late completion", () => {
+  const h = harness(); h.controller.show(h.map); h.controller.openMy();
+  const opening = h.controller.getSnapshot(), activation = h.controller.presentationIdentity(MY);
+  assert.equal(h.controller.openMy(), false); assert.equal(h.controller.getSnapshot(), opening);
+  h.controller.closeMy(); const closing = h.controller.getSnapshot();
+  assert.notEqual(closing.transitionTicket, opening.transitionTicket);
+  assert.equal(h.controller.isForeground(MAP), false);
+  assert.equal(h.controller.finishTransition(opening.transitionTicket!), false);
+  h.controller.openMy(); const reopened = h.controller.getSnapshot();
+  assert.equal(h.controller.isForeground(MY), true, "reverse input can retake an exiting presentation");
+  assert.notEqual(h.controller.presentationIdentity(MY), activation);
+  assert.equal(h.controller.finishTransition(closing.transitionTicket!), false);
+  assert.equal(h.controller.finishTransition(reopened.transitionTicket!), true);
+  assert.equal(h.controller.getSnapshot().phase, "open");
 });
 
-test("same-page layout resync retains an in-flight switch and its retry feedback", async () => {
-  const h = harness(); h.navigation.show(h.map);
-  const first = h.navigation.open("pages/my/index");
-  h.navigation.show(h.map); h.navigation.show(h.map);
-  const resynced = h.current();
-  const repeated = h.navigation.open("pages/my/index");
-  h.next().reject(new Error("native switch rejected after resize"));
-  await Promise.all([first, repeated]);
-  assert.equal(resynced.pending, "pages/my/index");
-  assert.equal(h.calls.length, 1, "a layout resync must not permit another native switch");
-  assert.deepEqual(h.current(), { route: "pages/map/index", pending: null, failed: "pages/my/index" });
-  h.navigation.show(h.map);
-  assert.equal(h.current().failed, "pages/my/index", "resizing must not erase useful retry feedback");
-  h.navigation.hide(); h.navigation.show(h.map);
-  assert.deepEqual(h.current(), { route: "pages/map/index", pending: null, failed: null });
+test("native child hide/show suspends effective foreground without changing logical activation", () => {
+  const h = harness(); h.controller.show(h.map); h.controller.openMy();
+  const opening = h.controller.getSnapshot(), identity = h.controller.presentationIdentity(MY);
+  h.setCurrent(h.child); h.controller.hide();
+  assert.equal(h.controller.getSnapshot().route, MY); assert.equal(h.controller.getSnapshot().foregroundRoute, null);
+  assert.equal(h.controller.isForeground(MY), false); assert.equal(h.controller.presentationIdentity(MY), identity);
+  assert.equal(h.controller.closeMy(), false, "a hidden native Page cannot accept primary UI input");
+  assert.equal(h.controller.finishTransition(opening.transitionTicket!), true, "a root timer may settle while its native owner is hidden");
+  h.setCurrent(h.map); h.controller.show(h.map);
+  assert.equal(h.controller.getSnapshot().phase, "open"); assert.equal(h.controller.isForeground(MY), true);
+  assert.equal(h.controller.presentationIdentity(MY), identity);
 });
 
-test("a late rejection after child navigation, hide, return or destruction cannot change current feedback", async () => {
-  for (const retire of ["hide", "return", "new-page", "dispose"] as const) {
-    const h = harness(); h.navigation.show(h.map); const first = h.navigation.open("pages/my/index");
-    if (retire === "dispose") h.navigation.dispose();
-    else if (retire === "new-page") h.setPage({ route: "pages/map/index" });
-    else { h.navigation.hide(); if (retire === "return") h.navigation.show(h.map); }
-    const count = h.changes.length; h.next().reject(new Error("obsolete")); await first;
-    assert.equal(h.changes.length, count, retire);
-    assert.equal(h.current().failed, null, retire);
-  }
+test("same-page layout resynchronization neither restarts a transition nor replaces a stable snapshot", () => {
+  const h = harness(); h.controller.show(h.map); h.controller.openMy();
+  const opening = h.controller.getSnapshot(), identity = h.controller.presentationIdentity(MY), count = h.changes.length;
+  h.controller.show(h.map); h.controller.show(h.map);
+  assert.equal(h.controller.getSnapshot(), opening); assert.equal(h.changes.length, count);
+  assert.equal(h.controller.presentationIdentity(MY), identity);
 });
 
-test("page and bar reserve the same valid native safe area; missing metrics preserve CSS fallback", () => {
-  const info = { windowHeight: 844, screenHeight: 844, safeArea: { bottom: 810 } };
-  const map = primaryNavigationLayout("pages/map/index", info), my = primaryNavigationLayout("pages/my/index", info);
-  assert.equal(map.pageHeight, 756); assert.equal(map.style["--primary-nav-height"], "88px");
-  assert.equal(my.pageHeight, 757); assert.equal(my.style["--primary-nav-height"], "87px");
-  for (const invalid of [{}, { screenHeight: NaN, safeArea: { bottom: 0 } }, { screenHeight: 844, safeArea: { bottom: 845 } }]) {
-    const layout = primaryNavigationLayout("pages/map/index", invalid);
-    assert.equal(layout.pageHeight, undefined); assert.ok(layout.style["--primary-nav-bottom"].includes("env(safe-area-inset-bottom)"));
-  }
-  const resized = primaryNavigationLayout("pages/map/index", { windowHeight: 600, screenHeight: 600, safeArea: { bottom: 600 } });
-  assert.equal(resized.pageHeight, 528); assert.equal(resized.style["--primary-nav-height"], "72px");
+test("dispose retires ownership, transitions and scopes; subscribers can detach without affecting others", () => {
+  const h = harness(); let first = 0, second = 0;
+  const detach = h.controller.subscribe(() => { first++; }); h.controller.subscribe(() => { second++; });
+  h.controller.show(h.map); detach(); h.controller.openMy();
+  const ticket = h.controller.getSnapshot().transitionTicket!;
+  assert.equal(first, 1); assert.equal(second, 2);
+  h.controller.dispose(); const terminal = h.controller.getSnapshot();
+  assert.equal(second, 3); assert.equal(terminal.disposed, true); assert.equal(terminal.foregroundRoute, null);
+  assert.equal(h.controller.presentationIdentity(MY), null); assert.equal(h.controller.owns(h.map), false);
+  assert.equal(h.controller.isForeground(MY), false); assert.equal(h.controller.show(h.map), false);
+  assert.equal(h.controller.finishTransition(ticket), false); assert.equal(h.controller.openMy(), false);
+  h.controller.dispose(); h.controller.hide(); assert.equal(h.controller.getSnapshot(), terminal);
+  assert.equal(second, 3);
 });

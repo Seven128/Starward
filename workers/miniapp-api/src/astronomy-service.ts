@@ -10,6 +10,7 @@ import type {
   SkyTarget,
   SkyTargetInstantData,
   SkyGeometryWindowData,
+  SkyGeometryWindowMode,
   SourceSummary,
 } from "@starward/miniapp-contracts";
 import { assertSkyObservationFrames, assertSkyTargetFrames, OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
@@ -427,9 +428,9 @@ export class AstronomyService implements AstronomyApplicationPort {
   /** Reuse the bounded geometry cache without weather, decisions, or a Context
    * write. The caller revalidates private access after this asynchronous read. */
   async computeGeometryWindow(context: ObservationContext, at: string, suppliedDetail?: SpotDetail,
-    proposalId?: string): Promise<ApiEnvelope<SkyGeometryWindowData>> {
+    proposalId?: string, mode?: SkyGeometryWindowMode): Promise<ApiEnvelope<SkyGeometryWindowData>> {
     if (Boolean(suppliedDetail) !== Boolean(proposalId)) throw new Error("proposal_sky_context_invalid");
-    const window = skyGeometryWindow(at, context.timezone);
+    const window = skyGeometryWindow(at, context.timezone, mode);
     if (Date.parse(at) > this.now()) throw new Error("sky_geometry_time_in_future");
     const spotId = proposalId ?? (context.location.kind === "FORMAL_SPOT" ? context.location.spotId : null);
     if (!spotId) throw new Error("formal_spot_context_required");

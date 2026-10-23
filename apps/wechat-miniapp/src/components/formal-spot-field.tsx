@@ -1,4 +1,5 @@
-import { Button, Input, Text, View } from "@tarojs/components";
+import { Input, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useState } from "react";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useResourceQuery } from "../hooks/use-resource-query";

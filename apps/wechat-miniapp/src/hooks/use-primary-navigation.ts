@@ -1,53 +1,41 @@
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { primaryNavigationLayout, type PrimaryPageRoute } from "@/navigation/primary-navigation";
-import { PRIMARY_NAVIGATION_BLACKOUT_OWNER, type PrimaryNavigationHandle, type PrimaryNavigationBlackout } from "@/navigation/primary-navigation-cover";
+import { createPrimaryNavigationController } from "@/navigation/primary-navigation-controller";
+import type { PrimaryNativePage } from "@/navigation/primary-navigation-controller";
+import { registerPrimaryMapHost } from "@/navigation/primary-page-navigation";
+import { useReducedMotion } from "./use-reduced-motion";
 
-type NativePrimaryPage = { route?: string; getTabBar?(): unknown };
-function nativeBar(page: NativePrimaryPage) {
-  return page.getTabBar?.() as PrimaryNavigationHandle | undefined;
-}
-
+export const PRIMARY_MY_TRANSITION_MS = 240;
 export function readPrimaryNavigationLayout(route: PrimaryPageRoute) {
   try { return primaryNavigationLayout(route, Taro.getWindowInfo()); }
   catch { return primaryNavigationLayout(route); }
 }
 
-/** Each native tab owns its own custom-bar instance; returning children resync it. */
-export function usePrimaryNavigation(route: PrimaryPageRoute, blackout: PrimaryNavigationBlackout | null = null) {
+/** One physical Map owns the logical My presentation and full native-page geometry. */
+export function usePrimaryNavigation(route: PrimaryPageRoute) {
+  const page = useRef(Taro.getCurrentInstance().page as PrimaryNativePage | undefined).current;
   const [layout, setLayout] = useState(() => readPrimaryNavigationLayout(route));
-  const blackoutRef = useRef(blackout);
-  blackoutRef.current = blackout;
-  const life = useRef({ alive: true, visible: false, revision: 0 });
-  // Hidden theme rerenders see the global child page; retain this mount's owner.
-  const page = useRef(Taro.getCurrentInstance().page).current;
-  const sync = () => {
-    if (!life.current.alive || !life.current.visible || !page || Taro.getCurrentPages().at(-1) !== page) return;
-    setLayout(readPrimaryNavigationLayout(route));
-    // Native Component methods receive serializable values, never a Page object.
-    const bar = nativeBar(page);
-    bar?.cover(PRIMARY_NAVIGATION_BLACKOUT_OWNER, blackoutRef.current !== null, blackoutRef.current ?? undefined);
-    bar?.show(route);
-  };
-  useDidShow(() => {
-    life.current.visible = true;
-    const revision = ++life.current.revision;
-    sync();
-    // One native render turn handles first mounting; no polling or timer loop.
-    void Taro.nextTick(() => { if (life.current.revision === revision) sync(); });
-  });
-  useDidHide(() => {
-    life.current.visible = false; life.current.revision++;
-    if (page) nativeBar(page)?.hide();
-  });
-  useResize(sync);
-  useEffect(sync, [blackout?.phase, blackout?.durationMs]);
-  useEffect(() => {
-    life.current.alive = true;
-    return () => {
-      life.current.alive = false; life.current.revision++;
-      if (page) nativeBar(page)?.cover(PRIMARY_NAVIGATION_BLACKOUT_OWNER, false);
-    };
-  }, []);
-  return { ...layout, style: layout.style as CSSProperties };
+  const reducedMotion = useReducedMotion();
+  const host = useRef<ReturnType<typeof createPrimaryNavigationController>>();
+  if (!host.current) host.current = createPrimaryNavigationController({ currentPage() {
+    try { return Taro.getCurrentPages().at(-1); } catch { return undefined; }
+  } });
+  const controller = host.current;
+  const presentation = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
+  useLayoutEffect(() => registerPrimaryMapHost(controller), [controller]);
+  useDidShow(() => { if (page) controller.show(page); setLayout(readPrimaryNavigationLayout(route)); });
+  useDidHide(controller.hide);
+  useResize(() => setLayout(readPrimaryNavigationLayout(route)));
+  useEffect(() => () => controller.dispose(), [controller]);
+  useLayoutEffect(() => {
+    const ticket = presentation.transitionTicket;
+    if (ticket === null) return;
+    if (reducedMotion) { controller.finishTransition(ticket); return; }
+    const timer = setTimeout(() => controller.finishTransition(ticket), PRIMARY_MY_TRANSITION_MS);
+    return () => clearTimeout(timer);
+  }, [controller, presentation.transitionTicket, reducedMotion]);
+  return { ...layout, style: { ...layout.style,
+    "--primary-my-transition-duration": `${reducedMotion ? 0 : PRIMARY_MY_TRANSITION_MS}ms`,
+  } as CSSProperties, controller, presentation, page };
 }

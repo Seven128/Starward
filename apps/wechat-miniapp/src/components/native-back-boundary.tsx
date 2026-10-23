@@ -1,20 +1,40 @@
 import { PageContainer, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { usePagePresentationContext, type PresentedPage } from "@/navigation/page-presentation";
 
 type MapLeaveCycle = { generation: number; commandSettled: boolean; exited: boolean };
 
 /** One native Back command lifetime. Auxiliary layers mount shown and retire
  * after leave; Map retains its foreground subtree and before-leave protocol. */
-export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
+type NativeBackBoundaryProps = {
   active: boolean;
   onBack: () => void | Promise<void>;
   /** Map's existing foreground container also carries its event modal. */
   nativeMapContent?: ReactNode;
-}) {
+};
+export function NativeBackBoundary(props: NativeBackBoundaryProps) {
+  const page = usePagePresentationContext();
+  return page?.back && props.nativeMapContent === undefined
+    ? <PresentedBackBoundary {...props} page={page} />
+    : <NativeBackContainer {...props} />;
+}
+function PresentedBackBoundary({ active, onBack, page }: NativeBackBoundaryProps & { page: PresentedPage }) {
+  const current = useRef({ onBack, page }); current.current = { onBack, page };
+  const identity = page.identity();
+  useLayoutEffect(() => {
+    if (!active || !page.visible) return;
+    return page.back?.register(() => {
+      if (current.current.page.isCurrent()) return current.current.onBack();
+    });
+  }, [active, page.visible, identity, page.back]);
+  return null;
+}
+function NativeBackContainer({ active, onBack, nativeMapContent }: NativeBackBoundaryProps) {
   const isMap = nativeMapContent !== undefined;
-  const live = useRef({ active, isMap, onBack, visible: true, alive: true, generation: 0, handled: false });
+  const live = useRef({ active, isMap, onBack, visible: true, alive: true, generation: 0, handled: false,
+    enteredGeneration: null as number | null });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapLeave = useRef<MapLeaveCycle | null>(null);
   const [presentation, setPresentation] = useState({ generation: 0, armed: !isMap });
@@ -22,6 +42,7 @@ export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
   if (state.active !== active || state.isMap !== isMap) {
     state.generation++;
     state.handled = false;
+    state.enteredGeneration = null;
     mapLeave.current = null;
   }
   Object.assign(state, { active, isMap, onBack });
@@ -40,7 +61,7 @@ export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
   };
   useEffect(() => {
     state.alive = true;
-    return () => { state.alive = false; state.generation++; mapLeave.current = null; clear(); };
+    return () => { state.alive = false; state.generation++; state.enteredGeneration = null; mapLeave.current = null; clear(); };
   }, []);
   useEffect(() => {
     setPresentation({ generation: state.generation, armed: false });
@@ -48,7 +69,7 @@ export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
     return clear;
   }, [active, isMap]);
   useDidHide(() => {
-    state.visible = false; state.generation++; mapLeave.current = null; clear();
+    state.visible = false; state.generation++; state.enteredGeneration = null; mapLeave.current = null; clear();
     setPresentation({ generation: state.generation, armed: false });
   });
   useDidShow(() => {
@@ -56,13 +77,18 @@ export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
     arm(state.generation, isMap ? 32 : undefined);
   });
   const generation = state.generation;
+  const shown = active && state.visible && presentation.armed && presentation.generation === generation;
   const rearmMap = (cycle: MapLeaveCycle) => {
     if (mapLeave.current === cycle && current(cycle.generation)
       && cycle.commandSettled && cycle.exited && timer.current === null) arm(cycle.generation, 32);
   };
   const handleLeave = () => {
-    if (!current(generation) || state.handled) return;
+    // Programmatic retirement also emits leave. A newly active successor must
+    // first be shown and acknowledge its own native entry before owning Back.
+    if (!current(generation) || state.handled
+      || (isMap && (!shown || state.enteredGeneration !== generation))) return;
     state.handled = true;
+    state.enteredGeneration = null;
     const consumed = ++state.generation;
     const cycle = isMap ? { generation: consumed, commandSettled: false, exited: false } : null;
     mapLeave.current = cycle;
@@ -75,7 +101,6 @@ export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
       else if (current(consumed)) arm(consumed, 0);
     });
   };
-  const shown = active && state.visible && presentation.armed && presentation.generation === generation;
   const handleMapAfterLeave = () => {
     const cycle = mapLeave.current;
     // The callback may belong to the leaving render or its hidden successor.
@@ -84,7 +109,9 @@ export function NativeBackBoundary({ active, onBack, nativeMapContent }: {
     rearmMap(cycle);
   };
   const handleMapAfterEnter = () => {
-    if (shown && current(generation) && mapLeave.current?.generation === generation) {
+    if (!shown || !current(generation)) return;
+    state.enteredGeneration = generation;
+    if (mapLeave.current?.generation === generation) {
       mapLeave.current = null;
       state.handled = false;
     }

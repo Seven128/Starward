@@ -4,9 +4,9 @@ import { mkdir, readFile, realpath, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { TerrainService } from "../../workers/miniapp-api/src/terrain-service.ts";
-import { validateTerrainPublication, validateTerrainAsset, type TerrainPublication } from "../../workers/miniapp-api/src/terrain-publication.ts";
-import { terrainFixedRequest, terrainWindowRequest, terrainRequestKey } from "../../workers/miniapp-api/src/terrain-request.ts";
-import { terrainInventoryVersion, readTerrainFixedInventory, readTerrainFixedAsset, type TerrainFixedInventory } from "../../workers/miniapp-api/src/terrain-fixed-publication.ts";
+import { validateTerrainPublication, validateTerrainAsset, terrainRequestIsCovered, type TerrainPublication } from "../../workers/miniapp-api/src/terrain-publication.ts";
+import { terrainFixedRequest, terrainWindowRequest, terrainRequestKey, type TerrainRenderRequest } from "../../workers/miniapp-api/src/terrain-request.ts";
+import { terrainInventoryVersion, readTerrainFixedInventory, readTerrainFixedAsset, terrainFixedInventoryRequest, type TerrainFixedInventory } from "../../workers/miniapp-api/src/terrain-fixed-publication.ts";
 import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
 import { displayRasterWindowForBounds, type RasterBounds } from "@starward/coordinate-system";
 
@@ -48,9 +48,28 @@ async function preserveProof(file: string, proof: Buffer, publication: TerrainPu
   return proof;
 }
 
+/** Original immutable proof bytes, not a refreshed runtime-cache pointer. */
+export interface PreparedTerrainProduct { proof: Buffer; bytes: Buffer }
+function admitProduct(request: TerrainRenderRequest, product: PreparedTerrainProduct, requireComplete = false) {
+  if (product.proof.length > 1024 * 1024) throw new Error("terrain_publication_hash_mismatch");
+  const publication = validateTerrainPublication(JSON.parse(product.proof.toString("utf8")));
+  if (publication.schemaVersion !== "starward-terrain-publication-v4"
+    || publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_fixed_publication_invalid");
+  const actual = publication.fixedWindow ? terrainWindowRequest(publication.fixedWindow) : terrainFixedRequest(publication.fixedRaster!);
+  if (terrainRequestKey(request) !== terrainRequestKey(actual) || !terrainRequestIsCovered(publication, request))
+    throw new Error("terrain_publication_identity_conflict");
+  if (requireComplete && (publication.validPixelCount !== publication.image.width * publication.image.height
+    || publication.sourceIssues?.length || publication.unavailableSourceTiles.length)) throw new Error("terrain_publication_sources_incomplete");
+  validateTerrainAsset(product.bytes, publication);
+  return { ...product, publication };
+}
+
 /** Operator-selected finite targets. Source manifests and PNGs are copied into
  * an immutable static-HTTP directory; inventory.json is the final commit. */
-export async function publishFixedTerrain(input: { output: string; cache: string; previous?: string; targets: { name: string; boundsGcj02: RasterBounds }[] }) {
+export async function publishFixedTerrain(input: { output: string; cache: string; previous?: string; targets: { name: string; boundsGcj02: RasterBounds }[];
+  /** Explicit complete products for every requested cell and window. A missing
+   * product must reject; this path never refreshes runtime cache or reads source. */
+  preparedProduct?: (request: TerrainRenderRequest) => Promise<PreparedTerrainProduct> }) {
   if (!path.isAbsolute(input.output) || !path.isAbsolute(input.cache) || path.resolve(input.output) === path.resolve(input.cache)
     || (input.previous !== undefined && (!path.isAbsolute(input.previous) || path.resolve(input.previous) === path.resolve(input.output)
       || path.resolve(input.previous) === path.resolve(input.cache)))
@@ -64,27 +83,51 @@ export async function publishFixedTerrain(input: { output: string; cache: string
   const previousAssets = [...(previous?.assets ?? []), ...(previous?.retainedAssets ?? [])];
   await mkdir(input.output, { recursive: true });
   const terrain = new TerrainService({ directory: input.cache });
-  const reusePrevious = async (key: string) => {
+  const reusePrevious = async (request: TerrainRenderRequest) => {
+    const key = terrainRequestKey(request);
     const entry = previous?.assets.find(asset => asset.key === key);
     if (!entry) return;
     const pointer = path.join(input.cache, key + ".json");
     try { await stat(pointer); return; }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
-    const { publication, bytes } = await readTerrainFixedAsset(input.previous!, entry);
+    const original = await readTerrainFixedAsset(input.previous!, entry);
+    const { publication, bytes, proof: originalProof } = admitProduct(request, { bytes: original.bytes,
+      proof: await readFile(path.join(input.previous!, entry.file + ".json")) });
     await mkdir(input.cache, { recursive: true });
     await immutableWrite(path.join(input.cache, entry.file), bytes);
     const proof = await preserveProof(path.join(input.cache, entry.file + ".json"),
-      await readFile(path.join(input.previous!, entry.file + ".json")), publication, bytes);
+      originalProof, publication, bytes);
     // An explicitly populated newer cache pointer wins. Never replace it with
     // the previous release merely because that release remains readable.
     try { await writeFile(pointer, proof, { flag: "wx" }); }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error; }
+  };
+  const copyProduct = async (product: ReturnType<typeof admitProduct>, key: string) => {
+    const { publication, bytes, proof } = product;
+    await immutableWrite(path.join(input.output, publication.image.file), bytes);
+    const stableProof = await preserveProof(path.join(input.output, publication.image.file + ".json"), proof, publication, bytes);
+    return { key, file: publication.image.file, publicationSha256: hash(stableProof) };
   };
   try {
     // Previous final products are immutable inputs too. They need not have a
     // regenerable-cache pointer and must not trigger source work just to carry
     // a still-current spatial identity into the next release.
     const prepared = new Map<string, TerrainPublication>();
+    const copiedPrepared = new Map<string, TerrainFixedInventory["assets"][number]>();
+    const carryPrepared = async (request: TerrainRenderRequest) => {
+      const key = terrainRequestKey(request), existing = prepared.get(key);
+      if (existing) return existing;
+      const product = admitProduct(request, await input.preparedProduct!(request), true);
+      if (product.publication.fixedWindow?.cells.some(cell => {
+        const window = product.publication.fixedWindow!;
+        const publication = prepared.get(terrainRequestKey(terrainFixedRequest({ grid: window.grid, zoom: window.zoom,
+          tilePixels: window.tilePixels, x: cell.x, y: cell.y, span: 1 })));
+        return !publication || publication.publicationId !== cell.publicationId || publication.image.file !== cell.file;
+      })) throw new Error("terrain_publication_identity_conflict");
+      copiedPrepared.set(key, await copyProduct(product, key));
+      prepared.set(key, product.publication);
+      return product.publication;
+    };
     for (const target of input.targets) {
       const b = target.boundsGcj02;
       if (typeof target.name !== "string" || !target.name.trim() || target.name.length > 120) throw new Error("terrain_publication_targets_invalid");
@@ -94,13 +137,15 @@ export async function publishFixedTerrain(input: { output: string; cache: string
       for (let row = 0; row < window.rows; row++) for (let column = 0; column < window.columns; column++) {
         const region = { grid: window.grid, zoom: window.zoom,
           x: window.x + column, y: window.y + row, tilePixels: 256 as const, span: 1 as const };
-        await reusePrevious(terrainRequestKey(terrainFixedRequest(region)));
-        const cell = await terrain.prepareFixedCell(region);
+        const cellRequest = terrainFixedRequest(region);
+        if (!input.preparedProduct) await reusePrevious(cellRequest);
+        const cell = input.preparedProduct ? await carryPrepared(cellRequest) : await terrain.prepareFixedCell(region);
         if (!cell || cell.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_publication_sources_incomplete");
         prepared.set(terrainRequestKey(terrainFixedRequest(region)), cell);
       }
-      await reusePrevious(terrainRequestKey(terrainWindowRequest(window)));
-      const publication = await terrain.getPublication(request);
+      const windowRequest = terrainWindowRequest(window);
+      if (!input.preparedProduct) await reusePrevious(windowRequest);
+      const publication = input.preparedProduct ? await carryPrepared(windowRequest) : await terrain.getPublication(request);
       if (!publication?.fixedWindow || publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_publication_sources_incomplete");
       prepared.set(terrainRequestKey(terrainWindowRequest(publication.fixedWindow)), publication);
     }
@@ -108,19 +153,17 @@ export async function publishFixedTerrain(input: { output: string; cache: string
     const copy = async (directory: string, file: string, key: string, expectedHash?: string) => {
       const proof = await readFile(path.join(directory, file + ".json"));
       if (expectedHash && hash(proof) !== expectedHash) throw new Error("terrain_publication_hash_mismatch");
-      const publication = validateTerrainPublication(JSON.parse(proof.toString("utf8")));
-      if (publication.schemaVersion !== "starward-terrain-publication-v4"
-        || publication.image.file !== file || publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_fixed_publication_invalid");
-      const request = publication.fixedWindow ? terrainWindowRequest(publication.fixedWindow) : terrainFixedRequest(publication.fixedRaster!);
-      if (key !== terrainRequestKey(request)) throw new Error("terrain_publication_identity_conflict");
-      const bytes = validateTerrainAsset(await readFile(path.join(directory, file)), publication);
-      await immutableWrite(path.join(input.output, publication.image.file), bytes);
-      const stableProof = await preserveProof(path.join(input.output, file + ".json"), proof, publication, bytes);
-      return { key, file: publication.image.file, publicationSha256: hash(stableProof) };
+      const request = terrainFixedInventoryRequest({ key, file, publicationSha256: hash(proof) });
+      if (!request) throw new Error("terrain_publication_identity_conflict");
+      const product = admitProduct(request, { proof, bytes: await readFile(path.join(directory, file)) });
+      if (product.publication.image.file !== file) throw new Error("terrain_fixed_publication_invalid");
+      return copyProduct(product, key);
     };
     // Current pointers select one version per requested spatial identity. Old
     // per-image cache proofs must never become competing current publications.
     for (const key of [...prepared.keys()].sort()) {
+      const copied = copiedPrepared.get(key);
+      if (copied) { assets.push(copied); continue; }
       const publication = prepared.get(key)!;
       const predecessor = previousAssets.find(asset => asset.file === publication.image.file);
       assets.push(await copy(predecessor ? input.previous! : input.cache, publication.image.file, key, predecessor?.publicationSha256));

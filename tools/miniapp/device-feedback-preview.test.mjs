@@ -129,7 +129,7 @@ test("current official push retains business success or task identity without a 
     assert.equal(result, output);
     assert.deepEqual(calls, [{ file: "current",
       args: ["skill-entry", "-c", "Codex", "auto_preview", "--project", "prepared-project"],
-      options: { cwd: current.cwd, env: current.env } }]);
+      options: { cwd: current.cwd, env: current.env, timeout: 360_000 } }]);
     assert.equal(classifyOfficialPreviewResult(result).disposition,
       value.success ? "completed" : value.taskId ? "pending" : "unknown");
   }

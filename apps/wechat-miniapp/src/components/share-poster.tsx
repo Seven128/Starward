@@ -1,5 +1,6 @@
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { Button, Canvas, Image, Text, View } from "@tarojs/components";
+import { Canvas, Image, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { StatusPanel } from "./status-panel";

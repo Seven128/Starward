@@ -29,7 +29,7 @@ test("the native restoration event does not withdraw its command and reset the d
   visit(source); assert.ok(expression);
   const commands: (number | undefined)[] = [], lastScroll = { current: { identity: "spot:a", top: 0 } };
   const onScroll = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    visible: true, spot: { spotId: "spot:a" }, extent: "small", lastScroll, documentPosition: { record: (top: number) => { lastScroll.current.top = top; } },
+    visible: true, spot: { spotId: "spot:a" }, extent: "small", lastScroll, documentPosition: { record: (top: number) => { lastScroll.current.top = top; return true; } },
     restoredScrollTop: 500, setRestoredScrollTop: (top: number | undefined) => commands.push(top),
   });
   onScroll({ detail: { scrollTop: 500 } });
@@ -48,12 +48,15 @@ test("section requests are consumed once and never replay for another spot", () 
   assert.ok(setup);
   const timers = new Map<number, () => void>(), anchors: string[] = [];
   const positions: (number | undefined)[] = [];
+  let takeovers = 0;
   let serial = 0;
   const context = {
     sectionRequest: { id: "spot-panel-astronomy-anchor", spotId: "spot:a" },
     handledSectionRequest: { current: null as unknown }, extent: "large", spot: { spotId: "spot:a" },
     setScrollAnchor: (value: string) => anchors.push(value),
     setRestoredScrollTop: (value: number | undefined) => positions.push(value), settling: false,
+    documentPosition: { takeOver() { takeovers++; } },
+    visible: true, sectionTimer: { current: null as number | null },
     setTimeout: (callback: () => void) => { timers.set(++serial, callback); return serial; },
     clearTimeout: (id: number) => timers.delete(id),
   };
@@ -67,6 +70,7 @@ test("section requests are consumed once and never replay for another spot", () 
   effect(); flush();
   assert.equal(anchors.at(-1), "spot-panel-astronomy-anchor", "chapter jump reserves the visible navigation rail above its heading");
   assert.equal(positions.at(-1), undefined, "a chapter jump clears any restored numeric offset");
+  assert.equal(takeovers, 1, "an explicit chapter request takes ownership from pending return restoration");
   context.extent = "medium"; effect();
   context.extent = "large"; effect();
   assert.equal(timers.size, 0);
@@ -79,6 +83,8 @@ test("section requests are consumed once and never replay for another spot", () 
   context.extent = "large";
   const cleanup = effect(); cleanup?.();
   assert.equal(timers.size, 0);
+  context.visible = false; effect(); flush();
+  assert.equal(timers.size, 0, "hidden pages must not issue a pending chapter command");
 });
 
 test("all chapter activations reserve the visible navigation rail in the same document", () => {
@@ -91,11 +97,14 @@ test("all chapter activations reserve the visible navigation rail in the same do
   };
   visit(source); assert.ok(select);
   const requests: { id: string; spotId: string }[] = [];
+  const order: string[] = [];
   const activate = vm.runInNewContext(ts.transpileModule(`(${select});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    spot: { spotId: "spot:a" }, setSection() {}, onExtent() {},
+    spot: { spotId: "spot:a" }, setSection() {}, onExtent() { order.push("extent"); },
+    documentPosition: { takeOver() { order.push("takeOver"); } }, retireSectionRequest() {},
     setSectionRequest: (value: { id: string; spotId: string }) => requests.push(value),
   }) as (id: string) => void;
   activate("spot-panel-terrain");
+  assert.deepEqual(order, ["takeOver", "extent"], "chapter intent retires in-flight corrections before a settling extent change");
   assert.equal(requests.at(-1)?.id, "spot-panel-terrain-anchor", "terrain heading must align below the rail, just like astronomy");
   activate("spot-panel-astronomy");
   assert.equal(requests.at(-1)?.id, "spot-panel-astronomy-anchor");
@@ -118,11 +127,11 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   const timers = new Map<number, () => void>();
   let timerId = 0;
   const flushTimers = () => { for (const [id, callback] of timers) { timers.delete(id); callback(); } };
-  let queries = 0, layoutRefreshes = 0;
+  let queries = 0, layoutRefreshes = 0, acceptScroll = true;
   const query = { select: () => query, boundingClientRect: () => query, scrollOffset: () => query, exec: (callback: (results: unknown[]) => void) => callbacks.push(callback) };
   const { measure, onScroll } = vm.runInNewContext(ts.transpileModule(`({ measure: ${setup}, onScroll: ${scroll} });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     visible: true, spot: { spotId: "spot:a" }, lastScroll: { current: { identity: "spot:a", top: 0 } },
-    documentPosition: { record() {} }, restoredScrollTop: undefined, setRestoredScrollTop: () => {},
+    documentPosition: { record: () => acceptScroll }, restoredScrollTop: undefined, setRestoredScrollTop: () => {},
     scrollMeasureTimer: { current: null }, setLayoutVersion: () => { layoutRefreshes++; },
     settling: false, extent: "large", terrainOffset: terrain, astronomyOffset: offset, SECTION_NAV_REVEAL_PX: 48, SECTION_NAV_ALIGNMENT_EPSILON_PX: 1, setSection: (value: string) => sections.push(value),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
@@ -135,6 +144,11 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   callbacks.shift()!([{ top: 100 }, { top: 400 }, { top: 700 }, { scrollTop: 50 }]);
   assert.equal(offset.current, 650);
   assert.equal(terrain.current, 350);
+  acceptScroll = false;
+  onScroll({ detail: { scrollTop: 0 } }); flushTimers();
+  assert.deepEqual(sections, ["spot-panel-overview"], "a rejected native layout event must not change the current chapter");
+  assert.equal(layoutRefreshes, 0);
+  acceptScroll = true;
   for (const scrollTop of [300, 500, 650, 900, 100]) onScroll({ detail: { scrollTop } });
   assert.deepEqual(sections, ["spot-panel-overview", "spot-panel-overview", "spot-panel-terrain", "spot-panel-astronomy", "spot-panel-astronomy", "spot-panel-overview"]);
   assert.equal(queries, 1);
@@ -189,33 +203,5 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   assert.equal(queries, beforeCancel, "a closed panel must not issue its delayed query");
 });
 
-test("return restores the captured scroll position and cannot replay across spots", () => {
-  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let setup = "";
-  const visit = (node: ts.Node) => {
-    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes("wasVisible.current")) setup = node.arguments[0].getText(source);
-    ts.forEachChild(node, visit);
-  };
-  visit(source);
-  assert.ok(setup);
-  const timers = new Map<number, () => void>();
-  const restored: (number | undefined)[] = [];
-  let serial = 0;
-  const context = {
-    visible: false, wasVisible: { current: true }, spot: { spotId: "spot:a" },
-    lastScroll: { current: { identity: "spot:a", top: 620 } },
-    setScrollAnchor: () => {}, setRestoredScrollTop: (top: number | undefined) => restored.push(top),
-    setTimeout: (callback: () => void) => { timers.set(++serial, callback); return serial; },
-    clearTimeout: (id: number) => timers.delete(id),
-  };
-  const effect = vm.runInNewContext(ts.transpileModule(`(${setup});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context) as () => (() => void) | undefined;
-  const flush = () => { for (const [id, callback] of timers) { timers.delete(id); callback(); } };
-  effect(); assert.equal(restored.at(-1), undefined);
-  context.visible = true; effect();
-  context.lastScroll.current.top = 0; flush();
-  assert.equal(restored.at(-1), 620, "a native show/reset event must not replace the captured position");
-  context.visible = false; effect(); context.visible = true;
-  const cancel = effect(); cancel?.(); assert.equal(timers.size, 0);
-  context.visible = false; effect(); context.visible = true; context.spot.spotId = "spot:b";
-  effect(); assert.equal(timers.size, 0, "another spot must not inherit the old offset");
-});
+// Retained-page hide/ready/late-event restoration now lives and is exercised
+// with its real shared owner in use-panel-return-position.test.ts.

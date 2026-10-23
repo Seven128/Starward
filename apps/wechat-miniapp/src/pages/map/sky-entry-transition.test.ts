@@ -23,7 +23,7 @@ function pendingSubmission() {
       snapshot: { preciseLocationConsent: true, candidateLocation: { displayName: "candidate" } } }] };
 }
 
-const settle = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };
+const settle = () => new Promise<void>(resolve => setImmediate(resolve));
 function setup() {
   const timers = new Map<number, {at: number; callback: () => void}>();
   const frames: (number | null)[] = [];
@@ -108,7 +108,7 @@ test("a late native failure after hide cannot disturb the next source-page visit
 function actualMapCommands(environment: Record<string, unknown>) {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = ["openMapPage", "openSkyPage", "onPanelCloud", "onProposalCloud", "handleMapPresentationSystemBack"];
+  const names = ["suspendMapRasters", "resumeSkyEntryRasters", "retryNativeMap", "openMapPage", "openSkyPage", "onPanelCloud", "onProposalCloud", "handleMapPresentationSystemBack"];
   const declarations: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && names.includes(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
@@ -120,10 +120,135 @@ function actualMapCommands(environment: Record<string, unknown>) {
       pendingProposalContextLocation, samePendingProposalIntent, currentDraftUserId: () => "user:owner",
       login: { open: false }, selected: null, selectedProposalRef: { current: null }, skyTransitionReducedMotion: false,
       panelExtentRef: { current: "medium" }, panelPosition: { current: null }, mapReturnPhase: { current: null },
-      mapSkyReturnState: createMapSkyReturnState(), skyMapLifecycle: createSkyMapLifecycle(), ...environment,
+      mapSkyReturnState: createMapSkyReturnState(), skyMapLifecycle: createSkyMapLifecycle(),
+      terrainInstallation: { suspendForExit: () => ({ ready: Promise.resolve(true), isCurrent: () => true, resume() {} }) },
+      lightInstallation: { suspendForExit: () => ({ ready: Promise.resolve(true), isCurrent: () => true, resume() {} }) },
+      skyEntryRasterCleanup: { current: null }, nativeMapReload: { current: null }, ...environment,
       useAppStore: { subscribe: () => () => {}, ...(environment.useAppStore as object ?? {}) },
     });
 }
+
+function pendingRasterExit() {
+  const tickets: { active: boolean; resumed: number; finish: (ready: boolean) => void }[] = [];
+  return { tickets, suspendForExit() {
+    let finish!: (ready: boolean) => void;
+    const ready = new Promise<boolean>(resolve => { finish = resolve; });
+    const ticket = { active: true, resumed: 0, finish };
+    tickets.forEach(value => { value.active = false; }); tickets.push(ticket);
+    return { ready, isCurrent: () => ticket.active, resume() { if (ticket.active) { ticket.active = false; ticket.resumed++; } } };
+  } };
+}
+
+test("Sky departure starts both cleanups together and redirects only after both native clearances", async () => {
+  const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(), routes: string[] = [];
+  const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
+    useAppStore: { getState: () => ({}) },
+    Taro: { redirectTo: async ({ url }: { url: string }) => { routes.push(url); } },
+    reportRuntimeError() { assert.fail("successful cleanup"); }, notify() { assert.fail("successful cleanup"); },
+  });
+  commands.openSkyPage("/sky/detail/index", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
+  assert.equal(terrain.tickets.length, 1); assert.equal(light.tickets.length, 1); assert.equal(routes.length, 0);
+  terrain.tickets[0]!.finish(true); await settle(); assert.equal(routes.length, 0);
+  light.tickets[0]!.finish(true); await settle(); assert.deepEqual(routes, ["/sky/detail/index"]);
+  assert.equal(terrain.tickets[0]!.resumed, 0); assert.equal(light.tickets[0]!.resumed, 0);
+  h.entry.dispose();
+});
+
+test("failed cleanup or navigation preserves Map and resumes both layers for another attempt", async () => {
+  for (const failure of ["cleanup", "navigation"] as const) {
+    const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(); let routes = 0, notices = 0;
+    const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
+      useAppStore: { getState: () => ({}) },
+      Taro: { redirectTo: async () => { routes++; throw new Error("native navigation rejected"); } },
+      reportRuntimeError() {}, notify() { notices++; },
+    });
+    commands.openSkyPage("/sky/detail/index", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
+    terrain.tickets[0]!.finish(failure !== "cleanup"); light.tickets[0]!.finish(true); await settle();
+    assert.equal(routes, failure === "navigation" ? 1 : 0); assert.equal(notices, 1);
+    assert.equal(terrain.tickets[0]!.resumed, 1); assert.equal(light.tickets[0]!.resumed, 1);
+    assert.equal(h.entry.isActive(), false); assert.equal(h.frames.at(-1), null);
+    assert.equal(commands.openSkyPage("/sky/detail/index", "sky"), true, "the same source Map can retry");
+    h.entry.dispose();
+  }
+});
+
+test("blackout timeout and cancellation forbid late cleanup from navigating or resuming a newer entry", async () => {
+  for (const reason of ["timeout", "back", "scope"] as const) {
+    const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(); let routes = 0, warnings = 0;
+    const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
+      useAppStore: { getState: () => ({}) }, navigationEpoch: { current: 0 },
+      Taro: { redirectTo: async () => { routes++; } }, reportRuntimeError() {}, notify() { warnings++; },
+    });
+    commands.openSkyPage("/sky/detail/old", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
+    if (reason === "timeout") { h.advance(SKY_ENTRY_RECOVERY_MS); await settle();
+      assert.equal(terrain.tickets[0]!.resumed, 1, "timeout releases the suspension before native completion"); }
+    if (reason === "back") await commands.handleMapPresentationSystemBack();
+    if (reason === "scope") h.setScope("another selected observation");
+    commands.openSkyPage("/sky/detail/new", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
+    terrain.tickets[0]!.finish(true); light.tickets[0]!.finish(true); await settle();
+    assert.equal(routes, 0); assert.equal(terrain.tickets[1]!.active, true); assert.equal(light.tickets[1]!.active, true);
+    terrain.tickets[1]!.finish(true); light.tickets[1]!.finish(true); await settle();
+    assert.equal(routes, 1); assert.equal(warnings, reason === "timeout" ? 1 : 0); h.entry.dispose();
+  }
+});
+
+test("native reload keeps the old node until both clearances, coalesces repeats and preserves failed recovery", async () => {
+  for (const outcome of ["success", "failed", "hidden"] as const) {
+    const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(), epoch = { current: 0 };
+    let current = true, reloads = 0;
+    const nativeMap = { pending: false, isCurrent: () => current, retry() { reloads++; current = false; } };
+    const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
+      nativeMap, navigationEpoch: epoch });
+    const pending = commands.retryNativeMap(); await commands.retryNativeMap();
+    assert.equal(terrain.tickets.length, 1); assert.equal(light.tickets.length, 1); assert.equal(reloads, 0);
+    terrain.tickets[0]!.finish(outcome !== "failed"); await settle(); assert.equal(reloads, 0);
+    if (outcome === "hidden") epoch.current++;
+    light.tickets[0]!.finish(true); await pending;
+    assert.equal(reloads, outcome === "success" ? 1 : 0);
+    assert.equal(terrain.tickets[0]!.resumed, outcome === "success" ? 0 : 1);
+    if (outcome !== "success") {
+      const retry = commands.retryNativeMap(); assert.equal(terrain.tickets.length, 2);
+      terrain.tickets[1]!.finish(true); light.tickets[1]!.finish(true); await retry; assert.equal(reloads, 1);
+    }
+    h.entry.dispose();
+  }
+});
+
+test("a Sky entry can supersede pending reload cleanup without the old reload consuming its clearance", async () => {
+  const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(); let reloads = 0, routes = 0;
+  const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
+    nativeMap: { pending: false, isCurrent: () => true, retry() { reloads++; } }, navigationEpoch: { current: 0 },
+    useAppStore: { getState: () => ({}) }, Taro: { redirectTo: async () => { routes++; } },
+    reportRuntimeError() { assert.fail("current Sky departure"); }, notify() { assert.fail("current Sky departure"); },
+  });
+  const reload = commands.retryNativeMap();
+  commands.openSkyPage("/sky/detail/index", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
+  terrain.tickets[0]!.finish(true); light.tickets[0]!.finish(true); await reload;
+  assert.equal(reloads, 0); assert.equal(terrain.tickets[1]!.active, true); assert.equal(light.tickets[1]!.active, true);
+  terrain.tickets[1]!.finish(true); light.tickets[1]!.finish(true); await settle();
+  assert.equal(routes, 1); h.entry.dispose();
+});
+
+test("an already dispatched redirect keeps its cleared node reserved until the actual native result", async () => {
+  const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit();
+  let rejectNavigation!: (error: Error) => void, routes = 0, reloads = 0;
+  const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
+    nativeMap: { pending: false, isCurrent: () => true, retry() { reloads++; } }, navigationEpoch: { current: 0 },
+    useAppStore: { getState: () => ({}) },
+    Taro: { redirectTo: () => { routes++; return new Promise((_resolve, reject) => { rejectNavigation = reject; }); } },
+    reportRuntimeError() {}, notify() {},
+  });
+  commands.openSkyPage("/sky/detail/index", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
+  terrain.tickets[0]!.finish(true); light.tickets[0]!.finish(true); await settle(); assert.equal(routes, 1);
+  h.advance(SKY_ENTRY_RECOVERY_MS); await settle(); commands.resumeSkyEntryRasters();
+  assert.equal(h.entry.isActive(), false, "the existing deadline still releases the blackout");
+  assert.equal(terrain.tickets[0]!.resumed, 0); assert.equal(light.tickets[0]!.resumed, 0);
+  assert.equal(commands.openSkyPage("/sky/detail/second", "sky"), false);
+  await commands.retryNativeMap(); assert.equal(reloads, 0); assert.equal(terrain.tickets.length, 1);
+  rejectNavigation(new Error("confirmed native failure")); await settle();
+  assert.equal(terrain.tickets[0]!.resumed, 1); assert.equal(light.tickets[0]!.resumed, 1);
+  assert.equal(commands.openSkyPage("/sky/detail/second", "sky"), true); h.entry.dispose();
+});
 
 function returnedMapRevealEffect(phase: "waiting" | "revealing", accountReducedMotion = false) {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),

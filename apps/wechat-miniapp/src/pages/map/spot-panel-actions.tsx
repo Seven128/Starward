@@ -1,5 +1,6 @@
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FavoriteStar } from "@/components/selected-card-star";

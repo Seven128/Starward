@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { sameContextVersion } from "../../services/observation-context-version";
 import { enqueueNotification, dismissNotification } from "../../state/notification";
+import { primaryPageNavigationForTest } from "../../navigation/primary-page-navigation-test-support";
 
 function deferred() {
   let resolve!: (value: any) => void, reject!: (error: any) => void;
@@ -25,9 +26,10 @@ function fixture(owner: string | null = "A") {
   const initialPage = {}, pages = { current: initialPage }, selectionVersion = { current: 0 }, nativeSelectionPending = { current: null as number | null };
   const native = deferred(), response = deferred(), navigation = deferred();
   let holdNavigation = false;
+  const taro = { getCurrentPages: () => [pages.current], navigateBack: async () => { calls.push("back"); if (holdNavigation) await navigation.promise; else pages.current = {}; }, switchTab: async () => { calls.push("map"); pages.current = {}; } };
   const scope = {
     selectionVersion, nativeSelectionPending, useAppStore: { getState: () => state }, sameContextVersion,
-    Taro: { getCurrentPages: () => [pages.current], navigateBack: async () => { calls.push("back"); if (holdNavigation) await navigation.promise; else pages.current = {}; }, switchTab: async () => { calls.push("map"); pages.current = {}; } },
+    Taro: taro, ...primaryPageNavigationForTest(taro),
     handoff: { confirm: async () => true },
     choosePlatformLocation: async (options: { isCurrent(): boolean }) => { if (!options.isCurrent()) return null; calls.push("picker"); const selected = await native.promise; return options.isCurrent() ? selected : null; },
     viewport: { center: { latitude: 22, longitude: 113 }, zoom: 12 }, timeReference: context, finderQuery: "原搜索",

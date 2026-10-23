@@ -1,3 +1,4 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
@@ -10,7 +11,8 @@ import { confirmPlanEditorLeave } from "./leave-editor";
 import { planChecklistStorageKey } from "./plan-checklist";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { Button, Picker, ScrollView, Text, Textarea, View } from "@tarojs/components";
+import { Picker, ScrollView, Text, Textarea, View } from "@tarojs/components";
+import { SharedButton as Button, PickerTrigger } from "@/components/shared-button-press";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   EMPTY_FILTER_STATE,
@@ -1095,7 +1097,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       if (!operation.isCurrent()) return;
       await Taro.navigateBack().catch(() => {
         operation.assertCurrent();
-        return Taro.switchTab({ url: "/pages/my/index" });
+        return openPrimaryPage("/pages/my/index");
       }).catch(() => {
         if (!operation.isCurrent()) return;
         announce("warning", "计划已删除", "自动返回暂不可用，可通过顶部返回或“我的”继续浏览。");
@@ -1133,7 +1135,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       <CustomNav title="观星计划" back backFallbackTab="/pages/my/index" />
       <StatusPanel state="PERMISSION_DENIED" title="账号已变化"
         detail="请从我的重新打开计划。原账号的编辑内容不会转存到其他账号。"
-        recoveryLabel="返回我的" onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} />
+        recoveryLabel="返回我的" onRecover={() => void openPrimaryPage("/pages/my/index")} />
     </View>
   );
   return (
@@ -1453,7 +1455,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   state="ERROR"
                   detail="尚未确认观测地点、日期与时区，请返回地图重新选择地点。"
                   recoveryLabel="返回地图"
-                  onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
+                  onRecover={() => openPrimaryPage("/pages/map/index")}
                 />
               ) : spotsQuery.isPending ? (
                 <StatusPanel state="LOADING" detail="正在加载正式观星点。" />
@@ -1469,7 +1471,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   state="EMPTY"
                   detail="当前没有可用的正式观星点，暂不能创建计划。"
                   recoveryLabel="返回地图"
-                  onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
+                  onRecover={() => openPrimaryPage("/pages/map/index")}
                 />
               ) : null}
               {formalSpots.length ? (
@@ -1485,7 +1487,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                     if (spot) { retainDraft({ selectedSpotId: spot.spotId }); setSelectedSpotId(spot.spotId); clearFieldError("location"); }
                   }}
                 >
-                  <View className="plan-fields-card plan-field-row focus-ring"
+                  <PickerTrigger disabled={formReadOnly} className="plan-fields-card plan-field-row focus-ring"
                     role="button"
                     aria-label="选择正式观星点"
                   >
@@ -1496,7 +1498,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                       )?.name ?? "请选择正式观星点"}
                     </Text>
                     <SemanticIcon name="chevron-down" className="plan-field-row__chevron" />
-                  </View>
+                  </PickerTrigger>
                 </Picker>
               ) : activePlan ? (
                 <View className="plan-fields-card plan-field-row field--readonly" role="status">
@@ -1521,9 +1523,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   value={localDate}
                   onChange={(event) => { retainDraft({ localDate: event.detail.value }); setLocalDate(event.detail.value); clearFieldError("start"); clearFieldError("timing"); clearFieldError("departure"); }}
                 >
-                  <View className="plan-field-value focus-ring">
+                  <PickerTrigger disabled={formReadOnly} className="plan-field-value focus-ring">
                     <Text>{localDate.replaceAll("-", "/")}</Text>
-                  </View>
+                  </PickerTrigger>
                 </Picker>
                 <Picker
                   mode="time"
@@ -1532,9 +1534,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   value={localTime}
                   onChange={(event) => { retainDraft({ localTime: event.detail.value }); setLocalTime(event.detail.value); clearFieldError("start"); clearFieldError("timing"); clearFieldError("departure"); }}
                 >
-                  <View className="plan-field-value focus-ring">
+                  <PickerTrigger disabled={formReadOnly} className="plan-field-value focus-ring">
                     <Text>{localTime}</Text>
-                  </View>
+                  </PickerTrigger>
                 </Picker>
                 </View>
               </View>
@@ -1643,8 +1645,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             let hasPriorPage = false;
             try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
             try {
-              if (hasPriorPage) await Taro.navigateBack().catch(() => Taro.switchTab({ url: "/pages/my/index" }));
-              else await Taro.switchTab({ url: "/pages/my/index" });
+              if (hasPriorPage) await Taro.navigateBack().catch(() => openPrimaryPage("/pages/my/index"));
+              else await openPrimaryPage("/pages/my/index");
             } catch {
               nativeLeaveGuard.restoreAfterFailedProgrammaticLeave();
               announce("warning", "暂时无法返回", "当前内容保留，请再次返回。");

@@ -1,7 +1,8 @@
 import { SemanticIcon } from "@/components/semantic-asset";
 import { LoadingIndicator } from "@/components/loading-indicator";
 import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { SettingsSheetKind } from "./settings-sections";
 import type { LocationState } from "@/state/app-store";
 import type { AccountExportState } from "./account-export";
@@ -87,7 +88,7 @@ export function SettingsSheet({
       catchMove onClick={(event) => event.stopPropagation()}>
       <View className="settings-sheet__header">
         <Text className="settings-sheet__title">{title}</Text>
-        {sheet !== "DELETE_CLEANUP" ? <Button className="settings-sheet__close focus-ring" ariaLabel="关闭" disabled={!dismissible} onClick={close}>
+        {sheet !== "DELETE_CLEANUP" ? <Button pressVariant="icon" className="settings-sheet__close focus-ring" ariaLabel="关闭" disabled={!dismissible} onClick={close}>
           <SemanticIcon name="close" />
         </Button> : null}
       </View>

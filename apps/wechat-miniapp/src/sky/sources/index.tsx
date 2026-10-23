@@ -1,15 +1,14 @@
-import { ScrollView, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { useState } from "react";
 import { preparedNativeOpticalSource,
   isPreparedPlaneOpticalPublication, preparedDerivedRegionOpticalSources,parseSkySourceSelection } from "@starward/miniapp-contracts";
-import { CustomNav } from "@/components/custom-nav";
+import { SourcePage } from "@/components/source-page";
 import { Provenance, isProductSource } from "@/components/provenance";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
 import { useCelestialInformation } from "@/hooks/use-celestial-information";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { getPreparedOpticalResource } from "@/services/prepared-optical-resource";
-import { useThemeClass } from "@/hooks/use-theme";
 import { deepSkyManifestUrl } from "@/services/sky-catalog-api";
 import { celestialInformationPartialDetail } from "@/services/celestial-information-presentation";
 import "./index.scss";
@@ -43,7 +42,6 @@ function CelestialObjectSourcesPage() {
       if (!isPreparedPlaneOpticalPublication(resource.publication)) throw new Error("prepared_optical_source_version_invalid");
       return resource;
     }, enabled: visible && valid && nativeRoute&&!hipsRoute, staleTime: 60_000, structuralSharing: false });
-  const themeClass = useThemeClass();
   const native = prepared.data?.publication;
   const nativeCurrent = prepared.data?.isCurrent() === true && native !== undefined && isPreparedPlaneOpticalPublication(native);
   const data = !valid ? undefined : nativeRoute ? nativeCurrent && native && isPreparedPlaneOpticalPublication(native)
@@ -58,10 +56,7 @@ function CelestialObjectSourcesPage() {
   const unavailable = nativeRoute ? prepared.isError || Boolean(prepared.data && !nativeCurrent) :
     information.isError || information.data?.dataState === "UNAVAILABLE";
   if(hipsRoute&&!bodyRoute)return <SkyHipsSourcesPage params={params}/>;
-  return <View className={`${themeClass} celestial-sources-page`}>
-    <CustomNav title="来源" subtitle={data?.displayName ?? (valid ? reference.replace(":", " ") : undefined)} back />
-    <ScrollView scrollY enhanced showScrollbar={false} className="celestial-sources-scroll">
-      <View className="celestial-sources-content page-inset safe-bottom">
+  return <SourcePage subtitle={data?.displayName ?? (valid ? reference.replace(":", " ") : undefined)}>
         {valid&&bodyRoute&&isSkyBodyImageReference(reference)?<SkyBodyImageSources reference={reference}
           publicationHash={bodyImagePublicationHash!} visible={visible}/>:null}
         {!valid ? <StatusPanel state="EMPTY" detail="请从天体说明中的来源入口打开" />
@@ -72,12 +67,12 @@ function CelestialObjectSourcesPage() {
               ? <StatusPanel state="STALE" detail="更新失败，显示上次来源" recoveryLabel="重试" onRecover={retrySource} /> : null}
             {partialDetail
               ? <StatusPanel state="PARTIAL" detail={partialDetail} recoveryLabel="重试资料" onRecover={retrySource} /> : null}
-            {sources.length ? sources.map(source => {
+            {sources.length ? sources.map((source, index) => {
               const downloadUrl = deepSkyManifestUrl(source.id.endsWith(":database") ? source.id.slice(0, -9) : source.id,
                 preparedPublicationHash ?? opticalPublicationHash);
-              return <Provenance key={source.id} source={source.id.startsWith("imagery:") ? { ...source, limitations: [...source.limitations,
+              return <Provenance key={`${source.id}:${index}`} source={source.id.startsWith("imagery:") ? { ...source, limitations: [...source.limitations,
                 "星图对红外影像另作亮度透明过渡和边缘淡化，不据此判断是否缺测。带源缺测标记的PNG还会把非有限样本留空；对应范围见此版本说明。未经星图淡化的切图可从下载清单取得。"] } : source}
-                showKind={false} downloadUrl={downloadUrl} />;
+                showKind={false} presentation="reading" downloadUrl={downloadUrl} />;
             })
               : <StatusPanel state="EMPTY" detail="暂无来源资料。" />}
             {catalogueNotes.length ? <View className="celestial-sources-notes">
@@ -85,7 +80,5 @@ function CelestialObjectSourcesPage() {
               {catalogueNotes.map(note => <Text className="type-secondary" key={note}>{note}</Text>)}
             </View> : null}
           </>}
-      </View>
-    </ScrollView>
-  </View>;
+  </SourcePage>;
 }

@@ -41,3 +41,24 @@ test("the Map discloses the installed terrain rather than a pending metadata sou
   state.terrain.data = undefined; assert.equal(read(), first);
   state.terrainInstallation.presentedData = second; assert.equal(read(), second);
 });
+
+test("Map preview admission checks the actual visible viewport independently of the buffered fine request", () => {
+  const visible = { west: 113.1, east: 113.9, south: 22.1, north: 22.9 };
+  const buffered = { west: 112.9, east: 114.1, south: 21.9, north: 23.1 };
+  const checked: unknown[] = [];
+  const state: any = {
+    nativeMap: { mapId: "current" }, viewport: { center: { longitude: 113.5, latitude: 22.5 } },
+    nativeViewport: { bounds: visible }, mapTerrainBounds: buffered,
+    terrainReadEnabled: true, pageVisible: true, terrainEnabled: true,
+    terrainPreviewAdmission: { current: { mapId: "current", canPreview(identity: string, bounds: unknown) {
+      checked.push([identity, bounds]); return false;
+    } } },
+    useTerrainOverlay: (input: unknown, enabled: boolean, imageEnabled: boolean, allow: (identity: string) => boolean) => ({ input, enabled, imageEnabled, allow }),
+  };
+  const current = vm.runInNewContext(expression("terrain"), state);
+  assert.deepEqual(current.input.viewportBounds, buffered, "normal fine selection keeps its existing buffered request");
+  assert.equal(current.allow("finer-request"), false);
+  assert.deepEqual(checked, [["finer-request", visible]], "buffer-only changes cannot authorize a visible detail downgrade");
+  state.terrainPreviewAdmission.current.mapId = "retired";
+  assert.equal(current.allow("initial-request"), true, "a new native Map does not inherit the old Map's retained target");
+});

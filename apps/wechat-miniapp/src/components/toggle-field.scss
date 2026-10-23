@@ -61,7 +61,6 @@
   line-height: var(--type-metadata-line);
   color: var(--text-secondary);
 }
-.toggle-field--pressed { background: var(--pressed-overlay); }
 .toggle-field[disabled] { color: var(--text-secondary); }
 .reduced-motion .toggle-field__thumb { transition: none; }
 @media (prefers-reduced-motion: reduce) {

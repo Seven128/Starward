@@ -1,4 +1,5 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useState, type CSSProperties } from "react";
 
 /** Mounting a new result starts its finite CSS motion. Stable React keys keep

@@ -1,7 +1,9 @@
+import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { useDidHide, useDidShow } from "@tarojs/taro";
 import { AccountEntry } from "../account-entry";
-import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
+import { Picker, ScrollView, Text, View } from "@tarojs/components";
+import { SharedButton as Button, PickerTrigger } from "@/components/shared-button-press";
 import { useEffect, useMemo, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
@@ -47,7 +49,7 @@ function AchievementPage() {
       <View className="achievement-page__content page-inset safe-bottom">
         <View className="achievement-page__heading"><Text className="type-page-title">计划回顾</Text><Text className="type-secondary">查看已结束的观星计划</Text></View>
         {!owner ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后查看计划回顾。" recoveryLabel="返回我的"
-          onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> :
+          onRecover={() => void openPrimaryPage("/pages/my/index")} /> :
           plans.isPending && !plans.data ? <StatusPanel state="LOADING" detail="正在读取观星计划。" /> : null}
         {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，回顾统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
         {plans.data ? <>
@@ -58,7 +60,7 @@ function AchievementPage() {
             </View>
             <View className="achievement-page__year">
               <Picker mode="selector" disabled={!years.length} range={years.map(value => `${value} 年`)} value={Math.max(0, years.indexOf(selectedYear))} onChange={event => setYear(years[Number(event.detail.value)] ?? null)}>
-                <View className="achievement-page__year-picker" role="button" aria-label={`选择统计年份，当前${selectedYear}年`}>{selectedYear} 年 <SemanticIcon name="chevron-down" /></View>
+                <PickerTrigger disabled={!years.length} className="achievement-page__year-picker" role="button" aria-label={`选择统计年份，当前${selectedYear}年`}>{selectedYear} 年 <SemanticIcon name="chevron-down" /></PickerTrigger>
               </Picker>
               <Text className="type-caption">{records.length} 份行程记录</Text>
             </View>

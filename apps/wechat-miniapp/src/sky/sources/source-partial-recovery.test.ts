@@ -27,7 +27,7 @@ test("source route retains valid credit and offers recovery for a partial inform
   const render = renderPage({
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
-    View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav",
+    View: "View", ScrollView: "ScrollView", SourcePage:"SourcePage",CustomNav: "CustomNav",
     Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params: { reference: "HR%3A7001" } }),
     useState: (value: unknown) => [value, () => {}], useDidHide: () => {}, useDidShow: () => {},
@@ -71,7 +71,7 @@ test("the source route reads the image-bound publication and rejects an invalid 
     requests: unknown[][] = [], downloads: unknown[][] = [];
   const render = renderPage({
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
-    View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
+    View: "View", ScrollView: "ScrollView", SourcePage:"SourcePage",CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params }), useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {},
     useThemeClass: () => "mode-night", isCelestialObjectReference: () => true, isProductSource: () => true, isDeepSkyObjectReference,
     useResourceQuery: () => ({ isPending: false, isError: false }),
@@ -111,7 +111,7 @@ test("an independent region source route keeps exact credit/unknown meaning and 
   const params: any = { reference: encodeURIComponent(publication.reference), preparedPublicationHash: hash };
   const render = renderPage({
     React: { createElement: (type: string, props: any, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
-    View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
+    View: "View", ScrollView: "ScrollView", SourcePage:"SourcePage",CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params }), useState: (v: unknown) => [v, () => {}], useDidHide() {}, useDidShow() {},
     useThemeClass: () => "mode-night", isPreparedOpticalReference, isDeepSkyObjectReference, isProductSource: () => true,
     preparedNativeOpticalSource, deepSkyManifestUrl: (_source: string, selectedHash: string) => `/manifest/${selectedHash}`,

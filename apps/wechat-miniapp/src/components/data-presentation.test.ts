@@ -7,6 +7,7 @@ import { isProductSource, productSourceNames, SOURCE_KIND_LABEL } from "../utils
 import { calendarDateInTimezone, clockTimeInTimezone } from "../utils/zoned-date";
 import type { SourceSummary } from "@starward/miniapp-contracts";
 import { FACILITY_LABEL, facilityStatusLabel } from "../utils/facility-presentation";
+import { pagePresentationForTest } from "../navigation/page-presentation-test-support";
 
 const React = { createElement(type: any, props: any, ...children: any[]): any {
   return typeof type === "function" ? type({ ...props, children }) : { type, props, children };
@@ -19,7 +20,7 @@ function load(path: string, name: string, context: object = {}, mutate = (source
     .map(node => node.getText(source).replace(/^export /u, "")).join("\n");
   return vm.runInNewContext(ts.transpileModule(body + `\n${name};`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
-  }).outputText, { React, Text: "Text", View: "View", SoftButton: "SoftButton", SemanticIcon: "SemanticIcon", SourceAttribution: "SourceAttribution",
+  }).outputText, { React, Text: "Text", View: "View", SoftButton: "SoftButton", SemanticIcon: "SemanticIcon", SourceAttribution: "SourceAttribution", SourceEntry: "SourceEntry",
     useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }), reportRuntimeError() {}, ...context });
 }
 const sample = Object.freeze({ id: "sample", kind: "TEST_FIXTURE", state: "SAMPLE_DATA", provider: "内部测试资料",
@@ -60,6 +61,38 @@ test("shared facility details distinguish unavailable from missing status, hours
   assert.match(text(render({ evidence: { ...evidence, status: "UNAVAILABLE", openingHours: "18:00–06:00", usageCondition: "出入需登记" } })), /不可用.*18:00–06:00.*出入需登记/s);
 });
 
+test("media source pages retain rights and capture time without inventing retrieval metadata", () => {
+  const render = load("../content/article/detail/article-media.tsx", "ArticleMedia", {
+    ReadingImage: "ReadingImage", mediaSource: (value: string) => value,
+  });
+  const media = { localPath: "owned.jpg", alt: "现场原图", caption: "原始说明", photographer: "原作者", license: "许可原文",
+    sourceUrl: "https://example.org/original", licenseUrl: "https://example.org/license", capturedAt: "2024-01-02", isSiteSpecific: false };
+  const tree = render({ media, caption: "显示说明", sourceId: "photo-source" });
+  const nodes = (node: any): any[] => !node || typeof node !== "object" ? [] : Array.isArray(node) ? node.flatMap(nodes) : [node, ...nodes(node.children)];
+  const entry = nodes(tree).find(node => node.type === "SourceEntry");
+  assert.equal(entry.props.sources.length, 0, "a photo without SourceSummary must not acquire made-up source times");
+  assert.equal(entry.props.sections[0].items.find((item: any) => item.label === "拍摄时间").value, media.capturedAt);
+  assert.deepEqual(Array.from(entry.props.sections[1].items, (item: any) => item.url), [media.sourceUrl, media.licenseUrl]);
+  assert.match(text(tree), /代表媒体，不证明本点现场/);
+  assert.equal(nodes(tree).filter(node => node.type === "SourceEntry").length, 1);
+});
+
+test("public itinerary notes remain in the share body independently of its source page", () => {
+  const sources = [{ ...sample, id: "public-source" }];
+  const notes = ["计划结束不代表已到访或观测成功。", "公开链接有独立的有效期。"];
+  const render = load("../content/share/public-share-card.tsx", "PublicShareCard", {
+    Image: "Image", publicSharePresentation: () => ({ kind: "PLAN", name: "观星点", region: "地区", date: "2026-10-22",
+      address: "", facts: [], warnings: [], sources, notes }),
+  });
+  const tree = render({ data: {} });
+  assert.ok(notes.every(note => text(tree).includes(note)), "business notes must remain readable before entering any source page");
+  const nodes = (node: any): any[] => !node || typeof node !== "object" ? [] : Array.isArray(node) ? node.flatMap(nodes) : [node, ...nodes(node.children)];
+  const entries = nodes(tree).filter(node => node.type === "SourceEntry");
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].props.sources, sources);
+  assert.equal(entries[0].props.sections, undefined, "source metadata does not become a second owner of the public itinerary");
+});
+
 test("fixture navigation has identical content and geometry to ordinary navigation", () => {
   const render = (fixture: boolean) => load("./custom-nav.tsx", "CustomNav", {
     __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: fixture, nativeStatusBarHeightPx: () => 44,
@@ -73,25 +106,47 @@ test("fixture navigation has identical content and geometry to ordinary navigati
 
 test("arrow and dismiss presentations share the dirty-leave guard and failed-return recovery", async () => {
   for (const backPresentation of ["back", "dismiss"] as const) {
-    const effects: string[] = [];
-    let permit = false;
-    const attempt = { active: () => true, stack: [{}, {}], release: () => effects.push("release"), fail: () => effects.push("error") };
-    const render = load("./custom-nav.tsx", "CustomNav", {
-      nativeStatusBarHeightPx: () => 44, nativeMenuClearancePx: () => 96, nativeNavigationInsets: () => ({ safeTop: 88 }),
-      usePageNavigation: () => ({ navigationError: null, begin: () => attempt }),
-      Taro: { navigateBack: async () => { effects.push("back"); throw new Error("native back failed"); },
-        switchTab: async () => { effects.push("fallback"); throw new Error("native fallback failed"); } },
-    });
-    const tree = render({ title: "反馈页", back: true, backPresentation,
-      beforeBack: () => permit, onBackAuthorized: () => effects.push("authorized"), onBackFailure: () => effects.push("restore") });
-    const find = (node: any): any => node?.type === "SoftButton" ? node : Array.isArray(node) ? node.map(find).find(Boolean) : node?.children ? find(node.children) : null;
-    const action = find(tree);
-    assert.ok(action, "real navigation action remains rendered");
-    await action.props.onClick();
-    assert.deepEqual(effects, ["release"], "cancel keeps the page and dirty input");
-    permit = true; effects.length = 0;
-    await action.props.onClick();
-    assert.deepEqual(effects, ["authorized", "back", "fallback", "restore", "error", "release"]);
+    const effects: string[] = [], runtimeErrors: string[] = [];
+    let permit = false, dirty = true, decisions = 0;
+    const h = await pagePresentationForTest({ route: "content/contribution/index", modules: {
+      "@/theme/native-metrics": { nativeStatusBarHeightPx: () => 44, nativeMenuClearancePx: () => 96,
+        nativeNavigationInsets: () => ({ safeTop: 88 }) },
+      "@/services/runtime-error": { reportRuntimeError: (_owner: string, event: string) => runtimeErrors.push(event) },
+    } });
+    h.modules["./soft-button"] = { SoftButton: h.leaf("return-button") };
+    h.modules["./semantic-asset"] = { SemanticIcon: h.leaf("icon") };
+    const CustomNav = h.load("components/custom-nav.tsx").CustomNav;
+    const previous = { route: "content/plan/list/index" };
+    h.setStack([previous, h.nativePage]);
+    function Fixture() { return h.create(CustomNav, { title: "反馈页", back: true, backPresentation,
+      beforeBack: () => { decisions++; return permit; },
+      onBackAuthorized: () => { effects.push("authorized"); dirty = false; },
+      onBackFailure: () => { effects.push("restore"); dirty = true; },
+    }); }
+    const button = () => h.leaves.get("return-button")!.at(-1);
+    try {
+      await h.render(Fixture);
+      await button().onClick();
+      assert.deepEqual(effects, [], "declining dirty leave invokes no authorization or restoration");
+      assert.equal(dirty, true); assert.equal(h.calls.length, 0);
+      assert.equal(decisions, 1);
+      permit = true;
+      const pending = button().onClick(); await h.settle();
+      assert.equal(decisions, 2, "declining leave released the real navigation lock");
+      assert.equal(dirty, false); assert.deepEqual(effects, ["authorized"]);
+      assert.equal(h.calls.length, 1); assert.equal(h.calls[0]!.kind, "navigateBack");
+      h.calls[0]!.fail(); await h.settle();
+      assert.equal(h.calls.length, 2); assert.equal(h.calls[1]!.kind, "reLaunch");
+      assert.equal(h.calls[1]!.url, "/pages/map/index", "failed Back uses the shared primary root recovery");
+      h.calls[1]!.fail(); await pending; await h.settle();
+      assert.deepEqual(effects, ["authorized", "restore"]); assert.equal(dirty, true);
+      assert.deepEqual(runtimeErrors, ["navigation_back_failed", "navigation_return_failed"]);
+      assert.match(h.root.textContent, /暂时无法返回，请再点一次返回/);
+      permit = false;
+      await button().onClick(); await h.settle();
+      assert.equal(decisions, 3, "failed return also releases the real lock for the next decision");
+      assert.equal(h.calls.length, 2); assert.equal(dirty, true);
+    } finally { await h.dispose(); }
   }
 });
 

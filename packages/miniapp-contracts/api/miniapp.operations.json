@@ -10,6 +10,7 @@
     { "id": "mapSceneGet", "method": "GET", "path": "/map/scene", "requestType": "MapSceneRequest", "responseType": "MapSceneData" },
     { "id": "mapNightLightGet", "method": "GET", "path": "/map/night-light", "requestType": "MapNightLightRequest", "responseType": "MapLayerData" },
     { "id": "terrainOverlayGet", "method": "GET", "path": "/terrain/overlay", "requestType": "TerrainOverlayRequest", "responseType": "TerrainOverlayData" },
+    { "id": "terrainOverlayPreviewGet", "method": "GET", "path": "/terrain/overlay/preview", "requestType": "TerrainOverlayRequest", "responseType": "TerrainOverlayData" },
     { "id": "terrainHorizonGet", "method": "GET", "path": "/terrain/horizon", "requestType": "TerrainHorizonRequest", "responseType": "TerrainHorizonData" },
     { "id": "terrainAssetGet", "method": "GET", "path": "/terrain/assets/{file}", "requestType": "void", "responseType": "TerrainAssetData" },
     { "id": "nightLightAssetGet", "method": "GET", "path": "/night-light/assets/{datasetVersion}/{file}", "requestType": "void", "responseType": "NightLightAssetData", "responseEnvelope": false },

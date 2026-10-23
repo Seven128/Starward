@@ -1,5 +1,6 @@
 import Taro, { useResize } from "@tarojs/taro";
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SemanticIcon } from "@/components/semantic-asset";

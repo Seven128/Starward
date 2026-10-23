@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { MINIAPP_DESIGN } from "../../theme/design-tokens";
+import { sharedButtonTestBoundary } from "../../components/shared-button-test-support";
 
 /** Exercise the production component with cached account data and a native media return. */
 function avatarComponent() {
@@ -11,9 +12,14 @@ function avatarComponent() {
   const slots: any[] = [];
   let cursor = 0, saves = 0;
   const state = { mode: "DAY", mapResetVersion: 1, notify() {} };
+  let foreground = true;
+  const queryOptions: any[] = [];
+  const presentation = { visible: true, isCurrent: () => foreground };
+  let shown = () => {}, hidden = () => {};
   const saved = { mimeType: "image/png", dataBase64: "TEST-avatar", zoom: 1.65 };
   const profile = { revision: 3, avatar: { version: "TEST-avatar-version" } };
-  const element = (type: unknown, props: unknown) => ({ type, props });
+  const buttons = sharedButtonTestBoundary((type: unknown, props: unknown) => ({ type, props }), "button");
+  const element = buttons.element;
   const module = { exports: {} as any };
   const store = Object.assign((selector: (value: typeof state) => unknown) => selector(state), { getState: () => state });
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
@@ -31,11 +37,17 @@ function avatarComponent() {
         useEffect() { cursor++; },
       };
       if (name === "@tarojs/components") return { Button: "button", Image: "image", Slider: "slider", Text: "text", View: "view" };
+      if (name === "@/components/shared-button-press") return buttons;
       if (name === "@tarojs/taro") return { default: { chooseMedia: async () => ({ tempFiles: [{ tempFilePath: "TEST-avatar.png", size: 100 }] }) }, useDidHide() {}, useDidShow() {} };
+      if (name.endsWith("page-presentation")) return { usePresentedPageLifecycle: ({ show, hide }: { show: () => void; hide: () => void }) => {
+        shown = show; hidden = hide; return presentation;
+      } };
       if (name.endsWith("semantic-asset")) return { SemanticIcon: "semantic-icon" };
       if (name.endsWith("loading-indicator")) return { LoadingIndicator: "loading" };
-      if (name.endsWith("primary-navigation-cover")) return { retainPrimaryNavigationCover: () => () => {} };
-      if (name.endsWith("use-resource-query")) return { useResourceQuery: (options: any) => ({ data: { data: options.queryKey[0] === "account-profile" ? profile : saved } }) };
+      if (name.endsWith("use-resource-query")) return { useResourceQuery: (options: any) => {
+        queryOptions.push(options);
+        return { data: { data: options.queryKey[0] === "account-profile" ? profile : saved } };
+      } };
       if (name.endsWith("api-client")) return { currentDraftUserId: () => "account-a", saveAccountAvatar: () => { saves++; } };
       if (name.endsWith("query-client")) return { miniappQueryClient: {} };
       if (name.endsWith("app-store")) return { useAppStore: store };
@@ -46,7 +58,7 @@ function avatarComponent() {
       throw new Error(`unexpected component dependency: ${name}`);
     },
   });
-  const render = () => { cursor = 0; return module.exports.MyAvatar({ owner: "account-a" }); };
+  const render = () => { cursor = 0; queryOptions.length = 0; return module.exports.MyAvatar({ owner: "account-a" }); };
   function nodes(tree: any, predicate: (node: any) => boolean): any[] {
     const result: any[] = [];
     const visit = (node: any) => { if (Array.isArray(node)) { node.forEach(visit); return; } if (!node?.props) return; if (predicate(node)) result.push(node); visit(node.props.children); };
@@ -58,7 +70,11 @@ function avatarComponent() {
     await new Promise(resolve => setImmediate(resolve));
     return render();
   }
-  return { state, saved, profile, render, nodes, preview, get saves() { return saves; } };
+  return { state, saved, profile, render, nodes, preview, queryOptions,
+    hide() { foreground = presentation.visible = false; hidden(); },
+    show() { foreground = presentation.visible = true; shown(); },
+    retireBeforeRender() { foreground = false; },
+    get saves() { return saves; } };
 }
 
 test("observation hides the saved color avatar without discarding it, and day restores the same image and crop", () => {
@@ -90,5 +106,24 @@ test("the avatar preview uses red native slider colors after explicit media choi
   assert.equal(day.activeColor, "#365D67");
   assert.equal(day.backgroundColor, "#D8DEDF");
   assert.equal(day.blockColor, undefined);
+  assert.equal(owner.saves, 0);
+});
+
+test("hidden retained My suspends both avatar readers and rejects a stale avatar entry", () => {
+  const owner = avatarComponent();
+  const action = owner.nodes(owner.render(), n => n.props["data-control"] === "my-avatar-action")[0];
+  owner.retireBeforeRender();
+  action.props.onClick();
+  assert.equal(owner.nodes(owner.render(), n => n.props.className === "my-avatar-sheet").length, 0);
+  owner.hide();
+  const hidden = owner.render();
+  assert.equal(owner.queryOptions.length, 2);
+  assert.ok(owner.queryOptions.every(options => options.enabled === false));
+  assert.equal(owner.nodes(hidden, n => n.props["data-control"] === "my-avatar-action")[0].props.disabled, true);
+  owner.show();
+  const shown = owner.render();
+  assert.ok(owner.queryOptions.every(options => options.enabled === true));
+  assert.equal(owner.nodes(shown, n => n.props.className === "profile-summary__avatar-image")[0].props.src,
+    "data:image/png;base64,TEST-avatar");
   assert.equal(owner.saves, 0);
 });

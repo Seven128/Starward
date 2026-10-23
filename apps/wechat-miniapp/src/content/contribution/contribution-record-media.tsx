@@ -1,5 +1,6 @@
 import { mediaSource } from "@/utils/media-source";
-import { Button, Image, Text, View } from "@tarojs/components";
+import { Image, Text, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useMemo, useState } from "react";
 import { CONTRIBUTION_MEDIA_KINDS, type ContributionSubmission, type ContributionUploadId } from "@starward/miniapp-contracts";

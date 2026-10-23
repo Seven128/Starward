@@ -18,7 +18,7 @@ test("failed sky request keeps plan reference error and retry separate from genu
   const render = vm.runInNewContext(`${compiled}\nPlanReference`, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props, children }) },
     View: "View", Text: "Text", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel",
-    ForecastCoverageNote: "ForecastCoverageNote", SourceAttribution: "SourceAttribution",
+    ForecastCoverageNote: "ForecastCoverageNote", SourceAttribution: "SourceAttribution", SourceEntry: "SourceEntry",
     planReference: () => ({ nightRange: null, dusk: "暂无数据", dawn: "暂无数据", moonrise: "暂无数据", moonset: "暂无数据",
       illumination: "暂无数据", cloud: "暂无数据", wind: "暂无数据", temperature: "暂无数据", weatherStarts: [] }),
   }) as (props: Record<string, unknown>) => unknown;

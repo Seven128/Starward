@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "starward-exact-star-draw-preparation-implementation-v1",
+  "date": "2026-10-21",
+  "status": "IMPLEMENTED_LOCAL_CHECKS_PASS_PENDING_INDEPENDENT_REVIEW_AND_PHONE",
+  "authority": "Same PLAN; R20-DRAW-COST-RESULT.md/json exact-input continuation preparation decision",
+  "scope": "Sky production owners, narrow SAO admission membership and affected tests only; no Map/backend/service/phone/IDE/build/preview/commit/upload operations",
+  "behavior": {
+    "owner": "createSkyStarDrawPreparation, one per current Sky Page/Canvas generation; one current exact view with independently current catalog and supplement point lists",
+    "key": [
+      "actual renderer object and Context object plus spot/id/revision/fingerprint/dataRevision",
+      "exact timestamp",
+      "all nine numeric basis components, width, height, FOV and effective center without quantization",
+      "display mode and actual solar altitude/absence",
+      "current resolved admitted immutable BSC frame/catalog and current admitted immutable SAO aggregate identity (including source/geometry/arrivals)"
+    ],
+    "unchanged": [
+      "full BSC and currently selected admitted SAO contents",
+      "original projection and appearance computations on misses/legacy input",
+      "per-paint transition point/exits and successful native-copy-only commit",
+      "fresh opacity-dependent pick/name records; final body/landscape occlusion",
+      "vertices, GL submissions and existing single writer/accepted source fences",
+      "new-time scheduling, geometry supply, source ownership and normal Play"
+    ],
+    "release": [
+      "obsolete view clears before construction",
+      "independent source miss/withdrawal retires corresponding list; failure resets both",
+      "actual suspended, invalidated, releaseContext and missing data/basis clear owner",
+      "renderer replacement cannot reuse prior renderer preparation"
+    ],
+    "eligibility": "Original admitted BSC transport and admitted SAO index/tile objects; weak membership markers retain no strong histories. Locally generated exact stellar geometry is frozen at its original creation point. Mutable/legacy inputs execute the shared existing build without retaining new drawing lists.",
+    "sourceCorrection": "Existing one-frame-per-scene resolver also checks actual catalog/publication/geometry and observer fields, avoiding same-time source replacement reusing an obsolete resolved frame; lazy transforms capture their local immutable owners rather than mutable scene fields.",
+    "retention": "Adds the current preparation lists and point records to live working set. No historical time/view Map and no cache stored on reports/tiles. Logical boundedness is not heap/native/GPU leak evidence."
+  },
+  "checks": {
+    "distinctAffectedTests": 102,
+    "groups": [
+      {
+        "files": [
+          "sky-star-draw-preparation.test.ts",
+          "sky-full-sphere.test.ts",
+          "sky-star-transition.test.ts"
+        ],
+        "passed": 16
+      },
+      {
+        "files": [
+          "sky-canvas-time.test.ts",
+          "sky-canvas-lifecycle.test.ts",
+          "sky-stellar-query.test.ts",
+          "sky-stellar-supplement-owner.test.ts",
+          "sky-gpu-submission.test.ts",
+          "sky-render-invalidation.test.ts"
+        ],
+        "passed": 64
+      },
+      {
+        "files": [
+          "sky-star-draw-preparation.test.ts",
+          "sky-named-star-labels.test.ts",
+          "sky-scene-frame-facts.test.ts",
+          "sky-deep-auxiliary-page.test.ts"
+        ],
+        "passed": 27,
+        "overlap": 5
+      },
+      {
+        "files": [
+          "sky-star-draw-preparation.test.ts",
+          "sky-canvas-time.test.ts"
+        ],
+        "passed": 23,
+        "meaning": "final changed-case rerun; not additional distinct tests"
+      }
+    ],
+    "actualFullScene": "8404 BSC rows plus >100 actual SAO tiles and >2000 SAO rows through real admission; same-time continuation exact Scene surface commands, painted identity, picks/names and animation state. Each eligible layer builds once over six repeated paints; all original per-paint surface submissions remain live.",
+    "invalidation": "Exact camera microchange, center, FOV, both dimensions, solar altitude/absence, mode, Context, time A-B-A, same-time source/geometry replacement, SAO arrivals/withdrawals, mutable/legacy inputs, failure/reset and actual page cleanup callbacks.",
+    "frozenComparison": {
+      "baseline": "Full instrumented drawSkyScene from frozen r20 source; task observation wrappers no-op, actual production dependencies reused",
+      "candidate": "Current production drawSkyScene with enabled current-Canvas preparation",
+      "testsPassed": 5,
+      "meaning": "Same admitted inputs, full Scene surface command and pick/name output equality against pre-change drawing; not native pixels, typed GPU capture, CPU timing or heap evidence",
+      "retainedScript": "C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/r20-draw-cost/star-preparation-check/frozen-star-output-final.test.ts",
+      "retainedScriptSha256": "307679e350ab340054110286a6f91a7e5c00a5a949bac2a1cd55a19304828812",
+      "retainedScriptBytes": 17063,
+      "resultLog": "C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/r20-draw-cost/star-preparation-check/frozen-output-final.txt",
+      "resultLogSha256": "b93e53aeef0ffd12e2aa83433f972e4e0fac1b0f9f567d662c38f0f7399fca80",
+      "sourceCopyReadbackVerified": true
+    },
+    "typecheck": {
+      "command": "npm run typecheck --workspace @starward/wechat-miniapp",
+      "exitCode": 0
+    },
+    "diffCheck": {
+      "exitCode": 0
+    }
+  },
+  "integration": {
+    "sceneSpanBsc": "const buildCatalogStars = ... through else buildCatalogStars(paintCatalogStar); (before currentSupplement)",
+    "sceneSpanSao": "const buildSupplementStars = ... through same-time exits (before const solarDisc)",
+    "taskObservation": "r21 task adapter must cover build/cache lookup plus every replay and exits; wrapping builders alone would miss cached replay. Existing paintStar and sceneFinished actual submission counters remain.",
+    "handoff": "Stable production released to root and adapt_r21_draw_cost_probe. Root owns Context/HANDOFF and actual phone candidate."
+  },
+  "bindings": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-star-draw-preparation.ts",
+      "sha256": "6ebacefaf052aa300d2a5d6511999e0ea160041442579e13e6f4b0319a02f7a1",
+      "bytes": 4508
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "0e2ece9cefdf68f1ae7103d4fb085bece329c727d0b12158faea0f319470c921",
+      "bytes": 47135
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "sha256": "770c0672fbc5c862246df793b04b5bd2d75bf440608c0cbb98c6feecb3ae80d3",
+      "bytes": 11632
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "f57466ab18432b4a2ef05804ed677671d905718fd4334d9e8f5e3237b7653cc6",
+      "bytes": 5976
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-transform.ts",
+      "sha256": "4f6b7eb6f9bee6c371028cade8dd86b59c0450abc7d6f23f98b0948a505f49c7",
+      "bytes": 3023
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "3101c3be1db464ab89cd7758dc3747ffba7a34399af4ee1077423eee65de3240",
+      "bytes": 9381
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "031db4a738ae9aa14091bfd6b096260c35ffa8920aee71fb4cabc5e436f77c3a",
+      "bytes": 246115
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sao-catalog-client.ts",
+      "sha256": "7333a2b07f90ff8913ef0a48c453786b07ed37755f5f131352df81c541b52275",
+      "bytes": 4497
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-star-draw-preparation.test.ts",
+      "sha256": "a8d29bd10aab90ab6f664cfca0b2648137cedab3448c5fc287b083c9c89fe52e",
+      "bytes": 16228
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts",
+      "sha256": "77544f22a30f6297d2043723ac376e31299f40f094fabbac1ae4b4d25067e55d",
+      "bytes": 32398
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-optical-page-test-support.ts",
+      "sha256": "75e9ff30f44216ec35e183bd0a3dbc35504969bdbbf8d0ab62622e14f5b323be",
+      "bytes": 8429
+    }
+  ],
+  "unverified": [
+    "Independent review",
+    "Matched current-phone continuation/day-hold benefit and no-hit/normal Play cost",
+    "All six-field extreme interaction, playback and crash/memory obligations",
+    "B strong-retainer/native allocation failure, lifecycle/drain and leak-free result",
+    "Map and full Goal completion"
+  ],
+  "preservation": {
+    "localOnly": true,
+    "uploaded": false,
+    "commit": false
+  }
+}

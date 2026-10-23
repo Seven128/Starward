@@ -10,16 +10,19 @@ import { terrainImageUrl, terrainPublication, terrainRequestIsCovered, validateT
 import { renderTerrain } from "./terrain-renderer.ts";
 import { createTerrainViewportRenderer } from "./terrain-viewport-renderer.ts";
 import { normalizeTerrainRequest, terrainRequestKey, validateTerrainRequest, terrainLocationIsSupported,
-  terrainWindowViewport, terrainWindowRequest, terrainFixedRequest, TERRAIN_RENDER_VERSION, TERRAIN_LEGACY_MAP_RENDER_VERSION,
+  terrainWindowViewport, terrainWindowRequest, terrainFixedRequest, validateTerrainPreviewRequest, TERRAIN_RENDER_VERSION, TERRAIN_LEGACY_MAP_RENDER_VERSION,
   type RenderedTerrain, type TerrainRenderer, type TerrainRenderRequest } from "./terrain-request.ts";
 import { DISPLAY_RASTER_GRID, type DisplayRasterRegion } from "@starward/coordinate-system";
 import type { TerrainRenderMeasurement } from "./terrain-viewport-renderer.ts";
 import { renderTerrainWindow } from "./terrain-window-renderer.ts";
-import { readTerrainFixedInventory, readTerrainFixedAsset, type TerrainFixedInventory } from "./terrain-fixed-publication.ts";
+import { readTerrainFixedInventory, readTerrainFixedAsset, terrainFixedInventoryRequest, type TerrainFixedInventory } from "./terrain-fixed-publication.ts";
 import { HORIZON_METHOD, HORIZON_RADIUS_M, readTerrainHorizonModel, type TerrainHorizonResult } from "./terrain-horizon-model.ts";
 
 export interface TerrainPort {
   getPublication(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<TerrainPublication | null>;
+  getPreviewPublication(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<{
+    publication: TerrainPublication; requestedZoom: number; imageZoom: number;
+  } | null>;
   getHorizon(input: TerrainHorizonRequest, signal?: AbortSignal): Promise<TerrainHorizonResult>;
   getAsset(file: string, signal?: AbortSignal): Promise<{ bytes: Buffer; publicationId: string }>;
   close(): void;
@@ -69,6 +72,47 @@ export class TerrainService implements TerrainPort {
     signal?.throwIfAborted();
     if (input.purpose === "SPOT" && bundled && terrainRequestIsCovered(bundled, input)) return bundled;
     return (await this.resolve(input.viewportBounds ? terrainWindowViewport(input) : input, signal))?.publication ?? null;
+  }
+
+  /** Only current, fully covered published parents. This path cannot derive a
+   * cell, write a cache, consume a source slot or complete the independent fine read. */
+  async getPreviewPublication(input: TerrainOverlayRequest, signal?: AbortSignal) {
+    const checkActive = () => {
+      signal?.throwIfAborted();
+      if (this.closed) throw new Error("terrain_service_closed");
+    };
+    checkActive();
+    validateTerrainPreviewRequest(input);
+    if (!this.publishedDirectory || !terrainLocationIsSupported(input)) return null;
+    // Use the exact same fixed-window identity as getPublication, including
+    // the cells outside the raw viewport after snapping.
+    const requested = terrainWindowViewport(input), requestedWindow = requested.fixedWindow!;
+    this.inventory ??= readTerrainFixedInventory(this.publishedDirectory).catch(error => { this.inventory = undefined; throw error; });
+    const inventory = await this.inventory;
+    checkActive();
+    const candidates = inventory.assets.flatMap(entry => {
+      const request = terrainFixedInventoryRequest(entry), grid = request?.fixedRaster ?? request?.fixedWindow;
+      if (!request || !grid || grid.zoom >= requestedWindow.zoom) return [];
+      const scale = 2 ** (requestedWindow.zoom - grid.zoom);
+      const columns = "span" in grid ? grid.span : grid.columns, rows = "span" in grid ? grid.span : grid.rows;
+      if (grid.x * scale > requestedWindow.x || grid.y * scale > requestedWindow.y
+        || (grid.x + columns) * scale < requestedWindow.x + requestedWindow.columns
+        || (grid.y + rows) * scale < requestedWindow.y + requestedWindow.rows) return [];
+      return [{ entry, zoom: grid.zoom, pixels: columns * rows }];
+    }).sort((a, b) => b.zoom - a.zoom || a.pixels - b.pixels || a.entry.key.localeCompare(b.entry.key, "en"));
+    // The inventory's existing 4096-entry limit bounds discovery. Sequential
+    // validation retains only one image buffer; retired assets never qualify.
+    for (const candidate of candidates) {
+      checkActive();
+      const { publication } = await readTerrainFixedAsset(this.publishedDirectory, candidate.entry);
+      checkActive();
+      const grid = publication.fixedRaster ?? publication.fixedWindow;
+      if (!grid || grid.zoom !== candidate.zoom || publication.validPixelCount !== publication.image.width * publication.image.height
+        || publication.sourceIssues?.length || publication.unavailableSourceTiles.length
+        || !terrainRequestIsCovered(publication, requested)) continue;
+      return { publication, requestedZoom: requestedWindow.zoom, imageZoom: grid.zoom };
+    }
+    return null;
   }
 
   async getHorizon(input: TerrainHorizonRequest, signal?: AbortSignal) {

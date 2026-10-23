@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import fs from 'node:fs/promises';
+import vm from 'node:vm';
 import { createMemoryWatchAnchor, MEMORY_EVIDENCE_ROOT } from './r17-memory-watch-anchor.mjs';
 
 const firstId = '11111111-1111-4111-8111-111111111111', secondId = '22222222-2222-4222-8222-222222222222';
@@ -97,4 +99,105 @@ test('a failed private completion is redacted and is not blindly appended again'
   await assert.rejects(anchor.finish(finish), { message: 'memory_probe_anchor_write_failed' });
   await assert.rejects(anchor.finish(finish), { message: 'memory_probe_anchor_already_finished' });
   assert.equal(e.records().length, 1);
+});
+
+// Exercise the actual task watcher with fake provider I/O; never import its
+// top-level device entrance or launch ADB merely to test process-instance loss.
+async function watchWithStats(stats) {
+  const source = await fs.readFile(new URL('./r17-sky-memory.mjs', import.meta.url), 'utf8');
+  const script = source.replace(/^import .*;\r?\n/gm, '')
+    .replaceAll('import.meta.url', JSON.stringify(new URL('./r17-sky-memory.mjs', import.meta.url).href));
+  const files = new Map(), logs = [], calls = [];
+  const activity = 'com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandUI0';
+  const activities = ' Hist #0: ActivityRecord{fixture ' + activity + '}\n'
+    + '  mState=RESUMED\n  app=ProcessRecord{fixture 42:com.tencent.mm:appbrand0/u0a}\n';
+  const meminfo = '** MEMINFO in pid 42 [com.tencent.mm:appbrand0] **\n'
+    + 'TOTAL PSS: 120\nTOTAL RSS: 130\nTOTAL SWAP PSS: 0\n';
+  const io = { async mkdir() {}, async readFile() { return Buffer.from(source); },
+    async writeFile(file, bytes, options) {
+      if (options.flag === 'wx' && files.has(file)) throw Error('fixture_write_collision');
+      files.set(file, options.flag === 'a' ? (files.get(file) ?? '') + bytes : bytes);
+    } };
+  class Device {
+    async select() {}
+    async foreground() { return activity; }
+    async command(args) {
+      calls.push(args);
+      if (args[1] === 'cat') {
+        const value = stats.shift();
+        if (value instanceof Error) throw value;
+        return Buffer.from(value ?? '');
+      }
+      if (args[2] === 'activity') return Buffer.from(activities);
+      if (args[2] === 'meminfo') return Buffer.from(meminfo);
+      throw Error('unexpected_fixture_command');
+    }
+  }
+  let monotonic = 0;
+  const fakeProcess = { argv: ['node', 'fixture', 'watch', 'map-test', '2', '2000', 'usb'] };
+  await vm.runInNewContext('(async()=>{' + script + '\n})()', {
+    fs: io, createHash, AdbDevice: Device, findAdb: async () => 'unused-fixture-adb',
+    foregroundActivity: () => activity, createMemoryWatchAnchor, MEMORY_EVIDENCE_ROOT,
+    URL, process: fakeProcess, performance: { now: () => ++monotonic },
+    Date: { now: () => 100000 + monotonic }, setTimeout: callback => { callback(); },
+    console: { log: line => logs.push(JSON.parse(line)) },
+  });
+  const instances = [...files].filter(([file]) => file.endsWith('.process.private.ndjson'))
+    .flatMap(([, bytes]) => bytes.trim().split('\n').map(JSON.parse));
+  return { calls, logs, instances, exitCode: fakeProcess.exitCode };
+}
+
+function processStat(ticks, pid = '42') {
+  // Field 22 follows the comm boundary; comm itself can contain ')' and spaces.
+  return `${pid} (fixture ) name) S ${Array(18).fill('0').join(' ')} ${ticks} 0\n`;
+}
+
+test('watch rejects reused same PID/name/activity before or during meminfo', async () => {
+  const between = await watchWithStats([processStat('100'), processStat('100'), processStat('200')]);
+  assert.equal(between.logs[0].state, 'miniapp_foreground');
+  assert.equal(between.logs[0].processInstanceVerified, true);
+  assert.equal(between.logs[0].processes[0].totalSwapPssKiB, 0);
+  assert.equal(between.logs[1].state, 'foreground_instance_changed');
+  assert.equal(between.logs[1].processInstanceVerified, false);
+  assert.deepEqual(between.logs[1].processes, []);
+  assert.equal(between.calls.filter(args => args[2] === 'meminfo').length, 1);
+  assert.deepEqual(between.instances.map(row => row.state), ['verified', 'changed']);
+  assert.deepEqual(between.instances.map(row => row.target.startTicks), ['100', '200']);
+  assert.equal(between.instances[1].afterStartTicks, null);
+  assert.equal(between.instances[0].watchId, between.instances[1].watchId);
+  assert.equal(between.logs.at(-1).processInstanceRows, 2);
+  assert.equal(/"(?:target|pid|startTicks)":/.test(JSON.stringify(between.logs)), false);
+
+  const during = await watchWithStats([processStat('100'), processStat('200')]);
+  assert.equal(during.logs[0].state, 'foreground_instance_changed');
+  assert.deepEqual(during.logs[0].processes, []);
+  assert.equal(during.instances[0].state, 'changed');
+  assert.equal(during.instances[0].target.startTicks, '100');
+  assert.equal(during.instances[0].afterStartTicks, '200');
+  assert.equal(during.calls.filter(args => args[1] === 'cat').length, 2);
+});
+
+test('missing or invalid startTicks stays unknown and never reuses a prior instance or zero', async () => {
+  for (const invalid of ['42 (fixture) S 0\n', processStat('missing'), processStat('100', '99'), new Error('private_provider_error')]) {
+    const result = await watchWithStats([invalid]);
+    assert.equal(result.logs[0].state, 'foreground_instance_unavailable');
+    assert.equal(result.logs[0].processInstanceVerified, false);
+    assert.deepEqual(result.logs[0].processes, []);
+    assert.equal(result.calls.filter(args => args[2] === 'meminfo').length, 0);
+    assert.equal(result.instances[0].state, 'unknown');
+    assert.equal(result.instances[0].target.startTicks, null);
+    assert.equal(result.instances[0].afterStartTicks, null);
+  }
+  const after = await watchWithStats([processStat('100'), new Error('private_provider_error')]);
+  assert.equal(after.logs[0].state, 'foreground_instance_unavailable');
+  assert.deepEqual(after.logs[0].processes, []);
+  assert.equal(after.instances[0].state, 'unknown');
+  assert.equal(after.instances[0].target.startTicks, '100');
+  assert.equal(after.instances[0].afterStartTicks, null);
+  const later = await watchWithStats([processStat('100'), processStat('100'), '42 (fixture) S 0\n']);
+  assert.equal(later.logs[0].state, 'miniapp_foreground');
+  assert.equal(later.logs[1].state, 'foreground_instance_unavailable');
+  assert.deepEqual(later.logs[1].processes, []);
+  assert.equal(later.instances[1].target.startTicks, null);
+  assert.equal(later.calls.filter(args => args[2] === 'meminfo').length, 1);
 });

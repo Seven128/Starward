@@ -59,6 +59,7 @@ function generationOutput(run, { invalidated = false } = {}) {
     officialInvocation: run.official.disposition,
     officialBoundary: run.official.boundary,
     officialResult: run.official.result,
+    officialDiagnostic: run.official.diagnostic,
     pendingTask,
     qrCode: qrReady ? previewQrPath(run.generation) : undefined,
     observedProductBehavior: "not_observed",

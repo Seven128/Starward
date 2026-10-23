@@ -3,7 +3,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Transform } from 'node:stream';
 import { normalizeTerrainRequest, terrainRequestKey, terrainWindowViewport,
-  validateTerrainRequest } from '../../../../workers/miniapp-api/src/terrain-request.ts';
+  validateTerrainRequest, validateTerrainPreviewRequest } from '../../../../workers/miniapp-api/src/terrain-request.ts';
 
 export const TERRAIN_IDENTITY_RECEIPT_VERSION = 'starward.task.terrain-http-identity.v1';
 export const TERRAIN_METADATA_RECEIPT_MAX_BYTES = 64 * 1024;
@@ -35,6 +35,7 @@ function requestKeySha256(url) {
       west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } }
       : { purpose, center, radiusKm: Number(p.get('radiusKm') ?? undefined) };
     validateTerrainRequest(input);
+    if (url.pathname.endsWith('/preview')) validateTerrainPreviewRequest(input);
     // Same producer owners/order as TerrainService.getPublication -> resolve.
     return sha256(terrainRequestKey(normalizeTerrainRequest(input.viewportBounds ? terrainWindowViewport(input) : input)));
   } catch { return null; }
@@ -66,7 +67,7 @@ export function createTerrainIdentityReceiptOwner() {
   return {
     start(url, method) {
       if (!['GET', 'HEAD'].includes(method)) return null;
-      const overlay = url.pathname === '/v2/terrain/overlay';
+      const overlay = url.pathname === '/v2/terrain/overlay' || url.pathname === '/v2/terrain/overlay/preview';
       const asset = /^\/v2\/terrain\/assets\/[^/]+$/.test(url.pathname);
       if (!overlay && !asset) return null;
       const key = overlay ? requestKeySha256(url) : null;

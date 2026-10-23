@@ -9,9 +9,13 @@ function mount() {
   const source = ts.createSourceFile("horizon.tsx", readFileSync(new URL("./spot-terrain-horizon.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declaration = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotTerrainHorizon")!;
   const states: any[] = [], memos: any[] = [], effects: any[] = [], ticks: (() => void)[] = [], reads: { id: string; deliver(value: any): void }[] = [], drawings: any[] = [];
-  let si = 0, mi = 0, ei = 0, layout: (() => void)[] = [], hide = () => {}, show = () => {}, resize = () => {};
+  let si = 0, mi = 0, ei = 0, layout: (() => void)[] = [], passive: (() => void)[] = [], hide = () => {}, show = () => {}, resize = () => {};
   let mode = "DAY", retries = 0;
   const equal = (a: any[], b: any[]) => a?.length === b.length && b.every((value, i) => Object.is(value, a[i]));
+  const effect = (queue: (() => void)[], fn: () => any, deps: any[]) => {
+    const i = ei++, old = effects[i];
+    if (!equal(old?.deps, deps)) queue.push(() => { old?.cleanup?.(); effects[i] = { deps, cleanup: fn() }; });
+  };
   const component = vm.runInNewContext(ts.transpileModule("let canvasSequence = 0;\n" + declaration.getText(source).replace(/^export /, "") + ";SpotTerrainHorizon;", {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, {
@@ -20,16 +24,17 @@ function mount() {
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial;
       return [states[i], (value: any) => { states[i] = typeof value === "function" ? value(states[i]) : value; }]; },
     useMemo(fn: () => any, deps: any[]) { const i = mi++; if (!equal(memos[i]?.deps, deps)) memos[i] = { deps, value: fn() }; return memos[i].value; },
-    useLayoutEffect(fn: () => any, deps: any[]) { const i = ei++, old = effects[i]; if (!equal(old?.deps, deps)) layout.push(() => { old?.cleanup?.(); effects[i] = { deps, cleanup: fn() }; }); },
+    useLayoutEffect(fn: () => any, deps: any[]) { effect(layout, fn, deps); },
+    useEffect(fn: () => any, deps: any[]) { effect(passive, fn, deps); },
     useDidHide: (fn: () => void) => { hide = fn; }, useDidShow: (fn: () => void) => { show = fn; }, useResize: (fn: () => void) => { resize = fn; },
     Taro: { nextTick: (fn: () => void) => ticks.push(fn), getWindowInfo: () => ({ pixelRatio: 2 }),
       createSelectorQuery() { let id = ""; const value = { select(selector: string) { id = selector; return value; },
         fields(_fields: any, deliver: (value: any) => void) { reads.push({ id, deliver }); return value; }, exec() {} }; return value; } },
-    Canvas: "Canvas", Text: "Text", View: "View", SourceDisclosure: "SourceDisclosure", StatusPanel: "StatusPanel", SoftButton: "SoftButton",
+    Canvas: "Canvas", Text: "Text", View: "View", SourceEntry: "SourceEntry", StatusPanel: "StatusPanel", SoftButton: "SoftButton",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   let query: any = { isPending: false, isError: false, isFetching: false, refetch: () => { retries++; } };
-  const render = (visible = true) => { si = mi = ei = 0; layout = []; const tree = component({ query, visible }); layout.forEach(fn => fn()); return tree; };
+  const render = (visible = true) => { si = mi = ei = 0; layout = []; passive = []; const tree = component({ query, visible }); layout.forEach(fn => fn()); passive.forEach(fn => fn()); return tree; };
   return { render, reads, drawings, get retries() { return retries; },
     set(data: any, patch: any = {}) { query = { ...query, data: data ? { data } : undefined, ...patch }; },
     setMode(value: string) { mode = value; }, tick() { while (ticks.length) ticks.shift()!(); },

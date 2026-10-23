@@ -1,7 +1,7 @@
 import { Image, Text, View } from "@tarojs/components";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SourceAttribution } from "@/components/source-attribution";
-import { SourceDisclosure } from "@/components/source-disclosure";
+import { SourceEntry } from "@/components/source-entry";
 import { publicSharePresentation, type PublicShare } from "@/components/public-share-presentation";
 import "./public-share-card.scss";
 
@@ -31,10 +31,9 @@ export function PublicShareCard({ data }: { data: PublicShare }) {
         {!plan ? <Text className="public-share-card__warning-title">进入与安全说明</Text> : null}
         {card.warnings.map((warning, index) => <Text key={index}>{warning}</Text>)}
       </View> : null}
-      <SourceAttribution sources={card.sources} compact />
-      <SourceDisclosure id="public-share-sources" label={plan ? "资料来源与行程说明" : "资料来源与说明"} sources={card.sources}>
-        {card.notes.length ? <View>{card.notes.map((note, index) => <Text className="public-share-card__note" key={index}>{note}</Text>)}</View> : undefined}
-      </SourceDisclosure>
+      {card.notes.length ? <View className="public-share-card__notes">{card.notes.map((note, index) => <Text className="public-share-card__note" key={index}>{note}</Text>)}</View> : null}
+      <SourceAttribution presentation="credit" sources={card.sources} compact />
+      <SourceEntry id="public-share-sources" label="资料来源" sources={card.sources} />
     </View>
   </View>;
 }

@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { displayRasterWindowForBounds, displayRasterWindowKey, normalizeDisplayRasterBounds } from "@starward/coordinate-system";
 import { MAP_TERRAIN_SUPPORTED_BOUNDS, type TerrainBounds, type TerrainOverlayRequest } from "@starward/miniapp-contracts";
-import { normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity } from "./terrain-overlay-request.ts";
+import { normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity, terrainOverlayRequestQuery } from "./terrain-overlay-request.ts";
 import { normalizeTerrainRequest, terrainLocationIsSupported, terrainRequestKey, terrainWindowViewport } from "../../../../workers/miniapp-api/src/terrain-request.ts";
 
 const mapRequest = (viewportBounds: TerrainBounds): TerrainOverlayRequest => ({ purpose: "MAP", viewportBounds,
@@ -32,19 +32,23 @@ test("client window identity matches the producer after outward transport normal
 
 test("the real API serializer sends the same normalized bounds used for window identity and forwards cancellation", async () => {
   const source = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  const declaration = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "getTerrainOverlay")!;
+  const declarations = source.statements.filter(node => ts.isFunctionDeclaration(node)
+    && ["getTerrainOverlay", "getTerrainOverlayPreview"].includes(node.name?.text ?? ""))
+    .map(node => node.getText(source).replace(/^export /u, "")).join("\n");
   let call: any;
-  const get = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /u, "") + ";getTerrainOverlay;", {
+  const readers = vm.runInNewContext(ts.transpileModule(declarations + ";[getTerrainOverlay, getTerrainOverlayPreview];", {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
-  }).outputText, { normalizeTerrainOverlayRequest, requestOperation: (...args: unknown[]) => { call = args; return Promise.resolve({}); } });
+  }).outputText, { terrainOverlayRequestQuery, requestOperation: (...args: unknown[]) => { call = args; return Promise.resolve({}); } });
   const input = mapRequest({ west: 114.082031249, south: 22.600000001, east: 114.105000003, north: 22.635000002 });
   const controller = new AbortController();
-  await get(input, controller.signal);
-  const query = new URLSearchParams(call[2].query), normalized = normalizeTerrainOverlayRequest(input);
-  assert.deepEqual(query.get("viewportBounds")!.split(",").map(Number), [normalized.viewportBounds!.west,
-    normalized.viewportBounds!.south, normalized.viewportBounds!.east, normalized.viewportBounds!.north]);
-  assert.equal(call[2].signal, controller.signal); assert.equal(call[2].cache, false);
-  assert.equal(call[1], "terrainOverlayGet");
+  for (const [index, get] of readers.entries()) {
+    await get(input, controller.signal);
+    const query = new URLSearchParams(call[2].query), normalized = normalizeTerrainOverlayRequest(input);
+    assert.deepEqual(query.get("viewportBounds")!.split(",").map(Number), [normalized.viewportBounds!.west,
+      normalized.viewportBounds!.south, normalized.viewportBounds!.east, normalized.viewportBounds!.north]);
+    assert.equal(call[2].signal, controller.signal); assert.equal(call[2].cache, false);
+    assert.equal(call[1], index ? "terrainOverlayPreviewGet" : "terrainOverlayGet");
+  }
 });
 
 test("an unsupported rectangle and its supported neighbour in the same window never share failure identity", () => {

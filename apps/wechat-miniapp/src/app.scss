@@ -207,12 +207,6 @@ button.soft-button.soft-button--disabled[disabled],
   border-color: var(--border);
   box-shadow: none;
 }
-.soft-button:active {
-  background: var(--pressed-overlay);
-}
-.soft-button--primary:active {
-  background: var(--primary-pressed);
-}
 .soft-button + .soft-button {
   margin-top: 0;
 }

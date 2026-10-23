@@ -1,0 +1,240 @@
+{
+  "schemaVersion": "starward-r20-cross-coverage-phone-review-v1",
+  "reviewDate": "2026-10-21",
+  "scope": "independent read-only single west-pan device development feedback",
+  "source": {
+    "frozenDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-normal-a1-review-r20-usb",
+    "sha256": "85fe0ba21c869c109581015a77fea4b641fc316de6ace548781ff0fdfb921bd2",
+    "bundleSha256": "d0e1a4500635629d1bfb631fd48fa089f50a66dded829ae065ba127b380a767e",
+    "fileCount": 337,
+    "totalBytes": 5030591
+  },
+  "video": {
+    "file": "recording-1792539769460.mp4",
+    "sha256": "86a5479428fae3fe88820e3084bca76ce5c6acfb810deaee79d692805686e0f4",
+    "durationSeconds": 16.767278,
+    "width": 1080,
+    "height": 2376,
+    "requestedRecordingSeconds": 15,
+    "requestedSwipeMs": 1400,
+    "inputBinding": "Root task performed (0.05,0.54) to (0.94,0.54); this reviewer did not operate the device",
+    "clock": "decoder requestVideoFrameCallback.mediaTime, seconds",
+    "hostClockAligned": false,
+    "touchStartOrReleaseMeasured": false
+  },
+  "run": {
+    "layers": [
+      "TERRAIN",
+      "CLOUD"
+    ],
+    "cloudSource": "SAMPLE_DATA",
+    "observationTime": "2026-10-21 20:18",
+    "observationTimeSource": "Root task record",
+    "invalidCounter": "TW3 file_ready A1 1755ms END was sealed by an earlier action and is not this run",
+    "earlierNorthOrDiagonalMoves": "preparation or buffer demand; not counted as failed parent attempts"
+  },
+  "findings": {
+    "crossCoverageParentThenFineVisible": true,
+    "parentFillsVisibleWestGap": true,
+    "oldFineRetainedAtOwnBounds": true,
+    "oldFineStretchedToNewBoundsObserved": false,
+    "newFineReplacesParent": true,
+    "oldFineOrWholeOverlayBlankObserved": false,
+    "blankClaimScope": "No whole-overlay blank observed in reviewed boundary frames; sparse recording cannot establish every physical frame or native atomicity",
+    "localTerrainGapBeforeParent": true,
+    "noMemoryLeakEstablished": false,
+    "allThreeLayersAccepted": false,
+    "fullGoalCompleted": false
+  },
+  "visibleIntervals": {
+    "parentOnset": {
+      "afterMediaSeconds": 4.368989,
+      "byMediaSeconds": 4.385511
+    },
+    "fineOnset": {
+      "afterMediaSeconds": 6.278933,
+      "byMediaSeconds": 6.296256
+    },
+    "fineReadyWordingByMediaSeconds": 6.313322,
+    "parentVisibleHeadStartSeconds": {
+      "lower": 1.893422,
+      "upper": 1.927267,
+      "firstObservedDifference": 1.910745
+    },
+    "preciseTouchToPresentationLatencySeconds": null
+  },
+  "stages": [
+    {
+      "index": "video-samples.json",
+      "file": "hold-3_500000.png",
+      "seekSeconds": 3.5,
+      "mediaSeconds": 3.489678,
+      "sha256": "a6e6c7ba216f6caa3fcf25b4c117353890e11efface671b400f33ca193693f1a"
+    },
+    {
+      "index": "video-samples.json",
+      "file": "hold-4_000000.png",
+      "seekSeconds": 4,
+      "mediaSeconds": 3.994522,
+      "sha256": "adc18512c56059b6acca5d8ce60978496a0e9448d3a0f9ab3d6d75084432e68e"
+    },
+    {
+      "index": "fine-boundary-seek-samples.json",
+      "file": "hold-4_370000.png",
+      "seekSeconds": 4.37,
+      "mediaSeconds": 4.368989,
+      "sha256": "48e39697bf76348bca6f447aaa738812aaa1c43b33d9200dcb76c7f4956e513a"
+    },
+    {
+      "index": "transition-seek-samples.json",
+      "file": "hold-4_400000.png",
+      "seekSeconds": 4.4,
+      "mediaSeconds": 4.385511,
+      "sha256": "707bbd9e60579054b4f592b085439fa5533e95e8025d2e6c0f8eca4f31be00c3"
+    },
+    {
+      "index": "fine-boundary-seek-samples.json",
+      "file": "hold-6_280000.png",
+      "seekSeconds": 6.28,
+      "mediaSeconds": 6.278933,
+      "sha256": "7ab4382010a17484ce308fbd9554d644a1178b831b632df1e7cfde7b5f068fa9"
+    },
+    {
+      "index": "fine-boundary-seek-samples.json",
+      "file": "hold-6_300000.png",
+      "seekSeconds": 6.3,
+      "mediaSeconds": 6.296256,
+      "sha256": "86e75dddcbb43fa42b7bcaa5aa5a18eb11277bb17818f2429e79fa6f26bc4426"
+    },
+    {
+      "index": "fine-boundary-seek-samples.json",
+      "file": "hold-6_320000.png",
+      "seekSeconds": 6.32,
+      "mediaSeconds": 6.313322,
+      "sha256": "92b98c6124d7805ad4776a4087e880ce8e7ce82248975da680c1e4eb6629b8c7"
+    },
+    {
+      "index": "video-samples.json",
+      "file": "hold-16_717278.png",
+      "seekSeconds": 16.717278,
+      "mediaSeconds": 13.763456,
+      "sha256": "708d1e285c2bc7d9a4623a359a2d53bd5aa0a4ff8eb2f982254c9c688c8278c0"
+    }
+  ],
+  "coverage": {
+    "oldFine": {
+      "west": 113.994140625,
+      "east": 114.08203125,
+      "north": 22.755920681486398,
+      "south": 22.59372606392931
+    },
+    "parent": {
+      "west": 113.90625,
+      "east": 114.08203125,
+      "north": 22.755920681486398,
+      "south": 22.59372606392931
+    },
+    "newFine": {
+      "west": 113.90625,
+      "east": 114.08203125,
+      "north": 22.755920681486398,
+      "south": 22.59372606392931
+    },
+    "parentAndNewFineBoundsEqual": true
+  },
+  "assets": [
+    {
+      "role": "old-fine",
+      "sha256": "ada1752e7ab7d494d286959d1c1807fbcdcf8fa466608035c479431589c0b711",
+      "bytes": 155932,
+      "width": 256,
+      "height": 512,
+      "validPixelCount": 131072,
+      "validPixelPercent": 100
+    },
+    {
+      "role": "parent",
+      "sha256": "f6598577f49b7fb2708b6d4e506bfc77f0024cdef473fba40368c71f52a01bea",
+      "bytes": 76883,
+      "width": 256,
+      "height": 256,
+      "validPixelCount": 65536,
+      "validPixelPercent": 100
+    },
+    {
+      "role": "new-fine",
+      "sha256": "494729bb12cfd4209552f43fe44417abed79e475f00b286c1f47f8125745dd9f",
+      "bytes": 311773,
+      "width": 512,
+      "height": 512,
+      "validPixelCount": 262144,
+      "validPixelPercent": 100
+    }
+  ],
+  "requestAssociation": {
+    "requestKeySha256": "4ed91522564414f01b4ac8e4bbe1a5492e7b6c538721b76065ff224c8b295a8b",
+    "parentMetadataWallMs": 164,
+    "parentAssetWallMs": 5,
+    "fineMetadataWallMs": 1972,
+    "fineAssetWallMs": 10,
+    "responseHashReadbackMatches": true,
+    "meaning": "Bridge request wall times, not presentation or CPU; no offset fitted to video"
+  },
+  "apiEvidence": {
+    "file": "west-pan-terrain-events.excerpt.json",
+    "eventCount": 6,
+    "sha256": "863e6438fe841c054ae73d9571cc7651e5adfd2b71433c8e69d151c2ed2ae25a",
+    "selectedUtcInterval": [
+      "2026-10-20T23:42:36.000Z",
+      "2026-10-20T23:42:39.000Z"
+    ],
+    "wholeMutableEventFilePreserved": false,
+    "derivedTileSourceReadWallMs": [
+      1572.1911999993026,
+      1736.6285999994725
+    ],
+    "derivedTileTotalMs": [
+      1730.5216000005603,
+      1912.7052999995649
+    ],
+    "limitation": "Parallel I/O sum and tile totals must not be summed as end-to-end latency"
+  },
+  "decisions": [
+    "Keep the observed useful cross-coverage parent strategy",
+    "Proceed to remaining continuous interaction and resource-lifetime work",
+    "No evidence here justifies extra debounce or a full performance acceptance claim"
+  ],
+  "openObligations": [
+    "Rapid repeated zoom/pan",
+    "Cloud and light layer completion",
+    "Matched-condition whole-path performance comparison",
+    "Native/GPU ownership and disposal under repeated use",
+    "JS/native retention and memory-leak diagnosis"
+  ],
+  "preservation": {
+    "privateRoot": "C:\\Users\\momoooo\\.starward-private\\sky-map-20261020\\device-resume\\r20-cross-coverage\\west-pan-review",
+    "localOnly": true,
+    "uploaded": false,
+    "necessaryOriginals": 11,
+    "necessaryOriginalBytes": 6945604,
+    "readbackVerified": true,
+    "manifest": "local-preservation-manifest.json",
+    "manifestSha256": "0b62e09f37df1ff06e7e5c2417335948dbad25237fa90092856eb132e2073351"
+  },
+  "reviewArtifacts": {
+    "report": "R20-CROSS-COVERAGE-PHONE-RESULT.md",
+    "reportSha256": "33bf29657d9f1a2f86ad59ea530984f56430c03acca8e118191e56fbeb826f94",
+    "pixelContactSheet": "visible-stage-crops.png",
+    "pixelContactSheetSha256": "da3dcc2fdf085017cb40b8fa97d6f262516f63c17fcda7109590f1c63446ba47",
+    "assetPreviews": "White-background composites are derived inspection files; original PNG alpha is unchanged"
+  },
+  "toolBoundaries": {
+    "deviceOperations": false,
+    "ideOperations": false,
+    "serviceOperations": false,
+    "productionEdits": false,
+    "upload": false,
+    "commit": false,
+    "decoder": "Existing r19 offline Playwright/Edge script adapted only for input/output names; independent headless browser routes abort network and close on completion"
+  }
+}

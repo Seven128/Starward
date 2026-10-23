@@ -40,7 +40,7 @@ for(const kind of ['object','prepared','body','hips','hips-rights'] as const){
         originalRights:'Original rights',originalRightsUrl:'https://example.org/rights',hipsRecordUrl:'https://example.org/record',hipsLicense:'ODbL-1.0',hipsDoi:'10.1/example'}]};
     const result=(identity:string)=>({isError:true,isPending:false,refetch:()=>{requests++;lastIdentity=identity;}});
     const bindings={...scope.bindings,React:{createElement:(type:any,props:any,...children:any[])=>({type,props:props??{},children})},
-      View:'View',Text:'Text',ScrollView:'ScrollView',CustomNav:'Nav',Provenance:'Provenance',StatusPanel:'StatusPanel',
+      View:'View',Text:'Text',ScrollView:'ScrollView',SourcePage:"SourcePage",CustomNav:'Nav',Provenance:'Provenance',StatusPanel:'StatusPanel',
       SkyBodyImageDetails:'BodyDetails',SkyBodyImageSources:'BodySources',SkyHipsSourcesPage:'HipsSources',
       useRouter:()=>({params}),useState:()=>[visible,(v:boolean)=>{visible=v;}],useDidHide:(f:()=>void)=>callbacks.push(f),useDidShow:()=>{},
       useThemeClass:()=>'',__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,

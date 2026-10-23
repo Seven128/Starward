@@ -1,7 +1,8 @@
 import { ToggleField } from "@/components/toggle-field";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter, useUnload } from "@tarojs/taro";
-import { Button, Input, ScrollView, Text, Textarea, View } from "@tarojs/components";
+import { Input, ScrollView, Text, Textarea, View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type {
   ImportDraft,

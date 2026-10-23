@@ -2,7 +2,8 @@ import { Text, View } from "@tarojs/components";
 import type { FacilityEvidence } from "@starward/miniapp-contracts";
 import { formatDisplayDate } from "@/utils/presentation";
 import { facilityStatusLabel } from "@/utils/facility-presentation";
-import { Provenance } from "./provenance";
+import { SourceAttribution } from "./source-attribution";
+import { SourceEntry } from "./source-entry";
 import "./facility-evidence.scss";
 
 export function FacilityEvidenceDetails({ evidence, title, showDescription = true, showSource = true, showVerification = true, showHeading = true }: { evidence: FacilityEvidence; title?: string; showDescription?: boolean; showSource?: boolean; showVerification?: boolean; showHeading?: boolean }) {
@@ -29,6 +30,8 @@ export function FacilityEvidenceDetails({ evidence, title, showDescription = tru
       </View>
     </View>
     {showVerification ? <Text className="type-caption">最近核验：{evidence.verifiedAt ? formatDisplayDate(evidence.verifiedAt) : "暂无核验时间"}</Text> : null}
-    {showSource ? <View><Provenance source={evidence.source} compact /></View> : null}
+    {showSource ? <View><SourceAttribution presentation="credit" sources={[evidence.source]} />
+      <SourceEntry id={`facility-source-${evidence.type}`} label={title ? `${title}来源` : "设施来源"} sources={[evidence.source]} />
+    </View> : null}
   </>;
 }

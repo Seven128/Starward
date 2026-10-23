@@ -16,7 +16,9 @@ export const miniappQueryClient = new QueryClient({
     queries: {
       staleTime: 60_000,
       gcTime: 30 * 60_000,
-      retry: 1,
+      // Cancellation retires obsolete demand; it is not a failed network
+      // attempt whose backoff should hold up a later return to the same key.
+      retry: (failureCount, error) => !isMiniappRequestCancelled(error) && failureCount < 1,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
     },

@@ -2,7 +2,10 @@
 
 2026-10-19 method decision. The user has explicitly resumed the complete Goal, superseding the earlier stop after method preparation. Reuse this route and its established capture semantics; the current target, in-flight operation and implementation state belong to HANDOFF.md. This replaced the earlier first-choice native heap-snapshot direction; historical capture results remain in R17-TARGET-HEAP-DIAGNOSIS.md. The successful Map qualification remains historical and does not certify a current Sky connection or sample.
 
-## Adopted routes
+## Current route status (2026-10-22)
+
+The high-load true-debug channel failed at Sky entry in the bounded Stable comparison; native CPU profiling later hung. Stop those unchanged recovery loops. Reuse mapped normal-Sky CPU/r7 and qualified Perfetto/MemoryInfra in their actual scopes. [r25/gen29 target results](R25-CHECKPOINT-PHONE-RESULT-20261022.md) and [independent review](R25-CHECKPOINT-PHONE-REVIEW-20261022.md) now qualify the ordinary-preview combination for targeted performance and logical-memory investigation under actual full-sky high-memory conditions: nonempty work, early independently saved checkpoints, object liveness, real cache replacement and aggregate membership. General tool selection is complete for this question. The next boundary is the external holder of obsolete aggregates; no root, OOM repair or leak/native acceptance is implied. Prior [V8 OOM evidence](R25-MEMORY-PHONE-RESULT-20261022.md) remains a product failure. Reusable method belongs to the [performance skill](../../skills/starward-miniapp-development/references/performance-investigation.md#memory-attribution-without-the-remote-debug-channel); exact readiness and next action remain in HANDOFF.
+## Historical qualification routes (2026-10-19)
 
 1. **JS allocation attribution:** reuse official ordinary true-debug → Memory → Allocation sampling → Start/Stop → Save. The actual phone Map qualification completed capture, export and parsing. It produced 254 call-tree nodes and 21 samples with valid references and compiled script locations. Keep this route ahead of another adjacent disable/implementation-shape comparison when it can distinguish the current causes.
 2. **CPU and sampled GC activity:** reuse the same target's official Performance panel. The successful short recording contains 459 CPU nodes, 114 samples and 10 garbage-collector sample hits. A sampled GC hit is not an exact GC event or pause duration. No heap-counter events were exported despite requesting Memory; the UI's 0 B is unavailable coverage, not a zero heap.
@@ -21,7 +24,7 @@ The previous heap attempt produced one valid initial snapshot but no new valid s
 
 - This Android user-build WeChat host has no observed debuggable/profileable eligibility. Exact-target proc maps and smaps_rollup reads returned permission denied. Registered heapprofd does not change this. Do not start another empty native allocation profile; reopen only when the relevant host/system eligibility changes.
 - The successful Performance export did not contain UpdateCounters or separate GC trace events. CPU samples remain useful, including sampled GC activity, but no complete heap curve or exact GC-event coverage is claimed.
-- The public CLI/automator package does not expose a general HeapProfiler API. A working official GUI now supplies the required capture; do not add private IPC or a raw CDP bridge competing with its connection.
+- The public CLI/automator package does not expose a general HeapProfiler API. The historical official GUI qualification supplied its recorded capture; it does not establish a current high-load Sky connection. Do not add private IPC or a raw CDP bridge competing with the official channel.
 - wx.getPerformance().now is callable on this target but consecutive reads showed small backward deltas. Function existence is not a monotonic-clock guarantee. The new probe contract must preserve invalid/unknown timing and cost coverage; source-level availability is not device deployment.
 
 ## Session and retrieval boundaries

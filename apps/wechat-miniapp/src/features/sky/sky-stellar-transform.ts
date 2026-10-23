@@ -3,6 +3,11 @@ import type {StellarGeometryFrame} from '@starward/miniapp-contracts';
 import {prepareSkyDirection,type PreparedSkyDirection,type SkyVector,type SkyDirectionProjector,type SkyDirectionProjection} from './sky-view-projection';
 import {skyStarDisplayTransmission} from './sky-star-appearance';
 
+/** Qualification for retaining derived drawing input, not geometry admission. */
+export function immutableSkyStellarGeometry(value:StellarGeometryFrame):boolean {
+  return Object.isFrozen(value)&&Object.isFrozen(value.observer)&&Object.isFrozen(value.equatorialToEnu);
+}
+
 /** One exact-time transform shared by BSC and SAO. Immutable motion rows live
  * with their publication; these lazy values live only with its current frame.
  * Viewport rejection reads the original vector first. Surviving consumers use

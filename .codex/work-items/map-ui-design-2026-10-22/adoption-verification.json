@@ -1,0 +1,38 @@
+{
+  "predecessor": "1029654656181953306",
+  "htmlSha256": "eab0df69c64c9ed3639b4695ff10c115d6c048f00f417440b30a782233974712",
+  "htmlBytes": 760575,
+  "zipSha256": "bb173894c3322de750bd389f2caf355713249c3feb1272b7e5ae934f8414e804",
+  "zipBytes": 281231,
+  "unchangedReviewImages": {
+    "review-images/map.png": "675515b86d39e5e06f236a3284e6c729af157c8db838ed3d980b95f148387342",
+    "review-images/my.png": "c8b20c881de141d88ad733623ad72dc897d3476378d29ab1ac875ae622e2ac93",
+    "review-images/layers-cloud.png": "2a7df2119b95ee1a4991bc0c16ae084b0d50f4e6c0a66da5e72d9c56cf79a136",
+    "review-images/layers-light.png": "4e50faaef04940858a8d3163e32f676547a038d5e273f9766b6727888d2bb10d",
+    "review-images/astronomy.png": "08db0f5087f31b4f9852dc38ccc8b8aead904de9b221f7ba7b041f35613e988d",
+    "review-images/weather.png": "e65054105a6ba6069277aebc019feacd1a8eaf490dee118b827a70cb04a27981",
+    "review-images/sources.png": "01b32dcb6abff4ebf584a36212f3636d5d82f253eeab9ac87c1a446613fb8718",
+    "review-images/search.png": "b32fb268577978663fde01189cd929695f7ab1910d98a77ae86418f295b297da",
+    "review-images/press.png": "2a9fde4f1d57b01e462671ef9fc329db32612c7c27fe745e8a842cd6e257b94f"
+  },
+  "unchangedLogicCssGestureAndServer": true,
+  "baselineScreen": "5205988829884632961",
+  "baselineZipSha256": "0189d1ab761078178f079fb0f5909dcc896be40dc145758b228cd22ed844c3e6",
+  "screen": "3995519477980461148",
+  "remoteReadbackIdentical": true,
+  "embeddedFilesVerified": 16,
+  "planSha256": "ba7492f635019f486c897bc2262403e455fa7679d7a0a242a04aebbb87c729e5",
+  "listedScreens": 22,
+  "screenListTruncated": false,
+  "deletedScreenIds": [
+    "48b5fb53ec86468d86544ee6eecea064",
+    "6054859b666a4bf4a708d5d16e18c6de",
+    "1029654656181953306"
+  ],
+  "protectedScreenIds": [
+    "5205988829884632961",
+    "5385664345158066168",
+    "1f98910c16f84444b4aec58bb7ad741c"
+  ],
+  "abandonedRegistrationNotListed": "15893171417947946672"
+}

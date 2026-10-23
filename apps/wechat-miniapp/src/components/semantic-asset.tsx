@@ -3,6 +3,7 @@ import { useRouter } from "@tarojs/taro";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useAppStore } from "@/state/app-store";
 import mainBIcons from "./main-b-icon-files.json";
+import { primaryMapIconPath } from "@/navigation/primary-navigation";
 
 const sharedMainBIcons = new Set(mainBIcons.files.filter(file => !mainBIcons.mainOnlyVariants.includes(file)));
 
@@ -18,6 +19,8 @@ export type SemanticAssetSubject =
 
 export type SkyControlIconName = `sky-${"door" | "search" | "clock" | "layers" | "observation" | "up" | "down" | "apply" | "play" | "pause" | "target" | "follow" | "source" | "hand" | "eye" | "chevronBack" | "cancel"}`;
 export type SemanticIconName = SkyControlIconName
+  | "source"
+  | "map"
   | "menu"
   | "favorite-star"
   | "settings"
@@ -25,6 +28,7 @@ export type SemanticIconName = SkyControlIconName
   | "account-user"
   | "arrow-left"
   | "search"
+  | "add"
   | "filter"
   | "chevron-right"
   | "plan-header-chevron"
@@ -202,6 +206,12 @@ export function SemanticIcon({
   // the asset owner of this icon.
   const router = useRouter();
   const mode = useAppStore((state) => state.mode);
+  if (name === "map") return <Image className={`semantic-icon semantic-icon--map ${className}`}
+    src={`/${primaryMapIconPath(mode)}`} mode="aspectFit"
+    {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label ?? "地图" })} />;
+  if (name === "source") return <Image className={`semantic-icon semantic-icon--source-entry ${className}`}
+    src={`/assets/icons/source-${mode === "OBSERVATION" ? "observation" : "normal"}.svg`} mode="aspectFit"
+    {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label ?? "来源" })} />;
   if (name.startsWith("sky-")) return <Image className={`semantic-icon semantic-icon--sky-control ${className}`}
     src={`/sky/assets/controls/${name.slice(4)}-${mode === "OBSERVATION" ? "observation" : "normal"}.svg`}
     mode="aspectFit" {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label ?? name })} />;

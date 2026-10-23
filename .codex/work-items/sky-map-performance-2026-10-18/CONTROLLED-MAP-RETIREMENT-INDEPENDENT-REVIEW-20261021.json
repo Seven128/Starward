@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "reviewer": "/root/review_overlay_controlled_retirement",
+  "mode": "independent production read-only review; task-local report writes only",
+  "baseHead": "5b27a062c670cb2336e8e5c00c7e7a4071db0fac",
+  "candidateStatus": "uncommitted source; phone still r18; no build or target-runtime claim",
+  "assessment": "No new P1/P2 found in controlled Map-to-Sky and three explicit native Map rebuild entrypoints. Proceed to coherent-candidate device verification; full resource and memory acceptance remain open.",
+  "newFindings": [],
+  "retainedGaps": [
+    {
+      "id": "P2-external-teardown-cleanup-debt",
+      "introducedByCurrentChange": false,
+      "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts",
+      "line": 84,
+      "scope": "Unconditional external teardown bypassing controlled cleanup; actual remove failure without trustworthy native destruction acknowledgment",
+      "detail": "Effect cleanup still voids disposal debt. Controlled routes now keep the old node and usable coordinator until real clearance; this does not establish safe native absence for arbitrary external destruction."
+    },
+    {
+      "id": "target-native-resource-acceptance",
+      "detail": "Same-ID update continuity, native Map resource retirement, cloud polygon lifecycle and sustained movement/zoom memory need the current real candidate. Logical pin return is not GPU or process-memory release evidence."
+    }
+  ],
+  "checks": {
+    "tests": {
+      "command": "node tools/run-node.cjs --import tsx --test apps/wechat-miniapp/src/pages/map/terrain-ground-overlay.test.ts apps/wechat-miniapp/src/pages/map/use-map-raster-installation.test.ts apps/wechat-miniapp/src/pages/map/sky-entry-transition.test.ts",
+      "exitCode": 0,
+      "passed": 47,
+      "failed": 0,
+      "executionOutputChunk": "2bffdb",
+      "limits": "Actual coordinator; extracted actual page declarations and simulated hook environment; not complete React/WEAPP runtime."
+    },
+    "controlledBudgetRecovery": {
+      "executionOutputChunk": "849db4",
+      "scope": "actual coordinator/resource owner; synthetic native and file adapters; no phone or filesystem effects",
+      "maximumFiles": 8,
+      "syntheticFileBytes": 100,
+      "sequence": "acquire; add success; reader.release; suspend/remove failure; retain same owner; retry suspend/remove success; dispose",
+      "failedPreflights": 9,
+      "failureNativePinsEach": 1,
+      "successfulRetryClearances": 9,
+      "successNativePinsEach": 0,
+      "ninthAcquire": "resolved",
+      "beforeClose": { "entries": 8, "readyBytes": 800, "activeDownloads": 0, "queued": 0, "nativePins": 0, "failedRemovals": 0 },
+      "close": { "retainedPinnedFiles": 0, "failedRemovals": 0 },
+      "afterClose": { "entries": 0, "readyBytes": 0, "activeDownloads": 0, "queued": 0, "nativePins": 0, "failedRemovals": 0 },
+      "removedSyntheticFiles": 9
+    }
+  },
+  "sourceHashes": [
+    { "path": "apps/wechat-miniapp/src/pages/map/map-ground-overlay.ts", "sha256": "926db5713481f8dd2dc05c10e8c96d312578b5754d5edbdd878b0685050a4a25" },
+    { "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts", "sha256": "259648453b5df1f531bd0d49e3f66d3a26344a875de7fe1bd41ba0b38526667c" },
+    { "path": "apps/wechat-miniapp/src/pages/map/index.tsx", "sha256": "cef1c112b0a8271ec5a2eca780844c325920911141c51c46972cbdc744c3dc58" },
+    { "path": "apps/wechat-miniapp/src/pages/map/terrain-ground-overlay.test.ts", "sha256": "27fb360549419f8f47e655e31677a8bc2c14b855bee2411f2cfd5e4bcb9b7f90" },
+    { "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.test.ts", "sha256": "bfe3ef862698b14018ba4aac6d554fbf9a2b12bc1ec419649e1426fe466b20e6" },
+    { "path": "apps/wechat-miniapp/src/pages/map/sky-entry-transition.test.ts", "sha256": "027503ea3ac7787b200c9849c2500a82f826fe19d6aa47c584a6e508db12b436" },
+    { "path": "apps/wechat-miniapp/src/pages/map/native-map-recovery.ts", "sha256": "2830d6403c97d10e8b65a2b7e60bbbf6814214c2aa18faacf538ed62a299c184" },
+    { "path": "apps/wechat-miniapp/src/navigation/page-blackout-transition.ts", "sha256": "697cbce5e293602ae36aacd7a156d3b37650eb23fd410d8c8c1d9d410eb409df" },
+    { "path": "apps/wechat-miniapp/src/services/raster-image-resources.ts", "sha256": "2ae75bcb7233097f5d17783de3c692a848aeee26a3c409b28ec3330da4a5457e" }
+  ]
+}

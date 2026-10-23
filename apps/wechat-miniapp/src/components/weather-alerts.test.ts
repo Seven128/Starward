@@ -22,7 +22,8 @@ function load(file: string, name: string, context: object) {
   const ast = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const code = ast.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(ast).replace(/^export /, "")).join("\n");
   return vm.runInNewContext(ts.transpileModule(code + `;${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText,
-    { Date, setTimeout, clearTimeout, weatherAlertState, SourceAttribution: "SourceAttribution", ...context });
+    { Date, setTimeout, clearTimeout, weatherAlertState, SourceAttribution: "SourceAttribution", SourceEntry: "SourceEntry",
+      useState: (value: unknown) => [value, () => {}], ...context });
 }
 
 test("current warnings respect activation and expiry independently of available forecast hours", () => {
@@ -82,16 +83,13 @@ test("shared actual rendering removes resolved alerts, shows timestamps, and ret
 });
 
 test("compact warning facts keep the original authority, missing times and complete defence reading", () => {
-  let expanded = false;
+  let expanded: string[] = [];
   const React = { createElement(type: any, props: any, ...children: any[]): any {
     return typeof type === "function" ? type({ ...props, children }) : { type, props, children };
   } };
-  const SourceDisclosure = load("./source-disclosure.tsx", "SourceDisclosure", {
-    React, Text: "Text", View: "View", Button: "Button", Provenance: "Provenance", isProductSource: () => true,
-    useState: () => [expanded, (value: any) => { expanded = typeof value === "function" ? value(expanded) : value; }],
-  });
   const render = load("./weather-alerts.tsx", "WeatherAlerts", {
-    React, Text: "Text", View: "View", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SourceDisclosure,
+    React, Text: "Text", View: "View", Button: "Button", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel",
+    useState: () => [expanded, (value: any) => { expanded = typeof value === "function" ? value(expanded) : value; }],
     useWeatherAlertClock: () => now, useEffect: () => {}, useAppStore: () => () => {}, calendarDateInTimezone, clockTimeInTimezone,
   });
   const current = { ...alert, senderName: "原始发布机构", effectiveAt: null, expiresAt: null,
@@ -110,7 +108,9 @@ test("compact warning facts keep the original authority, missing times and compl
   const opened = render({ ...props, compact: true });
   assert.match(text(opened), /发布机构预警正文/);
   assert.equal(nodes(opened).filter(node => node.props?.className === "weather-alerts__instruction").length, 1);
-  assert.equal(nodes(opened).find(node => node.type === "Provenance").props.source, props.evidence.warningSource);
+  assert.equal(nodes(opened).find(node => node.type === "SourceEntry").props.sources[0], props.evidence.warningSource);
+  assert.equal(nodes(opened).find(node => node.type === "SourceEntry").props.sections, undefined,
+    "the source page must not become the owner of the warning description or defence instruction");
   nodes(opened).find(node => node.type === "Button").props.onClick();
   const closedAgain = render({ ...props, compact: true });
   assert.doesNotMatch(text(closedAgain), /发布机构预警正文/);

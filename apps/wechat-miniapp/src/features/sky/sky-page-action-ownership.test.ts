@@ -58,7 +58,7 @@ function publicCallback(marker: string) {
 }
 const menu = skyMenuProps(source);
 const dockCallback = (kind: "time" | "list" | "calibration") => menu.dock(kind).getText(source);
-let rulerCancel = "", rulerSettle = "", timeEffect = "", hideCallback = "", dateChange = "";
+let rulerCancel = "", rulerSettle = "", timeEffect = "", playbackPreparationEffect = "", hideCallback = "", dateChange = "";
 function visitPage(node: ts.Node) {
   if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "OrientationTimeRuler") {
     const attribute = node.attributes.properties.find(property => ts.isJsxAttribute(property) &&
@@ -75,6 +75,11 @@ function visitPage(node: ts.Node) {
     assert.equal(timeEffect, "", "one public elapsed-time effect");
     timeEffect = node.getText(source);
   }
+  if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" &&
+    node.arguments[0]?.getText(source).includes("if (!timePlayRequested) return;")) {
+    assert.equal(playbackPreparationEffect, "", "one pending Play effect on the same time owner");
+    playbackPreparationEffect = node.getText(source);
+  }
   if (ts.isCallExpression(node) && node.expression.getText(source) === "useDidHide" &&
     (node.arguments[0]?.getText(source).includes("contextSession.hide()") ||
      node.arguments[0]?.getText(source).includes("hideSkyPageRef.current"))) hideCallback = node.arguments[0].getText(source);
@@ -87,7 +92,7 @@ function visitPage(node: ts.Node) {
   ts.forEachChild(node, visitPage);
 }
 visitPage(page);
-assert.ok(rulerCancel && rulerSettle && timeEffect && hideCallback);
+assert.ok(rulerCancel && rulerSettle && timeEffect && playbackPreparationEffect && hideCallback);
 const compile = (value: string) => ts.transpileModule(value, {
   compilerOptions: { target: ts.ScriptTarget.ES2022 },
 }).outputText;
@@ -140,6 +145,7 @@ function harness() {
     observationTime: time, contextSession: session, objectSelection: selection, objectTracking: tracking,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true, activeContext: context,
     timeSaving: false, timeBinding, committedAt, requestedAt: committedAt, timePlaying: false,
+    timePlayRequested: false, previewGeometry: { playbackReady: true }, carriedReport: null,
     skyRulerTime, setTimeScrubbing: () => {},
     timeCommitContinuity: createSkyTimeCommitContinuity(skyForecastPresentation),
     timeModel: { startAt: committedAt, endAt }, timeGeometrySources: undefined, timeRows: rawReportData.hourly, geometryReport: rawReportData,
@@ -189,6 +195,7 @@ function harness() {
     rerender: () => vm.runInNewContext(code, { ...sandbox, selectedCatalogObject: selectedCatalogObjectRef.current,
       skyControlPanel: sandbox.skyControlPanelRef.current, orientationObjectListOpen: listOpen }) as typeof actions,
     installTimer: () => { sandbox.timePlaying = true; vm.runInContext(compile(timeEffect), scope); assert.ok(timer); },
+    preparePlayback: () => { sandbox.timePlayRequested = true; vm.runInContext(compile(playbackPreparationEffect), scope); },
     tickTimer: (at: number) => { elapsed = at; assert.ok(timer); timer(); },
     replaceContext: () => { store = { ...store, observationContext: { ...context, revision: 2, contextFingerprint: "fp:2" } }; },
     replaceSelection: (field: "selectedSpotId" | "mapResetVersion" | "spotOpenRequestVersion") => {
@@ -318,6 +325,36 @@ test("playback toggle reads the live mode before React catches up", () => {
   assert.equal(page.time.snapshot().mode, "PLAYING");
   page.actions.play!();
   assert.equal(page.time.snapshot().mode, "PAUSED", "a second native tap pauses without waiting for React");
+});
+
+test("short preview requests Play once, waits for full supply and a second native tap retracts that pending request", () => {
+  const page = harness(); page.sandbox.previewGeometry.playbackReady = false;
+  page.actions.play!(); assert.equal(page.time.snapshot().playRequested, true);
+  page.preparePlayback(); assert.notEqual(page.time.snapshot().mode, "PLAYING");
+  page.actions.play!(); assert.equal(page.time.snapshot().playRequested, false);
+  page.sandbox.previewGeometry.playbackReady = true; page.preparePlayback();
+  assert.notEqual(page.time.snapshot().mode, "PLAYING", "late full supply cannot resurrect the cancelled Play request");
+  page.sandbox.previewGeometry.playbackReady = false; page.actions.play!();
+  page.sandbox.previewGeometry.playbackReady = true; page.preparePlayback();
+  assert.equal(page.time.snapshot().mode, "PLAYING"); assert.equal(page.time.snapshot().playRequested, false);
+});
+
+test("full-window preparation cannot start after a newer input, cancellation, hide or replaced Context", () => {
+  const retire: [string, (page: Harness) => void][] = [
+    ["new ruler input", page => page.actions.onPreview!(1)],
+    ["cancel", page => page.actions.cancel!()],
+    ["hide", page => page.actions.hide!()],
+    ["Context replacement", page => page.replaceContext()],
+  ];
+  for (const [name, invalidate] of retire) {
+    const page = harness(); page.sandbox.previewGeometry.playbackReady = false;
+    page.actions.play!(); assert.equal(page.time.snapshot().playRequested, true);
+    invalidate(page);
+    const at = page.time.snapshot().at;
+    page.sandbox.previewGeometry.playbackReady = true; page.preparePlayback();
+    assert.notEqual(page.time.snapshot().mode, "PLAYING", name);
+    assert.equal(page.time.snapshot().at, at, name);
+  }
 });
 
 test("apply submits the live selected instant rather than the captured committed instant", async () => {

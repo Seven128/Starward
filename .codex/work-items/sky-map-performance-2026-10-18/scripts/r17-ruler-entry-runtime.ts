@@ -9,7 +9,7 @@ let clock: (() => Stamp) | null = null;
 let ring: Event[] = [];
 const scalar = (value: unknown): number | null => typeof value === "number" && Number.isFinite(value) &&
   Math.abs(value) <= Number.MAX_SAFE_INTEGER ? value : typeof value === "boolean" ? Number(value) : null;
-function bytes(value: string) {
+export function r17ProbePayloadBytes(value: string) {
   let size = 0;
   for (let i = 0; i < value.length; i++) {
     const code = value.charCodeAt(i);
@@ -20,6 +20,28 @@ function bytes(value: string) {
     else size += 3;
   }
   return size;
+}
+// Export only, after every selected extension has been attached. The v3
+// linkage contract permits at most 32 sampled links; its totals/distributions
+// still describe all retained preparations. Keep the first/last four links
+// required by the unchanged A-correlation contract and omit only the middle.
+// No recorder ring, aggregate, unknown coverage or correlation row is changed.
+export function r17ProbeBoundedReceipt<T extends {
+  linkage: { links: unknown[]; linkSampleTruncated: boolean };
+}>(payload: T): T {
+  if (r17ProbePayloadBytes(JSON.stringify(payload)) <= MAX_BYTES) return payload;
+  const original = payload.linkage.links;
+  if (original.length <= 8) return payload; // A malformed/oversized fixed part must still fail closed at the writer.
+  const sample = (count: number): T => ({ ...payload, linkage: { ...payload.linkage,
+    linkSampleTruncated: true,
+    links: [...original.slice(0, Math.ceil(count / 2)), ...original.slice(-Math.floor(count / 2))] } });
+  let low = 8, high = original.length - 1;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (r17ProbePayloadBytes(JSON.stringify(sample(middle))) <= MAX_BYTES) low = middle;
+    else high = middle - 1;
+  }
+  return sample(low);
 }
 function record(code: number, values: readonly unknown[], expectedWindow = start.windowId) {
   if (!enabled || !clock || observed >= LIMIT) return;
@@ -61,7 +83,7 @@ export const r17RulerEntry = {
     let low = 0, high = retained;
     while (low < high) {
       const middle = Math.ceil((low + high) / 2);
-      if (bytes(JSON.stringify({ ...payload, rulerEntry: extension(middle) })) <= MAX_BYTES) low = middle;
+      if (r17ProbePayloadBytes(JSON.stringify({ ...payload, rulerEntry: extension(middle) })) <= MAX_BYTES) low = middle;
       else high = middle - 1;
     }
     return { ...payload, rulerEntry: extension(low) };

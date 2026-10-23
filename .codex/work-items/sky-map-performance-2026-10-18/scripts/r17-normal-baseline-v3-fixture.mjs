@@ -6,12 +6,20 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 
+// This fixture owns unchanged product Play/Pause/retirement behavior. The
+// optional task observer has its own real adapter lifecycle and export tests.
+const memoryBoundary = Object.fromEntries(['r25MemoryStarted', 'r25MemoryHidden', 'r25MemoryScopeEnded',
+  'r25MemoryExport', 'r25MemoryPaused', 'r25MemoryRetired', 'r25MemoryTrack', 'r25MemoryTile', 'r25MemoryAggregate',
+  'r26AggregateUse', 'r26AggregateSlot'].map(name => [name, () => {}]));
+memoryBoundary.r25MemoryStatus = () => 'memory-boundary-fixture';
+const withMemoryBoundary = require => name => name === './r25-memory-lifetime-adapter' ? memoryBoundary : require(name);
+
 export async function verifyNormalSurfaceRetirementFixture({ surfaceSource, observationSource, ts }) {
   const load = (source, require = () => { throw Error('unexpected_import'); }, environment = {}) => {
     const module = { exports: {} }, result = ts.transpileModule(source, { compilerOptions: {
       module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }, reportDiagnostics: true });
     assert.equal(result.diagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).length, 0);
-    vm.runInNewContext('(function(exports,require,module){' + result.outputText + '\n})', environment)(module.exports, require, module);
+    vm.runInNewContext('(function(exports,require,module){' + result.outputText + '\n})', environment)(module.exports, withMemoryBoundary(require), module);
     return module.exports;
   };
   const binding = { buildGeneration: 27, buildSourceSha256: 'd'.repeat(64) };
@@ -148,7 +156,7 @@ export function verifyNormalRequestedPreparationFixture({ page, parentPage, pres
   const makeDraw = vm.runInNewContext('(function(timePresentation, canvasData, r17TimePreparationRef, r17Probe){return function(){' +
     transpile(page.slice(classifyStart, frameStart)) +
     'const r17PreparedRequest={data:canvasData,frameAt:timePresentation?.row.at,timePresentation};' +
-    transpile(page.slice(requestStart, requestEnd)) + '};})');
+    transpile(page.slice(requestStart, requestEnd)) + '};})', { r19Reason: 2 });
   intent('A', 1); const readyA = render(), drawA = makeDraw(readyA.timePresentation, {}, readyA.r17TimePreparationRef, probe);
   assert.strictEqual(readyA.timePresentation, a); assert.equal(preparations.length, 1); assert.equal(calls, 1);
   drawA(); assert.equal(requests.at(-1).token, 1); assert.equal(requests.at(-1).sequence, 1);
@@ -185,7 +193,7 @@ export function verifyNormalRequestedPreparationFixture({ page, parentPage, pres
     cancelledEmptyAndForeignInputsAndThrownPreparationKeepHonestLinkage: true };
 }
 
-export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot, feature, ts, buildGeneration, protocolPath, expectedProbeVersion = 3, allowACorrelation = false, allowRulerEntry = false, retirementObservation = false, requestedPreparation, readPreparedSource, readProductionSource }) {
+export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot, feature, ts, buildGeneration, protocolPath, expectedProbeVersion = 3, allowACorrelation = false, allowRulerEntry = false, retirementObservation = false, normalPlayTrialMs, requestedPreparation, readPreparedSource, readProductionSource }) {
   assert.equal(expectedProbeVersion, 3, 'this materialized fixture is explicitly v3');
   const probeMode = 'normal';
   const read = name => (readPreparedSource ? readPreparedSource(name) : fs.readFile(path.join(sourceRoot, feature, name), 'utf8')).then(value => value.replaceAll('\r\n', '\n'));
@@ -198,7 +206,7 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   };
   const load = (source, require = name => { throw Error(name); }, environment = {}, suffix = '') => {
     const module = { exports: {} };
-    vm.runInNewContext('(function(exports,require,module){' + transpile(source) + '\n' + suffix + '\n})', environment)(module.exports, require, module);
+    vm.runInNewContext('(function(exports,require,module){' + transpile(source) + '\n' + suffix + '\n})', environment)(module.exports, withMemoryBoundary(require), module);
     return module.exports;
   };
   const page = await read('spot-sky-page.tsx'), parentPage = await parentRead('spot-sky-page.tsx');
@@ -228,7 +236,15 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   assert.strictEqual(failedDispatch.current, A);
   for (const name of ['sky-selected-object.tsx', 'use-sky-artwork.ts', 'sky-stellar-transform.ts',
     'sky-object-selection.ts', 'sky-star-transition.ts', 'sky-ready-presentation.ts', 'sky-name-layout.ts']) {
-    assert.equal(await read(name), await parentRead(name), 'unaffected production consumer changed:' + name);
+    let candidate = await read(name);
+    if (name === 'sky-stellar-transform.ts' && candidate.startsWith('import { r25MemoryTrack }')) {
+      // Remove only the two explicit task-only observation statements. The
+      // complete production transform must still be byte identical.
+      candidate = candidate.replace('import { r25MemoryTrack } from "./r25-memory-lifetime-adapter";\n', '')
+        .replace('  r25MemoryTrack("stellar-vectors",vectors,count); r25MemoryTrack("stellar-positions",positions,count);\n'+
+          '  r25MemoryTrack("stellar-directions",directions,count); r25MemoryTrack("stellar-transmissions",transmissions,count);\n', '');
+    }
+    assert.equal(candidate, await parentRead(name), 'production consumer changed beyond declared observation:' + name);
   }
   assert.doesNotMatch(page, /r17Cpu|r17AcceptedAction|scene-owned-memo|synthetic/);
   const observationSource = await read('r17-normal-observations.ts');
@@ -297,15 +313,29 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   const fixtureEpochMs = 1802822400000;
   let fixtureWallOffset = 0;
   const fixtureDate = class extends Date { static now() { return fixtureEpochMs + clock + fixtureWallOffset; } };
-  const pauseTrialMs = retirementObservation ? 60000 : 20000;
+  const pauseTrialMs = normalPlayTrialMs ?? (retirementObservation ? 60000 : 20000);
+  assert([20000,60000].includes(pauseTrialMs));
   // Preserve the historical sequence while changing only this trial's Pause delay.
   const advanceBoundary = boundary => advance(Math.floor(boundary / 20000) * pauseTrialMs + boundary % 20000);
   const environmentClock = { Date: fixtureDate, setTimeout: schedule, clearTimeout: id => timers.delete(id), performance: { now: () => clock } };
   const correlation = allowACorrelation ? load(await read('r17-a-correlation-runtime.ts'), undefined, environmentClock) : null;
   const rulerEntry = allowRulerEntry ? load(await read('r17-ruler-entry-runtime.ts'), undefined, environmentClock) : null;
-  const probe = load(await read('r17-phone-probe-runtime.ts'), name => {
+  const probeSource = await read('r17-phone-probe-runtime.ts');
+  const drawReasons = probeSource.includes('createR19DrawReasons');
+  const drawCosts = probeSource.includes('createR20DrawCosts');
+  const firstAcceptedCosts = probeSource.includes('createR28FirstAcceptedCosts')
+    ? load(await read('r28-first-accepted-costs.ts')) : null;
+  const geometryStages = probeSource.includes('createR17GeometryStages')
+    ? load(await read('r17-geometry-stage-runtime.ts'), name => {
+      if (name === './r17-ruler-entry-runtime') return rulerEntry;
+      throw Error(name);
+    }, environmentClock) : null;
+  const probe = load(probeSource, name => {
     if (allowACorrelation && name === './r17-a-correlation-runtime') return correlation;
     if (allowRulerEntry && name === './r17-ruler-entry-runtime') return rulerEntry;
+    if (geometryStages && name === './r17-geometry-stage-runtime') return geometryStages;
+    if (drawReasons && name === './r17-normal-observations') return normalObservation;
+    if (firstAcceptedCosts && name === './r28-first-accepted-costs') return firstAcceptedCosts;
     throw Error(name);
   }, environmentClock).r17Probe;
   const observer = load(await read('r17-page-bridge-observer.ts'), name => {
@@ -332,17 +362,25 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   }, { ...environmentClock, __MINIAPP_API_BASE__: 'http://diagnostic.invalid' },
   'exports.fixture = { startDiagnostic, exportDiagnostic, cancelDiagnostic, status: () => status };');
   controls.useR17NormalLifecycle();
-  let productMode = 'PREVIEW', runStartAt = null, pauses = 0, oldCallbackCalls = 0;
+  let productMode = 'PREVIEW', playRequested = false, runStartAt = null, pauses = 0, oldCallbackCalls = 0;
   const at = '2026-10-18T00:00:00.000Z';
   const scope = { Date: fixtureDate, ownerCurrent: false, datePickerOpenRef: { current: false }, timeModel: { endAt: '2026-10-18T12:00:00.000Z' },
     geometryReport: {}, report: { isError: false, data: { dataState: 'FRESH' } }, skyTimeIntentCurrent: () => scope.ownerCurrent,
-    cancelSkyCalibration() {}, observationTime: { snapshot: () => ({ mode: productMode, at, runStartAt }),
-      play: () => ({ mode: 'PLAYING', runStartAt: at }), pause: () => ({ mode: 'PAUSED', runStartAt: null }) },
-    setTimeIntent: value => { productMode = value.mode; runStartAt = value.runStartAt; },
+    carriedReport: null, requestedAt: at, previewGeometry: { playbackReady: false },
+    pageVisible: true, contextSession: { busy: false }, timeSaving: false, alignmentEditing: false,
+    cancelSkyCalibration() {}, observationTime: { snapshot: () => ({ mode: productMode, playRequested, at, runStartAt }),
+      play: () => ({ mode: 'PLAYING', runStartAt: at }), pause: () => ({ mode: 'PAUSED', runStartAt: null }),
+      requestPlay: () => ({ mode: productMode, playRequested: true, runStartAt: null }) },
+    setTimeIntent: value => { productMode = value.mode; playRequested = Boolean(value.playRequested); runStartAt = value.runStartAt; },
     pauseSkyTime: () => { pauses++; scope.setTimeIntent(scope.observationTime.pause()); },
     r17NormalProductPlayStarted: controls.r17NormalProductPlayStarted };
   const playStart = page.indexOf('  const toggleSkyTimePlayback = () => {'), playEnd = page.indexOf('  const commitInstant = ', playStart);
   const toggle = vm.runInNewContext('(function(){' + transpile(page.slice(playStart, playEnd)) + ';return toggleSkyTimePlayback;})()', scope);
+  const readyStart = page.indexOf('  useEffect(() => {\n    if (!timePlayRequested) return;');
+  const readyEnd = page.indexOf('  }, [observationTime, timePlayRequested, requestedAt,', readyStart);
+  assert(readyStart > 0 && readyEnd > readyStart, 'actual pending-Play effect must be found');
+  const ready = vm.runInNewContext('(function(){' + transpile(page.slice(readyStart + '  useEffect(() => {'.length, readyEnd)) + '})', scope);
+  Object.defineProperty(scope, 'timePlayRequested', { get: () => playRequested });
   const stopStart = page.indexOf('  useR17NormalStop(runStartAt => {'), stopEnd = page.indexOf('  const toggleSkyTimePlayback', stopStart);
   let actualStop;
   vm.runInNewContext(transpile(page.slice(stopStart, stopEnd)), { ...scope, useR17NormalStop: fn => { actualStop = fn; } });
@@ -350,7 +388,10 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   controls.fixture.startDiagnostic('wide-play'); assert.equal(timers.size, 0);
   toggle(); assert.equal(productMode, 'PREVIEW'); assert.equal(timers.size, 0);
   scope.ownerCurrent = true; scope.datePickerOpenRef.current = true; toggle(); assert.equal(productMode, 'PREVIEW');
-  scope.datePickerOpenRef.current = false; toggle(); assert.equal(productMode, 'PLAYING'); assert.equal(timers.size, 3);
+  scope.datePickerOpenRef.current = false; toggle(); assert.equal(productMode, 'PREVIEW'); assert.equal(playRequested, true);
+  ready(); assert.equal(timers.size, 0, 'requesting a full window must not start the measurement or Pause clock');
+  scope.previewGeometry.playbackReady = true; ready(); assert.equal(productMode, 'PLAYING'); assert.equal(timers.size, 3);
+  ready(); assert.equal(timers.size, 3, 'a repeated ready effect must not start a second Play measurement');
   advance(1000);
   const publicState = { at }, sequence = probe.intent(publicState), token = probe.prepareStarted(sequence, 'presentation');
   probe.prepareFinished(token);
@@ -359,7 +400,17 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   probe.sceneFinished({ skyScene: { catalog: { catalogVersion: 'test-public' } } }, at, { pointCount: 8404 }, { pointCount: 666 }, 390, 844, 45, 'NIGHT', 100, 5);
   advance(15000); assert.equal(requests.length, 1); assert.equal(productMode, 'PLAYING');
   const metricsSerialized = requests[0].options.data, metrics = JSON.parse(metricsSerialized);
-  assert.equal(metrics.schemaVersion, 'starward-r17-phone-probe-v3');
+  assert.equal(metrics.schemaVersion, firstAcceptedCosts ? 'starward-r28-phone-probe-first-accepted-costs-v1' : drawCosts ? 'starward-r20-phone-probe-draw-costs-v1' : drawReasons ? 'starward-r19-phone-probe-draw-reasons-v1' : 'starward-r17-phone-probe-v3');
+  if (firstAcceptedCosts) {
+    assert.equal(metrics.firstAcceptedCosts.metricsSchema, 'starward-r20-phone-probe-draw-costs-v1');
+    assert.equal(metrics.firstAcceptedCosts.counters.firstAccepted, 1);
+    // This existing business fixture directly invokes the callback boundary;
+    // it does not supply a real Canvas lifecycle identity. Keep that unknown.
+    assert.equal(metrics.firstAcceptedCosts.counters.missingFirstAccepted, 1);
+    assert.equal(metrics.firstAcceptedCosts.rows.length, 0);
+  }
+  if (drawCosts) assert.equal(metrics.drawCosts.metricsSchema, 'starward-r19-phone-probe-draw-reasons-v1');
+  if (drawReasons) assert.equal(metrics.drawReasons.metricsSchema, 'starward-r17-phone-probe-v3');
   assert.equal(metrics.window.elapsedMs, 14000); assert.equal(metrics.counters.sceneFinishes, 1); assert.equal(metrics.counters.acceptedCopies, 1);
   assert.equal(metrics.binding.mode, probeMode); assert.equal(metrics.binding.buildGeneration, buildGeneration); assert.match(metrics.binding.buildSourceSha256, /^[a-f0-9]{64}$/);
   assert.equal(metrics.controls.events.actualPlay.calls, 1); assert.equal(metrics.controls.events.actualPlay.firstRelativeMs, 0);
@@ -384,15 +435,15 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
   }
   assert.equal(protocol.validateR17PhoneProbeMetrics(metrics), true);
   requests[0].resolve({ statusCode: 200, data: { stored: true } }); await new Promise(resolve => setImmediate(resolve));
-  if (retirementObservation) {
-    advance(59999); assert.equal(productMode, 'PLAYING'); assert.equal(pauses, 0);
+  advance(pauseTrialMs - 1); assert.equal(productMode, 'PLAYING'); assert.equal(pauses, 0);
+  if (pauseTrialMs === 60000) {
     // A real delayed timer may exceed v3's 60s clock range. Keep null; do not widen it.
     fixtureWallOffset = 25;
   }
   advanceBoundary(20000); assert.equal(productMode, 'PAUSED'); assert.equal(pauses, 1); assert.equal(oldCallbackCalls, 0); assert.equal(requests.length, 2);
   const terminal = JSON.parse(requests[1].options.data);
   assert.equal(terminal.schemaVersion, 'starward-r17-phone-probe-v3-terminal'); assert.equal(terminal.runId, metrics.runId);
-  assert.equal(terminal.controls.events.pauseAttempt.calls, 1); assert.equal(terminal.controls.events.pauseAttempt.lastRelativeMs, retirementObservation ? null : 20000);
+  assert.equal(terminal.controls.events.pauseAttempt.calls, 1); assert.equal(terminal.controls.events.pauseAttempt.lastRelativeMs, pauseTrialMs === 60000 ? null : 20000);
   assert.equal(terminal.controls.events.pauseAttempt.lastResult, true); assert.equal(terminal.controls.events.pauseSuccess.calls, 1);
   assert.equal(terminal.controls.events.pauseSuccess.lastResult, true); assert.equal(terminal.controls.events.terminalExport.calls, 1);
   assert.equal(JSON.stringify(probe.snapshot()), metricsSerialized, 'terminal must not mutate sealed metrics');
@@ -467,7 +518,7 @@ export async function verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot
     completeRequestFieldsAndDrawDependenciesUnchanged: true, explicitPreparationIdentitySurvivesResolveClone: true,
     realAcceptedCopyAndNoSyntheticPublication: true, nativeMeasureTextReturnIdentityAndNumericCountersOnly: true,
     explicitVersion3ProtocolAndDateFake: true, nullElapsedConsumerDisplaysUnknownAndActualReason: true, guardedNormalPlayAnd15sMetricsKept: true,
-    ...(retirementObservation ? { exactSameRun60sOriginalPauseAndSeparateTerminalReceiptWithUnknownLateTimestamp: true } : { exactSameRun20sOriginalPauseAndSeparateTerminalReceipt: true }),
+    ...(pauseTrialMs === 60000 ? { exactSameRun60sOriginalPauseAndSeparateTerminalReceiptWithUnknownLateTimestamp: true } : { exactSameRun20sOriginalPauseAndSeparateTerminalReceipt: true }),
     hiddenUnmountReplacementRunAndExportFailureGuarded: true,
     sealedTerminalWaitsForMetricsAnd424RetriesIdenticalBytesWithoutReplay: true,
     lateMetricsAfterHideCannotSendRetiredTerminal: true, fixturesNotPhoneEvidence: true,

@@ -1,0 +1,41 @@
+{
+  "project": "7144519510537620825",
+  "adoptedScreen": "3995519477980461148",
+  "deletedScreenIds": [
+    "48b5fb53ec86468d86544ee6eecea064",
+    "6054859b666a4bf4a708d5d16e18c6de",
+    "1029654656181953306"
+  ],
+  "protectedScreens": {
+    "5205988829884632961": "小程序完整可编辑多文件源｜2026-10-17合并",
+    "5385664345158066168": "云观星菜单与弹窗｜已采用·完整交互·2026-10-17",
+    "1f98910c16f84444b4aec58bb7ad741c": "15｜周边环境·山体遮挡｜当前局部源"
+  },
+  "remainingScreenCount": 22,
+  "listNotTruncated": true,
+  "verification": "Official find screens --no-cache current list; exact adopted HTML readback and embedded ZIP/image digests match. Project.screenInstances can include historical instances and is not used as current live membership.",
+  "registrationRecovery": "Closed old canvas sessions before final registration; earlier registration 15893171417947946672 is absent from current list.",
+  "unrelatedRemainingScreens": [
+    "10730298707280640722",
+    "15784007085525249384",
+    "16763997252658823934",
+    "16763997252658825440",
+    "16763997252658826946",
+    "1f98910c16f84444b4aec58bb7ad741c",
+    "2210016762480219826",
+    "2363343729366274348",
+    "2363343729366274564",
+    "2363343729366275426",
+    "2363343729366275642",
+    "2363343729366276504",
+    "2363343729366277366",
+    "2363343729366277582",
+    "2960173540302109526",
+    "4493372846880550325",
+    "46a9936c70664e4381411573ab6b34da",
+    "5203113606453427839",
+    "5205988829884632961",
+    "5385664345158066168",
+    "6888738757748880241"
+  ]
+}

@@ -1,4 +1,5 @@
-import { Button, View } from "@tarojs/components";
+import { View } from "@tarojs/components";
+import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro from "@tarojs/taro";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { skyRetainedLayerStyle } from "./sky-retained-layer";
@@ -113,7 +114,7 @@ export function SkyDisclosureSurface({ kind, onClose, children, className = "", 
   const outsideDrag = useRef(false);
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
   return <View className={`sky-disclosure sky-disclosure--${kind}`}>
-    {kind !== "time" ? <Button className="sky-disclosure__backdrop sky-overlay-motion__backdrop"
+    {kind !== "time" ? <Button pressVariant="none" className="sky-disclosure__backdrop sky-overlay-motion__backdrop"
       ariaLabel={`收起${label}`} onTouchStart={() => { outsideDrag.current = false; }}
       onTouchMove={() => { outsideDrag.current = true; }}
       onTouchCancel={() => { outsideDrag.current = true; }}

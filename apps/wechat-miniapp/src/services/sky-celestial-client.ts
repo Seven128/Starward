@@ -17,7 +17,8 @@ export function getSkyGeometryWindow(binding: SkyGeometryWindowBinding, signal?:
   const key = skyGeometryWindowKey(binding).join(":");
   return requestOperation(key, "spotSkyGeometryGet", {
     auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
-    pathParams: { spotId }, query: `contextId=${encodeURIComponent(contextId)}&at=${encodeURIComponent(at)}`,
+    pathParams: { spotId }, query: `contextId=${encodeURIComponent(contextId)}&at=${encodeURIComponent(at)}` +
+      (binding.windowMode === "TWO_HOURS" ? "&window=TWO_HOURS" : ""),
     ...(signal ? { signal } : {}),
   }).then(response => {
     try { return matchingSkyGeometryWindow(response, binding); }

@@ -1,13 +1,7 @@
 import { ToggleField } from "@/components/toggle-field";
 import { FormalSpotField } from "@/components/formal-spot-field";
-import {
-  Button,
-  Input,
-  Picker,
-  Text,
-  Textarea,
-  View,
-} from "@tarojs/components";
+import { Input, Picker, Text, Textarea, View,  } from "@tarojs/components";
+import { SharedButton as Button, PickerTrigger } from "@/components/shared-button-press";
 import { useEffect, useState } from "react";
 import { SoftButton } from "@/components/soft-button";
 import { SpotDocumentAddressControl } from "../spot-document-fields";
@@ -348,9 +342,9 @@ function DateTimeField({
         value={value}
         onChange={(event) => onChange(event.detail.value)}
       >
-        <View className="field focus-ring">
+        <PickerTrigger disabled={disabled} className="field focus-ring">
           <Text>{value}</Text>
-        </View>
+        </PickerTrigger>
       </Picker>
     </View>
   );

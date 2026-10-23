@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { sdssOpticalPublication } from "@starward/miniapp-contracts";
+import { primaryPageNativeRuntimeForTest } from "../../navigation/primary-page-navigation-test-support";
+import { sdssOpticalPublication, skySourceSelectionPath } from "@starward/miniapp-contracts";
 import { createSkyContextSession } from "./sky-context-session";
 import { createPageBlackoutTransition } from "../../navigation/page-blackout-transition";
 import { createSkyMapLifecycle } from "../../navigation/sky-map-lifecycle";
@@ -22,7 +23,8 @@ ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 assert.ok(page?.body);
 const names = ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent",
-  "openSkySources", "openOpticalSources", "skyReturnPendingRef", "returnToSkyEntry", "goBack",
+  "openSkySources", "currentPaintedSkySourceFrame", "openOpticalSources", "openBodyImageSources", "openLandscapeSources", "openConstellationSources",
+  "skyReturnPendingRef", "returnToSkyEntry", "goBack",
   "setDatePickerOpen", "setSelectedCatalogObject", "setSelectedTargetId", "setCatalogPickChoices", "closeSkyObjectDisclosure", "skyDisclosures"];
 const commands = page.body.statements.filter(node => ts.isVariableStatement(node) &&
   node.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
@@ -39,7 +41,7 @@ function visit(node: ts.Node) {
 visit(page); assert.ok(metadataSource);
 const code = ts.transpileModule(commands.map(node => node.getText(source)).join("\n") + `\n({
   openSources:typeof openSkySources === 'function' ? openSkySources : url=>openOpticalSources({sourceRoute:url}),
-  openImage:openOpticalSources,metadataSource:${metadataSource},goBack,returnToSkyEntry,
+  openImage:openOpticalSources,openBodyImageSources,openLandscapeSources,openConstellationSources,metadataSource:${metadataSource},goBack,returnToSkyEntry,pendingReturn:()=>skyReturnPendingRef.current,
   setDatePickerOpen,setSelectedCatalogObject,setSelectedTargetId,setCatalogPickChoices});`,
 { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 const at = "2026-09-22T13:00:00.000Z", later = "2026-09-22T14:00:00.000Z";
@@ -47,13 +49,21 @@ const context = { contextId: "ctx:a" as ContextVersion["contextId"], revision: 1
   timezone: "Asia/Shanghai", localDate: "2026-09-22" };
 const object = { reference: "HR:7001", displayName: "Vega", kind: "STAR" };
 
-function harness() {
+function harness(options: { unloadedMap?: boolean } = {}) {
   let store = { observationContext: context, selectedSpotId: "spot:a", mapResetVersion: 0, spotOpenRequestVersion: 0 };
   const session = createSkyContextSession(context.contextId, () => store), time = createSkyObservationTime();
   const binding = "ctx:a:1:fp:1";
   time.bind(binding, at, { startAt: at, endAt: later });
   const navigation: { kind: string; url: string | undefined; resolve(): void; reject(error: Error): void }[] = [];
+  const mapPage = { route: "pages/map/index" }, skyPage = { route: "sky/detail/index" };
+  const native = primaryPageNativeRuntimeForTest([mapPage], call => navigation.push({
+    kind: call.kind, url: call.url, resolve: call.resolve, reject: call.reject,
+  }));
+  assert.equal(native.showMap(mapPage), true); native.hideMap(mapPage);
+  if (options.unloadedMap) native.dispose();
+  native.setStack(options.unloadedMap ? [skyPage] : [mapPage, skyPage]);
   const notices: unknown[] = [], retirements: (() => void)[] = [], runtimeErrors: unknown[][] = [];
+  const sourceDocuments: unknown[] = [];
   let releases = 0, calibrationCancels = 0;
   const ui = { date: false, object: object as typeof object | null, target: null as string | null, choices: [] as unknown[] };
   const dateRef = { current: ui.date }, objectRef = { current: ui.object }, targetRef = { current: ui.target }, choicesRef = { current: ui.choices };
@@ -77,6 +87,11 @@ function harness() {
     reportRuntimeError: (...event: unknown[]) => runtimeErrors.push(event),
     presentedSkyFrameRef: { current: accepted }, canvasGenerationRef: { current: 1 },
     nativeCanvasMounted: true, canvasError: null, orientationData: data, rawReportData: data,
+    skyNativeImageIsCurrent: () => true, skySourceSelectionPath, SOURCE_READING_ROUTE: "/spot/data-source/index?reading=1",
+    skyLandscapePaintedPanorama: (mask: unknown) => mask,
+    skyLandscapeSourceDocument: (photo: unknown) => ({ title: "来源", sources: [], selected: photo }),
+    skyConstellationSourceDocument: (catalog: unknown) => ({ title: "来源", sources: [], selected: catalog }),
+    sourceMetadataRef: { current: { constellation: null } }, skyDisplayCurrent: () => true,
     skyPresentedTimeCurrent, skyOpticalSourceCredit, skyHipsSourceCredit, skyCommandStateSetter, createSkyDisclosureCommands,
     skyControlPanelRef: { current: null }, orientationObjectListOpenRef: { current: false },
     setSkyControlPanel() {}, setOrientationObjectListOpen() {}, skyTimeIntentRetirable: () => true,
@@ -88,10 +103,13 @@ function harness() {
     setSelectedTargetId: (value: string | null) => { targetRef.current = value; ui.target = value; },
     setCatalogPickChoices: (value: unknown[]) => { choicesRef.current = value; ui.choices = value; },
     useRef: (value: unknown) => ({ current: value }),
-    Taro: Object.fromEntries(["navigateTo", "navigateBack", "switchTab"].map(kind => [kind, (options?: { url: string }) =>
-      new Promise<void>((resolve, reject) => navigation.push({ kind, url: options?.url, resolve, reject }))])),
+    Taro: { ...native.taro, navigateTo: (options: { url: string }) =>
+      new Promise<void>((resolve, reject) => navigation.push({ kind: "navigateTo", url: options.url, resolve, reject })) },
   };
-  sandbox.Taro.getCurrentPages = () => [{ route: "pages/map/index" }, { route: "sky/detail/index" }];
+  Object.assign(sandbox, native.dispatcher);
+  sandbox.navigateToSource = (options: { url: string; document?: unknown }) => {
+    sourceDocuments.push(options.document); return sandbox.Taro.navigateTo(options);
+  };
   sandbox.reducedMotion = false;
   sandbox.routeReducedMotion = false;
   sandbox.skyMapLifecycle = createSkyMapLifecycle();
@@ -111,10 +129,10 @@ function harness() {
     await new Promise(resolve => setImmediate(resolve));
   };
   const actions = vm.runInNewContext(code, sandbox) as Record<string, (...args: any[]) => any>;
-  return { actions, sandbox, session, time, navigation, notices, runtimeErrors, ui, completion, finishExit, exit, exitTimers,
+  return { actions, sandbox, session, time, native, mapPage, navigation, notices, runtimeErrors, sourceDocuments, ui, completion, finishExit, exit, exitTimers,
     credit: () => skyOpticalSourceCredit(sandbox.presentedSkyFrameRef.current.sdssOptical)!,
     replaceContext: () => { store = { ...store, observationContext: { ...context, revision: 2, contextFingerprint: "fp:2" } }; },
-    counts: () => ({ releases, calibrationCancels }), dispose: () => { exit.dispose(); retirements.forEach(retire => retire()); } };
+    counts: () => ({ releases, calibrationCancels }), dispose: () => { exit.dispose(); native.dispose(); retirements.forEach(retire => retire()); } };
 }
 
 for (const boundary of ["hide", "hide-return", "unmount", "Context", "binding", "commit-lock", "calibration"] as const) {
@@ -188,6 +206,40 @@ test("current catalog metadata Sources remain usable without Canvas; an old obje
   assert.equal(page.navigation.length, 1); await stale; page.dispose();
 });
 
+test("new Body and landscape page actions retain exact painted identities and reject replaced resources", async () => {
+  const page = harness(), frame = page.sandbox.presentedSkyFrameRef.current;
+  const body = { reference: "SOLAR:MOON", image: {}, publication: { publicationHash: "c".repeat(64) } };
+  frame.bodyImages = [body];
+  const bodyOpen = page.actions.openBodyImageSources!(body);
+  assert.equal(page.navigation[0]?.url, `/sky/sources/index?reference=SOLAR%3AMOON&bodyImagePublicationHash=${body.publication.publicationHash}`);
+  page.navigation[0]!.resolve(); await bodyOpen;
+  frame.bodyImages = [{ ...body, image: {} }];
+  await page.actions.openBodyImageSources!(body); assert.equal(page.navigation.length, 1);
+
+  const photo = { publication: { publicationHash: "d".repeat(64) }, resource: { image: { downloadUrl: "/current-detail.png" } } };
+  frame.landscape = photo;
+  const photoOpen = page.actions.openLandscapeSources!(photo);
+  assert.equal(page.navigation[1]?.url, "/spot/data-source/index?reading=1");
+  assert.equal((page.sourceDocuments[1] as { selected: unknown }).selected, photo);
+  page.navigation[1]!.resolve(); await photoOpen;
+  frame.landscape = { ...photo, resource: { image: { downloadUrl: "/other-level.png" } } };
+  await page.actions.openLandscapeSources!(photo); assert.equal(page.navigation.length, 2, "same publication cannot lend a different selected image link");
+  page.dispose();
+});
+
+test("data-only source documents use current metadata without requiring Canvas or retaining a replaced query result", async () => {
+  const page = harness(), catalog = { data: { catalogHash: "e".repeat(64) }, sources: [] };
+  page.sandbox.nativeCanvasMounted = false; page.sandbox.presentedSkyFrameRef.current = null;
+  page.sandbox.sourceMetadataRef.current.constellation = catalog;
+  const open = page.actions.openConstellationSources!(catalog);
+  assert.equal(page.navigation.length, 1);
+  assert.equal((page.sourceDocuments[0] as { selected: unknown }).selected, catalog);
+  page.navigation[0]!.resolve(); await open;
+  page.sandbox.sourceMetadataRef.current.constellation = { ...catalog };
+  await page.actions.openConstellationSources!(catalog); assert.equal(page.navigation.length, 1);
+  page.dispose();
+});
+
 test("Back closes each current disclosure before navigating, including commands before React commits", async () => {
   const page = harness(); page.actions.setDatePickerOpen!(true);
   page.actions.setCatalogPickChoices!([{ reference: "HR:424" }]); page.actions.setSelectedTargetId!("VENUS");
@@ -205,52 +257,77 @@ test("recovery Back fades the complete page, prevents duplicates, and retries fa
   assert.equal(page.navigation.length, 0, "no route can race the source fade");
   await page.finishExit(); assert.equal(page.navigation.length, 1);
   page.navigation[0]!.reject(Error("empty stack")); await new Promise(resolve => setImmediate(resolve));
-  assert.equal(page.navigation[1]?.url, "/pages/map/index");
+  assert.equal(page.navigation[1]?.kind, "navigateBack");
+  assert.equal(page.native.calls[1]?.delta, 1, "fallback returns to the exact retained Map rather than recreating it");
   page.navigation[1]!.reject(Error("controlled fallback failure")); await new Promise(resolve => setImmediate(resolve));
   assert.equal(page.notices.length, 1); assert.equal(page.exit.isActive(), false);
   await page.actions.returnToSkyEntry!(); await page.finishExit();
-  assert.equal(page.navigation.length, 3); page.navigation[2]!.resolve(); page.dispose();
+  assert.equal(page.navigation.length, 3);
+  page.native.setStack([page.mapPage]); assert.equal(page.native.showMap(page.mapPage), true);
+  page.navigation[2]!.resolve(); page.dispose();
 });
 
-test("a replaced Map is recreated by switchTab after blackout, including an empty-Context recovery", async () => {
-  const page = harness(), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
+test("a replaced Map is recreated as one native root after blackout, including an empty-Context recovery", async () => {
+  const page = harness({ unloadedMap: true }), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
   journey.beginEntry(); journey.mapUnloaded(); journey.skyMounted();
   page.sandbox.contextComplete = false; page.sandbox.activeContext = null;
   await page.actions.returnToSkyEntry!(); await page.finishExit();
   assert.equal(page.navigation.length, 1);
-  assert.equal(page.navigation[0]?.kind, "switchTab");
+  assert.equal(page.navigation[0]?.kind, "reLaunch");
   assert.equal(page.navigation[0]?.url, "/pages/map/index");
   assert.equal(journey.mapReturnPending(), true);
   page.navigation[0]!.reject(Error("native route failure")); await new Promise(resolve => setImmediate(resolve));
   assert.equal(journey.mapReturnPending(), false);
   assert.equal(page.notices.length, 1);
   await page.actions.returnToSkyEntry!(); await page.finishExit();
-  page.navigation[1]!.resolve(); page.dispose();
+  assert.equal(page.navigation[1]?.kind, "reLaunch");
+  page.navigation[1]!.resolve(); await new Promise(resolve => setImmediate(resolve));
+  assert.notEqual(page.actions.pendingReturn!(), null, "acceptance is not actual Map arrival");
+  const rebuiltMap = { route: "pages/map/index" }; page.native.setStack([rebuiltMap]);
+  assert.notEqual(page.actions.pendingReturn!(), null, "stack projection is not native show");
+  journey.mapMounted(); assert.equal(page.native.showMap(rebuiltMap), true); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(page.actions.pendingReturn!(), null);
+  assert.equal(page.native.taro.getCurrentPages().filter(item => item.route === "pages/map/index").length, 1);
+  assert.equal(journey.mapReturnPending(), true, "actual Map owns ready/reveal after navigation"); page.dispose();
 });
 
 test("late native success after the UI timeout still restores the unloaded Map", async () => {
-  const page = harness(), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
-  journey.beginEntry(); journey.skyMounted();
+  const page = harness({ unloadedMap: true }), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
+  journey.beginEntry(); journey.mapUnloaded(); journey.skyMounted();
   await page.actions.returnToSkyEntry!(); await page.finishExit();
   page.exitTimers.get(10_000)!();
   assert.equal(page.exit.isActive(), false, "timeout releases the blackout and permits recovery");
-  assert.equal(journey.mapReturnPending(), true, "native switch remains uncancellable");
-  journey.mapMounted(); page.navigation[0]!.resolve(); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(journey.mapReturnPending(), true, "accepted native return remains uncancellable");
+  page.navigation[0]!.resolve(); await new Promise(resolve => setImmediate(resolve));
+  const rebuiltMap = { route: "pages/map/index" }; page.native.setStack([rebuiltMap]);
+  journey.mapMounted(); assert.equal(page.native.showMap(rebuiltMap), true); await new Promise(resolve => setImmediate(resolve));
   assert.equal(journey.mapReturnPending(), true, "Map still owns readiness and reveal");
   assert.notEqual(journey.snapshot()?.mapMountedAt, undefined); page.dispose();
 });
 
-test("a timed-out native return cannot cancel a newer Map recreation when it rejects late", async () => {
-  const page = harness(), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
-  journey.beginEntry(); journey.skyMounted();
+test("a timed-out UI return joins the one native operation; only its rejection permits a fresh Map root", async () => {
+  const page = harness({ unloadedMap: true }), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
+  journey.beginEntry(); journey.mapUnloaded(); journey.skyMounted();
   await page.actions.returnToSkyEntry!(); await page.finishExit();
   page.exitTimers.get(10_000)!();
   assert.equal(journey.mapReturnPending(), true, "timed-out native navigation may still succeed");
   await page.actions.returnToSkyEntry!(); await page.finishExit();
   assert.equal(journey.mapReturnPending(), true);
+  assert.equal(page.navigation.length, 1, "UI timeout cannot resend an uncancellable root operation");
+  assert.equal(page.navigation[0]?.kind, "reLaunch");
   page.navigation[0]!.reject(Error("old return rejected late")); await new Promise(resolve => setImmediate(resolve));
-  assert.equal(journey.mapReturnPending(), true, "new return still owns the saved Map presentation");
-  journey.mapMounted(); page.navigation[1]!.resolve(); page.dispose();
+  assert.equal(journey.mapReturnPending(), false, "both UI tickets belonged to the same failed native operation");
+  assert.equal(page.exit.isActive(), false);
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  assert.equal(page.navigation.length, 2, "a fresh explicit retry is allowed after the real native failure");
+  assert.equal(page.navigation[1]?.kind, "reLaunch");
+  page.navigation[1]!.resolve(); await new Promise(resolve => setImmediate(resolve));
+  assert.notEqual(page.actions.pendingReturn!(), null, "callback acceptance cannot claim a Map show");
+  const rebuiltMap = { route: "pages/map/index" }; page.native.setStack([rebuiltMap]);
+  journey.mapMounted(); assert.equal(page.native.showMap(rebuiltMap), true); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(page.actions.pendingReturn!(), null);
+  assert.equal(journey.mapReturnPending(), true, "the fresh Map still owns readiness and reveal");
+  assert.equal(page.native.taro.getCurrentPages().filter(item => item.route === "pages/map/index").length, 1); page.dispose();
 });
 
 for (const boundary of ["hide", "hide-return", "unmount"] as const) {

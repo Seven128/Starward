@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import {planReminderRecoveryAction} from './plan-reminder-status';
 import {planDestinationFailureDetail} from '../../../services/plan-destination-client';
+import {sharedButtonTestBoundary} from '../../../components/shared-button-test-support';
 
 test('production recovery mount inherits fresh visible account/version/intent gates',()=>{
   const source=ts.createSourceFile('page.tsx',readFileSync(new URL('./plan-editor-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -37,11 +38,13 @@ test('actual destination component prevents rapid duplicate verification and ret
   let cleanup!:()=>void;
   const states:unknown[]=[];
   let verifyCalls=0,finish!:()=>void,signal!:AbortSignal,unsubscribed=0;
-  const createElement=(type:unknown,props:Record<string,any>|null,...children:unknown[])=>({type,props,children});
+  const buttons=sharedButtonTestBoundary((type:unknown,props:Record<string,any>|null,...children:unknown[])=>({type,props,children}));
+  const createElement=buttons.element;
   const react={createElement,Fragment:'Fragment',useRef:(value:unknown)=>({current:value}),
     useState:(value:unknown)=>[value,(next:unknown)=>states.push(next)],useEffect:(effect:()=>()=>void)=>{cleanup=effect();}};
   const modules:Record<string,unknown>={
     react,'@tarojs/components':{Button:'Button',Text:'Text',View:'View'},
+    '@/components/shared-button-press':buttons,
     '@/state/app-store':{useAppStore:{subscribe:(next:typeof listener)=>{listener=next;return ()=>{unsubscribed++;};}}},
     '@/services/plan-destination-client':{planDestinationFailureDetail},
     '@/services/api-client':{reverifyPlanReminderDestination:async(_owner:string,next:AbortSignal)=>{
