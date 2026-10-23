@@ -1,20 +1,15 @@
-import { DEEP_SKY_IMAGE_PIXELS, type DisplayMode, type GalacticImageManifestData, type OpticalHipsManifestData } from "@starward/miniapp-contracts";
-import type { DeviceOrientationFrame as DevicePose } from "./device-orientation-view";
-import { createSkyDirectionProjector, type SkyViewBasis } from "./sky-view-projection";
-import type { SkyProjectionCenter } from "./sky-viewport";
+import { DEEP_SKY_IMAGE_PIXELS, type OpticalHipsManifestData } from "@starward/miniapp-contracts";
+import { createSkyDirectionProjector } from "./sky-view-projection";
 import { resolveSkyDeepSkyScene, resolveSkySceneFrame, type ResolvedSkyReport as SkyReport } from "./sky-stellar-scene";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 import type { SkyDeepSkyImageField } from "./sky-deep-sky-image-frame";
 import type { PaintedSkyObject, SkyPickSnapshot } from "./sky-object-picking";
 import { filterSkyBodyOccludedStars } from "./sky-object-picking";
-import { SKY_OBSERVING_VERTICAL_FOV_DEG as SKY_VERTICAL_FOV_DEG } from "./sky-zoom";
 import { projectSkyTarget } from "./sky-scene-projection";
 import type { SkyHipsSourceGroup, SkyLineSegment, SkyRenderSurface } from "./sky-render-surface";
-import { drawSkyConstellations, prepareSkyConstellationArtwork, type SkyConstellationLayer } from "./sky-constellation-render";
+import { drawSkyConstellations, prepareSkyConstellationArtwork } from "./sky-constellation-render";
 import { createSkyStarAppearance, skyStarDisplayColor, skyStarMagnitudeLimit } from "./sky-star-appearance";
-import type { SkyStarTransitionFrame, SkyTransitionStar } from "./sky-star-transition";
-import type { SkyStarDrawPreparation } from "./sky-star-draw-preparation";
-import type { SkyReadyImageFrame } from "./sky-ready-presentation";
+import type { SkyTransitionStar } from "./sky-star-transition";
 import { drawSkyReadyArtwork, drawSkyReadyArtworkLevels, drawSkyReadyMesh, drawSkyReadyMeshLevels } from "./sky-ready-artwork";
 import type { SkyArtworkLevel, SkyArtworkLevelSurface } from "./sky-artwork-level-composition";
 import {currentStellarSupplement,type SkyStellarSupplementFrame} from './sky-stellar-supplement-scene';
@@ -23,59 +18,36 @@ import { artworkIntersectsView, artworkDisplaySupportIntersectsView, skyArtworkV
 import { copySkyDeepAuxiliaryDecisions, deepSkyAuxiliaryOpacity, skyDeepAuxiliaryModelOpacity, type SkyDeepAuxiliaryDecision } from "./sky-deep-auxiliary-visibility";
 import type { SkyArtworkRegistration } from "./sky-artwork-registration";
 import { PROCEDURAL_SKY_LANDSCAPE, skyLandscapeHasPaintedModel, skyLandscapeMaskWithOpacity, skyLandscapeMaskCoversRayHull, skyPanoramaMaskIntersectsView,
-  type SkyLandscapeMask, type SkyLandscapePanorama, type SkyPanoramaMask } from "./sky-landscape-mask";
+  type SkyLandscapeMask, type SkyPanoramaMask } from "./sky-landscape-mask";
 import { skySolarLightAt } from "./sky-solar-light";
 import { skyLandscapeViewOpacity } from "./sky-landscape-visibility";
 import { resolveSkyGalacticView } from "./sky-galactic-band";
 import { skySunDiscAt } from "./sky-sun-disc";
 import { skyMoonDiscAt } from "./sky-moon-disc";
-import { skyPlanetDiscsAt, type SkyPlanetDisc } from "./sky-planet-disc";
+import { skyPlanetDiscsAt } from "./sky-planet-disc";
 import { exactSkyObservationFrame } from "./sky-observation-frame";
 import { skyHorizontalGrid } from "./sky-horizontal-grid";
 import { skyEquatorialGrid } from "./sky-equatorial-grid";
 import { skyHipsRenderTileGeometry, projectSkyHipsTileMesh } from "./sky-hips-tile-mesh";
 import { SKY_PLANET_CATALOG_HASH, SKY_PLANET_CATALOG_VERSION, SKY_PLANET_NAMES,
   SKY_LUMINARY_CATALOG_HASH, SKY_LUMINARY_CATALOG_VERSION, SKY_LUMINARY_NAMES } from "@starward/miniapp-contracts";
-import type { SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
 import { skyNativeImageIsCurrent } from "./sky-artwork-loader";
-import { completeLegacySkyOptical, completeTargetSkyOptical, type SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
-import { submitSkySceneScienceOptical, submitSkySceneCalibratedOptical,
-  type SkySceneScienceOpticalPort, type SkySceneCalibratedOpticalPort } from "./sky-sdss-science-scene";
+import { completeLegacySkyOptical, completeTargetSkyOptical } from "./sky-sdss-optical-completion";
+import { submitSkySceneScienceOptical, submitSkySceneCalibratedOptical } from "./sky-sdss-science-scene";
 import { submitSkyScenePreparedOptical, submitSkyScenePreparedRegions, completeSkyScenePreparedRegions,
-  skyPreparedRegionsBlockInfrared, type SkyScenePreparedOpticalPort, type SkyScenePreparedOpticalRegion } from "./sky-prepared-optical-scene";
+  skyPreparedRegionsBlockInfrared } from "./sky-prepared-optical-scene";
 import { skyTargetOpticalDisplayFacts } from "./sky-target-optical-scene";
 import { isSkyLegacyOpticalFrame } from "./sky-target-optical-identity";
+import { skyBodyImageBitmap } from "./sky-body-image-completion";
+import type { SkySceneFrameInput, SkyScenePorts, SkySceneFailure, SkyScenePaintedSources,
+  SkyHipsCanvasTile, SkyBodyImagePaint, SkyGalacticImageCompletion } from "./sky-scene-frame";
 export type { SkyScenePreparedOpticalPort } from "./sky-prepared-optical-scene";
 export type { SkySceneScienceOpticalPort } from "./sky-sdss-science-scene";
 export type { SkySceneCalibratedOpticalPort } from "./sky-sdss-science-scene";
 export type { SkySdssOpticalField, SkySdssOpticalImage } from "./sky-sdss-optical-frame";
-type SkyCanvasImageAsset = SkyDeepSkyImageField & {
-  coarser?: SkyDeepSkyImageField | null; fallback?: SkyDeepSkyImageField | null;
-};
-export interface SkyGalacticImageCompletion {readonly image:object;readonly publication:GalacticImageManifestData}
-/** Successful texture submission, not a claim of unoccluded scientific samples. */
-export interface SkyBodyImagePaint {
-  readonly reference: "SOLAR:MOON" | `PLANET:${SkyPlanetDisc["body"]}`;
-  readonly image: object;
-}
-export type SkyScenePaintedSources = { readonly sdssOptical: SkyTargetOpticalCompletion | null; readonly deepSkyImage: object | null;
-  readonly preparedRegions?: readonly SkyTargetOpticalCompletion[];
-  readonly galacticImage?:SkyGalacticImageCompletion|null; readonly opticalHips?:readonly SkyHipsCanvasTile[];
-  readonly bodyImages?: readonly SkyBodyImagePaint[] };
-export interface SkyCoordinateGrids { horizontal: boolean; equatorial: boolean }
-export interface SkyHipsCanvasTile {
-  layer:"WIDE_FIELD_W3"|"OPTICAL";
-  /** Explicit publication source; absence cannot establish same-source LOD. */
-  sourceId?:string;
-  /** Native owner binds retained and wanted images to this immutable version. */
-  publication?:OpticalHipsManifestData;
-  order:number;
-  pixel:number;
-  image:object;
-  /** Ready detail retained while widening; withdraw only after a successful
-   * same-version opaque parent submission in this frame. */
-  retainedDetailFallback?:boolean;
-}
+export type { SkySceneFrameInput, SkySceneFrameIdentity, SkyScenePorts, SkySceneFailure, SkyScenePaintResult,
+  SkyScenePaintedSources, SkyCoordinateGrids, SkyHipsCanvasTile, SkyBodyImagePaint,
+  SkyGalacticImageCompletion } from "./sky-scene-frame";
 export function dispatchSkyHipsImageFailure(tile:SkyHipsCanvasTile,
   wideFieldFailed:(image:object)=>void,opticalFailed:(image:object)=>void):void {
   if(tile.layer==="WIDE_FIELD_W3")wideFieldFailed(tile.image);
@@ -93,55 +65,53 @@ export function skyPickIdentity(data: SkyReport | undefined, supplement?:SkyStel
   };
 }
 
-export function drawSkyScene(
-  context: SkyRenderSurface,
-  data: SkyReport | undefined,
-  frameAt: string | undefined,
-  heading: number | null,
-  pose: DevicePose | null,
-  width: number,
-  height: number,
-  mode: DisplayMode,
-  painted?: (snapshot: SkyPickSnapshot | null, sources: SkyScenePaintedSources) => void,
-  completed?: () => void,
-  verticalFovDeg = SKY_VERTICAL_FOV_DEG,
-  deepSkyImage: SkyCanvasImageAsset | null = null,
-  manualBasis: SkyViewBasis | null = null,
-  center?: SkyProjectionCenter,
-  imageFailed?: (asset: SkyDeepSkyImageField) => void,
-  constellations?: SkyConstellationLayer,
-  supplement?:SkyStellarSupplementFrame|null,
-  solarLightFailed?: () => void,
-  moonFailed?: () => void,
-  planetFailed?: () => void,
-  sunDiscFailed?: () => void,
-  hipsTiles?: readonly SkyHipsCanvasTile[],
-  hipsImageFailed?: (tile: SkyHipsCanvasTile) => void,
-  galacticBandFailed?: () => void,
-  moonTexture?: object | null,
-  marsTexture?: object | null,
-  galacticImage?: object | null,
-  mercuryTexture?: object | null,
-  jupiterBands?: object | null,
-  saturnBands?: object | null,
-  sdssOpticalImage?: SkyTargetOpticalImage | null,
-  sdssOpticalFailed?: (image: object) => void,
-  uranusBands?: object | null,
-  neptuneBands?: object | null,
-  landscape?: { enabled: boolean; panorama?: SkyLandscapePanorama | null; mask?: SkyPanoramaMask | null;
-    readiness?: number; pending?: boolean; failed?: boolean;
-    /** Last actual completed material from this live canvas, not a requested source. */
-    previous?: SkyLandscapeMask | null; availability?: (available: boolean | null) => void },
-  grids: SkyCoordinateGrids = { horizontal: false, equatorial: false },
-  scienceOptical?: SkySceneScienceOpticalPort,
-  preparedOptical?: SkyScenePreparedOpticalPort,
-  calibratedOptical?: SkySceneCalibratedOpticalPort,
-  galacticPublication?: GalacticImageManifestData|null,
-  preparedRegions?: readonly SkyScenePreparedOpticalRegion[],
-  starTransitions?: SkyStarTransitionFrame,
-  readyImages?: SkyReadyImageFrame,
-  starDrawing?: SkyStarDrawPreparation,
-) {
+export function drawSkyScene(context: SkyRenderSurface, input: SkySceneFrameInput, ports: SkyScenePorts = {}): void {
+  try { drawSkySceneFrame(context, input, ports); }
+  catch (error) {
+    ports.failed?.({ kind: "scene", error }, input.identity);
+    throw error;
+  }
+}
+
+function drawSkySceneFrame(context: SkyRenderSurface, input: SkySceneFrameInput, ports: SkyScenePorts): void {
+  const { identity, work } = input;
+  const { data, frameAt, stellarSupplement: supplement } = identity.observation;
+  const { heading, pose, mode, manualBasis, verticalFovDeg, center } = identity.view;
+  const { width, height } = identity.canvas;
+  const { imagery, layers } = input;
+  const { starTransitions, readyImages, starDrawing } = work ?? {};
+  const fail = (failure: SkySceneFailure) => ports.failed?.(failure, identity);
+  const imageFailed = (asset: SkyDeepSkyImageField) => fail({ kind: "infrared", asset });
+  const sdssOpticalFailed = (image: object) => fail({ kind: "target-optical", image });
+  const hipsImageFailed = (tile: SkyHipsCanvasTile) => fail({ kind: "hips", tile });
+  const solarLightFailed = () => fail({ kind: "solar-light" });
+  const moonFailed = () => fail({ kind: "moon" });
+  const planetFailed = () => fail({ kind: "planet" });
+  const sunDiscFailed = () => fail({ kind: "sun-disc" });
+  const galacticBandFailed = () => fail({ kind: "galactic-band" });
+  const constellations = layers?.constellations && { ...layers.constellations, frame: identity.observation.constellations ?? null,
+    failed: (image: object) => fail({ kind: "constellation", image }) };
+  const landscape = layers?.landscape;
+  const grids = layers?.coordinateGrids ?? { horizontal: false, equatorial: false };
+  const deepSkyImage = imagery?.infrared;
+  const sdssOpticalImage = imagery?.targetOptical?.image;
+  const scienceOptical = imagery?.targetOptical?.science;
+  const preparedOptical = imagery?.targetOptical?.prepared;
+  const calibratedOptical = imagery?.targetOptical?.calibrated;
+  const preparedRegions = imagery?.preparedRegions;
+  const hipsTiles = imagery?.hipsTiles;
+  const galacticImage = imagery?.galactic?.image;
+  const galacticPublication = imagery?.galactic?.publication;
+  const moonTexture = skyBodyImageBitmap(imagery?.bodyImages, "SOLAR:MOON");
+  const marsTexture = skyBodyImageBitmap(imagery?.bodyImages, "PLANET:MARS");
+  const mercuryTexture = skyBodyImageBitmap(imagery?.bodyImages, "PLANET:MERCURY");
+  const jupiterBands = skyBodyImageBitmap(imagery?.bodyImages, "PLANET:JUPITER");
+  const saturnBands = skyBodyImageBitmap(imagery?.bodyImages, "PLANET:SATURN");
+  const uranusBands = skyBodyImageBitmap(imagery?.bodyImages, "PLANET:URANUS");
+  const neptuneBands = skyBodyImageBitmap(imagery?.bodyImages, "PLANET:NEPTUNE");
+  const painted = (snapshot: SkyPickSnapshot | null, sources: SkyScenePaintedSources) =>
+    ports.painted?.(Object.freeze({ identity, snapshot, sources }));
+  const completed = () => ports.completed?.(identity);
   const palette =
     mode === "OBSERVATION"
       ? {
@@ -715,7 +685,7 @@ export function drawSkyScene(
     if (paintedLandscape && paintedLandscape.kind !== "transition")
       paintedLandscape = skyLandscapeMaskWithOpacity(paintedLandscape, opacity);
   }
-  if (landscape?.enabled) landscape.availability?.(landscapePending ? null : Boolean(paintedLandscape));
+  if (landscape?.enabled) ports.landscapeAvailability?.(landscapePending ? null : Boolean(paintedLandscape), identity);
   const imageViewHull=paintedSdssFields.length || deepSkyRegistration ? skyArtworkViewRayHull(artworkView,width,height) : null;
   if (paintedLandscape && (paintedSdssFields.length || deepSkyRegistration)) {
     const coveredView=skyLandscapeMaskCoversRayHull(paintedLandscape,imageViewHull);
@@ -730,11 +700,12 @@ export function drawSkyScene(
   const completedOptical = targetOpticalSubmission?.draw.submitted ? completeTargetSkyOptical(targetOpticalSubmission.frame,
     targetOpticalSubmission.draw, targetOpticalSubmission.surface.artworkLevelsContribution(targetOpticalSubmission.draw)) :
     completeLegacySkyOptical(sdssOpticalImage, paintedSdssOpticalImage);
-  const identity = skyPickIdentity(data,currentSupplement);
+  const pickIdentity = skyPickIdentity(data,currentSupplement);
   const visibleStarReceipts = filterSkyBodyOccludedStars(paintedObjects, namedStars);
-  painted?.(identity.catalogVersion && frameAt ? {
-    catalogVersion: identity.catalogVersion,
-    catalogHash: identity.catalogHash,
+  painted?.(pickIdentity.catalogVersion && frameAt ? {
+    identity,
+    catalogVersion: pickIdentity.catalogVersion,
+    catalogHash: pickIdentity.catalogHash,
     frameAt,
     width,
     height,

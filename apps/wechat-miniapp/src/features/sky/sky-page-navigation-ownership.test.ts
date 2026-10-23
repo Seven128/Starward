@@ -11,11 +11,14 @@ import { createSkyMapLifecycle } from "../../navigation/sky-map-lifecycle";
 import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observation-time";
 import { skyCommandStateSetter } from "./sky-command-state";
 import { createSkyDisclosureCommands } from "./sky-disclosure-commands";
-import { registerSkyNativeImageLifetime } from "./sky-artwork-loader";
+import { registerSkyNativeImageLifetime, skyNativeImageIsCurrent } from "./sky-artwork-loader";
 import { skyOpticalSourceCredit } from "./sky-optical-source-credit";
 import { skyHipsSourceCredit } from "./sky-hips-source-credit";
 import type { ContextVersion } from "../../services/observation-context-version";
 import type { SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
+import { skyPageAcceptedTestFrame } from "./sky-optical-page-test-support";
+import { createSkyViewBasis } from "./sky-view-projection";
+import type { ResolvedSkyReport } from "./sky-stellar-scene";
 
 const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(
   process.env.SKY_NAVIGATION_SOURCE ?? new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -68,26 +71,34 @@ function harness(options: { unloadedMap?: boolean } = {}) {
   const ui = { date: false, object: object as typeof object | null, target: null as string | null, choices: [] as unknown[] };
   const dateRef = { current: ui.date }, objectRef = { current: ui.object }, targetRef = { current: ui.target }, choicesRef = { current: ui.choices };
   const writer = (key: keyof typeof ui) => (value: unknown) => { (ui as any)[key] = typeof value === "function" ? value(ui[key]) : value; };
+  const nativeImage = () => {
+    const image = {}; retirements.push(registerSkyNativeImageLifetime(image, () => true)); return image;
+  };
   const completion = (reference: string) => {
-    const image = {}; retirements.push(registerSkyNativeImageLifetime(image, () => true));
+    const image = nativeImage();
     return { kind: "legacy", reference, publicationHash: sdssOpticalPublication(reference)!.publicationHash,
       field: { image, level: "DETAIL", fieldDegrees: 1 } } as SkyTargetOpticalCompletion;
   };
   const data = { context: { contextId: context.contextId, contextRevision: 1, contextFingerprint: "fp:1", spotId: "spot:a" } };
-  const accepted = { data, frameAt: at, mode: "normal", nativeCanvasGeneration: 1,
-    sdssOptical: completion("M:51"), preparedRegions: [], opticalHips: [] };
+  const accepted = skyPageAcceptedTestFrame({
+    observation:{data:data as unknown as ResolvedSkyReport,frameAt:at},
+    view:{heading:null,pose:null,manualBasis:createSkyViewBasis(0,35,0)!,mode:"NIGHT",verticalFovDeg:45,center:{x:195,y:422}},
+    canvas:{generation:1,width:390,height:844},
+  },{sdssOptical:completion("M:51"),preparedRegions:[],opticalHips:[],bodyImages:[]},
+  {catalogVersion:"controlled-navigation",catalogHash:"controlled-navigation",objects:[]});
   const sandbox: Record<string, any> = {
     contextSession: session, observationTime: time, timeBinding: binding, committedAt: at,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
-    activeContext: context, timeSaving: false, mode: "normal", alignmentMode: "auto", active: true,
+    activeContext: context, timeSaving: false, mode: "NIGHT", alignmentMode: "auto", active: true,
     orientationController: { snapshot: () => ({ alignment: { mode: sandbox.alignmentMode } }) },
     opticalSourcesOpeningRef: { current: null }, sourceReturnRef: { current: false },
     setSourceReturn() {}, canvasNodeRef: { current: {} }, canvasLifecycle: { hide: () => { releases++; } },
     cancelSkyCalibration: () => { calibrationCancels++; }, notify: (notice: unknown) => notices.push(notice),
     reportRuntimeError: (...event: unknown[]) => runtimeErrors.push(event),
-    presentedSkyFrameRef: { current: accepted }, canvasGenerationRef: { current: 1 },
+    presentedSkyFrameRef: { current: accepted.frame }, paintedSkyObjectsRef:{current:accepted.picked},
+    canvasGenerationRef: { current: 1 },
     nativeCanvasMounted: true, canvasError: null, orientationData: data, rawReportData: data,
-    skyNativeImageIsCurrent: () => true, skySourceSelectionPath, SOURCE_READING_ROUTE: "/spot/data-source/index?reading=1",
+    skyNativeImageIsCurrent, skySourceSelectionPath, SOURCE_READING_ROUTE: "/spot/data-source/index?reading=1",
     skyLandscapePaintedPanorama: (mask: unknown) => mask,
     skyLandscapeSourceDocument: (photo: unknown) => ({ title: "来源", sources: [], selected: photo }),
     skyConstellationSourceDocument: (catalog: unknown) => ({ title: "来源", sources: [], selected: catalog }),
@@ -129,7 +140,7 @@ function harness(options: { unloadedMap?: boolean } = {}) {
     await new Promise(resolve => setImmediate(resolve));
   };
   const actions = vm.runInNewContext(code, sandbox) as Record<string, (...args: any[]) => any>;
-  return { actions, sandbox, session, time, native, mapPage, navigation, notices, runtimeErrors, sourceDocuments, ui, completion, finishExit, exit, exitTimers,
+  return { actions, sandbox, session, time, native, mapPage, navigation, notices, runtimeErrors, sourceDocuments, ui, completion, nativeImage, finishExit, exit, exitTimers,
     credit: () => skyOpticalSourceCredit(sandbox.presentedSkyFrameRef.current.sdssOptical)!,
     replaceContext: () => { store = { ...store, observationContext: { ...context, revision: 2, contextFingerprint: "fp:2" } }; },
     counts: () => ({ releases, calibrationCancels }), dispose: () => { exit.dispose(); native.dispose(); retirements.forEach(retire => retire()); } };
@@ -151,7 +162,7 @@ for (const boundary of ["hide", "hide-return", "unmount", "Context", "binding", 
   });
 }
 
-for (const change of ["different-picture", "generation", "time", "cleared", "retired-image", "report"] as const) {
+for (const change of ["different-picture", "generation", "time", "cleared", "retired-image", "report", "pick-frame"] as const) {
   test(`${change}: an old image credit is no longer an eligible Sources tap`, async () => {
     const page = harness(), credit = page.credit(), frame = page.sandbox.presentedSkyFrameRef.current;
     if (change === "different-picture") page.sandbox.presentedSkyFrameRef.current = { ...frame, sdssOptical: page.completion("M:82") };
@@ -160,6 +171,9 @@ for (const change of ["different-picture", "generation", "time", "cleared", "ret
     if (change === "cleared") page.sandbox.presentedSkyFrameRef.current = null;
     if (change === "retired-image") page.dispose();
     if (change === "report") page.sandbox.orientationData = { ...frame.data };
+    if (change === "pick-frame") page.sandbox.paintedSkyObjectsRef.current=skyPageAcceptedTestFrame({
+      ...frame.identity,view:{...frame.identity.view,manualBasis:createSkyViewBasis(90,35,0)!},
+    },frame,page.sandbox.paintedSkyObjectsRef.current).picked;
     const pending = page.actions.openImage!(credit);
     assert.equal(page.navigation.length, 0); assert.equal(page.sandbox.sourceReturnRef.current, false);
     await pending; page.dispose();
@@ -208,7 +222,7 @@ test("current catalog metadata Sources remain usable without Canvas; an old obje
 
 test("new Body and landscape page actions retain exact painted identities and reject replaced resources", async () => {
   const page = harness(), frame = page.sandbox.presentedSkyFrameRef.current;
-  const body = { reference: "SOLAR:MOON", image: {}, publication: { publicationHash: "c".repeat(64) } };
+  const body = { reference: "SOLAR:MOON", image: page.nativeImage(), publication: { publicationHash: "c".repeat(64) } };
   frame.bodyImages = [body];
   const bodyOpen = page.actions.openBodyImageSources!(body);
   assert.equal(page.navigation[0]?.url, `/sky/sources/index?reference=SOLAR%3AMOON&bodyImagePublicationHash=${body.publication.publicationHash}`);

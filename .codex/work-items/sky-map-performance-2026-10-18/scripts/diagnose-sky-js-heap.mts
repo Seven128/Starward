@@ -12,6 +12,7 @@ import {selectSkyStellarTiles} from '../../../../apps/wechat-miniapp/src/feature
 import {resolveConstellationFrame} from '../../../../apps/wechat-miniapp/src/features/sky/sky-constellation-scene';
 import {createSkyViewBasis} from '../../../../apps/wechat-miniapp/src/features/sky/sky-view-projection';
 import {drawSkyScene} from '../../../../apps/wechat-miniapp/src/features/sky/sky-scene-render';
+import {createSkySceneFrameIdentity} from '../../../../apps/wechat-miniapp/src/features/sky/sky-scene-frame';
 import {createSkyStarTransitions} from '../../../../apps/wechat-miniapp/src/features/sky/sky-star-transition';
 import {createSkyReadyImages} from '../../../../apps/wechat-miniapp/src/features/sky/sky-ready-presentation';
 import {createSkyNameLayouts} from '../../../../apps/wechat-miniapp/src/features/sky/sky-name-layout';
@@ -73,8 +74,13 @@ async function frame(frameIndex:number){
  const transitionFrame=starTransitions.prepare({context:attached.context,at,mode:'NIGHT'},now);
  const imageFrame=readyImages.prepare(now);
  const nameLayout=nameLayouts.prepare({context:attached.context,mode:'NIGHT'},now,width,height,insets);
- const args:any[]=[surface,attached,at,null,null,width,height,'NIGHT',
-  (snapshot:any,sources:any)=>{
+ drawSkyScene(surface,{identity:createSkySceneFrameIdentity({
+  observation:{data:attached,frameAt:at,stellarSupplement:supplement,constellations},
+  view:{heading:null,pose:null,manualBasis:basis,mode:'NIGHT',verticalFovDeg:fov},
+  canvas:{generation:1,width,height},
+ }),layers:{constellations:{images:emptyImages,enabled:true}},
+ work:{starTransitions:transitionFrame,readyImages:imageFrame}},{
+  painted:({snapshot,sources})=>{
    if(!snapshot||snapshot.frameAt!==at)throw Error('real_scene_snapshot_required');
    const names=projectSkyCatalogNames(attached.skyScene,at,snapshot,snapshot.namedStars,snapshot.deepSkyAuxiliaryDecisions,insets,true,nameLayout.retainedCatalogReferences);
    for(const name of names)nameLayout.catalog(name,measureText(name.displayName));
@@ -87,11 +93,8 @@ async function frame(frameIndex:number){
    if(!transitionFrame.commit())throw Error('transition_commit_failed');committedTransitions++;
    imageFrame.commit(now);if(!nameLayout.commit(now))throw Error('name_commit_failed');committedNames++;
    published={data:attached,at,supplement,constellations,snapshot,sources,names:nameLayout.names,controls:nameLayout.controls};
-  },undefined,fov,null,basis,undefined,undefined,{frame:constellations,images:emptyImages,enabled:true,failed(){}},supplement];
- // These are the current drawSkyScene's actual optional owner slots, as used
- // by spot-sky-page. There is no cloned renderer or extracted Scene function.
- args[41]=transitionFrame;args[42]=imageFrame;
- (drawSkyScene as (...args:any[])=>void)(...args);
+  },
+ });
 }
 const started=performance.now();
 const samples:any[]=[];
@@ -114,7 +117,7 @@ for(let i=1;i<=measuredFrames;i++){
 if(!submittedStars||!pickedBsc||!pickedSao||sceneFinishes!==warmupFrames+measuredFrames||committedTransitions!==sceneFinishes||committedNames!==sceneFinishes)throw Error('nonempty_complete_scene_required');
 published=null;starTransitions.reset();readyImages.reset();nameLayouts.reset();
 await sample(measuredFrames+1);
-const sourceFiles=['sky-time-presentation.ts','sky-stellar-scene.ts','sky-stellar-supplement-scene.ts','sky-stellar-transform.ts','sky-scene-render.ts','sky-star-transition.ts','sky-ready-presentation.ts','sky-name-layout.ts','sky-label-presentation.ts'];
+const sourceFiles=['sky-time-presentation.ts','sky-stellar-scene.ts','sky-stellar-supplement-scene.ts','sky-stellar-transform.ts','sky-scene-render.ts','sky-scene-frame.ts','sky-star-transition.ts','sky-ready-presentation.ts','sky-name-layout.ts','sky-label-presentation.ts'];
 const sources=await Promise.all(sourceFiles.map(async name=>{const file='apps/wechat-miniapp/src/features/sky/'+name;return{path:file,sha256:sha(await fs.readFile(path.join(root,file)))};}));
 const result={scope:'LOCAL_NODE_GC_RETAINED_JS_REAL_SCENE_NO_NATIVE_GPU_OR_REACT_TARO',node:process.version,
  inputSha256:sha(inputBytes),sourceOwners:sources,saoPublicationHash:publication.publicationHash,

@@ -10,7 +10,7 @@ import { createSkyViewBasis } from "./sky-view-projection";
 import type { SkyScenePaintedSources } from "./sky-scene-render";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { completeLegacySkyOptical } from "./sky-sdss-optical-completion";
-import { skyPagePaintCommit } from "./sky-optical-page-test-support";
+import { skyPagePaintCommit, skyPageScenePort } from "./sky-optical-page-test-support";
 import { projectSkyTargetLabels } from "./sky-label-presentation";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -31,7 +31,7 @@ function find(node: ts.Node) {
   if (ts.isVariableDeclaration(node) && node.name.getText(source) === "deepSkyImagePresented")
     infraredPresented = node.initializer;
   if (ts.isCallExpression(node) && node.expression.getText(source) === "drawSkyScene")
-    committed = node.arguments[8];
+    committed = skyPageScenePort(source,"painted");
   ts.forEachChild(node, find);
 }
 find(source);
@@ -86,7 +86,7 @@ test("planet and other DOM target labels only follow the frame actually presente
 test("same-camera native redraw commits resolved labels and both credits, including failure recovery", () => {
   assert.ok(committed);
   const frame = { data: {}, frameAt: "2026-09-21T04:00:00.000Z", mode: "NIGHT",
-    deepSkyImage: { image: {} }, sdssOpticalImage: { image: {}, reference: "M:51", publicationHash: "legacy", level: "DETAIL" as const, fieldDegrees: .05 } };
+    deepSkyImage: { image: {}, reference: "M:51", level: "DETAIL", fieldDegrees: .05, canvasGeneration:1 }, sdssOpticalImage: { image: {}, reference: "M:51", publicationHash: "legacy", level: "DETAIL" as const, fieldDegrees: .05 } };
   type Presented = Omit<typeof frame, "sdssOpticalImage"> & { sdssOptical: import("./sky-sdss-optical-completion").SkySdssLegacyOpticalCompletion | null; resolvedBodyReferences: readonly string[]; landscape: import("./sky-landscape-mask").SkyLandscapeMask | null };
   const state: { current: Presented | null } = { current: null };
   const commit = skyPagePaintCommit(source, {

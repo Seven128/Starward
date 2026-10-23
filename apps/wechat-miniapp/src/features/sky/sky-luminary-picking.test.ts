@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { drawSkyScene, skyPickIdentity } from "./sky-scene-render";
@@ -17,8 +18,7 @@ function paint(altitude = 45, failed = "", duplicate = false) {
   const basis = createSkyViewBasis(90, 90 + Math.max(0, altitude), 0)!;
   const surface = new Proxy({}, { get: (_target, key) => () => key !== failed }) as SkyRenderSurface;
   let snapshot: SkyPickSnapshot | null = null;
-  drawSkyScene(surface, report, at, null, null, 400, 800, "NIGHT", value => { snapshot = value; },
-    undefined, 2, null, basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 2, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { painted: (({snapshot: value}) => { snapshot = value; }) });
   return { snapshot: snapshot as SkyPickSnapshot | null, report, basis };
 }
 
@@ -75,8 +75,7 @@ test("the completed Moon frame cannot pick a background star hidden by its opaqu
     const stars: number[] = [];
     const surface = new Proxy({}, { get: (_target, key) => key === "moon" ? () => moonAvailable :
       key === "disc" ? (x: number) => { stars.push(x); } : () => true }) as SkyRenderSurface;
-    drawSkyScene(surface, report, at, null, null, 400, 800, "NIGHT", value => { snapshot = value; },
-      undefined, 2, null, basis, undefined, undefined, undefined, supplement);
+    drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: at, stellarSupplement: supplement }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 2, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { painted: (({snapshot: value}) => { snapshot = value; }) });
     assert.equal(stars.length, 2, "both original stars still reach their original drawing owner");
     assert(snapshot);
     const frame = snapshot as SkyPickSnapshot;

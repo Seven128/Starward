@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { drawSkyScene, type SkyScenePaintedSources } from "./sky-scene-render";
@@ -6,6 +7,10 @@ import { sdssOpticalPublication } from "@starward/miniapp-contracts";
 import { createSkyViewBasis, type SkyViewBasis } from "./sky-view-projection";
 import { createSkyPanoramaMask } from "./sky-landscape-mask";
 import { createSkyReadyImages, type SkyReadyImageFrame } from "./sky-ready-presentation";
+import type { SkyRenderSurface } from "./sky-render-surface";
+import type { ResolvedSkyReport } from "./sky-stellar-scene";
+import type { SkySdssLegacyOpticalImage } from "./sky-sdss-optical-frame";
+import type { SkySceneLandscapeInput } from "./sky-scene-frame";
 
 const paintedOpticalImage = (sources: SkyScenePaintedSources | null) => sources?.sdssOptical?.kind === "legacy" ? sources.sdssOptical.field.image : null;
 const at = "2026-09-25T00:00:00.000Z";
@@ -42,16 +47,32 @@ function draw(surface: object, mode: "NIGHT" | "OBSERVATION", optical: object | 
   painted?: (_snapshot: unknown, sources: SkyScenePaintedSources) => void,
   camera: SkyViewBasis = basis,
   scene?: { data: object; fov?: number; landscape?: { enabled: boolean; panorama?: object }; ready?: SkyReadyImageFrame }) {
-  const args: unknown[] = Array(43).fill(undefined);
-  args[0] = surface; args[1] = scene?.data ?? report; args[2] = frameAt; args[3] = null; args[4] = null;
-  args[5] = 390; args[6] = 844; args[7] = mode; args[8] = painted; args[10] = scene?.fov ?? 0.05;
-  args[11] = { reference: "M:51", level: "DETAIL", fieldDegrees: 0.25, image: { kind: "W3" } };
+  const sceneCase = skySceneTestCase({
+      surface: surface as SkyRenderSurface, ports: {
+          painted: (({ snapshot, sources }) => painted?.(snapshot, sources))
+      }, observation: {
+          data: (scene?.data ?? report) as ResolvedSkyReport, frameAt: frameAt
+      }, view: {
+          heading: null, pose: null, mode: mode, verticalFovDeg: scene?.fov ?? 0.05, manualBasis: camera
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: {
+              reference: "M:51", level: "DETAIL", fieldDegrees: 0.25, image: {
+                  kind: "W3"
+              }
+          }
+      }
+  });
+
   // Existing cases describe the legacy M51 fixture; new cases supply their own identity.
-  args[12] = camera; args[14] = failed; args[30] = optical ? {
-    reference: "M:51", publicationHash: "legacy-M51", ...optical } : null; args[31] = failed;
-  args[34] = scene?.landscape;
-  args[42] = scene?.ready;
-  (drawSkyScene as (...values: unknown[]) => void)(...args);
+  sceneCase.failures["infrared"] = failure => { failed?.(failure.asset); };
+  sceneCase.imagery.targetOptical.image = optical ? {
+    reference: "M:51", publicationHash: "legacy-M51", ...optical } as SkySdssLegacyOpticalImage : null;
+  sceneCase.failures["target-optical"] = failure => { failed?.(failure.image); };
+  if(scene?.landscape)sceneCase.layers.landscape = scene.landscape as SkySceneLandscapeInput;
+  if(scene?.ready)sceneCase.work.readyImages = scene.ready;
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
 }
 
 function legacyReadySurface() {

@@ -19,6 +19,8 @@ import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observa
 import { sameContextVersion, type ContextVersion } from "../../services/observation-context-version";
 import {pickSkyCatalogName,createSkyNameLayouts,pickSkyControlName} from "./sky-name-layout";
 import {exactSkyTimeFrame} from "./sky-time-frame";
+import { skyPageAcceptedTestFrame } from "./sky-optical-page-test-support";
+import type { SkySceneTestInputs } from "./sky-scene-test-support";
 
 // Execute the actual page handlers. Native rendering/pointing are separate checks.
 let pageSource = readFileSync(process.env.SKY_GESTURE_SOURCE ?? new URL("./spot-sky-page.tsx", import.meta.url), "utf8").replaceAll("\r\n", "\n");
@@ -97,16 +99,18 @@ function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
     // Explicit native acceptance boundary: a completed frame publishes its
     // scale. It does not simulate React cost or physical frame timing.
     browsingDrawRef:{current:()=>{requestedFovs.push(state.zoomRef.current);requestedBases.push(state.manualBasisRef.current);
-      state.verticalFovDeg=state.zoomRef.current;state.currentViewBasis=state.manualBasisRef.current??state.currentViewBasis;}},
+      state.verticalFovDeg=state.zoomRef.current;state.currentViewBasis=state.manualBasisRef.current??state.currentViewBasis;
+      acceptFrame();}},
     stopCompass:()=>{counts.stops++;state.sensorBasis=null;state.compassLifecycle.active=false;},startCompass:()=>{counts.starts++;state.compassLifecycle.active=true;},
     pinchFieldOfView,
-    row:{at},reportData:{context:{spotId:"spot:test"}},routeContext:{spotId:"spot:test"},stellarSupplement:{frame:null},skyPickIdentity:()=>({catalogVersion:"actual",catalogHash:"hash"}),
-    get paintedData() { return state.reportData; },
+    row:{at},reportData:{context:{contextId:activeContext.contextId,contextRevision:activeContext.revision,
+      contextFingerprint:activeContext.contextFingerprint,spotId:"spot:test"}},
+    routeContext:{spotId:"spot:test"},stellarSupplement:{frame:null},skyPickIdentity:()=>({catalogVersion:"actual",catalogHash:"hash"}),
+    get paintedData() { return state.presentedSkyFrameRef.current?.data; },
     get paintedRow() { return state.row; },
-    get paintedAt() { return state.row.at; },
-    get presentedSkyFrame() { return { data: state.reportData, frameAt: state.row.at,
-      nativeCanvasGeneration:1,stellarSupplement: state.stellarSupplement.frame,catalogNames:state.catalogNames,controlNames:state.controlNames }; },
-    presentedSkyFrameRef:{get current(){return state.presentedSkyFrame;}},
+    get paintedAt() { return state.presentedSkyFrameRef.current?.frameAt; },
+    get presentedSkyFrame() { return state.presentedSkyFrameRef.current; },
+    presentedSkyFrameRef:{current:null},
     currentStellarSupplement,pickSkyControlName,exactSkyTimeFrame,
     objectSelection:createSkyObjectSelection(), selectionState:null,
     setSelectionState:(value:unknown)=>{state.selectionState=value;},
@@ -118,8 +122,20 @@ function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
     paintedSkyObjectsRef:{current:{frameAt:at,catalogVersion:"actual",catalogHash:"hash",objects:[]}},pickPaintedSkyObjects:()=>{counts.picks++;return [];},
     isUnambiguousTapGesture:(g:any)=>g.travelPx<=6 && g.maximumTouches===1,
   };
+  function acceptFrame(inputs: SkySceneTestInputs = {}) {
+    const view = { heading:null,pose:null,manualBasis:state.currentViewBasis,mode:state.mode,
+      verticalFovDeg:state.zoomRef.current,center:state.presentedCenter,...inputs.view };
+    const accepted = skyPageAcceptedTestFrame({
+      observation:{data:state.reportData,frameAt:state.row.at,stellarSupplement:state.stellarSupplement.frame,...inputs.observation},
+      view,
+      canvas:{generation:state.canvasGenerationRef.current,width:state.canvasSize.width,height:state.canvasSize.height,...inputs.canvas},
+    },{catalogNames:state.catalogNames,controlNames:state.controlNames},state.paintedSkyObjectsRef.current);
+    state.presentedSkyFrameRef.current=accepted.frame;
+    state.paintedSkyObjectsRef.current=accepted.picked;
+  }
+  acceptFrame();
   const context=vm.createContext(state);vm.runInContext(code,context);
-  return { state, counts, requestedFovs, requestedBases, original, h:state.handlers,session,time,tracking,
+  return { state, counts, requestedFovs, requestedBases, original, h:state.handlers,session,time,tracking,acceptFrame,
     overlayChanged:()=>{assert.ok(overlayEffect);vm.runInContext(ts.transpileModule(`(${overlayEffect.getText(source)})()`,
       {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);},
     replaceContext:()=>{store={...store,observationContext:{...activeContext,revision:2,contextFingerprint:"fp:2"}};},
@@ -132,22 +148,36 @@ test("a real gesture takes over the last copied navigation camera and never resu
   camera.navigate(page.original, createSkyViewBasis(160, 95, 0)!, 45, 4, 390, 780, 0);
   const copied = camera.update({ localView: page.original, intent: "manual", progress: 0, at: 32 });
   camera.accept(copied);
-  state.paintedSkyObjectsRef.current.view = { basis: copied.view, verticalFovDeg: copied.verticalFovDeg };
+  assert.ok(copied.verticalFovDeg !== null, "the navigation copy supplies its actual scale");
   state.zoomRef.current = copied.verticalFovDeg;
+  page.acceptFrame({view:{manualBasis:copied.view,verticalFovDeg:copied.verticalFovDeg}});
   state.navigationRequestRef.current = { pending: false };
   page.h.onSkyTouchStart(touch([195, 390]));
   assert.equal(camera.snapshot().navigation, false); assert.equal(state.navigationRequestRef.current, null);
-  assert.equal(state.skyTapRef.current.startBasis, copied.view, "a stale React camera is not the grab point");
+  assert.deepEqual(state.skyTapRef.current.startBasis, copied.view, "a stale React camera is not the grab point");
+  assert.equal(state.skyTapRef.current.startBasis,state.presentedSkyFrameRef.current.identity.view.manualBasis);
   assert.equal(state.skyTapRef.current.initialFov, copied.verticalFovDeg);
   page.h.onSkyTouchCancel();
   assert.equal(camera.snapshot().navigation, false);
 });
+test("a pick from another copied view cannot start a gesture at the same time and Canvas generation", () => {
+  const page = harness("manual"), oldPick = page.state.paintedSkyObjectsRef.current;
+  page.acceptFrame({view:{manualBasis:createSkyViewBasis(90,35,0)!}});
+  assert.equal(oldPick.frameAt,page.state.presentedSkyFrameRef.current.frameAt);
+  assert.equal(oldPick.identity.canvas.generation,page.state.canvasGenerationRef.current);
+  page.state.paintedSkyObjectsRef.current=oldPick;
+  page.h.onSkyTouchStart(touch([195,390]));
+  assert.equal(page.state.skyTapRef.current,null);
+  assert.equal(page.counts.picks,0);assert.equal(page.counts.stops,0);
+});
+
 test("catalog name taps use the latest copied whole-word bounds rather than the star point or old native box",()=>{
   const page=harness("manual"),owner=createSkyNameLayouts(),job=owner.prepare({context:{},mode:"NIGHT"},0,390,780,
     NO_SKY_INSETS,true);
   const name=job.catalog({reference:"HR:8162",displayName:"Alderamin",kind:"STAR",magnitude:2.45,
     x:140,y:390,auxiliaryOpacity:.5},{width:80,left:0,right:80,ascent:9,descent:9})!;
   page.state.catalogNames=job.names;
+  page.acceptFrame();
   const x=name.bounds.left+name.bounds.width-2,y=name.caption.y;
   assert(Math.hypot(x-name.x,y-name.y)>46,"the clicked end of the above name is outside the point-picking tolerance");
   page.h.onSkyTouchStart(touch([x,y]));
@@ -156,6 +186,7 @@ test("catalog name taps use the latest copied whole-word bounds rather than the 
   const moved=harness("manual"),later=owner.prepare({context:{},mode:"NIGHT"},16,390,780,NO_SKY_INSETS,true);
   later.catalog({...name,x:290,y:500},{width:80,left:0,right:80,ascent:9,descent:9});
   moved.state.catalogNames=later.names;
+  moved.acceptFrame();
   moved.h.onSkyTouchStart(touch([x,y]));moved.h.onSkyTouchEnd({touches:[],changedTouches:[{x,y}]});
   assert.equal(moved.state.selectedCatalogObject,null,"an old label position cannot open an identity that moved elsewhere");
   assert.equal(moved.counts.picks,1);
@@ -164,7 +195,7 @@ test("a drag begun on a catalog name continues browsing and cannot release as a 
   const page=harness("manual"),owner=createSkyNameLayouts(),job=owner.prepare({context:{},mode:"NIGHT"},0,390,780,NO_SKY_INSETS,true);
   const name=job.catalog({reference:"HR:8162",displayName:"Alderamin",kind:"STAR",magnitude:2.45,
     x:140,y:390,auxiliaryOpacity:.5},{width:80,left:0,right:80,ascent:9,descent:9})!;
-  page.state.catalogNames=job.names;const x=name.bounds.left+25,y=name.caption.y;
+  page.state.catalogNames=job.names;page.acceptFrame();const x=name.bounds.left+25,y=name.caption.y;
   page.h.onSkyTouchStart(touch([x,y]));assert.equal(page.state.skyTapRef.current.nameReference,name.reference);
   page.h.onSkyTouchMove(touch([x+25,y]));
   assert(page.state.skyTapRef.current.dragged);
@@ -181,6 +212,7 @@ test('guide name taps retain target identity without a bright catalog, while cur
       {width:60,left:0,right:60,ascent:9,descent:9})!;
     page.state.reportData.targetFrames=[{at:page.state.row.at,targets:[target]}];page.state.controlNames=job.controls;
     page.state.skyPickIdentity=()=>({catalogVersion:'',catalogHash:''});
+    page.acceptFrame();
     return {page,label,target,x:label.bounds!.left+label.bounds!.width-10,y:390};
   };
   const current=setup(),{page,x,y}=current;page.h.onSkyTouchStart(touch([x,y]));
@@ -278,6 +310,8 @@ test("the same Context ID with a new version isolates old cancellation and settl
   const view=state.manualBasisRef.current,camera=state.browsingCamera.checkpoint();
   page.replaceContext();const binding="ctx:gesture:2:fp:2";
   page.time.bind(binding,state.committedAt,{startAt:state.committedAt,endAt:"2026-09-15T13:00:00.000Z"});
+  state.reportData={...state.reportData,context:{...state.reportData.context,contextRevision:2,contextFingerprint:"fp:2"}};
+  page.acceptFrame();
   const current=page.rerender({activeContext:{...state.activeContext,revision:2,contextFingerprint:"fp:2"},timeBinding:binding});
   current.onSkyTouchCancel();assert.equal(state.skyTapRef.current,null);
   assert.strictEqual(state.manualBasisRef.current,view);assert.deepEqual(state.browsingCamera.checkpoint(),camera);
@@ -288,22 +322,25 @@ test("the same Context ID with a new version isolates old cancellation and settl
 });
 test("follow drag cancellation restores its view and reacquires fresh follow instead of silently staying manual",()=>{
   const {h,state,counts,original}=harness("follow");
+  const copiedBasis=state.presentedSkyFrameRef.current.identity.view.manualBasis;
   h.onSkyTouchStart(touch([195,390]));h.onSkyTouchMove(touch([250,330]));
   assert.notDeepEqual(state.manualBasis,original);assert.equal(counts.stops,1);
   h.onSkyTouchCancel();
-  assert.equal(state.manualBasis,original);assert.equal(state.followRequested,true);assert.equal(counts.starts,1);
+  assert.deepEqual(state.manualBasis,original);assert.strictEqual(state.manualBasis,copiedBasis);
+  assert.equal(state.followRequested,true);assert.equal(counts.starts,1);
   assert.equal(state.sensorBasis,null,"a restart request cannot invent a fresh pose");
 });
 
 test("a stale SAO publication cannot change the pick identity of a painted planet",()=>{
-  const {h,state}=harness("manual");
+  const {h,state,acceptFrame}=harness("manual");
   const frameAt="2026-09-15T12:00:00.000Z";
   const geometry={at:frameAt};
-  state.reportData={context:{spotId:"spot:test"},skyScene:{frames:[{at:frameAt,geometry}]}};
+  state.reportData={context:state.reportData.context,skyScene:{frames:[{at:frameAt,geometry}]}};
   state.stellarSupplement.frame={geometry:{at:frameAt},catalogVersion:"stale-sao"};
   state.skyPickIdentity=(_report:unknown,supplement:{catalogVersion:string}|null)=>({catalogVersion:supplement?`base+${supplement.catalogVersion}`:"base",catalogHash:"hash"});
   state.paintedSkyObjectsRef.current={catalogVersion:"base",catalogHash:"hash",frameAt,
     objects:[{reference:"PLANET:VENUS",displayName:"金星",kind:"PLANET",magnitude:-4.7,x:195,y:390}]};
+  acceptFrame();
   state.pickPaintedSkyObjects=(snapshot:any,input:any)=>snapshot.catalogVersion===input.catalogVersion?snapshot.objects:[];
   state.setCatalogPickChoices=()=>{};
   state.setSelectedTargetId=()=>{};
@@ -409,11 +446,12 @@ test("pinch forwards live scale to the native writer before page presentation, a
 });
 
 test("a viewport change ends an active pinch without rolling back its visible scale or selecting an object",()=>{
-  const {h,state,counts}=harness("manual");
+  const {h,state,counts,acceptFrame}=harness("manual");
   let trackedApplies=0;
   state.objectTracking.snapshot=()=>({position:{reference:"PLANET:SATURN"}});
   state.applyTrackedPosition=()=>{trackedApplies++;};
   state.verticalFovDeg=.18;state.zoomRef.current=.18;
+  acceptFrame();
   h.onSkyTouchStart(touch([95,390],[295,390]));
   h.onSkyTouchMove(touch([35,390],[355,390]));
   const zoomed=state.verticalFovDeg;
@@ -483,11 +521,12 @@ test("phone-following pinch widens the browsing camera without replacing or stop
 });
 
 test("cancelling a second manual pinch retains the local input, not the already widened displayed view",()=>{
-  const {h,state,original}=harness("manual");
+  const {h,state,original,acceptFrame}=harness("manual");
   const fov=(45+skyDomeFieldOfView(390,780))/2;
   state.verticalFovDeg=fov;state.zoomRef.current=fov;
   const wide=state.browsingCamera.update({localView:original,intent:"manual",progress:.5,at:16}).view;
   state.currentViewBasis=wide;
+  acceptFrame();
   h.onSkyTouchStart(touch([95,390],[295,390]));
   h.onSkyTouchMove(touch([194.95,390],[195.05,390]));
   h.onSkyTouchCancel();

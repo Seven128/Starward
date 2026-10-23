@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "../features/sky/sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
@@ -62,8 +63,7 @@ test("ordered magnitude optimization preserves bright identities in sorted and u
         if (key === "disc") discs.push(args);
         return true;
       } }) as SkyRenderSurface;
-      drawSkyScene(surface, report, at, null, null, 390, 844, "NIGHT",
-        value => { snapshot = value; }, undefined, 45, null, createSkyViewBasis(0, 135, 0));
+      drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 45, manualBasis: createSkyViewBasis(0, 135, 0) }, canvas: { width: 390, height: 844 }, imagery: { infrared: null } }), { painted: (({snapshot: value}) => { snapshot = value; }) });
       assert.equal(discs.length, 100, "a dim leading row must not suppress later bright stars");
       assert.deepEqual((snapshot as SkyPickSnapshot | null)?.objects.map(object => object.reference),
         rows.filter(row => row[2] === 1).map(row => row[0]), "draw and picking keep the admitted row order");

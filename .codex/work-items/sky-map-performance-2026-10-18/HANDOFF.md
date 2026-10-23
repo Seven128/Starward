@@ -2,11 +2,13 @@
 
 **当前授权与 Goal：** 用户要求先同步目标分支并继续完整 Goal，随后再次明确“先做不依赖真机调试的部分，继续goal”。本聊天先 get_goal=null，已用 GOAL-OBJECTIVE 的“Goal 正文”全部创建 active Goal，无 token 预算；不是继承旧聊天的 paused 状态。原完整义务和 UI → 叠层 → Sky 产品顺序保留，设备依赖期间推进 R20 独立责任。
 
-**源码同步已完成：** 新机 checkout 为 E:/dev/worktrees/Starward/remote-main-20260908，分支 codex/remote-main-20260908。同步前 HEAD60bdd46e、工作区干净；fetch 后快进到 266df53ea48a65013b9a358cfc2ffeb28c274fcf，与 origin 同名分支一致，无冲突。未 reset/clean/force/stash、未创建 worktree、未改 main。用户后来澄清首次拉取可覆盖以节省处理冲突，但本机没有需丢弃或合并的改动。现有未提交改动为本轮在途实施。
+**源码同步已完成：** 新机 checkout 为 E:/dev/worktrees/Starward/remote-main-20260908，分支 codex/remote-main-20260908。同步前 HEAD60bdd46e、工作区干净；fetch 后快进到 266df53ea48a65013b9a358cfc2ffeb28c274fcf，无冲突。随后偏好/F07/F14代表链/F10/F09已提交并推送为 **2c4bb23574fb4a731725e4fa4fad31c2383a35a3**，远端读回相同SHA、ahead/behind 0/0。未 reset/clean/force/stash、未创建 worktree、未改 main。用户后来澄清首次拉取可覆盖以节省处理冲突，但本机没有需丢弃或合并的改动。现有未提交改动为后续 Sky 具名帧与实际 CI 夹具修复。
 
 **本批已整合：** 偏好v2的SQLite/domain/UI与恢复P2、真实Web事务CAS、F07共享夜/精确时刻/地点身份及摄影稳定retry均已实施并经限定检查/独审。[行程真实草稿](R20-ITINERARY-DRAFT-PERSISTENCE-20261023.md)、[云量独立交付](R20-INDEPENDENT-CLOUD-DELIVERY-20261023.md)与[Sky连续编辑查询](R20-SKY-TIME-QUERY-POLICY-20261023.md)的本批独审发现也已修完并由新reviewer复核；Map目录448项通过。原失败与全部目标缺口保留，完整F14/H4/原生性能/OOM未关闭。所有本批实施/审阅代理已结束，不复用。
 
-**新机依赖：** [核验记录](NEW-COMPUTER-DEPENDENCIES-20261023.md)确认锁定 npm 必需依赖及 runtime/catalogs/images/text-history 可复用；没有为恢复重装或下载全球 EOG。公开文件不证明私有数据库、Heap、服务或冻结构建已恢复；原声明 Heap 路径 MISSING，私有 DB/配置/媒体与原件仍 UNVERIFIED。恢复代理已结束。
+**2026-10-24后续：** [Sky具名帧](R20-SKY-FRAME-INPUTS-20261024.md)已接入小型科学/视图/Canvas identity和原成功copy接受链；最终纯星座frame归属调整后，与2c实际440帧全BSC/实际SAO输出0差。首轮全Sky64个旧fixture失败已在真实消费者边界修完，两批新独审均无范围内P1/P2；最终整个Sky模块 **1121/1121、0失败/skip**，完整Miniapp及Mini API类型通过，原失败和原缺输入skip历史保留。资源家族全消费者共享组装/比较/completion/live projection仍是下一模块。[实际CI](R20-CI-INFRASTRUCTURE-20261024.md)的Context通过，Product因两处旧媒体夹具假设失败；真实隔离infra修后完整入口通过并独审，原远端run仍为失败，待含修复提交后重新执行。没有以本地结果称远端全绿。
+
+**新机依赖：** [核验记录](NEW-COMPUTER-DEPENDENCIES-20261023.md)确认锁定 npm 必需依赖及 runtime/catalogs/images/text-history 可复用；续核本机双EOG TIFF17,420,036,496B和压缩/分片2,264,285,772B均与锁一致，9个既有Drive对象当前metadata/私有权限通过，原完整字节读回/fresh importer证据复用，没有重复下载/上传或改锁。该数据事实不证明私有数据库、Heap、服务或冻结构建已恢复；原声明 Heap 路径 MISSING，私有 DB/配置/媒体与私有原件仍 UNVERIFIED。恢复/核验代理已结束。
 
 **资源边界：** 本轮不操作微信开发者工具、手机、ADB、preview/bind、另一对话的共享 PG/API/桥/队列、现用或冻结构建、VPN/TUN。后文旧 D:/dev、PID、端口、候选/画面及原始 Heap 记录都是原机历史事实，不能作为新机就绪证明或输入授权。必要人类动作后置；未取得设备/私有原件不阻止可独立实施的代码。
 
@@ -14,8 +16,8 @@
 
 ## 当前源码与任务边界
 
-- 当前工作区 E:/dev/worktrees/Starward/remote-main-20260908，分支 codex/remote-main-20260908；已同步基线 **266df53ea48a65013b9a358cfc2ffeb28c274fcf**，origin/main 未改。4b5a610a/5b27a062及旧D盘入口只作历史定位。
-- 当前未提交/未跟踪成果来自本轮偏好v2、F07真实消费者、F14行程代表链、F10云量与F09时间查询及相应检查；不覆盖并发成果、不整批 git add 数据、图片或临时目录。原机 Harness、冻结构建与私有原件不因本次 Git 同步存在于新机。
+- 当前工作区 E:/dev/worktrees/Starward/remote-main-20260908，分支 codex/remote-main-20260908；已同步接力 **266df53ea48a65013b9a358cfc2ffeb28c274fcf**，后续已推送检查点 **2c4bb23574fb4a731725e4fa4fad31c2383a35a3**，origin/main 未改。4b5a610a/5b27a062及旧D盘入口只作历史定位。
+- 当前未提交/未跟踪成果来自 Sky具名帧/受影响真实消费者及测试、CI媒体夹具修复与相应证据；不覆盖并发成果、不整批 git add 数据、图片或临时目录。原机 Harness、冻结构建与私有原件不因本次 Git 同步存在于新机。
 - 唯一 [PLAN](PLAN.md) 已按用户授权纳入R20；另一对话正在按明确的主备调试选型修订，**当前内容以文件实读为准，不将并发编辑中的hash冒称冻结身份**。c953cdb6…为此前R20版本，随后先后读到611322ec…和220b046b…；这些是途中身份，不能覆盖回去。d236f3b5…是R20之前版本。本聊天没有把进度/失败写入PLAN，方案采用、实现和验收分别判断；下次继续读最新版及相应skill。
 - 顺序保持：**已采用 UI → 地形/云层/光害完整显示链路、连续交互与内存 → Sky 六字段响应及正常 Play 内存**。受真实条件阻塞的责任保留，继续原 PLAN 内可独立工作。
 - 完整 R1–R20 / H1–H8 / A01–A15 / N01–N09 及其他未撤销义务见 [REQUIREMENTS](REQUIREMENTS.md)、[INHERITED-REQUIREMENTS](INHERITED-REQUIREMENTS.md)、[INDEX](INDEX.md)。Map/Sky 生命周期与恢复、双向转场、约 4km 聚焦、包体/CDN、连续地形、山体遮挡/真实照片、真实分享接收/文件交接、环境迁移、CI及授权交付均保留。R20新增的管理/媒体/原生App/独立API/消费者检查归各自owner；独立完成不关闭原小程序缺口。已完成研究、N01–N06 和有效采集复用；取消的 100m/cm/物理尺寸、夜间拟物、读屏/大文字不恢复。
@@ -73,7 +75,7 @@ LAN后续结果（归另一对话，本轮只读证据）：官方开发期`bigP
 
 ## 当前唯一下一步与后续实施入口
 
-**当前唯一下一步：继续Sky具名帧输入/资源全消费者重构。** 本批偏好/F07/F14草稿/F10/F09及独审修复随代码检查点保存，实际提交身份以包含本文的Git提交及远端读回为准；2026-10-24保存前fetch仍确认origin为266df53e。F09最后6文件66项独审和Map448项均通过，其他受影响验证分批记录于CURRENT-VALIDATION，不相加冒一次全套。下一模块先沿现SkyCanvasFrame、accepted publication、资源绑定及其真实拾取/来源/过渡消费者稳住边界；不优化工作缓冲或宣称OOM已修。Map故障session首个替换/退休仍须保目标native机制资格，不因设备缺席伪证释放。原UI→叠层→Sky顺序、全部R/H/A/N和设备后置保持。
+**当前唯一下一步：继续Sky资源家族全消费者共享职责。** 偏好/F07/F14草稿/F10/F09及独审修复已随2c4bb235推送；具名输入、小identity和同帧ports本批完成纯Scene440帧0差、整个Sky1121项无失败/skip及必要独审，具体代码检查点以包含本文的Git提交和远端读回为准。下一模块在原owner收敛native generation准入、Scene家族组装、actual completion聚合、queued/accepted比较和live source读者，不迁hook/cache/退休、不增第二writer/renderer。Map448项及F09最后6文件66项原有效证据继续复用，不相加冒一次全套；不优化工作缓冲或宣称OOM已修。CI夹具修复已真实完整infra通过并独审，提交后须重新运行远端原失败入口。Map故障session首个替换/退休仍须保目标native机制资格，不因设备缺席伪证释放。原UI→叠层→Sky顺序、全部R/H/A/N和设备后置保持。
 
 本批实现/证据入口：[头像提交与退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[管理授权与命令恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)、[H7/消费者](R20-SHARED-CHECKS-20261023.md)与[独立复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)。管理两项独审反例均已修复，最终后端7/7、实际React页面/会话/CLI7/7及双方noEmit通过；真实HTTP→专用PG另1/1，不能冒实际部署/Redis通过。全Mini API本地套件在最后缓存修复之前结束，当前结果由该套件加上述受影响补验构成，不伪造全套重跑。
 

@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { drawSkyScene } from "./sky-scene-render";
@@ -13,15 +14,25 @@ import { skyHorizontalDirection } from "./sky-view-projection";
 const at = "2026-09-28T16:00:00.000Z";
 const report = { hourly: [{ at }], skyScene: { state: "UNAVAILABLE", frames: [] }, targetFrames: [] } as unknown as ResolvedSkyReport;
 
-function render(grids: { horizontal: boolean; equatorial: boolean }, data = report, mode = "NIGHT", selectedAt = at) {
+function render(grids: { horizontal: boolean; equatorial: boolean }, data = report, mode: "NIGHT" | "OBSERVATION" = "NIGHT", selectedAt = at) {
   const strokes: { lines: readonly SkyLineSegment[]; color: string }[] = [];
   const surface = new Proxy({}, { get: (_, key) => key === "segments"
     ? (lines: readonly SkyLineSegment[], color: string) => strokes.push({ lines, color }) : () => true }) as SkyRenderSurface;
-  const args: unknown[] = [surface, data, selectedAt, null, null, 390, 844, mode,
-    undefined, undefined, 267.8, null, createSkyViewBasis(0, 180, 0)!];
-  args.length = 35; // Existing landscape argument remains at index 34.
-  args.push(grids);
-  (drawSkyScene as unknown as (...args: unknown[]) => void)(...args);
+  const sceneCase = skySceneTestCase({
+      surface: surface, observation: {
+          data: data, frameAt: selectedAt
+      }, view: {
+          heading: null, pose: null, mode: mode, verticalFovDeg: 267.8, manualBasis: createSkyViewBasis(0, 180, 0)!
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null
+      }, ports: {}, layers: {
+          coordinateGrids: grids
+      }
+  });
+
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   return strokes;
 }
 

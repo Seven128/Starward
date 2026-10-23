@@ -15,6 +15,7 @@ import {assertSaoIndexPublication,assertSaoTilePublication} from '@starward/mini
 import * as currentBase from '../../../../apps/wechat-miniapp/src/features/sky/sky-stellar-scene';
 import * as currentSupplement from '../../../../apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene';
 import * as currentRender from '../../../../apps/wechat-miniapp/src/features/sky/sky-scene-render';
+import {createSkySceneFrameIdentity,type SkyScenePaintResult} from '../../../../apps/wechat-miniapp/src/features/sky/sky-scene-frame';
 
 const root=path.resolve(import.meta.dirname,'../../../..');
 const require=createRequire(import.meta.url);
@@ -23,6 +24,7 @@ const sourcePaths=[
  'apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts',
  'apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts',
  'apps/wechat-miniapp/src/features/sky/sky-scene-render.ts',
+ 'apps/wechat-miniapp/src/features/sky/sky-scene-frame.ts',
  'apps/wechat-miniapp/src/features/sky/sky-view-projection.ts',
  'packages/astronomy-core/src/stellar-vectors.ts',
 ];
@@ -78,6 +80,24 @@ const admitted=async()=>{
 type Owners={base:typeof currentBase;supplement:typeof currentSupplement;render:typeof currentRender};
 const owners:Record<string,Owners>={baseline:{base:oldBase,supplement:oldSupplement,render:oldRender},
  candidate:{base:currentBase,supplement:currentSupplement,render:currentRender}};
+const baselineHasNamedFrame=baselineSources.some((source:{path:string})=>source.path.endsWith('/sky-scene-frame.ts'));
+function drawComparedFrame(name:string,surface:any,data:any,at:string,fov:number,basis:any,constellations:any,supplement:any,
+ painted?:(result:Pick<SkyScenePaintResult,'snapshot'|'sources'>)=>void){
+ const layers={frame:constellations,images:new Map(),enabled:true};
+ if(name==='baseline'&&!baselineHasNamedFrame){
+  // An explicitly identified, immutable pre-refactor external baseline keeps
+  // its historical call shape. No application API accepts positional inputs.
+  oldRender.drawSkyScene(surface,data,at,null,null,width,height,'NIGHT',
+   painted?((snapshot:any,sources:any)=>painted({snapshot,sources})):undefined,
+   undefined,fov,null,basis,undefined,undefined,{...layers,failed(){}},supplement);
+  return;
+ }
+ owners[name]!.render.drawSkyScene(surface,{identity:createSkySceneFrameIdentity({
+  observation:{data,frameAt:at,stellarSupplement:supplement,constellations},
+  view:{heading:null,pose:null,manualBasis:basis,mode:'NIGHT',verticalFovDeg:fov},
+  canvas:{generation:1,width,height},
+ }),layers:{constellations:{images:layers.images,enabled:layers.enabled}}},painted?{painted}:{});
+}
 const stages=['presentation','base','selection','supplement','constellations','draw','total'] as const;
 const summary=(values:number[])=>{const sorted=values.toSorted((a,b)=>a-b);return {samples:values.length,
  medianMs:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)]};};
@@ -146,8 +166,7 @@ for(const fov of [45,10.8]){
     maximumLoaded=Math.max(maximumLoaded,supplement.pointCount??supplement.points.length);maximumTiles=Math.max(maximumTiles,selected.length);sample('supplement');
     const constellations=phase==='sameTimeCamera'&&cached?cached.constellations:resolveConstellationFrame(input.constellations.data,attached.skyScene,job.at);sample('constellations');
     const surface:any=new Proxy({}, {get(){return ()=>true;}});
-    owner.render.drawSkyScene(surface,attached,job.at,null,null,width,height,'NIGHT',undefined,undefined,fov,null,basis,
-     undefined,undefined,{frame:constellations,images:new Map(),enabled:true,failed(){}},supplement);sample('draw');
+    drawComparedFrame(name,surface,attached,job.at,fov,basis,constellations,supplement);sample('draw');
     if(i>=5)timings[name]!.total!.push(performance.now()-beginning);
     if(phase==='sameTimeCamera')stable.set(name,{report:attached,supplement,constellations});
     // A second untimed draw records full same-frame consumers after cache setup.
@@ -158,8 +177,12 @@ for(const fov of [45,10.8]){
      // snapshots below include its real accepted objects and source identities.
      if(key==='disc'||key==='finish'||key==='begin')calls.push([key,args]);return true;
     };}});
-    owner.render.drawSkyScene(recording,attached,job.at,null,null,width,height,'NIGHT',(value,source)=>{snapshot=value;sources=source;},undefined,fov,null,basis,
-     undefined,undefined,{frame:constellations,images:new Map(),enabled:true,failed(){}},supplement);
+    drawComparedFrame(name,recording,attached,job.at,fov,basis,constellations,supplement,({snapshot:value,sources:source})=>{
+     // Admission identity is separately verified at the frame/Canvas owner.
+     // Keep every pre-existing scientific, pick, name and source output here.
+     if(value){const {identity:_admission,...scientific}=value;snapshot=scientific;}else snapshot=value;
+     sources=source;
+    });
     rendered[name]={stars,calls,snapshot,sources,...(i===count-1?{completeLegacyPoints:{base:frame.points,supplement:supplement.points}}:{})};
    }
    equal(rendered.baseline,rendered.candidate);comparedFrames++;

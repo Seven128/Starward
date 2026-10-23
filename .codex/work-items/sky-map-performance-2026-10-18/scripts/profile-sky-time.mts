@@ -11,6 +11,7 @@ import { resolveConstellationFrame } from '../../../../apps/wechat-miniapp/src/f
 import { resolveSkyStellarSupplement, supplementGeometry } from '../../../../apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene';
 import { selectSkyStellarTiles } from '../../../../apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection';
 import { drawSkyScene } from '../../../../apps/wechat-miniapp/src/features/sky/sky-scene-render';
+import { createSkySceneFrameIdentity } from '../../../../apps/wechat-miniapp/src/features/sky/sky-scene-frame';
 import { createSkyViewBasis } from '../../../../apps/wechat-miniapp/src/features/sky/sky-view-projection';
 import { assertSaoIndexPublication, assertSaoTilePublication } from '@starward/miniapp-contracts';
 
@@ -69,8 +70,12 @@ for (const fov of [45,10.8]) {
     loadedRows=Math.max(loadedRows,supplement.points.length);selectedTiles=Math.max(selectedTiles,selected.length);sample('supplement');
     const constellations=resolveConstellationFrame(input.constellations.data,attached.skyScene,at);sample('constellations');
     frameStars=0;recording=[10,50,99].includes(i);
-    drawSkyScene(surface,attached,at,null,null,width,height,'NIGHT',(value)=>{snapshot=value;},undefined,fov,null,basis,
-      undefined,undefined,{frame:constellations,images:new Map(),enabled:true,failed(){}},supplement);
+    drawSkyScene(surface,{identity:createSkySceneFrameIdentity({
+      observation:{data:attached,frameAt:at,stellarSupplement:supplement,constellations},
+      view:{heading:null,pose:null,manualBasis:basis,mode:'NIGHT',verticalFovDeg:fov},
+      canvas:{generation:1,width,height},
+    }),layers:{constellations:{images:new Map(),enabled:true}}},
+    {painted:({snapshot:value})=>{snapshot=value;}});
     sample('draw');if(i>=10)durations.total!.push(performance.now()-beginning);
     if(recording){hash.update(JSON.stringify(snapshot));submittedStars+=frameStars;
       pickedSao+=snapshot.objects.filter((o:any)=>o.reference.startsWith('SAO:')).length;

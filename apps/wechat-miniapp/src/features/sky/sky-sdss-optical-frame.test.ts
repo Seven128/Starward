@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { skyPagePaintCommit } from "./sky-optical-page-test-support";
 import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
@@ -119,19 +120,13 @@ test("actual page hands science and Prepared envelopes to its queued frame, resp
 test("actual page grants Prepared Scene only its current frame and Canvas generation", () => {
   const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let expression: ts.Expression | undefined;
-  const visit = (node: ts.Node) => {
-    if (ts.isCallExpression(node) && node.expression.getText(source) === "drawSkyScene") expression = node.arguments[37];
-    ts.forEachChild(node, visit);
-  };
-  visit(source); assert(expression);
   const image = skyPreparedOpticalFrame({ ...loaded, publication: prepared, renderedAsset: prepared.levels.DETAIL,
     coarser: { image: parent, level: "MEDIUM", asset: prepared.levels.MEDIUM } });
   assert(image);
   const surface = {};
-  const read = (sdssOpticalImage: unknown, generation = 1) => vm.runInNewContext(ts.transpileModule(
-    `(${expression!.getText(source)})`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
-    { context: surface, frame: { sdssOpticalImage, nativeImageGeneration: generation }, canvasGenerationRef: { current: 1 } });
+  const read = (sdssOpticalImage: unknown, generation = 1) => skyPagePaintCommit(source,
+    {context:surface,frame:{sdssOpticalImage,nativeImageGeneration:generation},canvasGenerationRef:{current:1}})
+    .submitted()?.imagery?.targetOptical?.prepared;
   const port = read(image);
   assert(port, "a ready Prepared queued frame requires the Prepared Scene port");
   assert.strictEqual(port.surface, surface); assert.equal(port.reference, image.reference);

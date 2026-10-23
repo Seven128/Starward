@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts, type SkySceneTestCase } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { OBSERVATION_FRAME_FORMAT,MELLINGER_OPTICAL_MILKY_WAY,type OpticalMilkyWayManifestData } from "@starward/miniapp-contracts";
@@ -82,15 +83,28 @@ test("a successful schematic cannot publish a loaded but undrawn optical bitmap 
     ? (_view:unknown,band:unknown,input:object|null,painted?:(image:object)=>void)=>{
       received=band;if(drawImage&&input)painted?.(input);return true;
     } : ()=>undefined}) as SkyRenderSurface;
-  const args:Parameters<typeof drawSkyScene>=[surface,report(-24),at,null,null,400,800,"NIGHT",
-    (_snapshot,value)=>{sources=value;},undefined,90,null,basis];
-  args[26]=image;args[39]=opticalPublication;
-  drawSkyScene(...args);assert.equal((sources as any).galacticImage,null);
+  const sceneCase = skySceneTestCase({
+      surface: surface, observation: {
+          data: report(-24), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 90, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, galactic: {
+              image: image, publication: opticalPublication
+          }
+      }, ports: {
+          painted: (({ snapshot: _snapshot, sources: value }) => { sources = value; })
+      }
+  });
+
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));assert.equal((sources as any).galacticImage,null);
   assert.deepEqual((received as any).pole,skyGalacticBandAt(report(-24),at,90)!.pole);
-  drawImage=true;drawSkyScene(...args);
+  drawImage=true;drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.strictEqual((sources as any).galacticImage.image,image);
   assert.strictEqual((sources as any).galacticImage.publication,opticalPublication);
-  args[21]=[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];drawSkyScene(...args);
+  sceneCase.imagery.hipsTiles = [{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.equal((sources as any).galacticImage,null,"W3 cannot retain the replaced optical source");
 });
 
@@ -100,22 +114,44 @@ test("optical panorama survives narrow zoom while night, exact frame, W3 and ima
     ? (_view:unknown,band:unknown,input:object|null,painted?:(image:object)=>void)=>{
       calls.push({band,input});if(paintImage&&input)painted?.(input);return true;
     } : ()=>undefined}) as SkyRenderSurface;
-  const args:Parameters<typeof drawSkyScene>=[surface,report(-24),at,null,null,400,800,"NIGHT",
-    (_snapshot,value)=>{sources=value;},undefined,4,null,basis];
-  args[26]=image;args[39]=opticalPublication;
-  drawSkyScene(...args);
+  const sceneCase = skySceneTestCase({
+      surface: surface, observation: {
+          data: report(-24), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 4, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, galactic: {
+              image: image, publication: opticalPublication
+          }
+      }, ports: {
+          painted: (({ snapshot: _snapshot, sources: value }) => { sources = value; })
+      }
+  });
+
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.equal(calls.length,1,"narrow optical display must reach the actual renderer");
   assert.equal(calls[0].band.strength,1);assert.equal(calls[0].band.schematicStrength,0);
   assert.strictEqual(sources.galacticImage.image,image);
-  calls.length=0;paintImage=false;drawSkyScene(...args);
+  calls.length=0;paintImage=false;drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.equal(sources.galacticImage,null,"submission is not a painted source");
-  for(const override of [{26:null},{21:[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}]},
-    {7:"OBSERVATION"},{1:report(-12)},{2:later},{39:undefined}]){
-    calls.length=0;const suppressed=args.slice();Object.assign(suppressed,override);
-    drawSkyScene(...suppressed as Parameters<typeof drawSkyScene>);
+  const suppressions:((scene:SkySceneTestCase)=>void)[]=[
+    scene=>{scene.imagery.galactic.image=null;},
+    scene=>{scene.imagery.hipsTiles=[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];},
+    scene=>{scene.view.mode="OBSERVATION";},scene=>{scene.observation.data=report(-12);},
+    scene=>{scene.observation.frameAt=later;},scene=>{scene.imagery.galactic.publication=null;},
+  ];
+  for(const suppress of suppressions){
+    calls.length=0;const suppressed = skySceneTestCase({
+        ...sceneCase, ports: {
+            ...sceneCase.ports
+        }
+    });suppress(suppressed);
+    drawSkyScene(suppressed.surface, skySceneTestFrame(suppressed), skySceneTestPorts(suppressed));
     assert.equal(calls.length,0);assert.equal(sources.galacticImage,null);
   }
-  calls.length=0;args[1]=report(-15);drawSkyScene(...args);
+  calls.length=0;sceneCase.observation.data = report(-15);drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.equal(calls[0].band.strength,.5,"twilight still uses the exact solar altitude");
 });
 
@@ -126,19 +162,48 @@ test("schematic failure still finishes the independent scene with default grids 
     : key==="solarLight" ? ()=>{events.push("solarLight");return true;}
       : ()=>{events.push(String(key));return undefined;}}) as SkyRenderSurface;
   let failed=false;
-  const failureArgs:Parameters<typeof drawSkyScene>=[surface,report(-24),at,null,null,400,800,"NIGHT",
-    undefined,undefined,240,null,basis];
-  failureArgs[23]=()=>{failed=true;};
-  drawSkyScene(...failureArgs);
+  const failureArgs = skySceneTestCase({
+      surface: surface, observation: {
+          data: report(-24), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }, ports: {}
+  });
+  failureArgs.failures["galactic-band"] = failure => { failed=true; };
+  drawSkyScene(failureArgs.surface, skySceneTestFrame(failureArgs), skySceneTestPorts(failureArgs));
   assert.equal(failed,true);
   assert.deepEqual(events.slice(0,3),["begin","solarLight","galacticBand"]);
   assert.equal(events.includes("segments"),false,"default grids remain off");
   assert.equal(events.at(-1),"finish");
   events.length=0;
-  drawSkyScene(surface,report(-24),at,null,null,400,800,"OBSERVATION",undefined,undefined,240,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report(-24), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "OBSERVATION", verticalFovDeg: 240, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }));
   assert.ok(!events.includes("galacticBand"));
   events.length=0;
-  drawSkyScene(surface,report(-5),at,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report(-5), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }));
   assert.ok(!events.includes("galacticBand"));
 });
 
@@ -172,24 +237,35 @@ test("historical image is submitted only for exact dark wide frame, with schemat
     ? (_view:unknown,_band:unknown,image:object|null)=>{received.push(image??"schematic");return true;}
     : ()=>undefined}) as SkyRenderSurface;
   const image={id:"2mass"};
-  const args:Parameters<typeof drawSkyScene>=[surface,report(-24),at,null,null,400,800,"NIGHT",
-    undefined,undefined,240,null,basis];
-  args[26]=image;
-  drawSkyScene(...args);
+  const sceneCase = skySceneTestCase({
+      surface: surface, observation: {
+          data: report(-24), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, galactic: {
+              image: image, publication: null
+          }
+      }, ports: {}
+  });
+
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.deepEqual(received,[image]);
   received.length=0;
-  args[1]=report(-5);
-  drawSkyScene(...args);
+  sceneCase.observation.data = report(-5);
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.deepEqual(received,[]);
-  args[1]=report(-24);args[7]="OBSERVATION";
-  drawSkyScene(...args);
+  sceneCase.observation.data = report(-24);sceneCase.view.mode = "OBSERVATION";
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.deepEqual(received,[]);
-  args[7]="NIGHT";args[26]=null;
-  drawSkyScene(...args);
+  sceneCase.view.mode = "NIGHT";sceneCase.imagery.galactic.image = null;
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.deepEqual(received,["schematic"]);
-  received.length=0;args[26]=image;
-  args[21]=[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];
-  drawSkyScene(...args);
+  received.length=0;sceneCase.imagery.galactic.image = image;
+  sceneCase.imagery.hipsTiles = [{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.deepEqual(received,["schematic"],"optional W3 replaces the 2MASS texture in the same frame");
 });
 
@@ -200,22 +276,31 @@ test("optional W3 fades through the same exact-time twilight interval as the Gal
     : ()=>undefined}) as SkyRenderSurface;
   const tiles=Array.from({length:12},(_,pixel)=>({layer:"WIDE_FIELD_W3" as const,
     order:0,pixel,image:{pixel}}));
-  const args:Parameters<typeof drawSkyScene>=[surface,report(-12),at,null,null,400,800,"NIGHT",
-    undefined,undefined,240,null,basis];
-  args[21]=tiles;
-  drawSkyScene(...args);
+  const sceneCase = skySceneTestCase({
+      surface: surface, observation: {
+          data: report(-12), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, hipsTiles: tiles
+      }, ports: {}
+  });
+
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.equal(opacities.length,0,"the layer must not pop in at the -12° boundary");
-  args[1]=report(-15);
-  drawSkyScene(...args);
+  sceneCase.observation.data = report(-15);
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.ok(opacities.length>0);
   assert.ok(opacities.every(value=>Math.abs(value-.24)<1e-9));
   opacities.length=0;
-  args[1]=report(-18);
-  drawSkyScene(...args);
+  sceneCase.observation.data = report(-18);
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.ok(opacities.length>0);
   assert.ok(opacities.every(value=>Math.abs(value-.48)<1e-9));
   opacities.length=0;
-  args[7]="OBSERVATION";
-  drawSkyScene(...args);
+  sceneCase.view.mode = "OBSERVATION";
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert.equal(opacities.length,0);
 });

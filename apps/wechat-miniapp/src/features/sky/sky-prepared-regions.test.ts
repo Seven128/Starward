@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assertPreparedNativeOpticalManifest, OPTICAL_IMAGE_LEVELS, preparedNativeOpticalPublicationHash,
@@ -58,10 +59,21 @@ test("one Scene finishes each region's source separately and retirement preserve
   }, { get(target, key) { return target[key as keyof typeof target] ?? (() => undefined); } });
   const regions = frames.map(value => ({ frame: value, port: { surface, reference: value.reference, publicationHash: value.publicationHash } }));
   try {
-    const args: unknown[] = Array(41).fill(undefined);
-    Object.assign(args, { 0: surface, 1: report, 2: at, 3: null, 4: null, 5: 390, 6: 844, 7: "NIGHT",
-      8: (_snapshot: unknown, painted: unknown) => { sources = painted; }, 10: .1, 12: view.basis, 40: regions });
-    (drawSkyScene as (...values: unknown[]) => void)(...args);
+    const sceneCase = skySceneTestCase({
+        surface: surface, ports: {
+            painted: (({ snapshot: _snapshot, sources: painted }) => { sources = painted; })
+        }, observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .1, manualBasis: view.basis
+        }, canvas: {
+            width: 390, height: 844
+        }, imagery: {
+            preparedRegions: regions
+        }
+    });
+
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
     assert.equal(drawCount, 2); assert.equal(sources.sdssOptical, null);
     const accepted = acceptedSkyPreparedRegionCompletions(sources.preparedRegions, frames);
     assert.equal(accepted.length, 2);

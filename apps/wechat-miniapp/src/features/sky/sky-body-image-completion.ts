@@ -1,8 +1,8 @@
-import type {SkyBodyImagePublications} from "@/services/sky-body-image-publication";
+import type {SkyBodyImagePublications} from "../../services/sky-body-image-profile";
 import {skyNativeImageIsCurrent} from "./sky-artwork-loader";
-import type {SkyBodyImagePaint} from "./sky-scene-render";
+import type {SkyBodyImagePaint} from "./sky-scene-frame";
 
-export type {SkyBodyImagePublications} from "@/services/sky-body-image-publication";
+export type {SkyBodyImagePublications} from "../../services/sky-body-image-profile";
 export type SkyBodyImageBinding={ [R in keyof SkyBodyImagePublications]:{
   readonly reference:R;readonly image:object;readonly publication:SkyBodyImagePublications[R];
 }}[keyof SkyBodyImagePublications];

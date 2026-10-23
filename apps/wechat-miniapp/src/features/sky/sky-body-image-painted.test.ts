@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestBodyImages } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {createHash} from "node:crypto";
@@ -115,10 +116,7 @@ test("Scene preserves submitted body identity and rejects fallback, wrong, faile
       if(key==="finish")return ()=>{if(mode==="retired")live=false;};
       return ()=>true;
     }}) as SkyRenderSurface;
-    drawSkyScene(surface,report,at,null,null,400,800,mode==="red"?"OBSERVATION":"NIGHT",
-      (_snapshot,sources)=>{result=sources;},undefined,3,null,basis,undefined,undefined,undefined,undefined,
-      undefined,undefined,undefined,undefined,undefined,undefined,undefined,image,image,null,image,image,image,
-      null,undefined,image,image,{enabled:false});
+    drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: at }, view: { heading: null, pose: null, mode: mode==="red"?"OBSERVATION":"NIGHT", verticalFovDeg: 3, manualBasis: basis }, canvas: { width: 400, height: 800 }, layers: { landscape: {enabled:false} }, imagery: { infrared: null, targetOptical: { image: null }, bodyImages: skySceneTestBodyImages({ "SOLAR:MOON": image, "PLANET:MARS": image, "PLANET:MERCURY": image, "PLANET:JUPITER": image, "PLANET:SATURN": image, "PLANET:URANUS": image, "PLANET:NEPTUNE": image }), galactic: { image: null, publication: null } } }), { painted: (({snapshot: _snapshot, sources: sources}) => {result=sources;}) });
     assert(result);
     if(mode==="normal"){
       assert.deepEqual(result.bodyImages?.map(value=>value.reference),

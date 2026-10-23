@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { skyHorizontalGrid } from "./sky-horizontal-grid";
@@ -66,10 +67,23 @@ test("scene sends the same geographic grid through ordinary and warm-red palette
   for (const [mode, colors] of [["NIGHT", ["#536782", "#29374B", "#29374B"]],
     ["OBSERVATION", ["#7A1E18", "#240000", "#240000"]]] as const) {
     calls.length = 0;
-    const args: unknown[] = [surface, report, at, null, null, width, height, mode, undefined, undefined, 267.8, null, basis];
-    args.length = 35; // Existing landscape argument remains at index 34.
-    args.push({ horizontal: true, equatorial: false });
-    (drawSkyScene as unknown as (...args: unknown[]) => void)(...args);
+    const sceneCase = skySceneTestCase({
+        surface: surface, observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: mode, verticalFovDeg: 267.8, manualBasis: basis
+        }, canvas: {
+            width: width, height: height
+        }, imagery: {
+            infrared: null
+        }, ports: {}, layers: {
+            coordinateGrids: {
+                horizontal: true, equatorial: false
+            }
+        }
+    });
+
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
     assert.deepEqual(calls.map(call => call.color), colors);
     assert.deepEqual(calls.map(call => call.lines), [expected.horizon, expected.altitude, expected.meridians]);
     assert.equal(calls[2]!.opacity, 0.65);

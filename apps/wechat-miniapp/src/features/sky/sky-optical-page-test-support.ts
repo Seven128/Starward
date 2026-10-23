@@ -20,15 +20,45 @@ import {projectSkySelectionMarker} from "./sky-selection-marker";
 import {skyObjectPositionIsCurrent} from "./sky-object-location";
 import {locatedBodyOccludesMarker} from "./sky-located-object";
 import {skyConstellationAvoidsPoints} from "./sky-constellation-labels";
+import { createSkySceneFrameIdentity, type SkySceneFrameIdentity, type SkySceneFrameInput, type SkyScenePorts } from "./sky-scene-frame";
+import type { SkyPickSnapshot } from "./sky-object-picking";
 export const skyPageSceneTestDependencies={liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput,
   copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,sameSkyHipsCompletion,skyNativeImageIsCurrent,sameSkyViewBasis,
   ...bodyImages,...preparedRegions,...labelPresentation,constellationVisibility,exactSkyTimeFrame,sameSkyCatalogNames,pickSkyCatalogName,
   sameSkyControlNames,pickSkyControlName,resolvedSkyBodyReferences,paintedSkyBoundsVisible,paintedSkyPointVisible,
-  projectSkySelectionMarker,skyObjectPositionIsCurrent,locatedBodyOccludesMarker,skyConstellationAvoidsPoints};
+  projectSkySelectionMarker,skyObjectPositionIsCurrent,locatedBodyOccludesMarker,skyConstellationAvoidsPoints,createSkySceneFrameIdentity};
 
 /** Minimum empty resource declarations for tests of the page's camera port.
  * Supplied publications/bitmaps remain unchanged; absence is never success. */
-export const skyPageCanvasTestFrame = <T extends object>(frame: T) => ({ mode: "NIGHT", timePresentation: null, preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
+export const skyPageCanvasTestFrame = <T extends object>(frame: T) => ({ mode: "NIGHT", heading: null, pose: null,
+  manualBasis: null, verticalFovDeg: 45, timePresentation: null, preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
+
+/** Controlled empty receipt for page-camera tests that replace the renderer.
+ * It conveys no scientific content, image credit or actual draw success. */
+export function skyPageEmptyPick(identity:SkySceneFrameIdentity):SkyPickSnapshot {
+  return {identity,catalogVersion:'controlled-empty',catalogHash:'controlled-empty',
+    frameAt:identity.observation.frameAt??'',width:identity.canvas.width,height:identity.canvas.height,objects:[]};
+}
+
+/** Controlled native acceptance for page consumers that do not execute the
+ * renderer. The caller declares the observation, copied view and Canvas once;
+ * both readers receive that exact identity. Later fixture changes do not
+ * silently refresh a previously accepted pair. This is not GPU/draw evidence. */
+export function skyPageAcceptedTestFrame<F extends object,
+  P extends Omit<SkyPickSnapshot, "identity" | "frameAt" | "width" | "height">>(
+  input: SkySceneFrameIdentity, frame: F, picked: P,
+) {
+  const identity = createSkySceneFrameIdentity(input);
+  return {
+    frame: { ...frame, identity, data: identity.observation.data, frameAt: identity.observation.frameAt,
+      stellarSupplement: identity.observation.stellarSupplement, mode: identity.view.mode,
+      nativeCanvasGeneration: identity.canvas.generation },
+    picked: { ...picked, identity, frameAt: identity.observation.frameAt ?? "",
+      width: identity.canvas.width, height: identity.canvas.height,
+      view: identity.view.manualBasis ? { ...picked.view, basis: identity.view.manualBasis,
+        verticalFovDeg: identity.view.verticalFovDeg, center: identity.view.center } : undefined },
+  };
+}
 
 /** Shared controlled ports for the actual page Canvas callbacks. Every caller
  * supplies its result-bearing ports; these defaults represent absent resources
@@ -39,6 +69,14 @@ export function skyPageCanvasTestBindings(bindings:Record<string,any>={}) {
   const canvasSurfaceRef=bindings.canvasSurfaceRef??{current:{present(){}}};
   if(canvasSurfaceRef.current && !canvasSurfaceRef.current.measureText)
     canvasSurfaceRef.current.measureText=measureText;
+  const presentedSkyFrameRef=bindings.presentedSkyFrameRef??{current:null};
+  const setPresentedSkyFrame=(update:any)=>{
+    if(bindings.setPresentedSkyFrame) bindings.setPresentedSkyFrame(typeof update==='function'?(previous:any)=>{
+      const next=update(previous);presentedSkyFrameRef.current=next;return next;
+    }:update);
+    else presentedSkyFrameRef.current=typeof update==='function'?update(presentedSkyFrameRef.current):update;
+    if(typeof update!=='function')presentedSkyFrameRef.current=update;
+  };
   return {...skyPageSceneTestDependencies,
     starTransitions:createSkyStarTransitions(),
     starDrawing:createSkyStarDrawPreparation(),
@@ -64,9 +102,38 @@ export function skyPageCanvasTestBindings(bindings:Record<string,any>={}) {
     setCanvasSize(){},setCanvasError(){},publishAcceptanceSkySceneInspection(){},
     setArtworkContributionUnavailable(){},setSolarLightUnavailable(){},setMoonDiscUnavailable(){},
     setPlanetDiscUnavailable(){},setSunDiscUnavailable(){},setGalacticBandUnavailable(){},setLandscapeUnavailable(){},
-    preparedRegions:{frames:[]},...bindings,
+    preparedRegions:{frames:[]},...bindings,presentedSkyFrameRef,setPresentedSkyFrame,
     browsingCamera:{update:()=>({view:basis,animating:false}),accept:()=>false,current:()=>true,...bindings.browsingCamera},
     orientation:{latestPresentation:{current:null},presented:{current:null},...bindings.orientation}};
+}
+
+/** Locate the renderer's named completion/failure port without depending on its
+ * argument position or copying the callback body into each requirement test. */
+export function skyPageScenePort(source:ts.SourceFile,name:keyof SkyScenePorts):ts.Expression {
+  let expression:ts.Expression|undefined;
+  const find=(node:ts.Node)=>{if(ts.isCallExpression(node)&&node.expression.getText(source)==='drawSkyScene'){
+    const ports=node.arguments[2];
+    if(ports&&ts.isObjectLiteralExpression(ports)){
+      const property=ports.properties.find(value=>value.name?.getText(source)===name);
+      if(property&&ts.isPropertyAssignment(property))expression=property.initializer;
+    }
+  }ts.forEachChild(node,find);};find(source);
+  if(!expression)throw Error(`sky_page_scene_port_missing:${name}`);
+  return expression;
+}
+
+/** Read an admitted input group by name from the real page declaration. */
+export function skyPageSceneInputMember(source:ts.SourceFile,path:readonly string[]):ts.Expression {
+  let initializer:ts.Expression|undefined;
+  const find=(node:ts.Node)=>{if(ts.isVariableDeclaration(node)&&node.name.getText(source)==='sceneInput')initializer=node.initializer;
+    ts.forEachChild(node,find);};find(source);
+  for(const name of path){
+    if(!initializer||!ts.isObjectLiteralExpression(initializer))throw Error(`sky_page_scene_input_group_missing:${name}`);
+    const property=initializer.properties.find(value=>value.name?.getText(source)===name);
+    initializer=property&&ts.isPropertyAssignment(property)?property.initializer:undefined;
+  }
+  if(!initializer)throw Error(`sky_page_scene_input_missing:${path.join('.')}`);
+  return initializer;
 }
 
 /** Resolve current page resource declarations instead of copying visibility or
@@ -99,8 +166,15 @@ export function skyPagePaintCommit(source: ts.SourceFile, bindings: Record<strin
   const frame=bindings.frame&&skyPageCanvasTestFrame({nativeImageGeneration:generation,
     orientationRevision:0,inspection:{spotId:'controlled'},...bindings.frame as object});
   let stage:((snapshot:unknown,sources:unknown)=>void)|undefined,complete:(()=>void)|undefined;
+  let submitted:SkySceneFrameInput|undefined;
   const context = vm.createContext(skyPageCanvasTestBindings({...bindings,
-    ...(frame?{drawSkyScene:(...args:any[])=>{stage=args[8];complete=args[9];}}:{}),
+    ...(frame?{drawSkyScene:(_surface:unknown,input:SkySceneFrameInput,ports:SkyScenePorts)=>{
+      submitted=input;
+      stage=(snapshot:unknown,sources:unknown)=>ports.painted?.({identity:input.identity,
+        snapshot:snapshot?{...snapshot as SkyPickSnapshot,identity:input.identity}:null,
+        sources:sources as Parameters<NonNullable<SkyScenePorts['painted']>>[0]['sources']});
+      complete=()=>ports.completed?.(input.identity);
+    }}:{}),
     canvasGenerationRef:bindings.canvasGenerationRef??{current:generation}}));
   const execute = (expression: ts.Expression) => vm.runInContext(ts.transpileModule(`(${expression.getText(source)})`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
@@ -110,5 +184,5 @@ export function skyPagePaintCommit(source: ts.SourceFile, bindings: Record<strin
   const publish=(snapshot:unknown,sources:unknown)=>{if(!stage)throw Error('sky_page_paint_not_submitted');stage(snapshot,sources);};
   const done=()=>{if(!complete)throw Error('sky_page_paint_not_submitted');complete();};
   return Object.assign((snapshot: unknown, sources: unknown) => { publish(snapshot,sources); done(); },
-    { stage:publish, complete:done, accept, context });
+    { stage:publish, complete:done, accept, context, submitted:()=>submitted });
 }

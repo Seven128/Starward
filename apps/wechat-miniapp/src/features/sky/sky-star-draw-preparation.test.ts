@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts, skySceneTestPickFacts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
@@ -97,13 +98,33 @@ function harness(cached:boolean) {
     const at=data?.hourly[0]?.at,mode=settings.mode??"NIGHT";
     const transition=transitions.prepare({context:data?.context,at,mode},now,settings.reduced,settings.paused);
     let snapshot:SkyPickSnapshot|null=null,complete=0;
-    const args:any[]=Array(44).fill(undefined);
-    Object.assign(args,{0:surface,1:data,2:at,3:null,4:null,5:settings.width??width,6:settings.height??height,7:mode,
-      8:(value:SkyPickSnapshot|null)=>{snapshot=value;},9:()=>complete++,10:settings.fov??verticalFovDeg,12:settings.basis??basis,
-      13:settings.center,16:settings.extra??null,34:{enabled:settings.landscape??true},41:transition,43:cached?drawing:undefined});
-    (drawSkyScene as (...args:any[])=>void)(...args);
+    const sceneCase = skySceneTestCase({
+        surface: surface, ports: {
+            painted: (({ snapshot: value }) => { snapshot = value; }), completed: () => complete++
+        }, observation: {
+            data: data, frameAt: at, stellarSupplement: settings.extra ?? null
+        }, view: {
+            heading: null, pose: null, mode: mode, verticalFovDeg: settings.fov ?? verticalFovDeg, manualBasis: settings.basis ?? basis
+        }, canvas: {
+            width: settings.width ?? width, height: settings.height ?? height
+        }, layers: {
+            landscape: {
+                enabled: settings.landscape ?? true
+            }
+        }, work: {
+            starTransitions: transition
+        }
+    });
+
+    if(settings.center)sceneCase.view.center=settings.center;
+    if(cached)sceneCase.work.starDrawing=drawing;
+    const input=skySceneTestFrame(sceneCase);
+    drawSkyScene(sceneCase.surface, input, skySceneTestPorts(sceneCase));
+    const receipt=snapshot as SkyPickSnapshot|null;
+    if(receipt){assert.equal(receipt.identity,input.identity);assert.equal(receipt.identity?.observation.data,data);
+      assert.equal(receipt.identity?.observation.stellarSupplement,settings.extra??null);}
     if(settings.commit!==false)assert(transition.commit());
-    return {commands:structuredClone(commands),snapshot:structuredClone(snapshot) as SkyPickSnapshot|null,
+    return {commands:structuredClone(commands),snapshot:skySceneTestPickFacts(receipt),
       animating:transition.animating,complete};
   }
   return {drawing,transitions,builds,render,replaceSurface(){surface=newSurface();},failBuild(value:boolean){failedBuild=value;}};

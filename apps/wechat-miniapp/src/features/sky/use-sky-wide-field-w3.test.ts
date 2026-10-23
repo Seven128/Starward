@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
@@ -49,17 +50,28 @@ function harness(){
 
 test("W3 requests only the faces submitted by the real scene across wide, rolled and offset cameras",()=>{
   const h=harness();let removedFaces=0;
-  for(const [fov,azimuth,tilt,roll] of [[60,0,135,0],[85,90,120,37],[139,0,135,0],[274.9,0,180,0]]){
+  for(const [fov,azimuth,tilt,roll] of [[60,0,135,0],[85,90,120,37],[139,0,135,0],[274.9,0,180,0]] as const){
     const view={basis:createSkyViewBasis(azimuth!,tilt!,roll!)!,verticalFovDeg:fov!,center:{x:195,y:490}};
     const selection=selectSkyHipsTiles({frame,view,width:390,height:844,maxOrder:0,minOrder:0});
     assert.equal(selection.state,"SELECTED");if(selection.state!=="SELECTED")continue;
     const submissions:number[]=[];
     const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMesh"?
       (image:{pixel:number},triangles:readonly number[])=>{assert(triangles.length);submissions.push(image.pixel);return true;}:()=>true}) as SkyRenderSurface;
-    const args:any[]=Array(36).fill(undefined);
-    Object.assign(args,{0:surface,1:report,2:at,3:null,4:null,5:390,6:844,7:"NIGHT",10:fov,12:view.basis,13:view.center,
-      21:selection.pixels.map(pixel=>({layer:"WIDE_FIELD_W3",order:0,pixel,image:decoded.get(pixel)}))});
-    drawSkyScene(...args as Parameters<typeof drawSkyScene>);
+    const sceneCase = skySceneTestCase({
+        surface: surface, ports: {}, observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: view.basis, center: view.center
+        }, canvas: {
+            width: 390, height: 844
+        }, imagery: {
+            hipsTiles: selection.pixels.map(pixel => ({
+                layer: "WIDE_FIELD_W3", order: 0, pixel, image: decoded.get(pixel)!
+            }))
+        }
+    });
+
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
     assert(submissions.length>0,"real dark sky must submit nonempty image triangles");
     const result=h.hook(report,at,view,390,844,null,1,true);
     assert.deepEqual(h.wanted(),submissions,`FOV ${fov}: empty renderer faces must not consume decoded resources`);

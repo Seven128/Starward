@@ -12,6 +12,7 @@ import {selectSkyStellarTiles} from '../../../apps/wechat-miniapp/src/features/s
 import {SKY_STELLAR_VIEW_BYTES} from '../../../apps/wechat-miniapp/src/features/sky/sky-stellar-tile-loader.ts';
 import {createSkyViewBasis} from '../../../apps/wechat-miniapp/src/features/sky/sky-view-projection.ts';
 import {drawSkyScene,skyPickIdentity} from '../../../apps/wechat-miniapp/src/features/sky/sky-scene-render.ts';
+import {createSkySceneFrameIdentity} from '../../../apps/wechat-miniapp/src/features/sky/sky-scene-frame.ts';
 import {pickPaintedSkyObjects,skyObjectMagnitudeLabel,type SkyPickSnapshot} from '../../../apps/wechat-miniapp/src/features/sky/sky-object-picking.ts';
 import type {SkyRenderSurface} from '../../../apps/wechat-miniapp/src/features/sky/sky-render-surface.ts';
 
@@ -30,7 +31,11 @@ test('real published stars reach drawing and picking with the selected observer/
   const surface:SkyRenderSurface={begin(){},image(){return true;},skyImageMesh(){return true;},artwork(){return true;},solarLight(){return true;},galacticBand(){return true;},landscape(){return false;},sun(){return true;},moon(){return true;},planet(){return true;},saturnRings(){return true;},segments(){},disc(){},finish(){}};
   function paint(fov:number,layer:typeof supplement|null,when=at[0]!){
     let snapshot:SkyPickSnapshot|null=null;
-    drawSkyScene(surface,report,when,null,null,390,650,'NIGHT',s=>{snapshot=s;},undefined,fov,null,view.basis,undefined,undefined,undefined,layer);
+    drawSkyScene(surface,{identity:createSkySceneFrameIdentity({
+      observation:{data:report,frameAt:when,stellarSupplement:layer},
+      view:{heading:null,pose:null,manualBasis:view.basis,mode:'NIGHT',verticalFovDeg:fov},
+      canvas:{generation:1,width:390,height:650},
+    })},{painted:result=>{snapshot=result.snapshot;}});
     assert(snapshot);return snapshot as SkyPickSnapshot;
   }
   const before=paint(3,null),after=paint(3,supplement);

@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts, skySceneTestPickFacts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { drawSkyScene } from "./sky-scene-render";
@@ -69,11 +70,23 @@ function render(altitude: number) {
     if (key === "landscape") landscape.push(args);
     return true;
   } }) as SkyRenderSurface;
-  const args = Array(35).fill(undefined);
-  args.splice(0, 7, surface, report, at, null, null, 390, 844);
-  args[7] = "NIGHT"; args[8] = (value: SkyPickSnapshot | null) => { snapshot = value; };
-  args[10] = 270; args[12] = basis; args[34] = { enabled: true };
-  (drawSkyScene as (...args: any[]) => void)(...args);
+  const sceneCase = skySceneTestCase({
+      surface: surface, ports: {
+          painted: (({ snapshot: value }) => { snapshot = value; })
+      }, observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 270, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, layers: {
+          landscape: {
+              enabled: true
+          }
+      }
+  });
+
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   assert(snapshot);
   return { snapshot: snapshot as SkyPickSnapshot, discs, lines, landscape,
     point: projectSkyDirection(0, -45, basis, 390, 844, 270)! };
@@ -143,9 +156,20 @@ test("the shared SAO tile transform retains the lower hemisphere and exact time 
     const paint=(supplement:typeof frame)=>{
       const discs:unknown[][]=[];let snapshot:SkyPickSnapshot|null=null;
       const surface=new Proxy({}, {get:(_target,key)=>(...args:unknown[])=>{if(key==="disc")discs.push(args);return true;}}) as SkyRenderSurface;
-      drawSkyScene(surface,report,at,null,null,390,844,mode,value=>{snapshot=value;},undefined,
-        10.8,null,createSkyViewBasis(0,45,0),undefined,undefined,undefined,supplement);
-      return {discs,snapshot};
+      const input=skySceneTestFrame({
+          observation: {
+              data: report, frameAt: at, stellarSupplement: supplement
+          }, view: {
+              heading: null, pose: null, mode: mode, verticalFovDeg: 10.8, manualBasis: createSkyViewBasis(0, 45, 0)
+          }, canvas: {
+              width: 390, height: 844
+          }, imagery: {
+              infrared: null
+          }
+      });
+      drawSkyScene(surface,input,{painted:result=>{assert.equal(result.identity,input.identity);
+        assert.equal(result.snapshot?.identity,input.identity);assert.equal(result.identity.observation.stellarSupplement,supplement);snapshot=result.snapshot;}});
+      return {discs,snapshot:skySceneTestPickFacts(snapshot)};
     };
     assert.deepEqual(paint(frame),paint(withoutMemo));
   }
@@ -208,11 +232,21 @@ test("Scene draws fading real stars while keeping exiting and invalid-time remna
       if (key === "disc" && args[6] === "star") values.push(args[4]);
       return true;
     } }) as SkyRenderSurface;
-    const args = Array(42).fill(undefined);
-    args.splice(0, 8, surface, data, valid ? at : "missing-time", null, null, 390, 844, "NIGHT");
-    args[8] = (value: SkyPickSnapshot | null) => { snapshot = value; };
-    args[10] = fov; args[12] = basis; args[41] = transition;
-    (drawSkyScene as (...values: any[]) => void)(...args);
+    const sceneCase = skySceneTestCase({
+        surface: surface, ports: {
+            painted: (({ snapshot: value }) => { snapshot = value; })
+        }, observation: {
+            data: data, frameAt: valid ? at : "missing-time"
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: basis
+        }, canvas: {
+            width: 390, height: 844
+        }, work: {
+            starTransitions: transition
+        }
+    });
+
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
     transition.commit();
     return { values, snapshot: snapshot as SkyPickSnapshot | null, animating: transition.animating };
   };

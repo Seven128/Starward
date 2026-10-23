@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
@@ -50,10 +51,11 @@ function startTouch(skySceneReady:boolean){
  const ref={current:null};
  const at="2026-09-19T13:00:00.000Z",observationTime=createSkyObservationTime();
  observationTime.bind("test-time",at,{startAt:at,endAt:at});
+ const identity=skySceneTestFrame({observation:{frameAt:at}}).identity;
  const scope={zoomRef:{current:45},presentedFov:45,viewportInsets:{top:0,bottom:0},skyLandscapeVisibleInView,mode:"NIGHT",pickSkyCatalogName:()=>null,pickSkyControlName:()=>null,__MINIAPP_SKY_FEEDBACK_ID__:"",orientationController:{snapshot:()=>({alignment:{mode:"automatic"}})},skySceneReady,presentedSceneCurrent:true,
  skyTimeIntentCurrent:()=>true,skyPresentedTimeCurrent,observationTime,
- presentedSkyFrameRef:{current:{nativeCanvasGeneration:1,frameAt:at}},canvasGenerationRef:{current:1},
- paintedSkyObjectsRef:{current:null},navigationRequestRef:{current:null},
+ presentedSkyFrameRef:{current:{identity,nativeCanvasGeneration:1,frameAt:at}},canvasGenerationRef:{current:1},
+ paintedSkyObjectsRef:{current:{identity}},navigationRequestRef:{current:null},
  selectedCatalogObjectRef:{current:null},selectedTargetIdRef:{current:null},orientationObjectListOpenRef:{current:false},datePickerOpenRef:{current:false},
  skyInteractionRevision:0,contextSession:{},activeContext:{},timeBinding:"test-time",committedAt:at,
  recordSkyFeedback:()=>{},
@@ -86,7 +88,7 @@ test("independent solar geometry remains drawable and touchable when both catalo
    targetFrames:[{at,targets:[]}]} as unknown as ResolvedSkyReport;
  let snapshot:SkyPickSnapshot|null=null;
  const surface=new Proxy({}, {get:(_target,key)=>key==="sun"||key==="moon"||key==="planet"?()=>true:()=>undefined}) as SkyRenderSurface;
- drawSkyScene(surface,report,at,null,null,390,844,"NIGHT",value=>{snapshot=value;},undefined,3,null,basis);
+ drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: basis }, canvas: { width: 390, height: 844 }, imagery: { infrared: null } }), { painted: (({snapshot: value}) => {snapshot=value;}) });
  const painted=snapshot as SkyPickSnapshot|null;
  assert.ok(painted);
  assert.deepEqual(painted.objects.map(object=>object.reference),["SOLAR:SUN","SOLAR:MOON","PLANET:VENUS"],

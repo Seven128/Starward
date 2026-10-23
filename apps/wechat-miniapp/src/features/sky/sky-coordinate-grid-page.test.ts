@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { skyMenuProps } from "./sky-menu-test-support";
 import { disclosureFixture } from "./sky-disclosure-test-support";
-import {skyPageSceneTestDependencies} from "./sky-optical-page-test-support";
+import {skyPageSceneTestDependencies,skyPageSceneInputMember} from "./sky-optical-page-test-support";
 
 // Execute the production controls and queued-frame comparison. Geometry and
 // actual scene effects are checked separately through drawSkyScene.
@@ -22,7 +22,7 @@ function find(node: ts.Node) {
     if (property && ts.isShorthandPropertyAssignment(property)) queued = property.name;
     else if (property && ts.isPropertyAssignment(property)) queued = property.initializer;
   }
-  if (ts.isCallExpression(node) && node.expression.getText(source) === "drawSkyScene") painted = node.arguments[35];
+  if (ts.isCallExpression(node) && node.expression.getText(source) === "drawSkyScene") painted = skyPageSceneInputMember(source,["layers","coordinateGrids"]);
   ts.forEachChild(node, find);
 }
 find(source);

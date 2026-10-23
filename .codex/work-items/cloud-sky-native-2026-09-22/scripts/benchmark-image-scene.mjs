@@ -94,6 +94,7 @@ for(const row of run.rows.filter(r=>r.status==='COMPLETED_NOT_QUALITY_ACCEPTANCE
 const entry=`
 import {createSkyGpuRenderer} from './apps/wechat-miniapp/src/features/sky/sky-gpu-renderer';
 import {drawSkyScene} from './apps/wechat-miniapp/src/features/sky/sky-scene-render';
+import {createSkySceneFrameIdentity} from './apps/wechat-miniapp/src/features/sky/sky-scene-frame';
 import {skyTargetOpticalFrame} from './apps/wechat-miniapp/src/features/sky/sky-sdss-optical-frame';
 import {registerSkyNativeImageLifetime} from './apps/wechat-miniapp/src/features/sky/sky-artwork-loader';
 import {skyEquatorialDirectionToEnu} from './apps/wechat-miniapp/src/features/sky/sky-observation-frame';
@@ -121,10 +122,13 @@ window.benchmark=async(index,view,off)=>{
   if(!off){const t=performance.now();image=new Image();image.src=item.imageData;await image.decode();decodeSeconds=(performance.now()-t)/1000;retire=registerSkyNativeImageLifetime(image,()=>true);}
   const originalLevels=renderer.artworkLevels.bind(renderer);renderer.artworkLevels=(...args)=>{const result=originalLevels(...args);draws.push(result);return result;};
   const fov=p.levels.DETAIL.fieldDegrees*(844/390)*(view==='wide'?1.4:.55),camera=basis(...p.nominalTan.referenceValue);
-  const args=[renderer,input.scene.report,input.scene.at,null,null,390,844,'DAY',(s,src)=>{snapshot=s;sources=src;},()=>completed++,fov,null,camera];
-  if(!off){args[30]=skyTargetOpticalFrame({publication:p,image,renderedLevel:'DETAIL',renderedAsset:p.levels.DETAIL,coarser:null});
-   if(!args[30])throw Error('frame_rejected');args[31]=()=>failed.push('optical');args[37]={surface:renderer,reference:p.reference,publicationHash:p.publicationHash};}
-  const t=performance.now();drawSkyScene(...args);gl.finish();const pixels=new Uint8Array(390*844*4);gl.readPixels(0,0,390,844,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+  const optical=off?null:skyTargetOpticalFrame({publication:p,image,renderedLevel:'DETAIL',renderedAsset:p.levels.DETAIL,coarser:null});
+  if(!off&&!optical)throw Error('frame_rejected');
+  const frame={identity:createSkySceneFrameIdentity({observation:{data:input.scene.report,frameAt:input.scene.at},
+   view:{heading:null,pose:null,manualBasis:camera,mode:'DAY',verticalFovDeg:fov},canvas:{generation:1,width:390,height:844}}),
+   imagery:{targetOptical:{image:optical,...(!off?{prepared:{surface:renderer,reference:p.reference,publicationHash:p.publicationHash}}:{})}}};
+  const t=performance.now();drawSkyScene(renderer,frame,{painted:result=>{snapshot=result.snapshot;sources=result.sources;},completed:()=>completed++,
+   failed:failure=>{if(failure.kind==='target-optical')failed.push('optical');}});gl.finish();const pixels=new Uint8Array(390*844*4);gl.readPixels(0,0,390,844,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
   const renderSeconds=(performance.now()-t)/1000,error=gl.getError(),contributionFault=renderer.artworkContributionsFailed();
   let b='';for(let i=0;i<pixels.length;i+=32768)b+=String.fromCharCode(...pixels.subarray(i,i+32768));
   const completion=sources?.sdssOptical;const result={png:canvas.toDataURL().split(',')[1],rgba:btoa(b),decodeSeconds,renderSeconds,error,completed,failed,draws,
@@ -396,6 +400,7 @@ async function runPreparedScene(runPath,pin,output){
  const entry=`
 import {createSkyGpuRenderer} from './apps/wechat-miniapp/src/features/sky/sky-gpu-renderer';
 import {drawSkyScene} from './apps/wechat-miniapp/src/features/sky/sky-scene-render';
+import {createSkySceneFrameIdentity} from './apps/wechat-miniapp/src/features/sky/sky-scene-frame';
 import {skyTargetOpticalFrame} from './apps/wechat-miniapp/src/features/sky/sky-sdss-optical-frame';
 import {registerSkyNativeImageLifetime} from './apps/wechat-miniapp/src/features/sky/sky-artwork-loader';
 import {attachSkyCatalog,resolveSkySceneFrame} from './apps/wechat-miniapp/src/features/sky/sky-stellar-scene';
@@ -451,17 +456,17 @@ window.preparedScene=async(index,view,level,photoOff=false,catalogOff=false,imag
  let snapshot=null,sources=null,completed=0,decodeSeconds=0,galacticDecodeSeconds=0,draws=[];
  try{
   const report=catalogOff?{...resolved,skyScene:{...resolved.skyScene,state:'UNAVAILABLE',catalog:null,publication:null}}:resolved;
-  const args=[renderer,report,frameAt,null,null,390,844,'DAY',(s,src)=>{snapshot=s;sources=src;},()=>completed++,fov,null,camera];
+  let galacticImage=null,targetOptical=null,preparedRegions=[];
   if(!galacticOff){
    const started=performance.now(),image=new Image();image.src=galacticData;await image.decode();
    retire.push(registerSkyNativeImageLifetime(image,()=>true));galacticDecodeSeconds=(performance.now()-started)/1000;
-   args[26]=image;args[39]=input.galacticPublication;args[23]=()=>failed.push('galactic');
+   galacticImage=image;
   }
-  if(!catalogOff)args[16]=resolveSkyStellarSupplement(input.saoPublication,currentSaoTiles,resolved.skyScene,frameAt);
+  const stellarSupplement=catalogOff?null:resolveSkyStellarSupplement(input.saoPublication,currentSaoTiles,resolved.skyScene,frameAt);
   // The Sun is also kind STAR. Count only identities supplied by the actual
   // catalogue owners when verifying catalogue-on/off effects.
   const catalogueReferences=new Set([...resolved.skyScene.catalog.entries.map(value=>value.objectRef),
-   ...(args[16]?.points??[]).map(value=>value[0])]);
+   ...(stellarSupplement?.points??[]).map(value=>value[0])]);
   const realDraw=renderer.artworkLevels.bind(renderer);renderer.artworkLevels=(...a)=>{const draw=realDraw(...a);draws.push(draw);return draw;};
   const decodedFields=new Map();
   const decodeField=async(fieldIndex,data)=>{
@@ -474,15 +479,19 @@ window.preparedScene=async(index,view,level,photoOff=false,catalogOff=false,imag
   if(!photoOff){
    if(collection){for(const field of imageData)await decodeField(field.index,field.data);}
    else await decodeField(index,imageData);
-   args[31]=()=>failed.push('optical');
    if(regionCollection){
     for(const value of decodedFields.values())if(!value.frame.reference.startsWith('REGION:'))throw Error('region_consumer_object_identity');
-    args[40]=[...decodedFields.values()].map(({frame,port})=>({frame,port}));
-   }else{args[30]=decodedFields.get(index).frame;args[37]=decodedFields.get(index).port;}
+    preparedRegions=[...decodedFields.values()].map(({frame,port})=>({frame,port}));
+   }else{const ready=decodedFields.get(index);targetOptical={image:ready.frame,prepared:ready.port};}
   }
   const captureFrame=()=>{
   completed=0;sources=null;snapshot=null;draws=[];
-  const started=performance.now();drawSkyScene(...args);gl.finish();const pixels=new Uint8Array(canvas.width*canvas.height*4);
+  const frame={identity:createSkySceneFrameIdentity({observation:{data:report,frameAt,stellarSupplement},
+   view:{heading:null,pose:null,manualBasis:camera,mode:'DAY',verticalFovDeg:fov},canvas:{generation:1,width:390,height:844}}),
+   imagery:{...(targetOptical?{targetOptical}:{}),preparedRegions,
+    galactic:{image:galacticImage,publication:galacticOff?null:input.galacticPublication}}};
+  const started=performance.now();drawSkyScene(renderer,frame,{painted:result=>{snapshot=result.snapshot;sources=result.sources;},completed:()=>completed++,
+   failed:failure=>{if(failure.kind==='target-optical')failed.push('optical');else if(failure.kind==='galactic-band'&&!galacticOff)failed.push('galactic');}});gl.finish();const pixels=new Uint8Array(canvas.width*canvas.height*4);
   gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
   let registrationReadback=null;
   if(item.measurement&&!photoOff&&!collection){
@@ -504,7 +513,7 @@ window.preparedScene=async(index,view,level,photoOff=false,catalogOff=false,imag
     holdoutMaxTimesVisibleMagnification:magnification===null?null:magnification*p.registration.holdout.maxPixels,
     meaning:'Saved independent sample through actual runtime plane at every LOD. Visible magnification product is a sampled display diagnostic, not global astrometric accuracy.'};
   }
-  const regions=acceptedSkyPreparedRegionCompletions(sources?.preparedRegions,args[40]?.map(value=>value.frame)??[]);
+  const regions=acceptedSkyPreparedRegionCompletions(sources?.preparedRegions,frame.imagery.preparedRegions.map(value=>value.frame));
   const optical=regionCollection?regions[0]:sources?.sdssOptical;
   const result={png:canvas.toDataURL().split(',')[1],rgba:'',decodeSeconds,renderSeconds:(performance.now()-started)/1000,
    completed,error:gl.getError(),failed,draws,contributionFault:renderer.artworkContributionsFailed(),graphicsFaults,galacticDecodeSeconds,
@@ -532,16 +541,15 @@ window.preparedScene=async(index,view,level,photoOff=false,catalogOff=false,imag
     const footprint={report:resolved,at:frameAt,view:{basis:camera,verticalFovDeg:fov},width:390,height:844};
     const wanted=skyPreparedRegionSelections(input.conditionalDiscovery.publications,footprint);
     const wantedHashes=new Set(wanted.map(value=>value.publicationHash));
-    args[10]=fov;args[12]=camera;
-    args[40]=(step.empty?[]:all).flatMap(i=>{
+    preparedRegions=(step.empty?[]:all).flatMap(i=>{
      const ready=decodedFields.get(i);
      return ready&&skyNativeImageIsCurrent(ready.frame.image)&&wantedHashes.has(ready.frame.publicationHash)?[{frame:ready.frame,port:ready.port}]:[];
     });
-    regionalGroupCount=args[40].length;
+    regionalGroupCount=preparedRegions.length;
     const r=captureFrame();
     results.push({step:step.name,focus:step.focus??null,retired:step.retire??null,retried:step.retry??null,
      wanted:wanted.map(value=>({reference:value.reference,publicationHash:value.publicationHash})),
-     supplied:args[40].map(value=>({reference:value.frame.reference,publicationHash:value.frame.publicationHash})),...r,
+     supplied:preparedRegions.map(value=>({reference:value.frame.reference,publicationHash:value.frame.publicationHash})),...r,
      liveGpu:Object.fromEntries(Object.entries(live).map(([kind,set])=>[kind,set.size]))});
    }
    renderer.dispose();for(const done of retire)done();
@@ -821,6 +829,7 @@ async function runHipsScene(run,runPath,output){
  const entry=`
 import {createSkyGpuRenderer} from './apps/wechat-miniapp/src/features/sky/sky-gpu-renderer';
 import {drawSkyScene} from './apps/wechat-miniapp/src/features/sky/sky-scene-render';
+import {createSkySceneFrameIdentity} from './apps/wechat-miniapp/src/features/sky/sky-scene-frame';
 import {attachSkyCatalog,resolveSkySceneFrame} from './apps/wechat-miniapp/src/features/sky/sky-stellar-scene';
 import {registerSkyNativeImageLifetime} from './apps/wechat-miniapp/src/features/sky/sky-artwork-loader';
 const input=${JSON.stringify({report:controlled.report,catalog,tiles,items,conditions})};
@@ -843,8 +852,10 @@ window.benchmarkHips=async(index,ratio,catalogOff=false)=>{
   const decodeSeconds=(performance.now()-decodeStart)/1000,mesh=renderer.skyImageMesh.bind(renderer);
   renderer.skyImageMesh=(...args)=>{const drawn=mesh(...args);if(drawn)hipsPaints++;return drawn;};
   const report=catalogOff?{...resolved,skyScene:{...resolved.skyScene,state:'UNAVAILABLE',catalog:null,publication:null}}:resolved;
-  const args=[renderer,report,at,null,null,390,844,'DAY',s=>{snapshot=s;},()=>completed++,condition.fov,null,condition.basis];args[21]=frames;args[22]=t=>failed.push('hips:'+t.order+':'+t.pixel);
-  const start=performance.now();drawSkyScene(...args);gl.finish();const pixels=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+  const frame={identity:createSkySceneFrameIdentity({observation:{data:report,frameAt:at},
+   view:{heading:null,pose:null,manualBasis:condition.basis,mode:'DAY',verticalFovDeg:condition.fov},canvas:{generation:1,width:390,height:844}}),imagery:{hipsTiles:frames}};
+  const start=performance.now();drawSkyScene(renderer,frame,{painted:result=>{snapshot=result.snapshot;},completed:()=>completed++,
+   failed:failure=>{if(failure.kind==='hips')failed.push('hips:'+failure.tile.order+':'+failure.tile.pixel);}});gl.finish();const pixels=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
   const renderSeconds=(performance.now()-start)/1000;let binary='';for(let i=0;i<pixels.length;i+=32768)binary+=String.fromCharCode(...pixels.subarray(i,i+32768));
   const result={png:canvas.toDataURL().split(',')[1],rgba:btoa(binary),decodeSeconds,renderSeconds,hipsPaints,completed,error:gl.getError(),failed,
    contributionFault:renderer.artworkContributionsFailed(),catalogOff,stellarFrameState:resolveSkySceneFrame(report.skyScene,at)?.state??null,

@@ -63,7 +63,11 @@ test("recreated canvas rejects queued survey and constellation native images unt
     objectTracking:{snapshot:()=>({target:null})},
     canvasGenerationRef: { current: 2 }, EMPTY_SKY_IMAGES: new Map(),
     paintedSkyObjectsRef: {current:null},
-    drawSkyScene(...args: any[]) { submitted.push({ survey: args[11], artwork: args[15].images, uranus:args[32],neptune:args[33],landscapeMask:args[34].mask }); },
+    drawSkyScene(_surface:unknown,input:sceneRender.SkySceneFrameInput) { submitted.push({
+      survey: input.imagery?.infrared, artwork: input.layers!.constellations!.images,
+      uranus: input.imagery?.bodyImages?.find(value=>value.reference==='PLANET:URANUS')?.image??null,
+      neptune: input.imagery?.bodyImages?.find(value=>value.reference==='PLANET:NEPTUNE')?.image??null,
+      landscapeMask: input.layers?.landscape?.mask }); },
   });
   const old = { canvasGeneration: 1, image: {} }, replacement = { canvasGeneration: 2, image: {} };
   const artwork = new Map([["current", {}]]);

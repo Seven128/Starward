@@ -2,6 +2,7 @@ import { unprojectSkyPoint, type SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter, SkyCanvasBounds } from "./sky-viewport";
 import { skyLandscapeMaskOccludes, skyLandscapeWindowAlphaBound, type SkyLandscapeMask } from "./sky-landscape-mask";
 import type { SkyDeepAuxiliaryDecision } from "./sky-deep-auxiliary-visibility";
+import type { SkySceneFrameIdentity } from "./sky-scene-frame";
 
 export interface SkyObjectIdentity {
   reference: string;
@@ -37,6 +38,9 @@ export function skyObjectMagnitudeLabel(object:Pick<PaintedSkyObject,'magnitude'
 }
 
 export interface SkyPickSnapshot {
+  /** Production Scene receipt. Pure geometry consumers may construct a
+   * snapshot without native Canvas/resource admission. */
+  readonly identity?: SkySceneFrameIdentity;
   catalogVersion: string;
   catalogHash: string;
   frameAt: string;

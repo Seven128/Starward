@@ -1,3 +1,9 @@
+import type { SkySceneFrameInput, SkySceneFrameIdentity, SkyHipsCanvasTile, SkySceneLandscapeInput } from "./sky-scene-frame";
+import type { SkyScenePreparedOpticalPort } from "./sky-prepared-optical-scene";
+import type { SkyPickSnapshot } from "./sky-object-picking";
+import type { ResolvedSkyReport } from "./sky-stellar-scene";
+import type { SkyReadyImageFrame } from "./sky-ready-presentation";
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -113,7 +119,7 @@ test("ready exact groups prepare at zero without photo credit, source failures o
       assert.deepEqual(resolve({ fine: true, coarse: true }), { fine: 0, coarse: 0 });
       return { submitted: false, finePrepared: true, coarsePrepared: true };
     };
-    const result = paint(s, w.frame, { 42: ready });
+    const result = paint(s, w.frame, { readyImages: ready });
     assert.equal(calls, 1); assert.equal(result.completed, 1); assert.equal(result.sources?.sdssOptical, null);
     assert.equal(result.sources?.deepSkyImage, null, "prepared optical must not flash another spectrum while its first display is zero");
     assert.equal(s.images.length, 0); assert.equal(s.getters.length, 0, "zero preparation cannot borrow a qualification/contribution receipt");
@@ -145,18 +151,18 @@ test("late exact detail preserves its accepted same-source parent and advances c
     s.actual.artworkLevelsContribution = draw => { assert.strictEqual(draw, actualDraw); assert(draw.submitted);
       return { completed: true, qualification: qualification(), finePhoto: weights.fine > 0 ? "positive" : "unknown",
         coarsePhoto: weights.coarse > 0 && weights.fine < 1 ? "positive" : "unknown" }; };
-    const prepareParent = images.prepare(0); paint(s, coarseIdentity.frame, { 42: prepareParent }); prepareParent.commit(100);
-    const parent = images.prepare(260); paint(s, coarseIdentity.frame, { 42: parent }); parent.commit(); assert.equal(parent.animating, false);
-    const first = images.prepare(10000), firstResult = paint(s, w.frame, { 42: first });
+    const prepareParent = images.prepare(0); paint(s, coarseIdentity.frame, { readyImages: prepareParent }); prepareParent.commit(100);
+    const parent = images.prepare(260); paint(s, coarseIdentity.frame, { readyImages: parent }); parent.commit(); assert.equal(parent.animating, false);
+    const first = images.prepare(10000), firstResult = paint(s, w.frame, { readyImages: first });
     assert.deepEqual(weights, { coarse: 1, fine: 0 }, "arrival must not restart the already presented parent");
     assert(firstResult.sources?.sdssOptical && firstResult.sources.sdssOptical.kind !== "legacy");
     assert.deepEqual(firstResult.sources.sdssOptical.participatingFields.map(field => field.image), [w.coarse]);
     assert.deepEqual(firstResult.failures, []); assert.equal(firstResult.sources.deepSkyImage, null); first.commit(10100);
-    const half = images.prepare(10180), halfResult = paint(s, w.frame, { 42: half }); half.commit();
+    const half = images.prepare(10180), halfResult = paint(s, w.frame, { readyImages: half }); half.commit();
     assert.deepEqual(weights, { coarse: 1, fine: .5 });
     assert(halfResult.sources?.sdssOptical && halfResult.sources.sdssOptical.kind !== "legacy");
     assert.deepEqual(halfResult.sources.sdssOptical.participatingFields.map(field => field.image), [w.image, w.coarse]);
-    const full = images.prepare(10260), fullResult = paint(s, w.frame, { 42: full }); full.commit();
+    const full = images.prepare(10260), fullResult = paint(s, w.frame, { readyImages: full }); full.commit();
     assert.deepEqual(weights, { coarse: 1, fine: 1 }); assert.equal(full.animating, false);
     assert(fullResult.sources?.sdssOptical && fullResult.sources.sdssOptical.kind !== "legacy");
     assert.deepEqual(fullResult.sources.sdssOptical.participatingFields.map(field => field.image), [w.image]);
@@ -184,7 +190,7 @@ test("offscreen exact fields preserve an already displayed W3 fallback and revea
   };
   const images = createSkyReadyImages();
   for (const [now, weight] of [[10000, 0], [10080, .5], [10160, 1]]) {
-    const ready = images.prepare(now!), result = paint(s, w.frame, { 42: ready });
+    const ready = images.prepare(now!), result = paint(s, w.frame, { readyImages: ready });
     assert(result.sources?.sdssOptical && result.sources.sdssOptical.kind !== "legacy");
     assert.equal(result.sources.sdssOptical.participatingFields.length, 0, "a completed empty receipt is not a visible photo credit");
     assert.equal(infraredWeights.at(-1), weight);
@@ -193,57 +199,75 @@ test("offscreen exact fields preserve an already displayed W3 fallback and revea
     assert.deepEqual(result.failures, []); ready.commit();
     assert.equal(ready.animating, weight !== 1);
   }
-  const retained = images.prepare(20000), result = paint(s, w.frame, { 42: retained }); retained.commit();
+  const retained = images.prepare(20000), result = paint(s, w.frame, { readyImages: retained }); retained.commit();
   assert.equal(infraredWeights.at(-1), 1, "another empty optical frame cannot restart valid W3 readiness");
   assert.strictEqual(result.sources?.deepSkyImage, infrared.image);
   assert.equal(retained.animating, false); assert(s.getters.length > 0);
   w.retireFine(); w.retireCoarse();
 });
-type SceneArgs = Parameters<typeof drawSkyScene>;
-type SceneOverrides = { [K in keyof SceneArgs as K extends `${number}` ? K : never]?: SceneArgs[K] };
+type SceneOverrides = {
+  data?: ResolvedSkyReport;
+  mode?: SkySceneFrameIdentity["view"]["mode"];
+  verticalFovDeg?: number;
+  opticalImage?: SkyExactTargetOpticalImage;
+  scienceOptical?: SkySceneScienceOpticalPort | undefined;
+  preparedOptical?: SkyScenePreparedOpticalPort | undefined;
+  hipsTiles?: readonly SkyHipsCanvasTile[];
+  landscape?: SkySceneLandscapeInput;
+  readyImages?: SkyReadyImageFrame;
+};
 function paint(s: ReturnType<typeof surface>, frame: SkyExactTargetOpticalImage,
   overrides: SceneOverrides = {}) {
-  let sources: SkyScenePaintedSources | null = null, snapshot: Parameters<NonNullable<SceneArgs[8]>>[0] = null, completed = 0;
+  let sources: SkyScenePaintedSources | null = null, snapshot: SkyPickSnapshot | null = null, completed = 0;
   const failures: object[] = [];
-  const args: Parameters<typeof drawSkyScene> = [s.actual, report as unknown as Parameters<typeof drawSkyScene>[1], at,
-    null, null, 390, 844, "NIGHT"];
-  args[8] = (actual, value) => { s.events.push("painted"); snapshot = actual; sources = value; };
-  args[9] = () => { completed++; }; args[10] = .05; args[11] = infrared; args[12] = basis;
-  args[30] = frame; args[31] = image => { failures.push(image); };
-  if ("preparedPublication" in frame) args[37] = { surface: s.actual, reference: frame.reference, publicationHash: frame.publicationHash };
-  else args[36] = port(s.actual);
-  Object.assign(args, overrides); drawSkyScene(...args);
-  return { sources: sources as SkyScenePaintedSources | null, snapshot: snapshot as Parameters<NonNullable<SceneArgs[8]>>[0], failures, completed };
+  const science = Object.hasOwn(overrides, "scienceOptical") ? overrides.scienceOptical
+    : "preparedPublication" in frame ? undefined : port(s.actual);
+  const prepared = Object.hasOwn(overrides, "preparedOptical") ? overrides.preparedOptical
+    : "preparedPublication" in frame ? { surface: s.actual, reference: frame.reference, publicationHash: frame.publicationHash } : undefined;
+  const targetOptical = { image: overrides.opticalImage ?? frame,
+    ...(science ? { science } : {}), ...(prepared ? { prepared } : {}) };
+  drawSkyScene(s.actual, skySceneTestFrame({
+    observation: { data: overrides.data ?? report as unknown as ResolvedSkyReport, frameAt: at },
+    view: { manualBasis: basis, mode: overrides.mode ?? "NIGHT", verticalFovDeg: overrides.verticalFovDeg ?? .05 },
+    imagery: { infrared, targetOptical, ...(overrides.hipsTiles ? { hipsTiles: overrides.hipsTiles } : {}) },
+    ...(overrides.landscape ? { layers: { landscape: overrides.landscape } } : {}),
+    ...(overrides.readyImages ? { work: { readyImages: overrides.readyImages } } : {}),
+  }), {
+    painted: result => { s.events.push("painted"); snapshot = result.snapshot; sources = result.sources; },
+    completed: () => { completed++; },
+    failed: failure => { if (failure.kind === "target-optical") failures.push(failure.image); },
+  });
+  return { sources: sources as SkyScenePaintedSources | null, snapshot: snapshot as SkyPickSnapshot | null, failures, completed };
 }
 
 test("only matching same-surface intent admits exact publication/primary/parent descriptors", () => {
   const w = world();
-  for (const patch of [{ 36: undefined }, { 36: port(surface().actual) },
-    { 36: { ...port(surface().actual), reference: "M:63" } },
-    { 36: { ...port(surface().actual), publicationHash: "foreign" } },
-    { 30: { ...w.frame, publicationHash: "foreign" } },
-    { 30: { ...w.frame, sciencePublication: { ...publication, objectRef: "M:63" } } },
-    { 30: { ...w.frame, asset: { ...w.frame.asset } } },
-    { 30: { ...w.frame, coarser: { ...w.frame.coarser!, asset: { ...w.frame.coarser!.asset } } } },
-    { 30: { ...w.frame, fieldDegrees: w.frame.fieldDegrees + .01 } },
-    { 7: "OBSERVATION" }]) {
+  for (const patch of [{ scienceOptical: undefined }, { scienceOptical: port(surface().actual) },
+    { scienceOptical: { ...port(surface().actual), reference: "M:63" } },
+    { scienceOptical: { ...port(surface().actual), publicationHash: "foreign" } },
+    { opticalImage: { ...w.frame, publicationHash: "foreign" } },
+    { opticalImage: { ...w.frame, sciencePublication: { ...publication, objectRef: "M:63" } } },
+    { opticalImage: { ...w.frame, asset: { ...w.frame.asset } } },
+    { opticalImage: { ...w.frame, coarser: { ...w.frame.coarser!, asset: { ...w.frame.coarser!.asset } } } },
+    { opticalImage: { ...w.frame, fieldDegrees: w.frame.fieldDegrees + .01 } },
+    { mode: "OBSERVATION" }]) {
     const s = surface();
     // Correct the intended surface for the identity-only port mismatch cases.
     let overrides = patch as SceneOverrides;
-    const requested = overrides[36];
+    const requested = overrides.scienceOptical;
     if (requested && (requested.reference === "M:63" || requested.publicationHash === "foreign"))
-      overrides = { ...overrides, 36: { ...requested, surface: s.actual } };
+      overrides = { ...overrides, scienceOptical: { ...requested, surface: s.actual } };
     const result = paint(s, w.frame, overrides);
     assert.equal(s.groups.length, 0); assert.equal(result.sources?.sdssOptical, null);
     assert.equal(s.images.includes(w.image), false, "science never falls through independent JPEG drawing");
-    assert.equal(s.images.includes(infrared.image), patch[7] !== "OBSERVATION");
+    assert.equal(s.images.includes(infrared.image), patch.mode !== "OBSERVATION");
   }
 });
 
 test("one actual group uses actual MEDIUM/OVERVIEW and exact observation without catalog registration gates", () => {
   const w = world("MEDIUM", "OVERVIEW"), s = surface();
   const data = { ...report, skyScene: { ...report.skyScene, deepSky: { state: "UNAVAILABLE", frames: [] } } };
-  const result = paint(s, w.frame, { 1: data as unknown as Parameters<typeof drawSkyScene>[1] });
+  const result = paint(s, w.frame, { data: data as unknown as ResolvedSkyReport });
   assert.equal(s.groups.length, 1); const levels = s.groups[0]!;
   assert.strictEqual(levels.fine!.image, w.image); assert.strictEqual(levels.coarse!.image, w.coarse);
   assert.deepEqual(levels.fine!.registration, registerSkyScienceOpticalField(publication, publication.levels.MEDIUM, observation));
@@ -287,7 +311,7 @@ const modelPositive: SkyArtworkLocalObservation = Object.freeze({ scope: "frozen
 test("actual Scene captures one guarded model scalar for ring and snapshot through zoom out and return", () => {
   const expected = [1, .3190884173395092, 0, .3190884173395092, 1];
   for (const [index, fov] of [10, 2.8, 1.8, 2.8, 10].entries()) {
-    const s = surface({ local: modelPositive }), result = paint(s, world().frame, { 10: fov });
+    const s = surface({ local: modelPositive }), result = paint(s, world().frame, { verticalFovDeg: fov });
     const decisions = result.snapshot?.deepSkyAuxiliaryDecisions;
     assert.equal(decisions?.[0]?.reference, "M:51"); assert.equal(decisions?.[0]?.opacity, expected[index]);
     assert(Object.isFrozen(decisions)); assert(Object.isFrozen(decisions[0]));
@@ -299,18 +323,18 @@ test("actual Scene captures one guarded model scalar for ring and snapshot throu
 
 test("local black, missing domain, unprepared expected source and retirement restore the actual Scene aid", () => {
   const black = surface({ local: { ...modelPositive, fine: { selection: "has", photo: "unknown" } } });
-  assert.equal(paint(black, world().frame, { 10: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
+  assert.equal(paint(black, world().frame, { verticalFovDeg: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
   const missingRegion = { ...report, skyScene: { ...report.skyScene, deepSky: { ...report.skyScene.deepSky,
     catalog: { ...report.skyScene.deepSky.catalog, entries: [{ ...report.skyScene.deepSky.catalog.entries[0]!, positionAngleDeg: null }] } } } };
   const absent = surface({ local: modelPositive });
-  assert.equal(paint(absent, world().frame, { 1: missingRegion as unknown as SceneArgs[1], 10: 1.8 })
+  assert.equal(paint(absent, world().frame, { data: missingRegion as unknown as ResolvedSkyReport, verticalFovDeg: 1.8 })
     .snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
   assert.equal(absent.getLocalCalls(), 0);
   const failed = surface({ local: modelPositive, draw: { ...submitted, coarsePrepared: false } });
-  assert.equal(paint(failed, world().frame, { 10: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
+  assert.equal(paint(failed, world().frame, { verticalFovDeg: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
   assert.equal(failed.getLocalCalls(), 0);
   const retired = world(), during = surface({ local: modelPositive, duringLocal: retired.retireFine });
-  assert.equal(paint(during, retired.frame, { 10: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
+  assert.equal(paint(during, retired.frame, { verticalFovDeg: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
   assert.equal(during.getLocalCalls(), 1, "currentness must be checked again after the real observer boundary");
 });
 
@@ -366,7 +390,7 @@ test("no successful submission is independent unavailable fallback, not an EMPTY
   for (const observationFrames of [undefined, [{ ...observation, at: "2026-10-02T01:00:00.000Z" }],
     [{ ...observation, equatorialToEnu: [-1,0,0,0,1,0,0,0,1] }]]) {
     const s = surface(); const result = paint(s, world().frame,
-      { 1: { ...report, observationFrames } as unknown as Parameters<typeof drawSkyScene>[1] });
+      { data: { ...report, observationFrames } as unknown as ResolvedSkyReport });
     assert.equal(s.groups.length, 0); assert.equal(s.getters.length, 0); assert.equal(result.failures.length, 2);
     assert.strictEqual(result.sources?.deepSkyImage, infrared.image);
   }
@@ -374,12 +398,12 @@ test("no successful submission is independent unavailable fallback, not an EMPTY
 
 test("later alpha/retirement only changes completion, never backfills W3 or turns global science photo into aid suppression", () => {
   const w = world(), s = surface({ late: w.retireFine, receipt: receipt(has, "positive", "positive") });
-  const result = paint(s, w.frame, { 34: { enabled: true } });
+  const result = paint(s, w.frame, { landscape: { enabled: true } });
   assert.equal(s.images.length, 0); const completed = result.sources!.sdssOptical!; assert(completed.kind === "science");
   assert.deepEqual(completed.participatingFields.map(field => field.slot), ["coarse"]);
   assert.equal(s.discs.length, 1); assert.equal(s.discs[0], .9, "unknown local facts preserve the aid despite global science participation");
   const erased = surface({ receipt: receipt(has, "unknown", "unknown") });
-  const emptyPhoto = paint(erased, world().frame, { 34: { enabled: true } });
+  const emptyPhoto = paint(erased, world().frame, { landscape: { enabled: true } });
   assert.equal(erased.images.length, 0); assert.equal((emptyPhoto.sources?.sdssOptical as any).participatingFields.length, 0);
 });
 
@@ -388,7 +412,7 @@ test("ordinary group/later draw/finish errors propagate and never publish a comp
     const s = surface({ throwAt }); assert.throws(() => paint(s, world().frame), /ordinary-/);
     assert.equal(s.events.includes("painted"), false); assert.equal(s.events.includes("contribution"), false);
   }
-  const s = surface(), result = paint(s, world().frame, { 21: [{ layer: "OPTICAL", order: 8,
+  const s = surface(), result = paint(s, world().frame, { hipsTiles: [{ layer: "OPTICAL", order: 8,
     pixel: lonLat2PixNest(256, publication.center.raDeg, publication.center.decDeg), image: {} }] });
   assert(s.events.includes("opticalHiPS")); assert(s.events.indexOf("opticalHiPS") > s.events.indexOf("qualification"));
   assert.deepEqual(s.meshOpacities, [1]);
@@ -441,22 +465,22 @@ function preparedWorld(level: SdssOpticalLevel = "DETAIL", parent: SdssOpticalLe
 
 test("Prepared Scene needs its own same-surface/hash intent and never enters independent JPEG draws", () => {
   const w = preparedWorld();
-  for (const patch of [{ 37: undefined }, { 37: { surface: surface().actual, reference: w.frame.reference, publicationHash: w.frame.publicationHash } },
-    { 37: { reference: "M:63" } }, { 37: { publicationHash: publication.publicationHash } },
-    { 30: { ...w.frame, asset: { ...w.frame.asset } } }, { 30: { ...w.frame, sciencePublication: publication } },
-    { 30: { ...w.frame, preparedPublication: { ...prepared, imageVersion: "science-optical-v2" } } }, { 7: "OBSERVATION" }]) {
+  for (const patch of [{ preparedOptical: undefined }, { preparedOptical: { surface: surface().actual, reference: w.frame.reference, publicationHash: w.frame.publicationHash } },
+    { preparedOptical: { reference: "M:63" } }, { preparedOptical: { publicationHash: publication.publicationHash } },
+    { opticalImage: { ...w.frame, asset: { ...w.frame.asset } } }, { opticalImage: { ...w.frame, sciencePublication: publication } },
+    { opticalImage: { ...w.frame, preparedPublication: { ...prepared, imageVersion: "science-optical-v2" } } }, { mode: "OBSERVATION" }]) {
     const s = surface(); const overrides = patch as SceneOverrides;
-    if (patch[37] && !("surface" in patch[37])) overrides[37] = { surface: s.actual,
-      reference: w.frame.reference, publicationHash: w.frame.publicationHash, ...patch[37] };
-    const result = paint(s, w.frame, { 36: { surface: s.actual, reference: w.frame.reference,
+    if (patch.preparedOptical && !("surface" in patch.preparedOptical)) overrides.preparedOptical = { surface: s.actual,
+      reference: w.frame.reference, publicationHash: w.frame.publicationHash, ...patch.preparedOptical };
+    const result = paint(s, w.frame, { scienceOptical: { surface: s.actual, reference: w.frame.reference,
       publicationHash: w.frame.publicationHash }, ...overrides });
     assert.equal(s.groups.length, 0); assert.equal(result.sources?.sdssOptical, null);
     assert.equal(s.images.some(image => image === w.image || image === w.coarse), false);
-    assert.equal(s.images.includes(infrared.image), patch[7] !== "OBSERVATION");
+    assert.equal(s.images.includes(infrared.image), patch.mode !== "OBSERVATION");
   }
   const medium = preparedWorld("MEDIUM", "OVERVIEW"), s = surface();
   const unavailableCatalog = { ...report, skyScene: { ...report.skyScene, deepSky: { state: "UNAVAILABLE", frames: [] } } };
-  const result = paint(s, medium.frame, { 1: unavailableCatalog as unknown as SceneArgs[1] });
+  const result = paint(s, medium.frame, { data: unavailableCatalog as unknown as ResolvedSkyReport });
   assert.equal(s.groups.length, 1); const levels = s.groups[0]!;
   assert.strictEqual(levels.fine!.image, medium.image); assert.strictEqual(levels.coarse!.image, medium.coarse);
   assert.equal(levels.fine!.geometricCoverage, "geometric-source-area"); assert.equal(levels.fine!.scientificAvailability, "UNKNOWN");
@@ -474,7 +498,7 @@ test("Prepared original expected sources, black and UNKNOWN cannot authorize a s
   for (const slot of ["fine", "coarse"] as const) {
     const w = preparedWorld(), s = surface({ draw: { ...submitted, [slot === "fine" ? "finePrepared" : "coarsePrepared"]: false },
       qualification: empty, receipt: receipt(empty, "unknown", "unknown"), local: modelPositive });
-    const result = paint(s, w.frame, { 10: 1.8 }); assert.equal(s.groups.length, 1); assert.equal(s.images.length, 0);
+    const result = paint(s, w.frame, { verticalFovDeg: 1.8 }); assert.equal(s.groups.length, 1); assert.equal(s.images.length, 0);
     assert.deepEqual(result.failures, [slot === "fine" ? w.image : w.coarse]); assert.equal(s.getLocalCalls(), 0);
     assert.equal(result.snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
   }
@@ -495,25 +519,25 @@ test("Prepared original expected sources, black and UNKNOWN cannot authorize a s
 test("Prepared same-frame aid decisions survive late receipt changes while retired fine leaves actual coarse credit", () => {
   const expected = [1, .3190884173395092, 0, .3190884173395092, 1];
   for (const [index, fov] of [10, 2.8, 1.8, 2.8, 10].entries()) {
-    const s = surface({ local: modelPositive }), result = paint(s, preparedWorld().frame, { 10: fov });
+    const s = surface({ local: modelPositive }), result = paint(s, preparedWorld().frame, { verticalFovDeg: fov });
     assert.equal(result.snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, expected[index]);
     assert.deepEqual(s.discs, expected[index] === 0 ? [] : [.9 * expected[index]!]); assert.equal(s.getLocalCalls(), 1);
     assert(result.snapshot?.objects.some(point => point.reference === prepared.objectRef));
   }
   const w = preparedWorld(), s = surface({ local: modelPositive, late: w.retireFine });
-  const result = paint(s, w.frame, { 10: 1.8, 34: { enabled: true } });
+  const result = paint(s, w.frame, { verticalFovDeg: 1.8, landscape: { enabled: true } });
   const completed = result.sources?.sdssOptical; assert(completed?.kind === "prepared");
   assert.deepEqual(completed.participatingFields.map(field => [field.slot, field.image]), [["coarse", w.coarse]]);
   assert.strictEqual(completed.preparedPublication, prepared); assert.equal(s.images.length, 0);
   assert.equal(result.snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 0, "late source filtering cannot rewrite the frozen pre-aid scalar");
   const zero = surface({ local: modelPositive, receipt: receipt(has, "unknown", "unknown") });
-  const changed = paint(zero, preparedWorld().frame, { 10: 1.8 });
+  const changed = paint(zero, preparedWorld().frame, { verticalFovDeg: 1.8 });
   assert.equal(changed.snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 0);
   assert.equal(changed.sources?.sdssOptical?.kind === "prepared" && changed.sources.sdssOptical.participatingFields.length, 0);
   const black = surface({ local: { ...modelPositive, fine: { selection: "has", photo: "unknown" } } });
-  assert.equal(paint(black, preparedWorld().frame, { 10: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
+  assert.equal(paint(black, preparedWorld().frame, { verticalFovDeg: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
   const during = preparedWorld(), retiring = surface({ local: modelPositive, duringLocal: during.retireCoarse });
-  assert.equal(paint(retiring, during.frame, { 10: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
+  assert.equal(paint(retiring, during.frame, { verticalFovDeg: 1.8 }).snapshot?.deepSkyAuxiliaryDecisions?.[0]?.opacity, 1);
 });
 
 test("Prepared ordinary draw/finish failures never publish an accepted painted source", () => {
@@ -542,7 +566,7 @@ test("a failed wider upload submits its ready finer alternative in the same fram
         }
         return base(levels,view,opacity);
       };
-      const result = paint(s, frame, {34:{enabled:true}});
+      const result = paint(s, frame, {landscape:{enabled:true}});
       assert.equal(result.completed,1);assert.equal(s.groups.length,2);
       assert.strictEqual(s.groups[1]!.fine!.image,medium);assert.equal(s.groups[1]!.coarse,null);
       assert.deepEqual(result.failures,[overview]);assert.equal(s.images.length,0,'a same-source fallback cannot reveal W3');

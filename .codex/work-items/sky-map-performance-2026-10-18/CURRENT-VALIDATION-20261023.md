@@ -4,6 +4,8 @@
 
 ## R20本轮新结果
 
+**2026-10-24后续：** 检查点2c4bb235已推送并精确远端读回。实际[Context CI](https://github.com/Seven128/Starward/actions/runs/39985646890)通过，[Product CI](https://github.com/Seven128/Starward/actions/runs/39985637469)在隔离基础设施失败；此前release-code/实际App API admin消费者及构建通过，OCI skipped。两处媒体夹具假设已在独占PG/Redis真实复现并修正，完整infra入口exit0、独审无该范围未解决P1/P2，见[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)；原远端run仍为失败，待后续提交重跑。[Sky具名帧](R20-SKY-FRAME-INPUTS-20261024.md)最终纯星座输入调整后与2c对照440帧、BSC8404/实际loadedSAO最高8565、数值0差；首轮整个Sky1119项的64个旧fixture失败已修，现整个Sky **1121/1121、0失败/skip、exit0**，显式绑定既有原science publication输入，旧FAIL/skip历史保留。具名边界和追加fixture两批新独审通过；完整Miniapp锁定TS5.9及Mini API workspace noEmit通过（新Scene→body type引Taro globals的实际修前失败已保留，现pure profile修复）。两TIFF及压缩传输当前本机hash/9项Drive私有metadata亦已核，旧远端完整读回复用，见[依赖记录](NEW-COMPUTER-DEPENDENCIES-20261023.md)。这些本地结果不关闭资源家族全职责、其余私有恢复或设备/性能/OOM。
+
 **当前workspace整合检查：** root使用工作区入口运行`npm run test:mobile:fast`，mobile typecheck与32文件112项通过；独立API workspace typecheck及28文件116项通过。App首次整合因新增ItineraryScreen测试的createElement类型推断失败，改为显式JSX后整个mobile入口复验通过。API运行前后源码hash核对没有API变化；随后validator取消无依据字段上限的定向复验归行程证据。上述当前结果替代根目录可能混入历史tmp的汇总统计；不包括正在实施的小程序F09/F10终态、目标运行时或远端CI。
 
 **F14/F10/F09本批独审纠错完成：** [真实行程草稿](R20-ITINERARY-DRAFT-PERSISTENCE-20261023.md)两项P2修后API21/App17/双typecheck通过，新独审实际HTTP6/App17通过，无该范围未解决P1/P2；首次超限可改重交，未知后重试拒绝仍保pending，观测类型不再用profileId。structured保持整family未通过，来源/路线/分享/协作不被草稿代表链关闭。[独立云量](R20-INDEPENDENT-CLOUD-DELIVERY-20261023.md)地点panel轴/旧覆盖retry及后续时间失败被Scene隐藏三项P2均已修，新的最终独审11项通过，无该范围未解决P1/P2。2026-10-24完整Map页面目录`src/pages/map/*.test.ts`回归448/448、0失败0skip，exit0，32,145.8ms；日志在任务tmp的`map-module-integration-20261024.log`。[F09](R20-SKY-TIME-QUERY-POLICY-20261023.md)跨Context旧hold/ABA草稿P2已修，新独审实际6文件66/66，无该范围未解决P1/P2。各批不能相加冒一次全套。全部目标设备/实际H4/原生性能/OOM仍未验；不以通过数覆盖失败。

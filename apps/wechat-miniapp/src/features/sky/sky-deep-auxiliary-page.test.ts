@@ -27,6 +27,7 @@ import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
 import { sdssOpticalPublication, assertSdssOpticalManifest, type SdssOpticalManifest } from "@starward/miniapp-contracts";
 import * as miniappContracts from "@starward/miniapp-contracts";
 import { skyPageCanvasTestBindings, skyPageCanvasTestFrame } from "./sky-optical-page-test-support";
+import type { SkySceneFrameInput, SkyScenePorts } from "./sky-scene-frame";
 
 // Actual Scene, page callbacks/dependencies and lifecycle; only React scheduling,
 // native image/lease callbacks and the render surface are controlled. No GPU claim.
@@ -85,21 +86,20 @@ function harness() {
     setCanvasSize() {}, setCanvasError() {}, canvasDrawRevisionRef: { current: 0 }, publishAcceptanceSkySceneInspection() {},
     EMPTY_SKY_IMAGES: new Map(), setSolarLightUnavailable() {}, setMoonDiscUnavailable() {}, setPlanetDiscUnavailable() {},
     setSunDiscUnavailable() {}, setGalacticBandUnavailable() {}, setLandscapeUnavailable() {}, setArtworkContributionUnavailable() {},
-    drawSkyScene: (...args: any[]) => {
+    drawSkyScene: (_surface:unknown,input:SkySceneFrameInput,ports:SkyScenePorts) => {
       const discs: number[] = []; let snapshot: any = null, sources: any = null;
-      const stage = args[8], complete = args[9];
+      const complete = () => ports.completed?.(input.identity);
       const surface: any = { begin() {}, solarLight: () => true, galacticBand: () => true, sun: () => true, moon: () => true,
         planet: () => true, saturnRings: () => true, image: () => true, skyImageMesh: () => true, artwork: () => true,
         prepareArtwork: () => true, landscape: () => true, segments() {}, disc(_x: number, _y: number, _r: number, _c: string, opacity: number) { discs.push(opacity); },
         finish() { late?.(); if (fault) throw Error("controlled_finish_failure"); } };
-      args[0] = surface; args[8] = (s: any, c: any) => {
+      drawSkyScene(surface,input,{...ports,painted:result=>{
+        const {snapshot:s,sources:c}=result;
         // Malformed receipt cases enter before the page lays out/copies names;
         // changing later React metadata cannot rewrite accepted Canvas text.
         snapshot = receiptDecisions ? { ...s, deepSkyAuxiliaryDecisions: receiptDecisions.value } : s;
-        sources = c; stage(snapshot, c);
-      };
-      args[9] = () => { attempts.push({ complete, snapshot, sources, discs }); };
-      drawSkyScene(...args as Parameters<typeof drawSkyScene>);
+        sources = c; ports.painted?.({...result,snapshot});
+      },completed:() => { attempts.push({ complete, snapshot, sources, discs }); }});
     } }));
   const read = (name: string) => { const node = nodes.get(name); assert(node, name); return evaluate(node, context); };
   const lifecycle = createSkyCanvasLifecycle<any, object>({ measure: done => done({ width, height }), createContext: () => ({}),

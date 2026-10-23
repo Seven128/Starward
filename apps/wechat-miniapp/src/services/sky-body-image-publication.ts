@@ -1,16 +1,7 @@
-import type {MoonCoverageManifestData,MarsTextureManifestData,MercuryTextureManifestData,
-  JupiterBandsManifestData,SaturnBandsManifestData,UranusBandsManifestData,NeptuneBandsManifestData,SourceSummary} from "@starward/miniapp-contracts";
+import type {SourceSummary} from "@starward/miniapp-contracts";
 import {getBodyImageManifest} from "./body-image-client";
-import {skyBodyImageProfile} from "./sky-body-image-profile";
-export interface SkyBodyImagePublications {
-  "SOLAR:MOON":MoonCoverageManifestData;
-  "PLANET:MARS":MarsTextureManifestData;
-  "PLANET:MERCURY":MercuryTextureManifestData;
-  "PLANET:JUPITER":JupiterBandsManifestData;
-  "PLANET:SATURN":SaturnBandsManifestData;
-  "PLANET:URANUS":UranusBandsManifestData;
-  "PLANET:NEPTUNE":NeptuneBandsManifestData;
-}
+import {skyBodyImageProfile,type SkyBodyImagePublications} from "./sky-body-image-profile";
+export type {SkyBodyImagePublications} from "./sky-body-image-profile";
 export type SkyBodyImageReference=keyof SkyBodyImagePublications;
 export function isSkyBodyImageReference(reference:string):reference is SkyBodyImageReference {
   return skyBodyImageProfile(reference)!==undefined;

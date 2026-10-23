@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts, skySceneTestBodyImages } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
@@ -63,8 +64,21 @@ test("unresolved planets share solar adaptation without returning as fallback ta
   const paint = (mode: "NIGHT" | "OBSERVATION", sunAltitudeDeg = 0) => {
     dots.length = 0;
     let snapshot: SkyPickSnapshot | null = null;
-    drawSkyScene(surface, { ...report, hourly: [{ ...report.hourly[0]!, sunAltitudeDeg }] }, at,
-      null,null,400,800,mode, value => { snapshot = value; },undefined,85,null,basis);
+    drawSkyScene(surface, skySceneTestFrame({
+        observation: {
+            data: {
+                ...report, hourly: [{
+                        ...report.hourly[0]!, sunAltitudeDeg
+                    }]
+            }, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: mode, verticalFovDeg: 85, manualBasis: basis
+        }, canvas: {
+            width: 400, height: 800
+        }, imagery: {
+            infrared: null
+        }
+    }), { painted: (({snapshot: value}) => { snapshot = value; }) });
     return snapshot as SkyPickSnapshot | null;
   };
   const daylight = paint("NIGHT");
@@ -98,8 +112,17 @@ test("resolved planets crossing the mathematical horizon retain the whole painte
       const surface = new Proxy({}, { get: (_target,key) => key === "planet"
         ? (planet: { body: string }) => { submitted.push(planet.body); return success; }
         : () => undefined }) as SkyRenderSurface;
-      drawSkyScene(surface,report,at,null,null,width,height,"NIGHT",value => { snapshot = value; },
-        undefined,fov,null,horizonBasis);
+      drawSkyScene(surface, skySceneTestFrame({
+          observation: {
+              data: report, frameAt: at
+          }, view: {
+              heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: horizonBasis
+          }, canvas: {
+              width: width, height: height
+          }, imagery: {
+              infrared: null
+          }
+      }), { painted: (({snapshot: value}) => { snapshot = value; }) });
       assert.deepEqual(submitted,[body], "the valid resolved limb must reach its production draw owner");
       assert.ok(snapshot);
       return snapshot as SkyPickSnapshot;
@@ -131,11 +154,22 @@ test("ice-giant scene routes each historical profile to its own globe and preser
       ?(disc:{body:string},_view:unknown,_tint:unknown,_red:unknown,image:unknown)=>{
         submitted.push({body:disc.body,image});return true;}
       :key==="sun"||key==="moon"||key==="solarLight"?()=>true:()=>{}}) as SkyRenderSurface;
-    const args=[surface,report,at,null,null,400,800,"NIGHT",undefined,undefined,.25,null,basis,
-      ...Array(19).fill(undefined),uranus,neptune] as unknown as Parameters<typeof drawSkyScene>;
-    drawSkyScene(...args);
+    const sceneCase = skySceneTestCase({
+        surface: surface, observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+        }, canvas: {
+            width: 400, height: 800
+        }, imagery: {
+            infrared: null, bodyImages: skySceneTestBodyImages({
+                "PLANET:URANUS": uranus, "PLANET:NEPTUNE": neptune
+            })
+        }, ports: {}
+    });
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
     assert.deepEqual(submitted,[{body,image:body==="URANUS"?uranus:neptune}]);
-    submitted.length=0;args[32]=null;args[33]=null;drawSkyScene(...args);
+    submitted.length=0;sceneCase.imagery.bodyImages = [...sceneCase.imagery.bodyImages.filter(binding => binding.reference !== "PLANET:URANUS"), ...skySceneTestBodyImages({ "PLANET:URANUS": null })];sceneCase.imagery.bodyImages = [...sceneCase.imagery.bodyImages.filter(binding => binding.reference !== "PLANET:NEPTUNE"), ...skySceneTestBodyImages({ "PLANET:NEPTUNE": null })];drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
     assert.deepEqual(submitted,[{body,image:null}],"missing texture still draws the planet");
   }
 });
@@ -213,9 +247,19 @@ test("resolved Mars shares the Moon's IAU body-axis projection and passes only i
     ? (_disc:unknown,_view:unknown,_tint:unknown,_red:unknown,texture:object|null)=>{submitted.push(texture??{});return true;}
     : key==="sun"||key==="moon"||key==="solarLight" ? ()=>true
     : ()=>{}}) as SkyRenderSurface;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",undefined,undefined,.25,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,
-    undefined,undefined,undefined,undefined,undefined,undefined,image);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, bodyImages: skySceneTestBodyImages({
+              "PLANET:MARS": image
+          })
+      }
+  }));
   assert.ok(submitted.includes(image));
 });
 
@@ -232,9 +276,21 @@ test("resolved Mercury uses its own body axis and published image, never Mars'",
     ? (_disc:unknown,_view:unknown,_tint:unknown,_red:unknown,texture:object|null)=>{submitted.push(texture??{});return true;}
     : key==="sun"||key==="moon"||key==="solarLight" ? ()=>true
     : ()=>{}}) as SkyRenderSurface;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",undefined,undefined,.25,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,
-    undefined,undefined,undefined,undefined,undefined,undefined,null,null,image);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, bodyImages: skySceneTestBodyImages({
+              "PLANET:MARS": null, "PLANET:MERCURY": image
+          }), galactic: {
+              image: null, publication: null
+          }
+      }
+  }));
   assert.ok(submitted.includes(image));
 });
 
@@ -302,8 +358,17 @@ test("Sun geometry shades only the globe-facing ring sector and retains shadowed
     key==="segments"?(segments:readonly SkyLineSegment[],tint:string)=>{
       if(tint==="#4E473B")dark.push(...segments);
     }:key==="sun"||key==="moon"||key==="solarLight"?()=>true:()=>{}}) as SkyRenderSurface;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",value=>{snapshot=value;},
-    undefined,.25,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: value}) => {snapshot=value;}) });
   const painted=snapshot as SkyPickSnapshot|null;
   assert.ok(dark.length>0&&painted);
   const segment=dark.find(([x0,y0,x1,y1])=>x0>=0&&x0<400&&x1>=0&&x1<400&&
@@ -343,8 +408,17 @@ test("Saturn's outer ring remains when the globe has left the viewport",()=>{
   let snapshot:SkyPickSnapshot|null=null;
   const report={hourly:[{...row,planets:saturn}],skyScene:{state:"UNAVAILABLE",frames:[]},
     targetFrames:[]} as unknown as ResolvedSkyReport;
-  drawSkyScene(surface,report,at,null,null,width,height,"NIGHT",value=>{snapshot=value;},
-    undefined,fov,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: basis
+      }, canvas: {
+          width: width, height: height
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: value}) => {snapshot=value;}) });
   const segment=visible.find(([x0,y0,x1,y1])=>x0<width&&x1<width&&
     y0>=0&&y0<height&&y1>=0&&y1<height);
   assert.ok(segment,"the scene submits the in-viewport outer ring");
@@ -396,8 +470,17 @@ test("Jupiter's reported pole projects the 1-bar oblate silhouette and orients a
     targetFrames:[]} as unknown as ResolvedSkyReport;
   let snapshot:SkyPickSnapshot|null=null;
   const surface=new Proxy({}, {get:(_target,key)=>key==="planet"?()=>true:()=>undefined}) as SkyRenderSurface;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",value=>{snapshot=value;},
-    undefined,.25,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: value}) => {snapshot=value;}) });
   const painted=snapshot as SkyPickSnapshot|null;
   assert.ok(painted);
   const x=edge.x-edge.oblate.minorDirection[1]*edge.oblate.majorRadiusPx*.9;
@@ -426,8 +509,19 @@ test("Jupiter's reported pole projects the 1-bar oblate silhouette and orients a
     ?(planet:{body:string},_view:unknown,_tint:unknown,_red:unknown,texture:unknown)=>{
       if(planet.body==="JUPITER")submitted.push(texture);return true;}
     :key==="sun"||key==="moon"||key==="solarLight"?()=>true:()=>{}}) as SkyRenderSurface;
-  drawSkyScene(...[textured,report,at,null,null,400,800,"NIGHT",undefined,undefined,.25,null,basis,
-    ...Array(15).fill(undefined),image] as unknown as Parameters<typeof drawSkyScene>);
+  drawSkyScene(textured, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, bodyImages: skySceneTestBodyImages({
+              "PLANET:JUPITER": image
+          })
+      }
+  }));
   assert.deepEqual(submitted,[image],"the published band image reaches only Jupiter's planet draw");
 });
 
@@ -445,8 +539,19 @@ test("Saturn's ring pole orients only its latitude profile while preserving glob
     ?(planet:{body:string},_view:unknown,_tint:unknown,_red:unknown,texture:unknown)=>{
       if(planet.body==="SATURN")submitted.push(texture);return true;}
     :key==="sun"||key==="moon"||key==="solarLight"?()=>true:()=>{}}) as SkyRenderSurface;
-  drawSkyScene(...[surface,report,at,null,null,400,800,"NIGHT",undefined,undefined,.25,null,basis,
-    ...Array(16).fill(undefined),image] as unknown as Parameters<typeof drawSkyScene>);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null, bodyImages: skySceneTestBodyImages({
+              "PLANET:SATURN": image
+          })
+      }
+  }));
   assert.deepEqual(submitted,[image]);
   const noPole=saturn.map(p=>p.body==="SATURN"?{...p,ringPoleEnu:null,ringTiltDeg:null}:p);
   const plain=skyPlanetDiscsAt([{...row,planets:noPole}] as any,at,basis,400,800,.25)!
@@ -468,7 +573,17 @@ test("Saturn ring arcs require a successfully drawn globe and retain scene order
       : key==="segments" ? (_segments:unknown,tint:string)=>{if(tint==="#D8C7A5")events.push("ring");}
       : key==="sun"||key==="moon"||key==="solarLight" ? ()=>true
       : ()=>{}}) as SkyRenderSurface;
-    drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",()=>{},undefined,1.5,null,basis);
+    drawSkyScene(surface, skySceneTestFrame({
+        observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 1.5, manualBasis: basis
+        }, canvas: {
+            width: 400, height: 800
+        }, imagery: {
+            infrared: null
+        }
+    }), { painted: (({}) => {}) });
     return events;
   };
   const painted=run(true);
@@ -490,8 +605,17 @@ test("a tap on the rendered Saturn globe rim or main ring selects Saturn",()=>{
       if(tint==="#D8C7A5")ringSegments.push(...segments);
     }:key==="solarLight"||key==="sun"||key==="moon"?()=>true:()=>{}}) as SkyRenderSurface;
   let snapshot:SkyPickSnapshot|null=null;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",value=>{snapshot=value;},
-    undefined,.25,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .25, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: value}) => {snapshot=value;}) });
   assert.ok(snapshot);
   const pick=(x:number,y:number)=>pickPaintedSkyObjects(snapshot,{
     x,y,frameAt:at,catalogVersion:snapshot!.catalogVersion,catalogHash:snapshot!.catalogHash,
@@ -531,10 +655,20 @@ test("Saturn's painted globe and ring arcs continue across the mathematical hori
     } : key==="solarLight"||key==="sun"||key==="moon"?()=>true:()=>{}}) as SkyRenderSurface;
   const report={hourly:[{...row,planets:saturn}],skyScene:{state:"UNAVAILABLE",frames:[]},
     targetFrames:[]} as unknown as ResolvedSkyReport;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",snapshot=>{
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: horizonBasis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: snapshot}) => {
     pickedSnapshot=snapshot;
     picked=snapshot?.objects.map(object=>object.reference)??[];
-  },undefined,fov,null,horizonBasis);
+  }) });
   assert.equal(globe,1);
   assert.ok(picked.includes("PLANET:SATURN"),"visible rings remain selectable after the centre sets");
   assert.deepEqual(submitted,original,"the scene must submit the actual complete sampled ring shape");
@@ -557,8 +691,21 @@ test("Saturn's painted globe and ring arcs continue across the mathematical hori
   assert.equal(ringOnlyDiscs.length,1,"Saturn's outer ring survives its globe setting");
   assert.ok(ringOnlyDiscs[0]!.altitudeDeg < -ringOnlyDiscs[0]!.angularDiameterDeg/2);
   submitted.length=0;globe=0;
-  drawSkyScene(surface,{...report,hourly:[{...row,planets:ringOnly}]} as unknown as ResolvedSkyReport,
-    at,null,null,400,800,"NIGHT",undefined,undefined,fov,null,horizonBasis);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: {
+              ...report, hourly: [{
+                      ...row, planets: ringOnly
+                  }]
+          } as unknown as ResolvedSkyReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: horizonBasis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }));
   assert.equal(globe,1);
   assert.ok(submitted.length>0,"the ring, not just an empty globe draw, must reach the surface");
   assert.ok(submitted.some(([x0,y0,x1,y1])=>altitude(x0,y0)<0||altitude(x1,y1)<0));
@@ -578,15 +725,37 @@ test("real planetary phase replaces the old Venus target marker, but missing geo
       : ()=>{events.push(String(key));}}) as SkyRenderSurface;
   const report=(hourly:unknown[])=>({hourly,skyScene:{state:"UNAVAILABLE",frames:[]},
     targetFrames:[{at,targets:[{targetId:"target:venus",type:"PLANET",azimuthDeg:0,altitudeDeg:45}]}]}) as unknown as ResolvedSkyReport;
-  drawSkyScene(surface,report([row]),at,null,null,400,800,"NIGHT",snapshot=>{
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report([row]), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: snapshot}) => {
     picked=snapshot?.objects.map(object=>object.reference)??[];
-  },undefined,3,null,basis);
+  }) });
   assert.deepEqual(events.filter(event=>event==="disc"||event.startsWith("planet:")),["planet:0.25"]);
   assert.deepEqual(picked,["PLANET:VENUS"]);
   events.length=0;
-  drawSkyScene(surface,report([{...row,planets:null}]),at,null,null,400,800,"NIGHT",snapshot=>{
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: report([{
+                  ...row, planets: null
+              }]), frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: basis
+      }, canvas: {
+          width: 400, height: 800
+      }, imagery: {
+          infrared: null
+      }
+  }), { painted: (({snapshot: snapshot}) => {
     picked=snapshot?.objects.map(object=>object.reference)??[];
-  },undefined,3,null,basis);
+  }) });
   assert.deepEqual(events.filter(event=>event==="disc"||event.startsWith("planet:")),["disc"]);
   assert.deepEqual(picked,[]);
   for (const [available, fov, expected] of [
@@ -594,13 +763,22 @@ test("real planetary phase replaces the old Venus target marker, but missing geo
   ] as const) {
     shaderAvailable = available;
     let labelReplacements: readonly string[] = [];
-    drawSkyScene(surface,report([row]),at,null,null,400,800,"NIGHT",snapshot=>{
+    drawSkyScene(surface, skySceneTestFrame({
+        observation: {
+            data: report([row]), frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: basis
+        }, canvas: {
+            width: 400, height: 800
+        }, imagery: {
+            infrared: null
+        }
+    }), { painted: (({snapshot: snapshot}) => {
       labelReplacements=resolvedSkyBodyReferences(snapshot);
-    },undefined,fov,null,basis);
+    }) });
     assert.deepEqual(labelReplacements, expected, `actual submissions control DOM labels: ${available}/${fov}`);
   }
 });
-
 
 test("resolved Saturn bands use one continuous surface; unavailable shader retains arcs and picking",()=>{
   const frame=planets.map(p=>({...p,altitudeDeg:p.body==="SATURN"?45:-10,angularDiameterDeg:.02}));
@@ -610,7 +788,17 @@ test("resolved Saturn bands use one continuous surface; unavailable shader retai
     const surface=new Proxy({}, {get:(_target,key)=>key==="saturnRings"?()=>{rings++;return available;}
       :key==="planet"||key==="moon"||key==="sun"||key==="solarLight"?()=>true
       :key==="segments"?(_:unknown,tint:string)=>{if(tint==="#D8C7A5")arcs++;}:()=>{}}) as SkyRenderSurface;
-    drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",snapshot=>{picked=snapshot;},undefined,.05,null,basis);
+    drawSkyScene(surface, skySceneTestFrame({
+        observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .05, manualBasis: basis
+        }, canvas: {
+            width: 400, height: 800
+        }, imagery: {
+            infrared: null
+        }
+    }), { painted: (({snapshot: snapshot}) => {picked=snapshot;}) });
     assert.equal(rings,1,"the native continuous ring surface must actually be consumed");
     assert.equal(arcs>0,!available,"successful filled rings must not be overdrawn by sampled strokes");
     assert.ok((picked as SkyPickSnapshot|null)?.objects.some(p=>p.reference==="PLANET:SATURN"&&p.hitSegments?.length));

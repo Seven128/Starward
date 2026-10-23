@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { skySolarLightAt } from "./sky-solar-light";
@@ -43,15 +44,15 @@ test("scene draws current solar light beneath other content; red and missing dat
     }
     : () => { events.push(String(key)); }}) as SkyRenderSurface;
   const data = report([row(night,270,-24),row(dusk,90,-5)]);
-  drawSkyScene(surface,data,dusk,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: data, frameAt: dusk }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.equal(events[0],"begin");
   assert.equal(events[1],"solar:1");
   assert.ok(events.includes("finish"));
   events.length=0;
-  drawSkyScene(surface,data,dusk,null,null,400,800,"OBSERVATION",undefined,undefined,240,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: data, frameAt: dusk }, view: { heading: null, pose: null, mode: "OBSERVATION", verticalFovDeg: 240, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.ok(!events.some(event=>event.startsWith("solar:")));
   events.length=0;
-  drawSkyScene(surface,report([row(dusk,null,null)]),dusk,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report([row(dusk,null,null)]), frameAt: dusk }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.ok(!events.some(event=>event.startsWith("solar:")));
   assert.deepEqual(pointModes,[false,true,false],"normal point tuning must not enter the deferred observation mode");
 });
@@ -59,8 +60,7 @@ test("scene draws current solar light beneath other content; red and missing dat
 test("optional solar shader failure preserves independent scene completion", () => {
   let failed = 0, completed = 0;
   const surface = new Proxy({}, {get: (_target,key) => key === "solarLight" ? () => false : () => undefined}) as SkyRenderSurface;
-  drawSkyScene(surface,report([row(dusk,90,-5)]),dusk,null,null,400,800,"NIGHT",undefined,
-    () => {completed++;},240,null,basis,undefined,undefined,undefined,undefined,() => {failed++;});
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report([row(dusk,90,-5)]), frameAt: dusk }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { completed: () => {completed++;}, failed: failure => { switch (failure.kind) { case "solar-light": { failed++; break; } } } });
   assert.equal(failed,1);
   assert.equal(completed,1);
 });

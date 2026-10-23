@@ -1,6 +1,7 @@
 import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { SkySceneFrameInput, SkyScenePorts } from "./sky-scene-frame";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
@@ -14,7 +15,7 @@ import {clampSkyFieldOfView,remapSkyFieldOfView,skyDomeFieldOfView,skyDomeProgre
 import {createSkyViewBasis,projectSkyDirection} from "./sky-view-projection.ts";
 import {skyViewportCenter,NO_SKY_INSETS,skyInsetsFromControls} from "./sky-viewport.ts";
 import {selectNotification} from "../../state/notification.ts";
-import {skyPageCanvasTestFrame,skyPageCanvasTestBindings} from "./sky-optical-page-test-support";
+import {skyPageCanvasTestFrame, skyPageEmptyPick,skyPageCanvasTestBindings} from "./sky-optical-page-test-support";
 import {createSkyOrientationController} from "./sky-orientation-controller";
 import type {DeviceMotionEvent} from "./compass-lifecycle";
 import {createSkyObservationTime} from "./sky-observation-time";
@@ -75,7 +76,10 @@ test("actual page paint uses dome basis for drawing and last-painted calibration
     setPresentedCamera(){},resolvedSkyBodyReferences, setPresentedSkyFrame:(change:any)=>change(null),browsingTimerRef:{current:null},
     viewportInsetsRef:{current:NO_SKY_INSETS},skyViewportCenter,
     canvasGenerationRef:{current:1},EMPTY_SKY_IMAGES:new Map(),
-    drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,_w:any,_h:any,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any)=>{actual.push({fov,basis});painted({objects:[]},{sdssOptical:null,deepSkyImage:null});done();}};
+    drawSkyScene:(_surface:unknown,input:SkySceneFrameInput,ports:SkyScenePorts)=>{
+      const {identity}=input,{verticalFovDeg:fov,manualBasis:basis}=identity.view;
+      actual.push({fov,basis});ports.painted?.({identity,snapshot:skyPageEmptyPick(identity),sources:{sdssOptical:null,deepSkyImage:null}});
+      ports.completed?.(identity);}};
   const fn=acceptedPagePaint(sandbox);
   const frame={orientationRevision:0,pose:{basis:raw},verticalFovDeg:fov,sceneReady:true};
   fn({},frame,{width:390,height:844});
@@ -85,7 +89,7 @@ test("actual page paint uses dome basis for drawing and last-painted calibration
   orientation.latestPresentation.current={presentationRevision:1,alignment:{mode:'editing',view:frozen}};
   fn({},frame,{width:390,height:844});
   assert.equal(actual[1]!.fov,45,"queued pre-calibration wide frame cannot undo observing scale");
-  assert.equal(actual[1]!.basis,frozen,"freezes the direction the user actually saw");
+  assert.deepEqual(actual[1]!.basis,frozen,"freezes the direction the user actually saw");
   // Stopping a previously calibrated sensor leaves needs-alignment in its
   // owner; that must not override the user's explicit manual browsing intent.
   orientation.latestPresentation.current={presentationRevision:2,alignment:{mode:'needs-alignment',view:raw}};
@@ -107,13 +111,14 @@ test("actual canvas writer shares a stable full-canvas horizon with labels while
     canvasGenerationRef:{current:1},EMPTY_SKY_IMAGES:new Map(),
     browsingTimerRef:{current:null},setPresentedCamera:(fn:any)=>Object.assign(actualCamera,fn(null)),
     resolvedSkyBodyReferences, setPresentedSkyFrame:(change:any)=>change(null),
-    drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,w:number,h:number,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any,center:any)=>{
-      rendered={w,h,fov,basis,center};painted({objects:[]},{sdssOptical:null,deepSkyImage:null});done();
+    drawSkyScene:(_surface:unknown,input:SkySceneFrameInput,ports:SkyScenePorts)=>{
+      const {identity}=input,{width:w,height:h}=identity.canvas,{verticalFovDeg:fov,manualBasis:basis,center}=identity.view;
+      rendered={w,h,fov,basis,center};ports.painted?.({identity,snapshot:skyPageEmptyPick(identity),sources:{sdssOptical:null,deepSkyImage:null}});ports.completed?.(identity);
     }};
   const fn=acceptedPagePaint(sandbox);
   fn({}, {orientationRevision:0,pose:{basis:raw},verticalFovDeg:45,sceneReady:true},{width,height});
   assert.deepEqual({...rendered.center},{x:width/2,y:height/2},"controls must not push the renderer's center");
-  assert.equal(actualCamera.center,rendered.center,"labels receive the same center as actual painting");
+  assert.deepEqual(actualCamera.center,rendered.center,"labels receive the same center as actual painting");
   for(let az=0;az<360;az++){
     const p=projectSkyDirection(az,0,rendered.basis,width,height,rendered.fov,rendered.center)!;
     assert.ok(p&&p.x>=0&&p.x<=width&&p.y>=0&&p.y<=height);
@@ -271,9 +276,10 @@ async function calibrationEntry(initialFov:number) {
     setOrientationObjectListOpen:(value:any)=>{sandbox.orientationObjectListOpen=typeof value==='function'?value(sandbox.orientationObjectListOpen):value;},
     setDatePickerOpen:(value:boolean)=>{sandbox.datePickerOpen=value;},
     setSkyControlPanel:(value:any)=>{sandbox.skyControlPanel=typeof value==='function'?value(sandbox.skyControlPanelRef.current):value;sandbox.skyControlPanelRef.current=sandbox.skyControlPanel;},
-    drawSkyScene:(_renderer:any,_data:any,_at:any,_heading:any,_pose:any,_w:number,_h:number,_mode:any,
-      painted:any,done:any,fov:number,_image:any,basis:any,center:any)=>{
-        renders.push({fov,basis});painted({objects:[],view:{basis,verticalFovDeg:fov,center}},{sdssOptical:null,deepSkyImage:null});
+    drawSkyScene:(_surface:unknown,input:SkySceneFrameInput,ports:SkyScenePorts)=>{
+        const {identity}=input,{verticalFovDeg:fov,manualBasis:basis,center}=identity.view;
+        const done=()=>ports.completed?.(identity);
+        renders.push({fov,basis});ports.painted?.({identity,snapshot:{...skyPageEmptyPick(identity),view:{basis:basis!,verticalFovDeg:fov,...(center?{center}:{})}},sources:{sdssOptical:null,deepSkyImage:null}});
         if(sandbox.deferPaint)heldDone=done;else done();
       }};
   const scope=vm.createContext(sandbox), declarations:string[]=[];

@@ -1,3 +1,6 @@
+import type { ResolvedSkyReport } from "./sky-stellar-scene";
+import type { SkyStellarSupplementFrame } from "./sky-stellar-supplement-scene";
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
@@ -101,13 +104,13 @@ test("full-sphere browsing draws a below-horizon target only when the actual vie
   const context=new Proxy({}, {get:(_o,key)=>key==="disc" ? (...args:number[])=>marks.push(args) : ()=>undefined});
   const data={skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[{at:committed,
     targets:[{type:"STAR",direction:"0°",azimuthDeg:0,altitudeDeg:-10}]}]};
-  exported.drawSkyScene(context,data,committed,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
+  exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 240, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.equal(marks.length,1);
   assert(Math.hypot(marks[0]![0]! - projected.x, marks[0]![1]! - projected.y) < 1e-9);
   const away = projection.createSkyViewBasis(180,90,0)!;
   assert.equal(projectHorizontalPoint(0,-10,null,null,400,800,45,away),null);
   marks.length=0;
-  exported.drawSkyScene(context,data,committed,null,null,400,800,"NIGHT",undefined,undefined,45,null,away);
+  exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 45, manualBasis: away }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.deepEqual(marks,[],"a valid lower-hemisphere coordinate does not bypass the current viewport");
   assert.equal(projectHorizontalPoint(0,-10,null,null,400,800,240),null,"a missing actual view stays unavailable");
 });
@@ -115,8 +118,7 @@ test("full-sphere browsing draws a below-horizon target only when the actual vie
 test("failed GPU submission cannot publish a picking snapshot or successful completion", () => {
   let published=0,completed=0;
   const context=new Proxy({}, {get:(_o,key)=>key==="finish" ? ()=>{throw new Error("native_GL_failure")} : ()=>undefined});
-  assert.throws(()=>exported.drawSkyScene(context,undefined,committed,null,null,400,800,"NIGHT",
-    ()=>published++,()=>completed++),/native_GL_failure/);
+  assert.throws(()=>exported.drawSkyScene(context, skySceneTestFrame({ observation: { frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT" }, canvas: { width: 400, height: 800 } }), { painted: (({}) => published++), completed: ()=>completed++ }),/native_GL_failure/);
   assert.equal(published,0);assert.equal(completed,0);
 });
 
@@ -151,19 +153,19 @@ test("survey imagery uses a celestial plane beyond the camera hemisphere and sta
     const data={skyScene:{state:"UNAVAILABLE",frames:[],deepSky:{state:"AVAILABLE",
       catalog:{imageRegistration:"ICRS_TAN_NORTH_0_1_V1",entries:[{objectRef:"M:31"}]},
       frames:[{at:committed,state:"AVAILABLE",points:[[0,azimuth,10,azimuth,10.1,(azimuth-.1+360)%360,10]]}]}},targetFrames:[]};
-    const image={reference:"M:31",level:"OVERVIEW",fieldDegrees:4,image:{}};
-    exported.drawSkyScene(context,data,committed,null,null,390,844,"NIGHT",undefined,undefined,fov,image,basis);
+    const image={reference:"M:31",level:"OVERVIEW" as const,fieldDegrees:4,image:{}};
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: basis }, canvas: { width: 390, height: 844 }, imagery: { infrared: image } }));
     assert.equal(draws,1,"visible texture is registered on its celestial plane, including the rear camera hemisphere");
     assert.equal(affine,0,"the displaced screen-affine path must be retired");
-    exported.drawSkyScene(context,data,committed,null,null,390,844,"OBSERVATION",undefined,undefined,fov,image,basis);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "OBSERVATION", verticalFovDeg: fov, manualBasis: basis }, canvas: { width: 390, height: 844 }, imagery: { infrared: image } }));
     assert.equal(draws,1,"red mode suppresses imagery at the renderer boundary too");
     let failures=0;
     data.skyScene.deepSky.frames[0]!.points[0]![4]=10;
-    exported.drawSkyScene(context,data,committed,null,null,390,844,"NIGHT",undefined,undefined,fov,image,basis,undefined,()=>failures++);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: basis }, canvas: { width: 390, height: 844 }, imagery: { infrared: image } }), { failed: (failure:sceneRender.SkySceneFailure) => { switch (failure.kind) { case "infrared": { failures++; break; } } } });
     assert.equal(failures,1,"invalid source registration must be a visible retryable failure, not READY without pixels");
     assert.equal(draws,1);
     delete (data.skyScene.deepSky.catalog as {imageRegistration?:string}).imageRegistration;
-    exported.drawSkyScene(context,data,committed,null,null,390,844,"NIGHT",undefined,undefined,fov,image,basis);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: basis }, canvas: { width: 390, height: 844 }, imagery: { infrared: image } }));
     assert.equal(draws,1,"old quantized offline samples cannot masquerade as current registration");
   }
 });
@@ -306,12 +308,12 @@ test("explicit manual basis draws the same celestial target without fabricating 
   const context = new Proxy({}, { get: (_object, key) => key === "disc"
     ? (...args: number[]) => arcs.push(args) : () => undefined });
   const basis = projection.createSkyViewBasis(0,90,0)!;
-  exported.drawSkyScene(context, report, committed, null, null, 400,800,"NIGHT",undefined,undefined,45,null,basis);
+  exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (report) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 45, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.equal(arcs.length,1);
   const expected = projection.projectSkyDirection(0,10,basis,400,800,45)!;
   assert.ok(Math.abs(arcs[0]![0]!-expected.x)<1e-6 && Math.abs(arcs[0]![1]!-expected.y)<1e-6);
   arcs.length=0;
-  exported.drawSkyScene(context, report, committed, null, null, 400,800,"NIGHT");
+  exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (report) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT" }, canvas: { width: 400, height: 800 } }));
   assert.equal(arcs.length,0,"no explicit manual mode and no pose must still stay unavailable");
 });
 
@@ -319,9 +321,8 @@ function draw(data: unknown, at: string, heading: number | null = 0) {
   const arcs: number[][] = [];
   const context = new Proxy({}, { get: (_object, key) => key === "disc"
     ? (...args: number[]) => arcs.push(args) : () => undefined });
-  exported.drawSkyScene(context, data, at, heading,
-    { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, headingDeg: 0,
-      basis: projection.createSkyViewBasis(0, 90, 0)!, sampledAt: 1 }, 400, 800, "NIGHT");
+  exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: at }, view: { heading: heading, pose: { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, headingDeg: 0,
+      basis: projection.createSkyViewBasis(0, 90, 0)!, sampledAt: 1 }, mode: "NIGHT" }, canvas: { width: 400, height: 800 } }));
   return arcs;
 }
 
@@ -341,7 +342,7 @@ test("production sky canvas never borrows top-level targets for missing or dupli
   const arcs: number[][] = [];
   const context = new Proxy({}, { get: (_object, key) => key === "disc"
     ? (...args: number[]) => arcs.push(args) : () => undefined });
-  exported.drawSkyScene(context, report, committed, null, null, 400, 800, "NIGHT");
+  exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (report) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT" }, canvas: { width: 400, height: 800 } }));
   assert.deepEqual(arcs, []);
 });
 
@@ -363,8 +364,7 @@ test("published B-V gives a continuous star tint while missing photometry stays 
     const colors: string[] = [];
     const context = new Proxy({}, {get: (_object, key) => key === "disc"
       ? (_x: number, _y: number, _radius: number, color: string) => colors.push(color) : () => undefined});
-    exported.drawSkyScene(context, data, committed, null, null, 400, 800, mode,
-      undefined, undefined, 45, null, projection.createSkyViewBasis(0, 90, 0)!);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: mode, verticalFovDeg: 45, manualBasis: projection.createSkyViewBasis(0, 90, 0)! }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
     assert.equal(colors.length, 1);
     return colors[0]!;
   };
@@ -402,8 +402,7 @@ test("expanding catalog depth cannot resize or brighten an unchanged star", () =
         ? (_x: number, _y: number, radius: number, _color: string, alpha: number) => arcs.push({ radius, alpha })
         : typeof key === "string" && key in object ? object[key] : () => undefined,
     });
-    exported.drawSkyScene(context, data, committed, null, null, 400, 800, "NIGHT",
-      undefined, undefined, 45, null, projection.createSkyViewBasis(0, 90, 0)!);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 45, manualBasis: projection.createSkyViewBasis(0, 90, 0)! }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
     assert.equal(arcs.length, 1, "a visible star must actually reach the canvas");
     return arcs[0]!;
   };
@@ -424,12 +423,10 @@ test("the exact Sun frame fades catalog stars and their touch targets through tw
       hourly: [{ at: committed, sunAzimuthDeg: 90, sunAltitudeDeg }],
     };
     const stars: number[][] = [];
-    let picked: { objects: Array<{ reference: string }> } | undefined;
+    let picked: import("./sky-object-picking").SkyPickSnapshot | null | undefined;
     const context = new Proxy({}, { get: (_object, key) => key === "disc"
       ? (...args: number[]) => stars.push(args) : () => undefined });
-    exported.drawSkyScene(context, data, committed, null, null, 400, 800, mode,
-      (snapshot: typeof picked) => { picked = snapshot; }, undefined, 45, null,
-      projection.createSkyViewBasis(0, 90, 0)!);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: mode, verticalFovDeg: 45, manualBasis: projection.createSkyViewBasis(0, 90, 0)! }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { painted: (({snapshot: snapshot}:sceneRender.SkyScenePaintResult) => { picked = snapshot; }) });
     return { stars, picked };
   };
   assert.equal(paint(0, "NIGHT").stars.length, 0);
@@ -452,12 +449,10 @@ test("BSC and SAO use the same reference low-altitude attenuation for painting a
       geometry: scene.frames[0]!.geometry,
       points: [["SAO:1", 1, 0, altitudeDeg]] };
     const stars: number[][] = [];
-    let picked: { objects: Array<{ reference: string }> } | undefined;
+    let picked: import("./sky-object-picking").SkyPickSnapshot | null | undefined;
     const context = new Proxy({}, { get: (_object, key) => key === "disc"
       ? (...args: number[]) => stars.push(args) : () => undefined });
-    exported.drawSkyScene(context, data, committed, null, null, 400, 800, mode,
-      (snapshot: typeof picked) => { picked = snapshot; }, undefined, 180, null,
-      projection.createSkyViewBasis(0, 135, 0)!, undefined, undefined, undefined, supplement);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed, stellarSupplement: (supplement) as unknown as SkyStellarSupplementFrame }, view: { heading: null, pose: null, mode: mode, verticalFovDeg: 180, manualBasis: projection.createSkyViewBasis(0, 135, 0)! }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { painted: (({snapshot: snapshot}:sceneRender.SkyScenePaintResult) => { picked = snapshot; }) });
     return { stars, references: picked?.objects.map((entry) => entry.reference) };
   };
   const high = paint(80, "NIGHT"), low = paint(0.1, "NIGHT"), red = paint(0.1, "OBSERVATION");
@@ -478,8 +473,7 @@ test("the real renderer reveals and fades a star with zoom and cannot pick the h
     let picked: any;
     const context = new Proxy({}, { get: (_o, key) => key === "disc"
       ? (...args: number[]) => arcs.push(args) : () => undefined });
-    exported.drawSkyScene(context, data, committed, null, null, 400, 800, "NIGHT",
-      (snapshot: unknown) => { picked = snapshot; }, undefined, fov, null, projection.createSkyViewBasis(0, 100, 0)!);
+    exported.drawSkyScene(context, skySceneTestFrame({ observation: { data: (data) as unknown as ResolvedSkyReport, frameAt: committed }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: fov, manualBasis: projection.createSkyViewBasis(0, 100, 0)! }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { painted: (({snapshot: snapshot}:sceneRender.SkyScenePaintResult) => { picked = snapshot; }) });
     return { arcs, picked };
   };
   const overview = paint(200), partial = paint(63), observing = paint(45), enlarged = paint(15), returned = paint(200);

@@ -1,4 +1,17 @@
-import type {BodyImageKind} from "@starward/miniapp-contracts";
+import type {BodyImageKind,MoonCoverageManifestData,MarsTextureManifestData,MercuryTextureManifestData,
+  JupiterBandsManifestData,SaturnBandsManifestData,UranusBandsManifestData,NeptuneBandsManifestData} from "@starward/miniapp-contracts";
+
+/** Pure publication types share the resource references without importing the
+ * platform transport. Scene and server-side science consumers use this owner. */
+export interface SkyBodyImagePublications {
+  "SOLAR:MOON":MoonCoverageManifestData;
+  "PLANET:MARS":MarsTextureManifestData;
+  "PLANET:MERCURY":MercuryTextureManifestData;
+  "PLANET:JUPITER":JupiterBandsManifestData;
+  "PLANET:SATURN":SaturnBandsManifestData;
+  "PLANET:URANUS":UranusBandsManifestData;
+  "PLANET:NEPTUNE":NeptuneBandsManifestData;
+}
 
 /** Instance identity/content only. Resource state and interactions live in shared consumers. */
 export const SKY_BODY_IMAGE_PROFILES={

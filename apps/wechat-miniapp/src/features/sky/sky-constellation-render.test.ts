@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -31,8 +32,8 @@ test("portrait identification field renders the figure and real lines rather tha
   const layer={frame:{at:'instant',images:[{source:{id:'figure'} as ConstellationArtwork,registration}],
     lines:[[ray(-15,55),ray(15,55)] as const],labels:[]},images:new Map([['figure',image],['orphan',orphan]]),enabled:true,failed(){assert.fail('valid image rejected');}};
   const report={skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[],hourly:[]} as unknown as ResolvedSkyReport;
-  drawSkyScene(surface,report,'instant',null,null,390.4,844,'NIGHT',undefined,undefined,
-    84.63316191100171,null,createSkyViewBasis(0,145,0)!,undefined,undefined,layer);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: 'instant', constellations:layer.frame }, view: { heading: null, pose: null, mode: 'NIGHT', verticalFovDeg: 84.63316191100171, manualBasis: createSkyViewBasis(0,145,0)! }, canvas: { width: 390.4, height: 844 }, layers: { constellations: {images:layer.images,enabled:layer.enabled} }, imagery: { infrared: null } }),
+    {failed:failure=>{if(failure.kind==='constellation')layer.failed();}});
   assert.deepEqual(declared,[image],"only this frame's selected ready figure is declared, not the whole loader map");
   assert.equal(images,1,'enabled illustration must reach the production drawing owner');
   assert.ok(lines>0,'the same valid field must contain actual constellation geometry');

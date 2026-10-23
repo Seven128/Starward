@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { skyMoonDiscAt } from "./sky-moon-disc";
@@ -82,7 +83,7 @@ test("a lunar disc crossing the mathematical horizon retains its whole painted s
   const report={hourly:[{...row(0),moonAltitudeDeg:-.1}],
     skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[]} as unknown as ResolvedSkyReport;
   let snapshot:SkyPickSnapshot|null=null;
-  drawSkyScene(surface,report,at,null,null,400,800,"NIGHT",value=>{snapshot=value;},undefined,3,null,horizonBasis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report, frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: horizonBasis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }), { painted: (({snapshot: value}) => {snapshot=value;}) });
   assert.deepEqual(views,[{basis:horizonBasis,verticalFovDeg:3}]);
   const painted=snapshot as SkyPickSnapshot|null;
   assert.ok(painted);
@@ -102,13 +103,13 @@ test("scene submits one lunar phase after stars, keeps red mode and does not inv
     ? (disc:{illuminatedFraction:number}, _view:unknown, red:boolean)=>{events.push(`moon:${disc.illuminatedFraction}:${red}`);return true;}
     : key==="solarLight" ? ()=>true : ()=>{events.push(String(key));}}) as SkyRenderSurface;
   const report = (hourly:unknown[]) => ({hourly,skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[]} as unknown as ResolvedSkyReport);
-  drawSkyScene(surface,report([row(0)]),at,null,null,400,800,"NIGHT",undefined,undefined,3,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report([row(0)]), frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.ok(events.includes("moon:0.5:false"));
   assert.ok(events.indexOf("moon:0.5:false") < events.lastIndexOf("finish"));
   events.length=0;
-  drawSkyScene(surface,report([row(0)]),at,null,null,400,800,"OBSERVATION",undefined,undefined,3,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report([row(0)]), frameAt: at }, view: { heading: null, pose: null, mode: "OBSERVATION", verticalFovDeg: 3, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.ok(events.includes("moon:0.5:true"));
   events.length=0;
-  drawSkyScene(surface,report([row(null)]),at,null,null,400,800,"NIGHT",undefined,undefined,3,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: report([row(null)]), frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: basis }, canvas: { width: 400, height: 800 }, imagery: { infrared: null } }));
   assert.ok(!events.some(event=>event.startsWith("moon:")));
 });

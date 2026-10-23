@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
@@ -106,11 +107,24 @@ test("real Scene needs calibrated intent, keeps joint alpha and admits only actu
   const intent = { surface, reference: publication.objectRef, publicationHash: publication.publicationHash };
   function paint(calibrated: boolean, scienceOnly = false) {
     let sources: SkyScenePaintedSources | null = null;
-    const args: Parameters<typeof drawSkyScene> = [surface,report,at,null,null,390,844,"NIGHT"];
-    args[8] = (_snapshot, value) => { assert(finished);sources = value; };args[10] = .05;
-    args[12] = createSkyViewBasis(az, 90 + alt, 0);args[30] = w.frame;
-    if (scienceOnly) args[36] = intent;if (calibrated) args[38] = intent;
-    drawSkyScene(...args);return sources as SkyScenePaintedSources | null;
+    const sceneCase = skySceneTestCase({
+        surface: surface, observation: {
+            data: report, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: .05, manualBasis: createSkyViewBasis(az, 90 + alt, 0)
+        }, canvas: {
+            width: 390, height: 844
+        }, ports: {
+            painted: (({ snapshot: _snapshot, sources: value }) => { assert(finished); sources = value; })
+        }, imagery: {
+            targetOptical: {
+                image: w.frame
+            }
+        }
+    });
+
+    if (scienceOnly) sceneCase.imagery.targetOptical.science = intent;if (calibrated) sceneCase.imagery.targetOptical.calibrated = intent;
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));return sources as SkyScenePaintedSources | null;
   }
   try {
     assert.equal(paint(false)?.sdssOptical, null);assert.equal(groups, 0);

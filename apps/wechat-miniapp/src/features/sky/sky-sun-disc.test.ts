@@ -1,3 +1,4 @@
+import { skySceneTestFrame } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {skySunDiscAt} from "./sky-sun-disc";
@@ -54,7 +55,7 @@ test("a solar disc crossing the mathematical horizon remains selectable without 
   const disc=skySunDiscAt(data.hourly,at,basis,390,844,3)!;
   let snapshot:SkyPickSnapshot|null=null,submitted=0;
   const surface=new Proxy({}, {get:(_target,key)=>key==="sun"?()=>{submitted++;return true;}:()=>undefined}) as SkyRenderSurface;
-  drawSkyScene(surface,data,at,null,null,390,844,"NIGHT",value=>{snapshot=value;},undefined,3,null,basis);
+  drawSkyScene(surface, skySceneTestFrame({ observation: { data: data, frameAt: at }, view: { heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 3, manualBasis: basis }, canvas: { width: 390, height: 844 }, imagery: { infrared: null } }), { painted: (({snapshot: value}) => {snapshot=value;}) });
   assert.equal(submitted,1);
   const painted=snapshot as SkyPickSnapshot|null;
   assert.ok(painted);
@@ -75,16 +76,18 @@ test("the scene submits the real solar disc before Moon, in both palettes; failu
   }:key==="moon"?()=>{events.push("moon");return true;}
     :key==="solarLight"?()=>true:()=>{events.push(String(key));return undefined;}}) as SkyRenderSurface;
   let failed=0,completed=0;
-  const args=[undefined,()=>{completed++;},45,null,centeredBasis,undefined,undefined,undefined,undefined,undefined,undefined,undefined,()=>{failed++;}] as const;
-  drawSkyScene(surface,report([{...row(.53),moonAzimuthDeg:90,moonAltitudeDeg:45,
-    moonAngularDiameterDeg:.5,moonIllumination:.5}]),at,null,null,390,844,"NIGHT",...args);
+  const paint=(data:ReturnType<typeof report>,mode:"NIGHT"|"OBSERVATION")=>drawSkyScene(surface,
+    skySceneTestFrame({observation:{data,frameAt:at},view:{mode,verticalFovDeg:45,manualBasis:centeredBasis},canvas:{width:390,height:844}}),
+    {completed:()=>{completed++;},failed:failure=>{if(failure.kind==='sun-disc')failed++;}});
+  paint(report([{...row(.53),moonAzimuthDeg:90,moonAltitudeDeg:45,
+    moonAngularDiameterDeg:.5,moonIllumination:.5}]),"NIGHT");
   assert.equal(failed,1);assert.equal(completed,1);
   assert.ok(events.indexOf("sun:false")>=0&&events.indexOf("sun:false")<events.indexOf("moon"));
   assert.ok(events.indexOf("moon")<events.indexOf("finish"));
   events.length=0;
-  drawSkyScene(surface,report([row(.53)]),at,null,null,390,844,"OBSERVATION",...args);
+  paint(report([row(.53)]),"OBSERVATION");
   assert.ok(events.includes("sun:true"));
   events.length=0;
-  drawSkyScene(surface,report([row(null)]),at,null,null,390,844,"NIGHT",...args);
+  paint(report([row(null)]),"NIGHT");
   assert.ok(!events.some(event=>event.startsWith("sun:")));
 });

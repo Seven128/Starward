@@ -1,3 +1,4 @@
+import { skySceneTestFrame, skySceneTestCase, skySceneTestPorts } from "./sky-scene-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
@@ -21,10 +22,18 @@ const tile:SkyHipsCanvasTile={layer:"OPTICAL",order:8,pixel:43345,image};
 
 function readyScene(surface:SkyRenderSurface, tiles:readonly SkyHipsCanvasTile[],
   clock:ReturnType<typeof createSkyReadyImages>,now:number,commit=true) {
-  const ready=clock.prepare(now),args:Parameters<typeof drawSkyScene>=[surface,darkReport,at,null,null,390,844,"NIGHT"];
+  const ready=clock.prepare(now),sceneCase = skySceneTestCase({
+      surface: surface, observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT"
+      }, canvas: {
+          width: 390, height: 844
+      }, ports: {}
+  });
   let sources:readonly SkyHipsCanvasTile[]=[];
-  args[8]=(_s,value)=>{sources=value.opticalHips??[];};args[10]=267.8;args[12]=basis;args[21]=tiles;args[42]=ready;
-  drawSkyScene(...args);if(commit)ready.commit(now);
+  sceneCase.ports.painted = (({snapshot: _s, sources: value}) => {sources=value.opticalHips??[];});sceneCase.view.verticalFovDeg = 267.8;sceneCase.view.manualBasis = basis;sceneCase.imagery.hipsTiles = tiles;sceneCase.work.readyImages = ready;
+  drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));if(commit)ready.commit(now);
   return {sources,animating:ready.animating};
 }
 
@@ -85,8 +94,17 @@ test("one immutable PNG hierarchy uses the grouped surface, reports partial fail
   }:key==="skyImageMesh"?(image:object)=>{sequence.push(image===other.image?"other":image===parent.image?"parent":"fine");return true;}:
     key==="skyImageMeshContribution"?()=>"positive":()=>true}) as SkyRenderSurface;
   const draw=(tiles:readonly SkyHipsCanvasTile[])=>{sequence.length=failures.length=0;
-    drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",(_s,c)=>{completed=c.opticalHips??[];},undefined,267.8,null,basis,
-      undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,tiles,tile=>failures.push(tile));};
+    drawSkyScene(surface, skySceneTestFrame({
+        observation: {
+            data: darkReport, frameAt: at
+        }, view: {
+            heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+        }, canvas: {
+            width: 390, height: 844
+        }, imagery: {
+            infrared: null, hipsTiles: tiles
+        }
+    }), { painted: (({snapshot: _s, sources: c}) => {completed=c.opticalHips??[];}), failed: failure => { switch (failure.kind) { case "hips": { const tile = failure.tile; failures.push(tile); break; } } } });};
   draw([parent,fine,other]);assert.deepEqual(sequence,["group","other"]);assert.deepEqual(failures,[fine]);assert.deepEqual(completed,[parent,other]);
   available=false;draw([parent,fine,other]);assert.deepEqual(sequence,["group","parent","fine","other"]);
   assert.deepEqual(failures,[],"group policy refusal is not a failed image");assert.deepEqual(completed,[parent,fine,other]);
@@ -100,8 +118,17 @@ test("a refused PNG source group is attempted once while all independent tiles r
   let attempts=0;const images:object[]=[],failures:SkyHipsCanvasTile[]=[];
   const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMeshLevels"?()=>{attempts++;return null;}:
     key==="skyImageMesh"?(image:object)=>{images.push(image);return true;}:()=>true}) as SkyRenderSurface;
-  drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,tiles,tile=>failures.push(tile));
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: tiles
+      }
+  }), { failed: failure => { switch (failure.kind) { case "hips": { const tile = failure.tile; failures.push(tile); break; } } } });
   assert.equal(attempts,1);assert.deepEqual(images,tiles.map(tile=>tile.image));assert.deepEqual(failures,[]);
 });
 
@@ -113,9 +140,17 @@ test("widening fallback yields only to a successfully drawn opaque same-version 
   const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMesh"?(image:object)=>{
     calls.push(image);return !(parentFailed&&image===parent.image);
   }:key==="skyImageMeshContribution"?()=>"positive":()=>true}) as SkyRenderSurface;
-  const draw=(tiles:readonly SkyHipsCanvasTile[])=>{calls.length=0;drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",
-    (_s,c)=>{completed=c.opticalHips??[];},undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,tiles);};
+  const draw=(tiles:readonly SkyHipsCanvasTile[])=>{calls.length=0;drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: tiles
+      }
+  }), { painted: (({snapshot: _s, sources: c}) => {completed=c.opticalHips??[];}) });};
   draw([parent,fine]);assert.deepEqual(calls,[parent.image]);assert.deepEqual(completed,[parent]);
   parentFailed=true;draw([parent,fine]);assert.deepEqual(calls,[parent.image,fine.image]);assert.deepEqual(completed,[fine],
     "decoded parent with a failed GPU submission cannot withdraw ready detail");
@@ -132,9 +167,17 @@ test("completed HiPS credit contains successful current submissions, never reque
   let sources:readonly SkyHipsCanvasTile[]=[];
   const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMesh"?(image:object)=>image!==bad.image:
     key==="skyImageMeshContribution"?()=>"positive":()=>true}) as SkyRenderSurface;
-  const draw=(mode:"NIGHT"|"OBSERVATION",when=at)=>drawSkyScene(surface,darkReport,when,null,null,390,844,mode,
-    (_snapshot,completed)=>{sources=completed.opticalHips??[];},undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[good,bad]);
+  const draw=(mode:"NIGHT"|"OBSERVATION",when=at)=>drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: when
+      }, view: {
+          heading: null, pose: null, mode: mode, verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [good, bad]
+      }
+  }), { painted: (({snapshot: _snapshot, sources: completed}) => {sources=completed.opticalHips??[];}) });
   draw("NIGHT");assert.deepEqual(sources,[good]);
   draw("OBSERVATION");assert.equal(sources.length,0);
   draw("NIGHT","2026-09-23T01:00:00.000Z");assert.equal(sources.length,0);
@@ -147,13 +190,31 @@ test("Scene publishes only completed source-group alpha qualification, with one 
   const groups:unknown[]=[];let finished=false,sources:readonly SkyHipsCanvasTile[]=[];
   const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMesh"?(_i:object,_t:unknown,_v:unknown,_o:unknown,g:unknown)=>(groups.push(g),true):
     key==="finish"?()=>{finished=true;}:key==="skyImageMeshContribution"?(g:unknown)=>{assert(finished);return g===groups[0]?"positive":"unknown";}:()=>true}) as SkyRenderSurface;
-  drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",(_s,c)=>{sources=c.opticalHips??[];},undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[a,b,other]);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [a, b, other]
+      }
+  }), { painted: (({snapshot: _s, sources: c}) => {sources=c.opticalHips??[];}) });
   assert.equal(groups.length,3);assert.strictEqual(groups[0],groups[1]);assert.notStrictEqual(groups[0],groups[2]);
   assert.deepEqual(sources,[a,b]);
   const noProbe=new Proxy({}, {get:(_target,key)=>key==="skyImageMeshContribution"?undefined:()=>true}) as SkyRenderSurface;
-  drawSkyScene(noProbe,darkReport,at,null,null,390,844,"NIGHT",(_s,c)=>{sources=c.opticalHips??[];},undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[a]);
+  drawSkyScene(noProbe, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [a]
+      }
+  }), { painted: (({snapshot: _s, sources: c}) => {sources=c.opticalHips??[];}) });
   assert.equal(sources.length,0,"a successful unmeasured submission cannot become visible provenance");
 });
 
@@ -164,14 +225,32 @@ test("original optical alpha replaces parents through the actual fine mesh witho
   const calls:Array<{image:object;opacity:number;extra:readonly unknown[]}>=[];
   const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMesh"
     ? (image:object,_triangles:unknown,_view:unknown,opacity:number,...extra:unknown[])=>(calls.push({image,opacity,extra}),true):()=>true}) as SkyRenderSurface;
-  drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[parent,fine,foreign]);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [parent, fine, foreign]
+      }
+  }));
   const result=calls.find(r=>r.image===parent.image)!;assert(result);
   assert(calls.every(r=>r.opacity===1&&r.extra[0]===undefined),"ungrouped consumers carry no invented source group");
   assert(calls.findIndex(r=>r.image===fine.image)>calls.findIndex(r=>r.image===parent.image));
   calls.length=0;
-  drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[parent,foreign]);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [parent, foreign]
+      }
+  }));
   assert.equal(calls.find(r=>r.image===parent.image)!.opacity,1,"a failed/absent fine region preserves its original parent");
 });
 
@@ -181,11 +260,21 @@ test("HiPS draw failures return to the owning layer even when optical uses order
   const wideFieldFailed=(image:object)=>failed.push({layer:"WIDE_FIELD_W3",image});
   const opticalFailed=(image:object)=>failed.push({layer:"OPTICAL",image});
   const surface=new Proxy({}, {get:(_target,key)=>key==="skyImageMesh"?()=>false:()=>true}) as SkyRenderSurface;
-  drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
-    [{layer:"OPTICAL",order:0,pixel:4,image:optical},
-      {layer:"WIDE_FIELD_W3",order:0,pixel:4,image:infrared}],
-    tile=>dispatchSkyHipsImageFailure(tile,wideFieldFailed,opticalFailed));
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [{
+                  layer: "OPTICAL", order: 0, pixel: 4, image: optical
+              }, {
+                  layer: "WIDE_FIELD_W3", order: 0, pixel: 4, image: infrared
+              }]
+      }
+  }), { failed: failure => { switch (failure.kind) { case "hips": { const tile = failure.tile; dispatchSkyHipsImageFailure(tile,wideFieldFailed,opticalFailed); break; } } } });
   assert.deepEqual(failed,[{layer:"WIDE_FIELD_W3",image:infrared},{layer:"OPTICAL",image:optical}]);
 });
 
@@ -199,9 +288,17 @@ test("HiPS sample uses exact catalog-independent observation frame and survives 
       return false;
     } : ()=>undefined}) as SkyRenderSurface;
   const draw=(data:ResolvedSkyReport,frameAt:string,mode:"NIGHT"|"OBSERVATION")=>
-    drawSkyScene(surface,data,frameAt,null,null,390,844,mode,undefined,()=>completions++,240,null,basis,
-      undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
-      [tile],(failed:SkyHipsCanvasTile)=>{assert.equal(failed,tile);failures++;});
+    drawSkyScene(surface, skySceneTestFrame({
+        observation: {
+            data: data, frameAt: frameAt
+        }, view: {
+            heading: null, pose: null, mode: mode, verticalFovDeg: 240, manualBasis: basis
+        }, canvas: {
+            width: 390, height: 844
+        }, imagery: {
+            infrared: null, hipsTiles: [tile]
+        }
+    }), { completed: ()=>completions++, failed: failure => { switch (failure.kind) { case "hips": { const failed = failure.tile; assert.equal(failed,tile); failures++; break; } } } });
   draw(report,at,"NIGHT");
   assert.equal(submissions.length,1,"a real spherical tile must reach the native mesh boundary without a bright-star frame");
   assert.ok(submissions[0]!.length>0 && submissions[0]!.length%12===0);
@@ -222,11 +319,23 @@ test("order-0 infrared background uses exact frame, precedes grid and disappears
     } : key==="segments"?()=>{sequence.push("grid");} : ()=>true}) as SkyRenderSurface;
   const tiles=Array.from({length:12},(_,pixel)=>({layer:"WIDE_FIELD_W3" as const,order:0,pixel,image:{pixel}}));
   const draw=(data:ResolvedSkyReport,when:string,mode:"NIGHT"|"OBSERVATION")=>{
-    const args:Parameters<typeof drawSkyScene>=[surface,data,when,null,null,390,844,mode,undefined,undefined,267.8,null,basis,
-      undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
-      tiles,undefined,undefined];
-    args[35]={horizontal:true,equatorial:false};
-    drawSkyScene(...args);
+    const sceneCase = skySceneTestCase({
+        surface: surface, observation: {
+            data: data, frameAt: when
+        }, view: {
+            heading: null, pose: null, mode: mode, verticalFovDeg: 267.8, manualBasis: basis
+        }, canvas: {
+            width: 390, height: 844
+        }, imagery: {
+            infrared: null, hipsTiles: tiles
+        }, ports: {}, layers: {
+            coordinateGrids: {
+                horizontal: true, equatorial: false
+            }
+        }
+    });
+
+    drawSkyScene(sceneCase.surface, skySceneTestFrame(sceneCase), skySceneTestPorts(sceneCase));
   };
   draw(darkReport,at,"NIGHT");
   assert.ok(sequence.includes("infrared"));
@@ -245,9 +354,20 @@ test("an order-zero optical image retains optical opacity above the historical i
     ? (image:object,_triangles:readonly number[],_view:unknown,opacity:number)=>{
       sequence.push({image,opacity});return true;
     } : ()=>true}) as SkyRenderSurface;
-  drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,
-    undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
-    [{layer:"WIDE_FIELD_W3",order:0,pixel:4,image:infrared},
-      {layer:"OPTICAL",order:0,pixel:4,image:optical}],undefined,undefined);
+  drawSkyScene(surface, skySceneTestFrame({
+      observation: {
+          data: darkReport, frameAt: at
+      }, view: {
+          heading: null, pose: null, mode: "NIGHT", verticalFovDeg: 267.8, manualBasis: basis
+      }, canvas: {
+          width: 390, height: 844
+      }, imagery: {
+          infrared: null, hipsTiles: [{
+                  layer: "WIDE_FIELD_W3", order: 0, pixel: 4, image: infrared
+              }, {
+                  layer: "OPTICAL", order: 0, pixel: 4, image: optical
+              }]
+      }
+  }));
   assert.deepEqual(sequence,[{image:infrared,opacity:.48},{image:optical,opacity:1}]);
 });
