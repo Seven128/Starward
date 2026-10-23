@@ -90,6 +90,18 @@ test("a local private AppID mismatch fails before migration", async (t) => {
   );
 });
 
+test("private settings without an AppID inherit the tracked identity without rewriting either config", async (t) => {
+  const selected = await fixture(t);
+  await writeFile(selected.privatePath, JSON.stringify({ projectname: "local", setting: { urlCheck: false } }));
+  const beforePublic = await readFile(selected.publicPath);
+  const beforePrivate = await readFile(selected.privatePath);
+  const identity = await inspectWechatAppId(selected);
+  assert.equal(identity.appId, oldAppId);
+  assert.deepEqual(identity.privateConfig, { projectname: "local", setting: { urlCheck: false } });
+  assert((await readFile(selected.publicPath)).equals(beforePublic));
+  assert((await readFile(selected.privatePath)).equals(beforePrivate));
+});
+
 test("migration defaults to a redacted plan and apply changes both owned configs", async (t) => {
   const selected = await fixture(t);
   const beforePublic = await readFile(selected.publicPath);

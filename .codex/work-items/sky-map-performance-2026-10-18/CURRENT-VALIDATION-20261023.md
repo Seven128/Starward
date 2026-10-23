@@ -6,11 +6,15 @@
 
 **2026-10-24实际远端CI：** 含CI夹具与Sky具名帧的检查点 **8fdf9b6b8efe93a98ab2c798446ea057958e2310** 已推送并精确远端读回。[Context39993227368](https://github.com/Seven128/Starward/actions/runs/39993227368)与[Product39993219808](https://github.com/Seven128/Starward/actions/runs/39993219808)均 **success**；Product实际包含release-code、native App/API/admin消费者、后端及WEAPP构建/inspection、隔离基础设施和OCI构建。旧2c的[Product39985637469](https://github.com/Seven128/Starward/actions/runs/39985637469)仍为历史failure、当时OCI skipped；两个媒体夹具失败及真实隔离修复/独审见[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)。后续资源家族和规则配置不在8f CI范围内；未执行扩展fast组合或设备验收不因CI通过消失。
 
-**Sky资源家族本批：** [共享owner及真实消费者](R20-SKY-SCENE-RESOURCES-20261024.md)已完成generation/IR scope/HiPS late-read准入、Scene ports、actual completion精确join、queued/accepted比较和所有受影响credit/Sources读取。实施者两批65/65及66/66、完整miniapp TS5.9通过；新只读独审4文件47/47、无范围内P1/P2。root显式绑定既有science publication后，整个Sky模块 **1123/1123、0失败/cancel/skip、exit0，91,186.527ms**；日志与hash归该证据。初次类型/VM fixture失败保留。没有改renderer科学算法、hooks/cache/恢复/退休或唯一successful-copy writer；目标像素、物理资源释放、六字段/Play性能与OOM仍未验。
+**Sky资源与后续CI修复：** [资源全消费者](R20-SKY-SCENE-RESOURCES-20261024.md)已推送71703c95；其[Context39995771042](https://github.com/Seven128/Starward/actions/runs/39995771042)success，但[Product39995764825](https://github.com/Seven128/Starward/actions/runs/39995764825)实际failure（Miniapp2812通过/1失败/1skip），后续步骤skipped。原features/Sky1123/1123与资源独审47项只证明该模块。services来源fixture先复现再接真实共享liveness，5/5及新独审5/5；AppID缺省误判guard修前失败/修后7/7；真实science测试又发现误用历史源码保全，显式保全修复后当前数据9/9、旧清单严格拒绝，新独审无范围内P1/P2。全部原失败/skip与输入原件保留，未改production算法或数据pin。
+
+**最终本机fast组合：** root完整`npm run check:miniapp:fast` **exit0**，AppID/SDK/三types、contracts88/88、MiniAPI1061项（993通过/0失败/**68条件跳过**）、完整Miniapp2814/2814（无skip）、design结构、workflow177/177、icons/semantic-assets与4项UI source-pattern通过。前两次组合失败未覆盖；完整日志/hash及各修复归[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)。绑定既有science输入，独占子进程清空数据库/Redis连接；未连接共享服务。4项source-pattern不是采用稿、运行时或业务验收，68skip不算已验。新提交远端CI待实际运行，field新模块不在本批组合范围；目标像素、物理资源、六字段/Play性能与OOM未验。
+
+**F14通知配置本批：** [真实规则定义/API/App消费者](R20-NOTIFICATION-RULE-CONFIGURATION-20261024.md)已完成创建/修改/定义启停、current/history/restart/replay及原itinerary共享事务/完整pending生命周期；Node/domain独审及旧模块真实落库兼容probe通过。native独审复现两client在未知重试遇输入parser拒绝时清pending的P2；root两条修前回归均失败，修后5文件24项通过，新独审原反例2/2与24项通过，无该修复未关闭P1/P2。root规则批API workspace **29文件125/125**，最终mobile fast **typecheck+34文件128/128**，各无失败；初始mobile126通过不冒已覆盖P2。最初缺规则404、Feb30滚日期及parser-retry失败保留。配置保存不代表评估/权限/排程/投递，整family仍passes:false；后续私人现场草稿已进入独立owner，尚未整合，不在这批检查范围。
 
 **前批具名帧与数据：** [具名帧](R20-SKY-FRAME-INPUTS-20261024.md)最终纯星座输入调整后与2c对照440帧、BSC8404/实际loadedSAO最高8565、数值0差；首轮1119项中64个旧fixture失败修后，该检查点整个Sky1121/1121、无失败/skip。两批新独审、完整Miniapp锁定TS5.9及Mini API workspace noEmit通过；Scene→body type误引Taro globals的修前失败保留，现pure profile修复。两TIFF/压缩传输当前本机hash与9项Drive私有metadata已核，旧远端完整读回复用，见[依赖记录](NEW-COMPUTER-DEPENDENCIES-20261023.md)；其余私有恢复不据此关闭。
 
-**当前workspace整合检查：** root使用工作区入口运行`npm run test:mobile:fast`，mobile typecheck与32文件112项通过；独立API workspace typecheck及28文件116项通过。App首次整合因新增ItineraryScreen测试的createElement类型推断失败，改为显式JSX后整个mobile入口复验通过。API运行前后源码hash核对没有API变化；随后validator取消无依据字段上限的定向复验归行程证据。上述当前结果替代根目录可能混入历史tmp的汇总统计；不包括正在实施的小程序F09/F10终态、目标运行时或远端CI。
+**当时workspace整合检查（后续终态见上）：** root使用工作区入口运行`npm run test:mobile:fast`，mobile typecheck与32文件112项通过；独立API workspace typecheck及28文件116项通过。App首次整合因新增ItineraryScreen测试的createElement类型推断失败，改为显式JSX后整个mobile入口复验通过。API运行前后源码hash核对没有API变化；随后validator取消无依据字段上限的定向复验归行程证据。这是当时整合批次，替代根目录可能混入历史tmp的汇总统计；F09/F10和后续通知终态见上，不将不同批次相加，目标运行时不据此通过。
 
 **F14/F10/F09本批独审纠错完成：** [真实行程草稿](R20-ITINERARY-DRAFT-PERSISTENCE-20261023.md)两项P2修后API21/App17/双typecheck通过，新独审实际HTTP6/App17通过，无该范围未解决P1/P2；首次超限可改重交，未知后重试拒绝仍保pending，观测类型不再用profileId。structured保持整family未通过，来源/路线/分享/协作不被草稿代表链关闭。[独立云量](R20-INDEPENDENT-CLOUD-DELIVERY-20261023.md)地点panel轴/旧覆盖retry及后续时间失败被Scene隐藏三项P2均已修，新的最终独审11项通过，无该范围未解决P1/P2。2026-10-24完整Map页面目录`src/pages/map/*.test.ts`回归448/448、0失败0skip，exit0，32,145.8ms；日志在任务tmp的`map-module-integration-20261024.log`。[F09](R20-SKY-TIME-QUERY-POLICY-20261023.md)跨Context旧hold/ABA草稿P2已修，新独审实际6文件66/66，无该范围未解决P1/P2。各批不能相加冒一次全套。全部目标设备/实际H4/原生性能/OOM仍未验；不以通过数覆盖失败。
 
@@ -28,12 +32,12 @@
 
 - **Mini API全本地套件：1023项，981通过、0失败、42跳过，exit0，424,147ms。** 命令为worker cwd下`node ../../tools/run-node.cjs --import tsx --test --test-concurrency=2 'src/**/*.test.ts'`。本进程所有DATABASE_URL/REDIS_URL类变量清空，未连接另一聊天服务；日志为`tmp/r20-miniapi-local-suite-20261023.log`。本轮先验证一项真实缺料失败及锁定正文hash，再材料化text-history并运行该完整套件；这提供旧354失败清单之后的新状态，不假设每个旧失败都有相同因果解释。
 - 该完整套件后，独审发现的管理提交后缓存错误、跨重试历史未知状态均已修复并复验：后端HTTP7/7、实际React页面/会话/CLI7/7、Mini API/admin-web noEmit通过；新结果不冒称该较早全套已包含最后修复。
-- **AppID实际check + 6项回归通过；UI contract 4 probes和native-chrome 11项通过。** 原歧义来自历史Markdown，原DAY color探针来自已退休tabBar；未修改正式AppID、历史证据或采用UI。`check:miniapp:fast`组合入口本轮未重跑，不能称组合全绿。
+- **当时AppID实际check + 6项回归通过；UI contract 4 probes和native-chrome 11项通过。** 原歧义来自历史Markdown，原DAY color探针来自已退休tabBar；未修改正式AppID、历史证据或采用UI。当时未跑`check:miniapp:fast`组合入口；后续完整组合终态见开头，不能倒改旧批次范围。
 - **原生App typecheck/34 tests、独立API typecheck/102 tests、astronomy-core typecheck、admin-web typecheck通过；CI选择器/接线13项通过。** 接通实际消费者后修复了独立API支持目标与Gaia身份不匹配，未改变WEAPP/BSC/SAO负载。管理页面/会话/CLI检查及后提交修复归同批管理证据。
 - **头像安全批次：真实专用PG、本地文件及隔离行为18/18通过，无skip。** 包括旧对象退休失败/禁用恢复、真实COMMIT后丢回执、同键并发、旧回放、ACTIVE/CAS及既有私有写屏障；不证明BullMQ/Redis重启或完整删除/审核锁序。专用60709 cluster测试结束已停止，数据/owner记录保留，未触共享PG。
 - **text-history MATERIALIZED：78件/32,931,704B。** v79实际1,323,326B、SHA-256 `ec640a1a5297edac7f8070474aa116d66aef75684b2d2c5ca605e9658703c059`，实际parser接受536行。没有篡改FRESH/PARTIAL资格、上传资料或覆盖未提交原件。
 
-实现、实际命令及独审分别见[R20共享检查](R20-SHARED-CHECKS-20261023.md)、[独立消费者复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)、[头像安全/退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[管理授权/恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)。上述为各历史批次范围；最新检查点的远端CI/基础设施结果见开头。扩展组合fast、其余必要基础设施分支、真机/IDE及完整Goal仍未完成；复用仍适用的历史检查，不机械重跑。
+实现、实际命令及独审分别见[R20共享检查](R20-SHARED-CHECKS-20261023.md)、[独立消费者复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)、[头像安全/退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[管理授权/恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)。上述为各历史批次范围；最新检查点的远端CI/基础设施及完整本机fast结果见开头。条件跳过、其余必要基础设施分支、真机/IDE及完整Goal仍未完成；复用仍适用的历史检查，不机械重跑。
 
 ## R20实施前结果（保留历史失败）
 

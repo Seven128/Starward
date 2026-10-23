@@ -2,6 +2,8 @@
 
 This is the next real configuration responsibility after the itinerary draft path. PLAN R20 remains the sole plan. The delivered scope is explicit rule **create → read → edit → definition enable/disable → history/restart/replay**, through the actual API and native App consumer. It does not complete F14 or the notifications/toolbox Outcome. No notification, email, WeChat message or third-party delivery was sent.
 
+Reviewed source checkpoint: `f41db68c9bc965920a9a11eb7afbaa521ca5ded8`, committed and pushed to the requested branch with exact remote readback and ahead/behind 0/0. Field-family follow-up files were excluded. This checkpoint has no new remote-CI result yet; current workflow repair and later runs are tracked by the [CI evidence owner](R20-CI-INFRASTRUCTURE-20261024.md).
+
 ## Actual owners and behavior
 
 - `packages/domain/src/notifications/rules.ts` owns the pure configuration DTO and boundary validation. It preserves an explicit WGS84 place (with optional selected place identity) or user-supplied grid, category, target, numeric threshold/direction/unit, lead time, quiet hours/timezone, cooldown, proposed channel, definition enabled state and optional absolute expiry. Missing units, invalid coordinates/minutes/timezone and ambiguous or nonexistent expiry dates fail instead of becoming zero/default facts. Expiry normalization reuses the existing `contracts/observing-time` owner. In-trip rules still lack a qualified itinerary/revision binding and return `notification_itinerary_rules_unavailable`; that requirement remains unfinished.

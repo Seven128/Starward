@@ -69,16 +69,28 @@ sourcePaths.push("apps/wechat-miniapp/src/services/sky-publication-resource.ts",
   "apps/wechat-miniapp/src/services/prepared-optical-client.ts", "packages/miniapp-contracts/src/prepared-optical-publication.ts",
   "packages/miniapp-contracts/src/optical-publication-content.ts", "workers/miniapp-api/src/test-fixtures/prepared-optical-publication.ts",
   "workers/miniapp-api/src/test-fixtures/synthetic-optical-png.ts");
-const preserved: Array<{ path: string; sha256: string }> = supplied || preparedSupplied ? JSON.parse(readFileSync(join(workspace,
-  ".codex/work-items/cloud-sky-native-2026-09-22/tmp/resume-preserved-hashes-2026-10-01.json"), "utf8")) : [];
+// Publication identity does not select an unrelated historical source revision.
+// Historical preservation runs must explicitly supply their unchanged manifest.
+const preservationPath = process.env.CLOUD_SKY_SCIENCE_RESOURCE_PRESERVATION_PATH;
+assert(preservationPath === undefined || preservationPath.trim().length > 0, "preservation manifest path must not be empty");
+const preservationFile = preservationPath === undefined ? undefined : isAbsolute(preservationPath) ? preservationPath : join(workspace, preservationPath);
+const preserved: Array<{ path: string; sha256: string }> = preservationFile ? JSON.parse(readFileSync(preservationFile, "utf8")) : [];
+if (preservationFile) {
+  assert(Array.isArray(preserved) && preserved.length > 0, "requested preservation manifest must contain file pins");
+  for (const row of preserved) {
+    assert(typeof row?.path === "string" && row.path.length > 0, "preserved file path must not be empty");
+    assert.match(row.sha256, /^[a-f0-9]{64}$/u, `invalid preserved SHA-256: ${row.path}`);
+  }
+}
 const boundPaths = [...sourcePaths, ...preserved.map(row => row.path),
+  ...(preservationFile ? [relative(workspace, preservationFile).replaceAll("\\", "/")] : []),
   ...["manifest.json", ...contracts.SDSS_OPTICAL_LEVELS.map(level => manifest.levels[level].file)]
     .map(file => relative(workspace, join(publicationDirectory, file)).replaceAll("\\", "/"))];
 boundPaths.push(...["manifest.json", ...contracts.OPTICAL_IMAGE_LEVELS.map(level => preparedManifest.levels[level].file)]
   .map(file => relative(workspace, join(preparedDirectory, file)).replaceAll("\\", "/")));
 const bindings = () => boundPaths.map(path => { const bytes = readFileSync(isAbsolute(path) ? path : join(workspace, path)); return { path, bytes: bytes.length, sha256: digest(bytes) }; });
 const beforeBindings = bindings();
-for (const row of preserved) assert.equal(beforeBindings.find(b => b.path === row.path)!.sha256, row.sha256);
+for (const row of preserved) assert.equal(beforeBindings.find(b => b.path === row.path)!.sha256, row.sha256, `preserved source mismatch: ${row.path}`);
 const evidence: unknown[] = [];
 const compile = (file: string, bindings: Record<string, unknown>, source?: string, globals: Record<string, unknown> = {}) => {
   const exports: Record<string, any> = {};
@@ -330,6 +342,7 @@ test.after(() => {
     writeFileSync(join(output, "resource-traces.json"), JSON.stringify({ fixture: supplied ? `EXACT_PINNED_${manifest.imageVersion}` : "SYNTHETIC_STRUCTURE_TRANSPORT_ONLY",
       publicationHash: opticalHash, preparedFixture: preparedSupplied ? "EXACT_PREPARED_WRITER_R4" : "SYNTHETIC_STRUCTURE_TRANSPORT_ONLY",
       preparedPublicationHash: preparedHash, resourceSourceSha256: digest(resourceSource), runtimeSourceSha256: digest(runtimeSource),
+      preservation: preservationFile ? { manifest: relative(workspace, preservationFile).replaceAll("\\", "/"), files: preserved.length } : "NOT_REQUESTED",
       scope: "Complete actual modules/cache with controlled MapFS/Taro callbacks and AbortController faults. Runtime adds only a readonly pendingDemand-size tap; no WEAPP/native decode, HTTP, GPU, calibration or quality adoption.", evidence }, null, 2) + "\n", { flag: "wx" });
     writeFileSync(join(output, "executed-resource-source.ts.txt"), resourceSource, { flag: "wx" });
     writeFileSync(join(output, "executed-runtime-source.ts.txt"), runtimeSource, { flag: "wx" });
@@ -339,7 +352,7 @@ test.after(() => {
     writeFileSync(join(output, "bindings-before.json"), JSON.stringify(beforeBindings, null, 2) + "\n", { flag: "wx" });
     writeFileSync(join(output, "bindings-after.json"), JSON.stringify(afterBindings, null, 2) + "\n", { flag: "wx" });
   }
-  assert.deepEqual(afterBindings, beforeBindings, "executed source, real publication and six preserved files must remain byte-identical");
+  assert.deepEqual(afterBindings, beforeBindings, "executed source, real publication and explicitly requested preservation inputs must remain byte-identical");
   if (syntheticDirectory) {
     assert.equal(dirname(realpathSync(syntheticDirectory)), realpathSync(tmpdir())); assert.match(basename(syntheticDirectory), /^starward-science-resource-/u);
     rmSync(syntheticDirectory, { recursive: true }); // Owned, regenerated fixture only.

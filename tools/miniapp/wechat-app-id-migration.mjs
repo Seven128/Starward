@@ -72,7 +72,7 @@ export async function inspectWechatAppId({
   const privateConfig = privateBytes
     ? parseConfig(privateBytes, "wechat_app_id_private_config_invalid")
     : null;
-  if (privateConfig && privateConfig.appid !== publicConfig.appid)
+  if (privateConfig && Object.hasOwn(privateConfig, "appid") && privateConfig.appid !== publicConfig.appid)
     fail("wechat_app_id_private_identity_mismatch");
   const expectedTrackedPath = normalizedTrackedPath(root, publicPath);
   const normalizedFiles = [...new Set(trackedAppIdFiles.map((entry) =>
