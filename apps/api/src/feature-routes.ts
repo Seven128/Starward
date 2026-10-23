@@ -5,12 +5,14 @@ import { createMapSpotsHandler, createRouteHandler } from "./modules/map/map-han
 import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
 import { registerItineraryRoutes } from "./modules/itinerary/itinerary-routes";
+import { registerNotificationRuleRoutes } from "./modules/notifications/rule-routes";
 
 interface CommandRouteConfig {
   base: string;
   commandBase?: string;
   invalidCode: string;
   commands: string[];
+  upgradeCommands?: string[];
   actorId: string;
   outcome: string;
   operation: string;
@@ -27,6 +29,7 @@ function registerCommandRoute(app: FastifyInstance, config: CommandRouteConfig) 
   });
   app.post<{ Body: { command?: string } }>(`${config.commandBase ?? config.base}/commands`, async (request, reply) => {
     const command = request.body?.command;
+    if (command && config.upgradeCommands?.includes(command)) return reply.code(409).header("cache-control", "private, no-store").send({ code: "notification_rule_client_upgrade_required", apiVersion: "v2", legacyRecordsPreserved: true });
     if (!command || !config.commands.includes(command)) return reply.code(400).header("cache-control", "no-store").send({ code: config.invalidCode });
     await config.runtime?.execute({ outcome: config.outcome, actorId: config.actorId, operation: config.operation, idempotencyKey: `${config.outcome}:${request.id}`, payload: { token: command, command, correlationId: request.id } });
     const response = reply.header("cache-control", "private, no-store");
@@ -88,7 +91,7 @@ function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependenci
     dependencies.profile ? { base: "/v1/profile", invalidCode: "invalid_profile_command", commands: ["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"], actorId: "user-demo", outcome: "identity-profile-privacy", operation: "profile.update", privateAuthorization: true, service: dependencies.profile, runtime: dependencies.identityRuntime } : null,
     dependencies.field ? { base: "/v1/field", invalidCode: "invalid_field_command", commands: ["verify-pack", "toggle-red", "switch-backup", "start-session", "share-location", "save-report", "enter-offline"], actorId: "user-demo", outcome: "field-offline-safety", operation: "field.pack-and-report", service: dependencies.field, runtime: dependencies.fieldRuntime } : null,
     dependencies.community ? { base: "/v1/community", invalidCode: "invalid_community_command", commands: ["submit-spot", "submit-report", "submit-correction", "upload-media", "open-trust", "publish-review"], actorId: "user-demo", outcome: "community-contribution", operation: "community.media-contribute", service: dependencies.community, runtime: dependencies.communityRuntime } : null,
-    dependencies.tools ? { base: "/v1/tools", invalidCode: "invalid_tools_command", commands: ["create-rule", "open-risk", "change-controls", "calendar", "position", "professional", "learning"], actorId: "user-demo", outcome: "notifications-and-toolbox", operation: "notification.rule-create", service: dependencies.tools, runtime: dependencies.notificationToolsRuntime } : null,
+    dependencies.tools ? { base: "/v1/tools", invalidCode: "invalid_tools_command", commands: ["open-risk", "calendar", "position", "professional", "learning"], upgradeCommands: ["create-rule", "change-controls"], actorId: "user-demo", outcome: "notifications-and-toolbox", operation: "notification.rule-create", service: dependencies.tools } : null,
     dependencies.admin ? { base: "/v1/admin/data-status", commandBase: "/v1/admin", invalidCode: "invalid_admin_command", commands: ["provider-tco-evaluate", "job-replay", "spot-merge-review", "moderation-open-case", "source-disable", "dataset-release-preview", "admin-open-audit", "pipeline-open-run"], actorId: "admin-demo", outcome: "admin-data-operations", operation: "admin.job-replay", privateAuthorization: true, service: dependencies.admin, runtime: dependencies.adminRuntime } : null,
     dependencies.quality ? { base: "/v1/quality", invalidCode: "invalid_quality_command", commands: ["quality-open-restore-drill", "quality-open-release-matrix", "quality-open-trace", "quality-open-funnel"], actorId: "operator-demo", outcome: "quality-release-observability", operation: "quality.restore-drill", service: dependencies.quality, runtime: dependencies.qualityRuntime } : null,
   ];
@@ -97,6 +100,7 @@ function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependenci
 
 export function registerFeatureRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
   if (dependencies.itineraries) registerItineraryRoutes(app, dependencies.itineraries, dependencies.resolveItineraryActor);
+  if (dependencies.notificationRules) registerNotificationRuleRoutes(app, dependencies.notificationRules, dependencies.resolveNotificationActor);
   registerForecast(app, dependencies);
   registerMapAndSky(app, dependencies);
   registerShooting(app, dependencies);

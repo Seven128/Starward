@@ -1,15 +1,11 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
+import { commandDigest } from "../../persistence/command-transaction";
 import { applyItineraryPatch } from "../../../../../packages/domain/src/itinerary/index";
 import type { ItineraryDraft, ItineraryDraftCommand } from "../../../../../packages/domain/src/itinerary/draft";
 import { ItineraryCommandError, parseItineraryDraftCommand } from "./draft-command";
 import type { ItineraryDraftRepository } from "./sqlite-itinerary-repository";
 
 export interface ItineraryActor { id: string; scope: "local-owner-poc" }
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  if (value !== null && typeof value === "object") return `{${Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(",")}}`;
-  return JSON.stringify(value);
-}
 export class ItineraryService {
   constructor(private readonly repository: ItineraryDraftRepository, private readonly now = () => new Date().toISOString()) {}
   private actor(actor: ItineraryActor | null): ItineraryActor {
@@ -25,7 +21,7 @@ export class ItineraryService {
   command(actor: ItineraryActor | null, value: unknown) {
     const owner = this.actor(actor);
     const command = parseItineraryDraftCommand(value);
-    const digest = createHash("sha256").update(canonical(command)).digest("hex");
+    const digest = commandDigest(command);
     const id = command.command === "create-draft" ? randomUUID() : command.itineraryId;
     return this.repository.commit({ actorId: owner.id, key: command.idempotencyKey, digest, id }, current => this.apply(owner, command, id, current));
   }

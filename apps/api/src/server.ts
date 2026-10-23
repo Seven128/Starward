@@ -23,7 +23,8 @@ import type { AwaitedFieldRuntime } from "./modules/field/runtime-types";
 import type { CommunityWorkflowService } from "./modules/community/community-workflow-service";
 import type { AwaitedCommunityRuntime } from "./modules/community/runtime-types";
 import type { ToolsService } from "./modules/notifications/tools-service";
-import type { AwaitedNotificationToolsRuntime } from "./modules/notifications/runtime-types";
+import type { NotificationRuleService } from "./modules/notifications/rule-service";
+import type { NotificationRuleActorResolver } from "./modules/notifications/rule-routes";
 import type { AdminOperationsService } from "./modules/admin/admin-operations-service";
 import type { AwaitedAdminRuntime } from "./modules/admin/runtime-types";
 import type { QualityService } from "./modules/quality/quality-service";
@@ -42,7 +43,8 @@ export interface ApiDependencies {
   itineraries?: Pick<ItineraryService, "list" | "get" | "command">; resolveItineraryActor?: ItineraryActorResolver;
   field?: Pick<FieldService, "get" | "command">; fieldRuntime?: AwaitedFieldRuntime;
   community?: Pick<CommunityWorkflowService, "get" | "command">; communityRuntime?: AwaitedCommunityRuntime;
-  tools?: Pick<ToolsService, "get" | "command">; notificationToolsRuntime?: AwaitedNotificationToolsRuntime;
+  tools?: Pick<ToolsService, "get" | "command">;
+  notificationRules?: Pick<NotificationRuleService, "list" | "get" | "command">; resolveNotificationActor?: NotificationRuleActorResolver;
   admin?: Pick<AdminOperationsService, "get" | "command">; adminRuntime?: AwaitedAdminRuntime;
   quality?: Pick<QualityService, "get" | "command">; qualityRuntime?: AwaitedQualityRuntime;
 }

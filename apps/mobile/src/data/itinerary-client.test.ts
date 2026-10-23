@@ -39,6 +39,30 @@ describe("itinerary client command recovery", () => {
     await expect(restarted.retry()).resolves.toMatchObject({ revision: 2, title: "后续已确认的修改" });
     expect(posts).toHaveLength(2); expect(posts[1]).toBe(posts[0]); expect(await restarted.pending()).toBeNull();
   });
+  it("preserves an unknown command after later input parsing refuses it", async () => {
+    const port = storage(), posts: string[] = [];
+    let phase: "lost" | "parse" | "recover" = "lost";
+    const fetcher = (async (_url, init) => {
+      if (init?.method === "POST") {
+        posts.push(String(init.body));
+        if (phase === "lost") throw new Error("lost_reply_after_commit");
+        if (phase === "parse") return response({ code: "invalid_itinerary_input", outcome: "rejected" }, 400);
+        return response({ ...reply("same-key"), replayed: true });
+      }
+      return response({ schemaVersion: "starward-itinerary-v2", itinerary: plan(2) });
+    }) as typeof fetch;
+    const first = createItineraryClient({ baseUrl: "http://api", storage: port, fetcher, newKey: () => "same-key" });
+    await expect(first.command(input)).rejects.toThrow("lost_reply_after_commit");
+    const original = [...port.values.values()][0]; expect(original).toBeTruthy();
+    phase = "parse";
+    const restarted = createItineraryClient({ baseUrl: "http://api", storage: port, fetcher, newKey: () => "must-not-be-sent" });
+    await expect(restarted.retry()).rejects.toMatchObject({ code: "invalid_itinerary_input", rejected: false });
+    expect([...port.values.values()][0]).toBe(original); expect(posts[1]).toBe(posts[0]);
+    await expect(restarted.command(input)).rejects.toThrow("itinerary_pending_requires_retry");
+    phase = "recover";
+    await expect(restarted.retry()).resolves.toMatchObject({ revision: 2 });
+    expect(posts[2]).toBe(posts[0]); expect(await restarted.pending()).toBeNull();
+  });
   it.each([403, 404])("keeps a committed command when its readback returns %i", async status => {
     const port = storage(); const posts: string[] = []; let unavailable = true;
     const fetcher = (async (_url, init) => {

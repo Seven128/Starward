@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { ItineraryDraft, ItineraryDraftLibrary, ItineraryDraftResult } from "../../../../../packages/domain/src/itinerary/draft";
 import { ItineraryCommandError } from "./draft-command";
+import { commitWithReceipt } from "../../persistence/command-transaction";
 
 interface BodyRow { body: string }
 export interface ItineraryDraftRepository {
@@ -50,14 +51,7 @@ export class SqliteItineraryRepository implements ItineraryDraftRepository {
     return { schemaVersion: "starward-itinerary-v2", items: page.map(({ cursor: _cursor, ...item }) => item), nextCursor: rows.length > 50 ? String(page.at(-1)!.cursor) : null, scope: "local-owner-poc" };
   }
   commit(input: { actorId: string; key: string; digest: string; id: string }, mutate: (current: ItineraryDraft | null) => ItineraryDraft): ItineraryDraftResult {
-    this.database.exec("BEGIN IMMEDIATE");
-    try {
-      const receipt = this.database.prepare("SELECT input_digest, body FROM itinerary_draft_receipts WHERE actor_id = ? AND command_key = ?").get(input.actorId, input.key) as (BodyRow & { input_digest: string }) | undefined;
-      if (receipt) {
-        if (receipt.input_digest !== input.digest) throw new ItineraryCommandError("itinerary_idempotency_conflict", 409);
-        this.database.exec("COMMIT");
-        return { ...JSON.parse(receipt.body) as ItineraryDraftResult, replayed: true };
-      }
+    const committed = commitWithReceipt(this.database, { ...input, receiptTable: "itinerary_draft_receipts", conflict: () => new ItineraryCommandError("itinerary_idempotency_conflict", 409) }, () => {
       const current = this.read(input.actorId, input.id);
       const next = mutate(current);
       if (next.id !== input.id || next.ownerId !== input.actorId) throw new Error("itinerary_storage_owner_mismatch");
@@ -69,15 +63,9 @@ export class SqliteItineraryRepository implements ItineraryDraftRepository {
       }
       this.database.prepare("INSERT INTO itinerary_draft_versions(id, actor_id, revision, body) VALUES (?, ?, ?, ?)").run(next.id, input.actorId, next.revision, body);
       const result: ItineraryDraftResult = { schemaVersion: "starward-itinerary-v2", status: "saved", replayed: false, itinerary: next, receipt: { idempotencyKey: input.key, itineraryId: next.id, revision: next.revision, committedAt: next.updatedAt } };
-      this.database.prepare("INSERT INTO itinerary_draft_receipts(actor_id, command_key, input_digest, body) VALUES (?, ?, ?, ?)").run(input.actorId, input.key, input.digest, JSON.stringify(result));
-      this.database.exec("COMMIT");
       return result;
-    } catch (error) {
-      // A failed/unknown COMMIT must not become a success receipt or destructive
-      // compensation. The exact command can be retried against durable state.
-      try { this.database.exec("ROLLBACK"); } catch { /* Preserve the original failure. */ }
-      throw error;
-    }
+    });
+    return { ...committed.value, replayed: committed.replayed };
   }
   close() { this.database.close(); }
 }

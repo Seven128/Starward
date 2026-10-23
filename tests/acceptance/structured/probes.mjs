@@ -5,6 +5,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { productionModules } from "./contracts.mjs";
 import { itineraryDraftPersistenceEvidence } from "./itinerary-probe.mjs";
+import { notificationRuleConfigurationEvidence } from "./notification-rules-probe.mjs";
 
 const moduleCache = new Map();
 let typeScriptImporter;
@@ -107,7 +108,7 @@ const outcomeRuntimeContracts = Object.freeze({
   "shooting-assistant": { module: "apps/api/src/modules/shooting/runtime.ts", factory: "createShootingRuntime", operation: "shooting.plan", sideEffects: ["sqlite"], boundaries: ["weather", "astronomy"] },
   "field-offline-safety": { module: "packages/domain/src/offline/runtime.ts", factory: "createFieldRuntime", operation: "field.pack-and-report", sideEffects: ["sqlite", "filesystem"], boundaries: [] },
   "community-contribution": { module: "apps/api/src/modules/community/runtime.ts", factory: "createCommunityRuntime", operation: "community.media-contribute", sideEffects: ["sqlite", "object-store"], boundaries: ["object-store"] },
-  "notifications-and-toolbox": { module: "apps/api/src/modules/notifications/runtime.ts", factory: "createNotificationToolsRuntime", operation: "notification.rule-create", sideEffects: ["sqlite", "queue", "channel"], boundaries: ["notification-channel"] },
+  "notifications-and-toolbox": { module: "apps/api/src/modules/notifications/runtime.ts", factory: "createNotificationToolsRuntime", operation: "notification.rule-create", sideEffects: ["sqlite"], boundaries: [] },
   "identity-profile-privacy": { module: "apps/api/src/modules/identity/runtime.ts", factory: "createIdentityRuntime", operation: "profile.update", sideEffects: ["sqlite"], boundaries: [] },
   "admin-data-operations": { module: "apps/api/src/modules/admin/runtime.ts", factory: "createAdminRuntime", operation: "admin.job-replay", sideEffects: ["sqlite", "audit"], boundaries: [] },
   "quality-release-observability": { module: "apps/api/src/modules/quality/runtime.ts", factory: "createQualityRuntime", operation: "quality.restore-drill", sideEffects: ["sqlite", "artifact"], boundaries: ["telemetry"] },
@@ -216,6 +217,7 @@ async function realBusinessLoopEvidence(root, outcome) {
   const factory = module[runtimeContract.factory];
   if (typeof factory !== "function") return failedBusinessLoop();
   if (outcome === "itinerary-and-collaboration") return itineraryDraftPersistenceEvidence(factory);
+  if (outcome === "notifications-and-toolbox") return notificationRuleConfigurationEvidence(factory);
 
   const dataDir = await mkdtemp(path.join(tmpdir(), `starward-${outcome}-`));
   const boundaryInvocations = [];

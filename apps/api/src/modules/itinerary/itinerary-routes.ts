@@ -1,12 +1,12 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ItineraryCommandError } from "./draft-command";
 import type { ItineraryActor, ItineraryService } from "./itinerary-service";
+import { resolveLocalPocOwner } from "../../local-poc-owner";
 
 export type ItineraryActorResolver = (request: Pick<FastifyRequest, "ip" | "headers">) => Promise<ItineraryActor | null>;
 
 /** POC composition only: no caller-selected user/role/header is an identity. */
-export const resolveLocalItineraryOwner: ItineraryActorResolver = async request =>
-  ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(request.ip) ? { id: "local-owner", scope: "local-owner-poc" } : null;
+export const resolveLocalItineraryOwner: ItineraryActorResolver = resolveLocalPocOwner;
 
 function commandRequestError(error: FastifyError, _request: FastifyRequest, reply: FastifyReply) {
   // Fastify rejects the body before the command handler can execute. This is

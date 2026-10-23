@@ -30,6 +30,7 @@ import { CommunityWorkflowService } from "./modules/community/community-workflow
 import { createCommunityRuntime } from "./modules/community/runtime";
 import { ToolsService } from "./modules/notifications/tools-service";
 import { createNotificationToolsRuntime } from "./modules/notifications/runtime";
+import { resolveLocalNotificationOwner } from "./modules/notifications/rule-routes";
 import { AdminOperationsService } from "./modules/admin/admin-operations-service";
 import { createAdminRuntime } from "./modules/admin/runtime";
 import { QualityService } from "./modules/quality/quality-service";
@@ -187,7 +188,6 @@ const fieldRuntime = await createFieldRuntime({
 const notificationToolsRuntime = await createNotificationToolsRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
-  boundary: { async invoke(request) { return { status: "local-and-inbox-only", kind: request.kind, token: request.payload.token, mode }; } },
 });
 const communityRuntime = await createCommunityRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
@@ -233,7 +233,8 @@ const app = await buildApi({
   community: new CommunityWorkflowService(),
   communityRuntime,
   tools:new ToolsService(),
-  notificationToolsRuntime,
+  notificationRules: notificationToolsRuntime.service,
+  resolveNotificationActor: resolveLocalNotificationOwner,
   admin:new AdminOperationsService(),
   adminRuntime,
   quality:new QualityService(),
