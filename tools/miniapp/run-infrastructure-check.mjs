@@ -393,8 +393,6 @@ try {
     await contributionRequest(uploadPath, "DELETE", { expectedRevision: httpDraft.data.revision }, "media-remove-stale", 409);
     const httpRemoved = await contributionRequest(uploadPath, "DELETE", { expectedRevision: httpCompleted.data.revision }, "media-remove");
     if (httpRemoved.data.media.length !== 0) throw new Error("media_http_removal_not_applied");
-    const fileAfterRemoval = await stat(storedPngPath).catch((error) => { if (error.code === "ENOENT") return null; throw error; });
-    if (fileAfterRemoval) throw new Error("media_http_private_file_not_removed");
     const httpRemovalReplay = await contributionRequest(uploadPath, "DELETE", { expectedRevision: httpCompleted.data.revision }, "media-remove");
     if (JSON.stringify(httpRemovalReplay.data) !== JSON.stringify(httpRemoved.data)) throw new Error("media_http_removal_replay_changed");
     const jpeg = await readFile(path.join(root, "workers/miniapp-api/src/test-fixtures/self-generated-transport-test.jpg"));
@@ -413,8 +411,56 @@ try {
     if (!(await readFile(storedJpegPath)).equals(jpeg)) throw new Error("jpeg_http_sanitized_bytes_changed");
     const jpegRemoved = await contributionRequest(jpegPath, "DELETE", { expectedRevision: jpegReady.data.revision }, "jpeg-remove");
     if (jpegRemoved.data.media.length !== 0) throw new Error("jpeg_http_removal_not_applied");
-    const jpegAfterRemoval = await stat(storedJpegPath).catch((error) => { if (error.code === "ENOENT") return null; throw error; });
-    if (jpegAfterRemoval) throw new Error("jpeg_http_private_file_not_removed");
+    // HTTP commits retirement. The existing MEDIA worker owns physical deletion
+    // and acknowledgement; inspect that complete path for both image formats.
+    const retiredMedia = [
+      { upload_id: httpUpload.data.media[0].uploadId, state: "EXPIRED", object_key: path.relative(mediaStorageRoot, storedPngPath).split(path.sep).join("/") },
+      { upload_id: jpegId, state: "EXPIRED", object_key: path.relative(mediaStorageRoot, storedJpegPath).split(path.sep).join("/") },
+    ].sort((a, b) => a.upload_id.localeCompare(b.upload_id));
+    const retiredUploadIds = retiredMedia.map(row => row.upload_id);
+    const mediaDatabase = new Client({ connectionString: databaseUrl });
+    try {
+      await mediaDatabase.connect();
+      const readRetiredMedia = () => mediaDatabase.query(
+        "SELECT upload_id,state,object_key FROM contribution_media_uploads WHERE user_id=$1 AND upload_id=ANY($2::text[]) ORDER BY upload_id",
+        [login.data.userId, retiredUploadIds],
+      );
+      if (!isDeepStrictEqual((await readRetiredMedia()).rows, retiredMedia)) throw new Error("media_http_retirement_intent_not_persisted");
+      if (!(await readFile(storedPngPath)).equals(png) || !(await readFile(storedJpegPath)).equals(jpeg))
+        throw new Error("media_http_retired_bytes_not_preserved_before_worker");
+      stage("api-http:media-worker:start");
+      run(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", `
+        import { OutboxWorkerRuntime } from "./src/outbox-worker.ts";
+        const runtime = new OutboxWorkerRuntime({ databaseUrl: process.env.DATABASE_URL,
+          redisUrl: process.env.REDIS_URL, queueName: process.env.MINIAPP_QUEUE_NAME });
+        try {
+          let dispatched;
+          do { dispatched = await runtime.dispatchBatch(); } while (dispatched === 50);
+          await runtime.waitForIdle();
+          const snapshot = await runtime.snapshot();
+          if (snapshot.pending || snapshot.dispatched || snapshot.dead_letter) throw new Error("media_worker_not_drained");
+        } finally { await runtime.close(); }
+      `], {
+        cwd: path.join(root, "workers", "miniapp-api"),
+        env: { ...process.env, DATABASE_URL: databaseUrl, REDIS_URL: redisUrl,
+          MINIAPP_STORAGE_MODE: "postgres", MINIAPP_AUTH_MODE: "LOCAL_TEST", MINIAPP_RELEASE_PROFILE: "LOCAL",
+          MINIAPP_CACHE_PREFIX: cachePrefix, MINIAPP_QUEUE_NAME: queueName,
+          MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM", MINIAPP_MEDIA_STORAGE_ROOT: mediaStorageRoot },
+      });
+      const acknowledged = retiredMedia.map(row => ({ ...row, object_key: null }));
+      if (!isDeepStrictEqual((await readRetiredMedia()).rows, acknowledged)) throw new Error("media_worker_deletion_not_acknowledged");
+      const effects = await mediaDatabase.query(`SELECT o.payload->>'uploadId' AS upload_id,o.state,count(e.effect_key)::int AS effect_count
+        FROM outbox_events o LEFT JOIN job_effects e USING (event_id)
+        WHERE o.event_type='ContributionMediaUploadRemoved' AND o.payload->>'userId'=$1
+          AND o.payload->>'uploadId'=ANY($2::text[]) GROUP BY o.event_id ORDER BY upload_id`, [login.data.userId, retiredUploadIds]);
+      if (!isDeepStrictEqual(effects.rows, retiredUploadIds.map(upload_id => ({ upload_id, state: "COMPLETE", effect_count: 1 }))))
+        throw new Error("media_worker_retirement_effect_invalid");
+      for (const storedPath of [storedPngPath, storedJpegPath]) {
+        const remaining = await stat(storedPath).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+        if (remaining) throw new Error("media_worker_private_file_not_removed");
+      }
+      stage("api-http:media-worker:complete");
+    } finally { await mediaDatabase.end(); }
     const currentRevision = Number(statusRoundtripSpot.version);
     if (!Number.isInteger(currentRevision) || currentRevision < 1)
       throw new Error("admin_status_roundtrip_revision_invalid");

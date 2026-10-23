@@ -1,4 +1,5 @@
 import { contributionMediaObjectKey } from "./contribution-media-object.ts";
+import { cleanupExpiredContributionUploads } from "./contribution-media-maintenance.ts";
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
@@ -6,6 +7,7 @@ import test from "node:test";
 import type { ContributionSubmission, ImportDraft } from "@starward/miniapp-contracts";
 import { eraseContributionContent } from "./account-data-erasure.ts";
 import { MiniappService } from "./miniapp-service.ts";
+import { createMediaObjectStore } from "./media-object-store.ts";
 import {
   OPERATIONAL_JOB_KINDS,
   OutboxWorkerRuntime,
@@ -187,6 +189,7 @@ test(
     })();
 
     const first = await MiniappService.createFromEnvironment();
+    const fixtureMediaStore = createMediaObjectStore(config);
     const firstRun = await (async () => {
       try {
         const firstIdentity = (
@@ -390,7 +393,17 @@ test(
           recovery = (await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, input, `infra:recovery:${runId}:${slot}`)).data;
           if (slot === 2) assert.deepEqual((await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, input, `infra:recovery:${runId}:${slot}`)).data, recovery);
         }
-        await first.repository.expireContributionUploads(new Date(Date.parse(recovery.media[2]!.expiresAt) + 1000).toISOString());
+        const recoveryObjectKeys = recovery.media.map(upload =>
+          contributionMediaObjectKey(firstIdentity.userId, upload.uploadId, upload.mimeType));
+        // PENDING can still own bytes after an object write loses its response.
+        // Expiry retains those stable keys until real storage cleanup is acknowledged.
+        for (const objectKey of recoveryObjectKeys) {
+          await fixtureMediaStore.put({ objectKey, bytes: Buffer.alloc(32, 7), mimeType: "image/png" });
+        }
+        assert.deepEqual(
+          [...await first.repository.expireContributionUploads(new Date(Date.parse(recovery.media[2]!.expiresAt) + 1000).toISOString())].sort(),
+          [...recoveryObjectKeys].sort(),
+        );
         recovery = (await first.repository.getContribution(firstIdentity.userId, recovery.submissionId))!;
         const replaceInput = { originalName: "replacement.png", mimeType: "image/png" as const, byteSize: 32, expectedRevision: recovery.revision, replaceUploadId: recovery.media[1]!.uploadId };
         const replacement = (await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, replaceInput, `infra:replacement:${runId}`)).data;
@@ -408,9 +421,16 @@ test(
         assert.ok((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey));
         assert.ok((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey), "unacknowledged deletion remains retryable");
         await first.repository.acknowledgeContributionMediaDeletion([cleanupKey]);
-        assert.equal((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey), false);
+        assert.deepEqual(
+          [...await first.repository.expireContributionUploads(new Date().toISOString())].sort(),
+          [...recoveryObjectKeys].sort(),
+          "acknowledging the removed upload must preserve the other expired deletion intents",
+        );
         assert.deepEqual((await first.removeContributionUpload(firstIdentity.userId, replacement.submissionId, replacement.media[1]!.uploadId, readyRecovery.revision, `infra:remove:${runId}`)).data, removedRecovery.data);
         await assert.rejects(first.removeContributionUpload(secondIdentity.userId, replacement.submissionId, replacement.media[0]!.uploadId, removedRecovery.data.revision, `infra:remove-other:${runId}`), /contribution_not_found/);
+        assert.equal(await cleanupExpiredContributionUploads(first.repository, fixtureMediaStore), recoveryObjectKeys.length);
+        for (const objectKey of recoveryObjectKeys) assert.equal(await fixtureMediaStore.read(objectKey), null);
+        assert.deepEqual(await first.repository.expireContributionUploads(new Date().toISOString()), []);
         const uploadSession = await first.createContributionUpload(
           firstIdentity.userId,
           draft.data.submissionId,
@@ -711,6 +731,7 @@ test(
         };
       } finally {
         await first.onModuleDestroy();
+        await fixtureMediaStore.close();
       }
     })();
     const { firstIdentity, secondIdentity, saved, contributionId } = firstRun;
