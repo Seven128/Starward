@@ -10,7 +10,7 @@ import { createSkyViewBasis } from "./sky-view-projection";
 import type { SkyScenePaintedSources } from "./sky-scene-render";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { completeLegacySkyOptical } from "./sky-sdss-optical-completion";
-import { skyPagePaintCommit, skyPageScenePort } from "./sky-optical-page-test-support";
+import { skyPageCompletedResourceTestFrame, skyPagePaintCommit, skyPageScenePort, skyPageSceneTestDependencies } from "./sky-optical-page-test-support";
 import { projectSkyTargetLabels } from "./sky-label-presentation";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -21,6 +21,7 @@ let presentedSceneInitializer: ts.Expression | undefined;
 let visibilityInitializer: ts.Expression | undefined;
 let committed: ts.Expression | undefined;
 let infraredPresented: ts.Expression | undefined;
+let presentedResources: ts.Expression | undefined;
 function find(node: ts.Node) {
   if (ts.isVariableDeclaration(node) && node.name.getText(source) === "visibleOrientationTargets")
     initializer = node.initializer;
@@ -30,6 +31,8 @@ function find(node: ts.Node) {
     visibilityInitializer = node.initializer;
   if (ts.isVariableDeclaration(node) && node.name.getText(source) === "deepSkyImagePresented")
     infraredPresented = node.initializer;
+  if (ts.isVariableDeclaration(node) && node.name.getText(source) === "presentedImageResources")
+    presentedResources = node.initializer;
   if (ts.isCallExpression(node) && node.expression.getText(source) === "drawSkyScene")
     committed = skyPageScenePort(source,"painted");
   ts.forEachChild(node, find);
@@ -137,15 +140,19 @@ test("same-camera native redraw commits resolved labels and both credits, includ
 });
 
 test("loaded W3 bytes alone cannot claim visible credit on a stale, hidden or cleared canvas", () => {
-  assert.ok(infraredPresented);
-  const expression = ts.transpileModule(infraredPresented.getText(source), {
+  assert.ok(infraredPresented && presentedResources);
+  const expression = ts.transpileModule(`const presentedImageResources=${presentedResources.getText(source)};
+    ${infraredPresented.getText(source)}`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-  const input = { presentedSceneCurrent: true, nativeCanvasMounted: true,
-    canvasSize: { width: 390, height: 844 }, presentedSkyFrame: { deepSkyImage: { image: {} } } };
+  const input = { ...skyPageSceneTestDependencies, presentedSceneCurrent: true, nativeCanvasMounted: true,
+    canvasGenerationRef: { current: 1 }, canvasSize: { width: 390, height: 844 },
+    presentedSkyFrame: skyPageCompletedResourceTestFrame({ nativeCanvasGeneration: 1,
+      deepSkyImage: { image: {}, reference: "M:51", level: "DETAIL", fieldDegrees: 1, canvasGeneration: 1,
+        isCurrent: () => true, coarser: null, fallback: null } }) };
   assert.equal(vm.runInNewContext(expression, input), true);
   for (const change of [{ presentedSceneCurrent: false }, { nativeCanvasMounted: false },
     { canvasSize: { width: 0, height: 0 } }, { presentedSkyFrame: null },
-    { presentedSkyFrame: { deepSkyImage: null } }]) {
+    { presentedSkyFrame: skyPageCompletedResourceTestFrame({ nativeCanvasGeneration: 1, deepSkyImage: null }) }]) {
     assert.equal(vm.runInNewContext(expression, { ...input, ...change, deepSkyImageAsset: { image: {} } }), false);
   }
 });

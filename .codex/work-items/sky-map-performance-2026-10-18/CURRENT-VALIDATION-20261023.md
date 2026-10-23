@@ -4,7 +4,11 @@
 
 ## R20本轮新结果
 
-**2026-10-24后续：** 检查点2c4bb235已推送并精确远端读回。实际[Context CI](https://github.com/Seven128/Starward/actions/runs/39985646890)通过，[Product CI](https://github.com/Seven128/Starward/actions/runs/39985637469)在隔离基础设施失败；此前release-code/实际App API admin消费者及构建通过，OCI skipped。两处媒体夹具假设已在独占PG/Redis真实复现并修正，完整infra入口exit0、独审无该范围未解决P1/P2，见[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)；原远端run仍为失败，待后续提交重跑。[Sky具名帧](R20-SKY-FRAME-INPUTS-20261024.md)最终纯星座输入调整后与2c对照440帧、BSC8404/实际loadedSAO最高8565、数值0差；首轮整个Sky1119项的64个旧fixture失败已修，现整个Sky **1121/1121、0失败/skip、exit0**，显式绑定既有原science publication输入，旧FAIL/skip历史保留。具名边界和追加fixture两批新独审通过；完整Miniapp锁定TS5.9及Mini API workspace noEmit通过（新Scene→body type引Taro globals的实际修前失败已保留，现pure profile修复）。两TIFF及压缩传输当前本机hash/9项Drive私有metadata亦已核，旧远端完整读回复用，见[依赖记录](NEW-COMPUTER-DEPENDENCIES-20261023.md)。这些本地结果不关闭资源家族全职责、其余私有恢复或设备/性能/OOM。
+**2026-10-24实际远端CI：** 含CI夹具与Sky具名帧的检查点 **8fdf9b6b8efe93a98ab2c798446ea057958e2310** 已推送并精确远端读回。[Context39993227368](https://github.com/Seven128/Starward/actions/runs/39993227368)与[Product39993219808](https://github.com/Seven128/Starward/actions/runs/39993219808)均 **success**；Product实际包含release-code、native App/API/admin消费者、后端及WEAPP构建/inspection、隔离基础设施和OCI构建。旧2c的[Product39985637469](https://github.com/Seven128/Starward/actions/runs/39985637469)仍为历史failure、当时OCI skipped；两个媒体夹具失败及真实隔离修复/独审见[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)。后续资源家族和规则配置不在8f CI范围内；未执行扩展fast组合或设备验收不因CI通过消失。
+
+**Sky资源家族本批：** [共享owner及真实消费者](R20-SKY-SCENE-RESOURCES-20261024.md)已完成generation/IR scope/HiPS late-read准入、Scene ports、actual completion精确join、queued/accepted比较和所有受影响credit/Sources读取。实施者两批65/65及66/66、完整miniapp TS5.9通过；新只读独审4文件47/47、无范围内P1/P2。root显式绑定既有science publication后，整个Sky模块 **1123/1123、0失败/cancel/skip、exit0，91,186.527ms**；日志与hash归该证据。初次类型/VM fixture失败保留。没有改renderer科学算法、hooks/cache/恢复/退休或唯一successful-copy writer；目标像素、物理资源释放、六字段/Play性能与OOM仍未验。
+
+**前批具名帧与数据：** [具名帧](R20-SKY-FRAME-INPUTS-20261024.md)最终纯星座输入调整后与2c对照440帧、BSC8404/实际loadedSAO最高8565、数值0差；首轮1119项中64个旧fixture失败修后，该检查点整个Sky1121/1121、无失败/skip。两批新独审、完整Miniapp锁定TS5.9及Mini API workspace noEmit通过；Scene→body type误引Taro globals的修前失败保留，现pure profile修复。两TIFF/压缩传输当前本机hash与9项Drive私有metadata已核，旧远端完整读回复用，见[依赖记录](NEW-COMPUTER-DEPENDENCIES-20261023.md)；其余私有恢复不据此关闭。
 
 **当前workspace整合检查：** root使用工作区入口运行`npm run test:mobile:fast`，mobile typecheck与32文件112项通过；独立API workspace typecheck及28文件116项通过。App首次整合因新增ItineraryScreen测试的createElement类型推断失败，改为显式JSX后整个mobile入口复验通过。API运行前后源码hash核对没有API变化；随后validator取消无依据字段上限的定向复验归行程证据。上述当前结果替代根目录可能混入历史tmp的汇总统计；不包括正在实施的小程序F09/F10终态、目标运行时或远端CI。
 
@@ -29,7 +33,7 @@
 - **头像安全批次：真实专用PG、本地文件及隔离行为18/18通过，无skip。** 包括旧对象退休失败/禁用恢复、真实COMMIT后丢回执、同键并发、旧回放、ACTIVE/CAS及既有私有写屏障；不证明BullMQ/Redis重启或完整删除/审核锁序。专用60709 cluster测试结束已停止，数据/owner记录保留，未触共享PG。
 - **text-history MATERIALIZED：78件/32,931,704B。** v79实际1,323,326B、SHA-256 `ec640a1a5297edac7f8070474aa116d66aef75684b2d2c5ca605e9658703c059`，实际parser接受536行。没有篡改FRESH/PARTIAL资格、上传资料或覆盖未提交原件。
 
-实现、实际命令及独审分别见[R20共享检查](R20-SHARED-CHECKS-20261023.md)、[独立消费者复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)、[头像安全/退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[管理授权/恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)。远端CI、组合fast、未执行基础设施分支、真机/IDE及完整Goal仍未完成；必要时复用仍适用的历史检查，不机械重跑。
+实现、实际命令及独审分别见[R20共享检查](R20-SHARED-CHECKS-20261023.md)、[独立消费者复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)、[头像安全/退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[管理授权/恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)。上述为各历史批次范围；最新检查点的远端CI/基础设施结果见开头。扩展组合fast、其余必要基础设施分支、真机/IDE及完整Goal仍未完成；复用仍适用的历史检查，不机械重跑。
 
 ## R20实施前结果（保留历史失败）
 

@@ -38,11 +38,13 @@ import { createSkyObjectTracking, type SkyObjectTrackingState } from "./sky-obje
 import { skyObjectPositionIsCurrent } from "./sky-object-location";
 import { locatedBodyOccludesMarker } from "./sky-located-object";
 import type { SkyObjectIdentity } from "./sky-object-picking";
-import { dispatchSkyHipsImageFailure, drawSkyScene, skyPickIdentity, type SkyHipsCanvasTile, type SkyCoordinateGrids, type SkyGalacticImageCompletion } from "./sky-scene-render";
+import { dispatchSkyHipsImageFailure, drawSkyScene, skyPickIdentity, type SkyCoordinateGrids } from "./sky-scene-render";
 import { createSkySceneFrameIdentity, type SkySceneFrameIdentity, type SkySceneFrameInput } from "./sky-scene-frame";
+import { completeSkySceneResources, liveSkySceneResources, resolveSkyCanvasResources, sameSkyCanvasResources,
+  sameSkyCompletedSceneResources, skySceneResourceInputs, type SkyCanvasResourceFrame,
+  type SkyCompletedSceneResources } from "./sky-scene-resources";
 import { createSkyStarDrawPreparation } from "./sky-star-draw-preparation";
-import { skyNativeImageIsCurrent } from "./sky-artwork-loader";
-import {completeSkyBodyImages,sameSkyBodyImages,type SkyBodyImageBinding} from "./sky-body-image-completion";
+import type { SkyBodyImageBinding } from "./sky-body-image-completion";
 import { exactSkyObservationFrame } from "./sky-observation-frame";
 import { projectHorizontalPoint, type SkyTargetProjection } from "./sky-scene-projection";
 import { createSkyGpuRenderer, type SkyGpuRenderer } from "./sky-gpu-renderer";
@@ -55,13 +57,11 @@ import {skyConstellationAvoidsPoints} from "./sky-constellation-labels";
 import { constellationVisibility } from "./sky-constellation-visibility";
 import { copySkyDeepAuxiliaryDecisions, sameSkyDeepAuxiliaryDecisions,
   type SkyDeepAuxiliaryDecision } from "./sky-deep-auxiliary-visibility";
-import { liveSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput, type SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
-import { acceptedSkyPreparedRegionCompletions, sameSkyPreparedRegionCompletions, sameSkyPreparedRegionInputs,
-  skyPreparedRegionImages } from "./sky-prepared-region-frame";
+import { skyPreparedRegionImages } from "./sky-prepared-region-frame";
 import { useSkyPreparedRegions } from "./use-sky-prepared-regions";
 import { skyOpticalSourceCredit, type SkyOpticalSourceCredit } from "./sky-optical-source-credit";
 import { SkyOpticalImageCredit } from "./sky-optical-image-credit";
-import {skyHipsSourceCredit,sameSkyHipsCompletion} from "./sky-hips-source-credit";
+import { skyHipsSourceCredit } from "./sky-hips-source-credit";
 import { createSkyArtworkViewCuller } from "./sky-artwork-visibility";
 import { useSkyDeepSkyImage } from "./use-sky-deep-sky-image";
 import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
@@ -71,7 +71,7 @@ import { useSkyTargetOptical } from "./use-sky-target-optical";
 import { useSkyWideFieldW3 } from "./use-sky-wide-field-w3";
 import { useSkyGalacticImage } from "./use-sky-galactic-image";
 import { useSkyLandscape } from "./use-sky-landscape";
-import { skyLandscapeHasPaintedModel, skyLandscapePaintedPanorama, skyLandscapeVisibleInView, type SkyLandscapeMask, type SkyLandscapePanorama, type SkyPanoramaMask } from "./sky-landscape-mask";
+import { skyLandscapeHasPaintedModel, skyLandscapePaintedPanorama, skyLandscapeVisibleInView, type SkyPanoramaMask } from "./sky-landscape-mask";
 import {useSkyStellarSupplement} from './use-sky-stellar-supplement';
 import type {SkyStellarSupplementFrame} from './sky-stellar-supplement-scene';
 import {currentStellarSupplement} from './sky-stellar-supplement-scene';
@@ -173,7 +173,7 @@ import type { SkyPositionPresentation } from "./sky-presentation-position";
 import { createSkyCanvasLifecycle, createSkyCanvasFrameClock, skyCanvasFailureCode } from "./sky-canvas-lifecycle";
 import { createSkyCanvasSurface, type SkyCanvasSurface, type SkyCanvasReticle, type SkyCanvasCaption, type SkyDisplayCanvas, type SkyWebGLCanvas } from "./sky-canvas-surface";
 import { sdssOpticalPresentation } from "./sky-sdss-optical-selection";
-import { skyTargetOpticalFrame, type SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
+import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
 import { useSkyPreparedOpticalDiscovery } from "./use-sky-prepared-optical-discovery";
 import {
   isUnambiguousTapGesture,
@@ -222,8 +222,7 @@ interface SkyNavigationRequest {
   catalog: { catalogVersion: string; catalogHash: string } | null;
 }
 
-interface SkyCanvasFrame {
-  readonly nativeImageGeneration: number;
+interface SkyCanvasFrame extends SkyCanvasResourceFrame {
   readonly orientationRevision: number;
   readonly data: SkySceneFrameIdentity["observation"]["data"];
   readonly frameAt: SkySceneFrameIdentity["observation"]["frameAt"];
@@ -234,24 +233,8 @@ interface SkyCanvasFrame {
   readonly manualBasis: SkyViewBasis | null;
   readonly mode: DisplayMode;
   readonly verticalFovDeg: number;
-  readonly deepSkyImage: SkyCanvasImageAsset | null;
-  readonly sdssOpticalImage: SkyTargetOpticalImage | null;
-  readonly preparedRegionImages: readonly import("./sky-sdss-optical-frame").SkyPreparedOpticalImage[];
   readonly constellations: ConstellationFrame | null;
-  readonly constellationImages: ReadonlyMap<string, object>;
-  readonly hipsTiles: readonly SkyHipsCanvasTile[];
-  readonly readHipsTiles?: () => readonly SkyHipsCanvasTile[];
-  readonly bodyImageBindings?: readonly SkyBodyImageBinding[];
-  readonly galacticImage: object | null;
-  readonly galacticPublication: GalacticImageManifestData | null;
-  readonly constellationsEnabled: boolean;
-  readonly landscapeEnabled: boolean;
   readonly coordinateGrids: SkyCoordinateGrids;
-  readonly landscapePanorama: SkyLandscapePanorama | null;
-  readonly landscapeMask: SkyPanoramaMask | null;
-  readonly landscapeOpacity: number;
-  readonly landscapePending: boolean;
-  readonly landscapeFailed: boolean;
   readonly stellarSupplement: SkyStellarSupplementFrame | null;
   readonly sceneReady: boolean;
   readonly owner: AcceptanceSkySceneInspectionOwner | null;
@@ -269,7 +252,6 @@ interface SkyCanvasImage {
 type SkyCanvasNode = SkyWebGLCanvas<SkyCanvasImage>;
 
 type SkyCanvasImageAsset = SkyDeepSkyImageFrame;
-const EMPTY_SKY_IMAGES: ReadonlyMap<string, object> = new Map();
 
 function canvasMeasurement(value: unknown, index = 0) {
   return (Array.isArray(value) ? value[index] : index === 0 ? value : null) as
@@ -1620,16 +1602,15 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     catalogNames: readonly SkyPlacedCatalogName[]; controlNames:readonly SkyPlacedControlName[] } | null>(null);
   // DOM labels must wait for the matching native frame; the ref alone cannot trigger that commit.
   const [presentedSkyFrame, setPresentedSkyFrameState] = useState<(Pick<SkyCanvasFrame,
-    "data" | "frameAt" | "timePresentation" | "timePresentationScope" | "mode" | "constellations" | "constellationsEnabled" | "deepSkyImage" | "stellarSupplement"> &
-    { identity: SkySceneFrameIdentity; sdssOptical: SkyTargetOpticalCompletion | null; preparedRegions:readonly import("./sky-sdss-optical-completion").SkyPreparedOpticalCompletion[];
-      galacticImage:SkyGalacticImageCompletion|null; opticalHips:readonly SkyHipsCanvasTile[]; nativeCanvasGeneration: number;
+    "data" | "frameAt" | "timePresentation" | "timePresentationScope" | "mode" | "constellations" | "constellationsEnabled" | "stellarSupplement"> &
+    SkyCompletedSceneResources & { identity: SkySceneFrameIdentity; nativeCanvasGeneration: number;
       deepSkyAuxiliaryDecisions: readonly SkyDeepAuxiliaryDecision[];
       namedStars: NonNullable<SkyPickSnapshot["namedStars"]>;
       constellationNames: readonly string[];
       catalogNames: readonly SkyPlacedCatalogName[];
       controlNames:readonly SkyPlacedControlName[];
       resolvedBodyReferences: readonly string[]; suppressedBodyReferences: readonly string[];
-      landscape: SkyLandscapeMask | null; bodyImages: readonly SkyBodyImageBinding[] }) | null>(null);
+    }) | null>(null);
   const presentedSkyFrameRef = useRef(presentedSkyFrame);
   const setPresentedSkyFrame = skyCommandStateSetter(presentedSkyFrameRef, setPresentedSkyFrameState);
   const canvasNodeRef = useRef<SkyCanvasNode | null>(null);
@@ -1767,9 +1748,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       try { context.dispose(); } finally { surface?.dispose(); }
     },
     resolveFrame: frame => {
-      if(!viewportActiveRef.current||frame.nativeImageGeneration!==canvasGenerationRef.current||!frame.readHipsTiles)return frame;
-      const hipsTiles=frame.readHipsTiles();
-      return hipsTiles===frame.hipsTiles?frame:{...frame,hipsTiles};
+      return viewportActiveRef.current ? resolveSkyCanvasResources(frame, canvasGenerationRef.current) : frame;
     },
     paint: (context, frame, size, done) => {
       // A queued pre-calibration frame must not move the newly locked scene
@@ -1792,13 +1771,10 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       const readyImageFrame = readyImages.prepare(Date.now(), reducedMotionRef.current, live.alignment.mode === "editing");
       const nameLayout = nameLayouts.prepare({context:frame.data?.context,mode:frame.mode},Date.now(),size.width,size.height,
         resolvedView.occlusionInsets,reducedMotionRef.current,live.alignment.mode === "editing");
-      const preparedRegionImages = frame.nativeImageGeneration === canvasGenerationRef.current ? frame.preparedRegionImages : [];
-      automaticContributionGroupsRef.current = frame.mode === "OBSERVATION" ? 0 : preparedRegionImages.length +
-        (frame.sdssOpticalImage && "preparedPublication" in frame.sdssOpticalImage ? 1 : 0);
-      const nativeImagesCurrent = frame.nativeImageGeneration === canvasGenerationRef.current;
-      const opticalImage = nativeImagesCurrent ? frame.sdssOpticalImage : null;
-      const infraredImage = frame.deepSkyImage?.canvasGeneration === canvasGenerationRef.current &&
-        frame.deepSkyImage.isCurrent?.() !== false ? frame.deepSkyImage : null;
+      const resourceInputs = skySceneResourceInputs(frame, { generation: canvasGenerationRef.current,
+        surface: context, previousLandscape: paintedSkyObjectsRef.current?.view?.landscape ?? null });
+      automaticContributionGroupsRef.current = frame.mode === "OBSERVATION" ? 0 : (resourceInputs.imagery?.preparedRegions?.length ?? 0) +
+        (resourceInputs.imagery?.targetOptical?.prepared ? 1 : 0);
       const sceneIdentity = createSkySceneFrameIdentity({
         observation: { data: frame.data, frameAt: frame.frameAt, stellarSupplement: frame.stellarSupplement,
           constellations: frame.constellations },
@@ -1807,31 +1783,11 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         canvas: { generation: canvasGenerationRef.current, width: size.width, height: size.height },
       }, presentedSkyFrameRef.current?.identity);
       const sceneInput: SkySceneFrameInput = { identity: sceneIdentity,
+        ...resourceInputs,
         work: { starTransitions: starTransitionFrame, ...(frame.mode === "OBSERVATION" ? {} : { readyImages: readyImageFrame }), starDrawing },
         layers: {
-          constellations: { images: nativeImagesCurrent ? frame.constellationImages : EMPTY_SKY_IMAGES,
-            enabled: frame.constellationsEnabled },
+          ...resourceInputs.layers,
           coordinateGrids: frame.coordinateGrids,
-          landscape: { enabled: frame.landscapeEnabled,
-            panorama: nativeImagesCurrent ? frame.landscapePanorama : null,
-            mask: nativeImagesCurrent ? frame.landscapeMask : null,
-            readiness: frame.landscapeOpacity, pending: !nativeImagesCurrent || frame.landscapePending,
-            failed: nativeImagesCurrent && frame.landscapeFailed,
-            previous: paintedSkyObjectsRef.current?.view?.landscape ?? null },
-        },
-        imagery: {
-          infrared: infraredImage,
-          targetOptical: { image: opticalImage,
-            ...(opticalImage && "preparedPublication" in opticalImage
-              ? { prepared: { surface: context, reference: opticalImage.reference, publicationHash: opticalImage.publicationHash } } : {}),
-            ...(opticalImage && ("sciencePublication" in opticalImage || "displayPublication" in opticalImage)
-              ? { calibrated: { surface: context, reference: opticalImage.reference, publicationHash: opticalImage.publicationHash } } : {}) },
-          preparedRegions: preparedRegionImages.map(image => ({ frame: image, port: { surface: context,
-            reference: image.reference, publicationHash: image.publicationHash } })),
-          hipsTiles: nativeImagesCurrent ? frame.hipsTiles : [],
-          bodyImages: nativeImagesCurrent ? frame.bodyImageBindings ?? [] : [],
-          galactic: { image: nativeImagesCurrent ? frame.galacticImage : null,
-            publication: nativeImagesCurrent ? frame.galacticPublication : null },
         },
       };
       const basis = sceneIdentity.view.manualBasis;
@@ -1918,29 +1874,17 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             nameLayout.commit(Date.now(),excludedNameKeys);
             setArtworkContributionUnavailable(context.artworkContributionsFailed?.() === true);
             paintedSkyObjectsRef.current = snapshot;
-            const paintedSdssOptical = liveSkyOpticalCompletion(sources.sdssOptical);
-            const paintedPreparedRegions = acceptedSkyPreparedRegionCompletions(sources.preparedRegions, preparedRegionImages);
-            const infrared = infraredImage;
-            const infraredField = infrared && infrared.isCurrent?.() !== false ?
-              [infrared, infrared.coarser, infrared.fallback].find(field => field?.image === sources.deepSkyImage &&
-                skyNativeImageIsCurrent(field.image)) : null;
-            const paintedDeepSkyImage = infrared && infraredField ? { ...infraredField,
-              canvasGeneration: infrared.canvasGeneration, coarser: null, fallback: null,
-              isCurrent: () => infrared.isCurrent?.() !== false && skyNativeImageIsCurrent(infraredField.image) } : null;
-            const paintedGalacticImage=sources.galacticImage&&sources.galacticImage.image===sceneInput.imagery?.galactic?.image&&
-              sources.galacticImage.publication===sceneInput.imagery?.galactic?.publication&&
-              skyNativeImageIsCurrent(sources.galacticImage.image)?sources.galacticImage:null;
-            const paintedOpticalHips=(sources.opticalHips??[]).filter(tile=>sceneInput.imagery?.hipsTiles?.includes(tile)&&skyNativeImageIsCurrent(tile.image));
-            const paintedBodyImages = completeSkyBodyImages(sources.bodyImages,sceneInput.imagery?.bodyImages);
+            const completedResources = completeSkySceneResources({ frame, input: sceneInput, sources,
+              landscape: snapshot?.view?.landscape ?? null });
             const resolvedBodyReferences = resolvedSkyBodyReferences(snapshot);
             const suppressedBodyReferences = snapshot?.suppressedBodyReferences ?? [];
-            const paintedLandscape = snapshot?.view?.landscape ?? null;
             const deepSkyAuxiliaryDecisions = copySkyDeepAuxiliaryDecisions(snapshot?.deepSkyAuxiliaryDecisions);
             const namedStars = snapshot?.namedStars ?? [];
             const constellationNames = paintAttempt.constellationCaptions.map(caption => caption.text);
             const catalogNames = paintAttempt.catalogNames;
             const controlNames = paintAttempt.controlNames;
-            setPresentedSkyFrame(previous => snapshot || paintedSdssOptical || paintedPreparedRegions.length || paintedDeepSkyImage || paintedGalacticImage ||paintedOpticalHips.length ||paintedBodyImages.length ?
+            setPresentedSkyFrame(previous => snapshot || completedResources.sdssOptical || completedResources.preparedRegions.length ||
+              completedResources.deepSkyImage || completedResources.galacticImage || completedResources.opticalHips.length || completedResources.bodyImages.length ?
               previous && previous.identity === sceneIdentity && previous.data === frame.data && previous.frameAt === frame.frameAt && previous.timePresentation === frame.timePresentation &&
                 previous.timePresentationScope === frame.timePresentationScope &&
                 previous.mode === frame.mode && previous.constellations === frame.constellations &&
@@ -1955,21 +1899,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
                   const next = namedStars[index]!;
                   return star.reference === next.reference && star.x === next.x && star.y === next.y && star.opacity === next.opacity;
                 }) &&
-                sameSkyOpticalCompletion(previous.sdssOptical, paintedSdssOptical) &&
-                sameSkyPreparedRegionCompletions(previous.preparedRegions, paintedPreparedRegions) &&
-                sameSkyHipsCompletion(previous.opticalHips,paintedOpticalHips)&&
-                sameSkyBodyImages(previous.bodyImages,paintedBodyImages)&&
+                sameSkyCompletedSceneResources(previous, completedResources) &&
                 sameSkyDeepAuxiliaryDecisions(previous.deepSkyAuxiliaryDecisions, deepSkyAuxiliaryDecisions) &&
-                previous.deepSkyImage?.image === paintedDeepSkyImage?.image &&
-                previous.deepSkyImage?.isCurrent?.() !== false &&
-                previous.deepSkyImage?.level === paintedDeepSkyImage?.level &&
-                previous.deepSkyImage?.fieldDegrees === paintedDeepSkyImage?.fieldDegrees &&
-                previous.deepSkyImage?.publicationHash === paintedDeepSkyImage?.publicationHash &&
-                previous.deepSkyImage?.sourceId === paintedDeepSkyImage?.sourceId &&
-                previous.deepSkyImage?.sourceMissingPixels === paintedDeepSkyImage?.sourceMissingPixels &&
-                previous.galacticImage?.image===paintedGalacticImage?.image&&
-                previous.galacticImage?.publication===paintedGalacticImage?.publication&&
-                previous.landscape === paintedLandscape &&
                 previous.suppressedBodyReferences.length === suppressedBodyReferences.length &&
                 previous.suppressedBodyReferences.every((reference, index) => reference === suppressedBodyReferences[index]) &&
                 previous.resolvedBodyReferences.length === resolvedBodyReferences.length &&
@@ -1979,11 +1910,9 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
                   timePresentationScope: frame.timePresentationScope, mode: frame.mode,
                   constellations: frame.constellations, constellationsEnabled: frame.constellationsEnabled,
                   stellarSupplement: frame.stellarSupplement,
-                  sdssOptical: paintedSdssOptical, preparedRegions: paintedPreparedRegions,
-                  galacticImage:paintedGalacticImage,opticalHips:paintedOpticalHips, nativeCanvasGeneration: paintAttempt.generation, deepSkyImage: paintedDeepSkyImage,
+                  ...completedResources, nativeCanvasGeneration: paintAttempt.generation,
                   deepSkyAuxiliaryDecisions, namedStars,
-                  resolvedBodyReferences, suppressedBodyReferences, constellationNames, catalogNames, controlNames,
-                  landscape: paintedLandscape, bodyImages:paintedBodyImages } : null);
+                  resolvedBodyReferences, suppressedBodyReferences, constellationNames, catalogNames, controlNames } : null);
             if (frame.sceneReady) orientation.presented.current = basis;
             setPresentedCamera(previous => previous && sameSkyViewBasis(previous.basis, basis) && previous.fov === fov && previous.center.x === center.x && previous.center.y === center.y ? previous : { basis, fov, center });
             setVerticalFovState(fov);
@@ -2027,23 +1956,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       completed.timePresentation === latest.timePresentation &&
       completed.timePresentationScope === latest.timePresentationScope &&
       completed.mode === latest.mode && completed.verticalFovDeg === latest.verticalFovDeg &&
-      completed.nativeImageGeneration === latest.nativeImageGeneration && completed.deepSkyImage === latest.deepSkyImage &&
-      sameSkyOpticalInput(completed.sdssOpticalImage, latest.sdssOpticalImage) &&
-      sameSkyPreparedRegionInputs(completed.preparedRegionImages, latest.preparedRegionImages) &&
-      completed.constellations === latest.constellations && completed.constellationImages === latest.constellationImages &&
-      completed.hipsTiles === latest.hipsTiles &&
-      completed.readHipsTiles === latest.readHipsTiles &&
-      sameSkyBodyImages(completed.bodyImageBindings,latest.bodyImageBindings)&&
-      completed.galacticImage === latest.galacticImage &&
-      completed.galacticPublication === latest.galacticPublication &&
-      completed.constellationsEnabled === latest.constellationsEnabled &&
-      completed.landscapeEnabled === latest.landscapeEnabled &&
+      sameSkyCanvasResources(completed, latest) && completed.constellations === latest.constellations &&
       completed.coordinateGrids === latest.coordinateGrids &&
-      completed.landscapePanorama === latest.landscapePanorama &&
-      completed.landscapeMask === latest.landscapeMask &&
-      completed.landscapeOpacity === latest.landscapeOpacity &&
-      completed.landscapePending === latest.landscapePending &&
-      completed.landscapeFailed === latest.landscapeFailed &&
       completed.stellarSupplement === latest.stellarSupplement &&
       completed.owner === latest.owner && completed.inspection.spotId === latest.inspection.spotId,
     presented: (frame, size) => {
@@ -2753,7 +2667,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       identity.canvas.generation !== canvasGenerationRef.current || identity.view.mode !== mode ||
       (picked && picked.identity !== identity) ||
       !skyPresentedTimeCurrent(time.at, identity.observation.frameAt, time.mode === "PLAYING", time.runStartAt)) return null;
-    return frame;
+    return { ...frame, ...liveSkySceneResources(frame, canvasGenerationRef.current) };
   };
   const openOpticalSources = (credit: Pick<SkyOpticalSourceCredit, "sourceRoute">) => {
     const frame = currentPaintedSkySourceFrame();
@@ -3263,16 +3177,11 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   // not share the summary page header or vertical content stack: the canvas,
   // compact sensor telemetry, recovery and time ruler stay co-located so a
   // real device can be rotated without losing the selected formal spot/time.
-  const deepSkyImagePresented = Boolean(presentedSceneCurrent && nativeCanvasMounted &&
-    canvasSize.width > 0 && canvasSize.height > 0 && presentedSkyFrame?.deepSkyImage &&
-    presentedSkyFrame.deepSkyImage.isCurrent?.() !== false);
-  const presentedGalacticPublication=presentedSceneCurrent&&nativeCanvasMounted&&
-    presentedSkyFrame?.nativeCanvasGeneration===canvasGenerationRef.current&&
-    presentedSkyFrame.galacticImage&&skyNativeImageIsCurrent(presentedSkyFrame.galacticImage.image)
-    ?presentedSkyFrame.galacticImage.publication:null;
-  const presentedBodyImages=presentedSceneCurrent&&nativeCanvasMounted&&
-    presentedSkyFrame?.nativeCanvasGeneration===canvasGenerationRef.current
-    ?presentedSkyFrame.bodyImages.filter(value=>skyNativeImageIsCurrent(value.image)):[];
+  const presentedImageResources = liveSkySceneResources(presentedSceneCurrent && nativeCanvasMounted &&
+    canvasSize.width > 0 && canvasSize.height > 0 ? presentedSkyFrame : null, canvasGenerationRef.current);
+  const deepSkyImagePresented = Boolean(presentedImageResources.deepSkyImage);
+  const presentedGalacticPublication = presentedImageResources.galacticImage?.publication ?? null;
+  const presentedBodyImages = presentedImageResources.bodyImages;
   const sourceMetadataRef = useRef({ constellation: constellationCatalog.data,
     supplement: stellarSupplement.sources, wideField: wideField.publication });
   sourceMetadataRef.current = { constellation: constellationCatalog.data,
@@ -3297,31 +3206,24 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   };
   const openGalacticSources = (publication: GalacticImageManifestData) => {
     const frame = currentPaintedSkySourceFrame();
-    if (frame?.galacticImage?.publication !== publication || !skyNativeImageIsCurrent(frame.galacticImage.image)) return;
+    if (frame?.galacticImage?.publication !== publication) return;
     return openSkySources(SOURCE_READING_ROUTE, skyGalacticSourceDocument(publication));
   };
   const openBodyImageSources = (binding: SkyBodyImageBinding) => {
     const frame = currentPaintedSkySourceFrame();
     if (!frame?.bodyImages.some(current => current.reference === binding.reference && current.publication === binding.publication &&
-      current.image === binding.image && skyNativeImageIsCurrent(current.image))) return;
+      current.image === binding.image)) return;
     return openSkySources(skySourceSelectionPath({ kind: "body", reference: binding.reference,
       publicationHash: binding.publication.publicationHash }));
   };
-  const presentedSdssOptical = presentedSceneCurrent && nativeCanvasMounted &&
-    canvasSize.width > 0 && canvasSize.height > 0 &&
-    presentedSkyFrame?.nativeCanvasGeneration === canvasGenerationRef.current
-    ? liveSkyOpticalCompletion(presentedSkyFrame.sdssOptical) : null;
+  const presentedSdssOptical = presentedImageResources.sdssOptical;
   const sdssOpticalImagePresented = Boolean(presentedSdssOptical);
   const opticalImageCredit = skyOpticalSourceCredit(presentedSdssOptical);
-  const presentedPreparedRegions = presentedSceneCurrent && nativeCanvasMounted && canvasSize.width > 0 && canvasSize.height > 0 &&
-    presentedSkyFrame?.nativeCanvasGeneration === canvasGenerationRef.current
-    ? presentedSkyFrame.preparedRegions.map(liveSkyOpticalCompletion).filter((value): value is import("./sky-sdss-optical-completion").SkyPreparedOpticalCompletion =>
-      value?.kind === "prepared") : [];
+  const presentedPreparedRegions = presentedImageResources.preparedRegions;
   const preparedRegionCredits = presentedPreparedRegions.flatMap(receipt => {
     const credit = skyOpticalSourceCredit(receipt); return credit ? [credit] : [];
   });
-  const hipsImageCredit=skyHipsSourceCredit(presentedSceneCurrent&&nativeCanvasMounted&&
-    presentedSkyFrame?.nativeCanvasGeneration===canvasGenerationRef.current?presentedSkyFrame.opticalHips:null);
+  const hipsImageCredit = skyHipsSourceCredit(presentedImageResources.opticalHips);
   const sdssOpticalStatus = sdssOpticalPresentation({
     requested: sdssOptical.requested,
     photoPresented: sdssOpticalImagePresented,

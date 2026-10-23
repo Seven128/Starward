@@ -1,4 +1,4 @@
-import { liveSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput,
+import { acceptedSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput,
   type SkyPreparedOpticalCompletion, type SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
 import type { SkyPreparedOpticalImage } from "./sky-sdss-optical-frame";
 
@@ -13,13 +13,11 @@ export function sameSkyPreparedRegionCompletions(a: readonly SkyPreparedOpticalC
 export function acceptedSkyPreparedRegionCompletions(sources: readonly SkyTargetOpticalCompletion[] | undefined,
   frames: readonly SkyPreparedOpticalImage[]): readonly SkyPreparedOpticalCompletion[] {
   return (sources ?? []).flatMap(source => {
-    const live = liveSkyOpticalCompletion(source);
-    if (!live || live.kind !== "prepared" || !live.reference.startsWith("REGION:")) return [];
-    const frame = frames.find(candidate => candidate.reference === live.reference &&
-      candidate.publicationHash === live.publicationHash && candidate.preparedPublication === live.preparedPublication);
-    return frame && live.participatingFields.every(field => [frame, frame.coarser, frame.fallback].some(ready =>
-      ready && field.image === ready.image && field.asset === ready.asset && field.level === ready.level &&
-      field.fieldDegrees === ready.fieldDegrees)) ? [live] : [];
+    if (source.kind !== "prepared" || !source.reference.startsWith("REGION:")) return [];
+    const live = acceptedSkyOpticalCompletion(source, frames.find(candidate =>
+      candidate.reference === source.reference && candidate.publicationHash === source.publicationHash &&
+      candidate.preparedPublication === source.preparedPublication));
+    return live?.kind === "prepared" ? [live] : [];
   });
 }
 export function skyPreparedRegionImages(frames: readonly SkyPreparedOpticalImage[]): readonly object[] {

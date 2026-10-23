@@ -10,7 +10,7 @@ import {completeLegacySkyOptical,completeScienceSkyOptical,completePreparedSkyOp
 import {skySdssOpticalFrame,skyPreparedOpticalFrame} from "./sky-sdss-optical-frame";
 import {assertSdssScienceOpticalManifest, opticalPublicationReference, type SdssScienceOpticalManifest} from "@starward/miniapp-contracts";
 import {sdssOpticalPresentation} from "./sky-sdss-optical-selection";
-import {skyPagePaintCommit,skyPageSceneTestDependencies} from "./sky-optical-page-test-support";
+import {skyPageCompletedResourceTestFrame,skyPagePaintCommit,skyPageSceneTestDependencies} from "./sky-optical-page-test-support";
 import {sameSkyBodyImages} from "./sky-body-image-completion";
 import {preparedOpticalTestPublication} from "./sky-prepared-optical-test-support";
 const preparedFixture=preparedOpticalTestPublication("page");
@@ -31,10 +31,13 @@ const optical:SkySdssOpticalImage={image:fine,reference:"M:63",publicationHash:"
 const completion=(image:object=fine)=>completeLegacySkyOptical(optical,image)!;
 function gates(input:Record<string,unknown>){
   const state={liveSkyOpticalCompletion,canvasGenerationRef:{current:1},sdssOpticalPresentation,...input};
-  const presentedSdssOptical=execute(nodes.get("presentedSdssOptical")!,state);
-  const sdssOpticalImagePresented=execute(nodes.get("sdssOpticalImagePresented")!,{...state,presentedSdssOptical});
-  const deepSkyImagePresented=execute(nodes.get("deepSkyImagePresented")!,state);
-  return {...state,presentedSdssOptical,sdssOpticalImagePresented,deepSkyImagePresented};
+  const frame=input.presentedSkyFrame as object|null|undefined;
+  const presentedImageResources=execute(nodes.get("presentedImageResources")!,{...state,
+    presentedSkyFrame:frame?skyPageCompletedResourceTestFrame(frame):frame});
+  const presentedSdssOptical=execute(nodes.get("presentedSdssOptical")!,{presentedImageResources});
+  const sdssOpticalImagePresented=execute(nodes.get("sdssOpticalImagePresented")!,{presentedSdssOptical});
+  const deepSkyImagePresented=execute(nodes.get("deepSkyImagePresented")!,{presentedImageResources});
+  return {...state,presentedImageResources,presentedSdssOptical,sdssOpticalImagePresented,deepSkyImagePresented};
 }
 
 test("all actual ready primary/parent identities schedule a same-camera scene update",()=>{
@@ -92,7 +95,8 @@ test("status and recovery share live accepted generation; IR remains independent
   let opticalCurrent=true,infraredCurrent=true;const image={};
   const retire=registerSkyNativeImageLifetime(image,()=>opticalCurrent);
   const painted=completeLegacySkyOptical({...optical,image},image)!;
-  const frame={sdssOptical:painted,nativeCanvasGeneration:1,deepSkyImage:{reference:"M:63",isCurrent:()=>infraredCurrent}};
+  const frame={sdssOptical:painted,nativeCanvasGeneration:1,deepSkyImage:{reference:"M:63",image:{},
+    level:"DETAIL",fieldDegrees:1,canvasGeneration:1,isCurrent:()=>infraredCurrent,coarser:null,fallback:null}};
   const input={presentedSceneCurrent:true,nativeCanvasMounted:true,canvasSize:{width:420,height:780},canvasError:null,
     presentedSkyFrame:frame,entry:{objectRef:"M:63"},sdssOptical:{requested:true,failed:false,loading:false,image,coarser:null,
       publication:{objectRef:"M:63",publicationHash:optical.publicationHash}}};

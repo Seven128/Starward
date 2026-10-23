@@ -14,6 +14,7 @@ import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
 import { completeLegacySkyOptical, completeTargetSkyOptical, liveSkyOpticalCompletion,
   type SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
 import { skyOpticalSourceCredit, type SkyOpticalSourceCredit } from "./sky-optical-source-credit";
+import { skyPageCompletedResourceTestFrame, skyPageSceneTestDependencies } from "./sky-optical-page-test-support";
 
 const fullHubbleCredit = "NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)";
 const prepared = JSON.parse(readFileSync(new URL("./sky-prepared-optical-footprint.fixture.json", import.meta.url),
@@ -143,14 +144,15 @@ const initializers = new Map<string, string>();
 let caption: string | undefined;
 function visit(node: ts.Node) {
   if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer &&
-      ["presentedSdssOptical", "opticalImageCredit"].includes(node.name.text))
+      ["presentedImageResources", "presentedSdssOptical", "opticalImageCredit"].includes(node.name.text))
     initializers.set(node.name.text, node.initializer.getText(page));
   if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(page) === "SkyOpticalImageCredit") caption = node.getText(page);
   ts.forEachChild(node, visit);
 }
 visit(page);
 assert(initializers.has("presentedSdssOptical") && initializers.has("opticalImageCredit") && caption);
-const pageCode = ts.transpileModule(`const presentedSdssOptical=${initializers.get("presentedSdssOptical")};
+const pageCode = ts.transpileModule(`const presentedImageResources=${initializers.get("presentedImageResources")};
+const presentedSdssOptical=${initializers.get("presentedSdssOptical")};
 const opticalImageCredit=${initializers.get("opticalImageCredit")}; result=${caption};`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
 test("actual page caption consumer follows accepted frame, Canvas generation and liveness, not latest focus", () => {
@@ -158,10 +160,10 @@ test("actual page caption consumer follows accepted frame, Canvas generation and
   for (const [sceneCurrent, mounted, generation, expected] of [
     [true, true, 7, true], [false, true, 7, false], [true, false, 7, false], [true, true, 8, false],
   ] as const) {
-    const context = { exports: {}, require: () => ({ jsx, jsxs: jsx }), liveSkyOpticalCompletion, skyOpticalSourceCredit,
+    const context = { ...skyPageSceneTestDependencies, exports: {}, require: () => ({ jsx, jsxs: jsx }), liveSkyOpticalCompletion, skyOpticalSourceCredit,
       SkyOpticalImageCredit: Credit, presentedSceneCurrent: sceneCurrent, nativeCanvasMounted: mounted,
       canvasSize: { width: 390, height: 844 }, canvasGenerationRef: { current: 7 },
-      presentedSkyFrame: { nativeCanvasGeneration: generation, sdssOptical: state.completion },
+      presentedSkyFrame: skyPageCompletedResourceTestFrame({ nativeCanvasGeneration: generation, sdssOptical: state.completion }),
       selectedDeepSkyEntry: { reference: "M:82" }, sdssOptical: { publication: science },
       alignmentEditing: false, openOpticalSources() {}, result: null as Element | null };
     vm.runInNewContext(pageCode, context);

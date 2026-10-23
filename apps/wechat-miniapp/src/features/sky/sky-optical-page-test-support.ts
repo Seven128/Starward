@@ -7,6 +7,7 @@ import { skyNativeImageIsCurrent } from "./sky-artwork-loader";
 import * as bodyImages from "./sky-body-image-completion";
 import {createSkyViewBasis,sameSkyViewBasis} from "./sky-view-projection";
 import * as preparedRegions from "./sky-prepared-region-frame";
+import * as sceneResources from "./sky-scene-resources";
 import { createSkyStarTransitions } from "./sky-star-transition";
 import { createSkyStarDrawPreparation } from "./sky-star-draw-preparation";
 import { createSkyReadyImages } from "./sky-ready-presentation";
@@ -24,7 +25,7 @@ import { createSkySceneFrameIdentity, type SkySceneFrameIdentity, type SkySceneF
 import type { SkyPickSnapshot } from "./sky-object-picking";
 export const skyPageSceneTestDependencies={liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput,
   copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,sameSkyHipsCompletion,skyNativeImageIsCurrent,sameSkyViewBasis,
-  ...bodyImages,...preparedRegions,...labelPresentation,constellationVisibility,exactSkyTimeFrame,sameSkyCatalogNames,pickSkyCatalogName,
+  ...bodyImages,...preparedRegions,...sceneResources,...labelPresentation,constellationVisibility,exactSkyTimeFrame,sameSkyCatalogNames,pickSkyCatalogName,
   sameSkyControlNames,pickSkyControlName,resolvedSkyBodyReferences,paintedSkyBoundsVisible,paintedSkyPointVisible,
   projectSkySelectionMarker,skyObjectPositionIsCurrent,locatedBodyOccludesMarker,skyConstellationAvoidsPoints,createSkySceneFrameIdentity};
 
@@ -32,6 +33,14 @@ export const skyPageSceneTestDependencies={liveSkyOpticalCompletion,sameSkyOptic
  * Supplied publications/bitmaps remain unchanged; absence is never success. */
 export const skyPageCanvasTestFrame = <T extends object>(frame: T) => ({ mode: "NIGHT", heading: null, pose: null,
   manualBasis: null, verticalFovDeg: 45, timePresentation: null, preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
+
+/** Empty resource declarations for a controlled accepted reader. This supplies
+ * no draw receipt or success; a test's actual family completions override them. */
+export function skyPageCompletedResourceTestFrame<T extends object>(frame: T) {
+  const absent: sceneResources.SkyCompletedSceneResources = { sdssOptical: null, preparedRegions: [], deepSkyImage: null,
+    galacticImage: null, opticalHips: [], bodyImages: [], landscape: null };
+  return { ...absent, ...frame };
+}
 
 /** Controlled empty receipt for page-camera tests that replace the renderer.
  * It conveys no scientific content, image credit or actual draw success. */
@@ -50,7 +59,7 @@ export function skyPageAcceptedTestFrame<F extends object,
 ) {
   const identity = createSkySceneFrameIdentity(input);
   return {
-    frame: { ...frame, identity, data: identity.observation.data, frameAt: identity.observation.frameAt,
+    frame: { ...skyPageCompletedResourceTestFrame(frame), identity, data: identity.observation.data, frameAt: identity.observation.frameAt,
       stellarSupplement: identity.observation.stellarSupplement, mode: identity.view.mode,
       nativeCanvasGeneration: identity.canvas.generation },
     picked: { ...picked, identity, frameAt: identity.observation.frameAt ?? "",

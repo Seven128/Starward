@@ -9,7 +9,11 @@
 - 此前的 release-code（SDK、三个 Miniapp workspace 类型与各完整测试）、native App/独立 API/admin 消费者、后端 release build、WEAPP release/platform owner、非部署 CI bundle 与 built-candidate inspection 均已通过。OCI 构建因前一步失败 **skipped**，不算通过。
 - 构建存在 CSS 顺序 warning，但本次实际失败来自基础设施 assertion。`check:miniapp:release-code` 不等于扩展的 `check:miniapp:fast`；后者仍不据此冒称执行。
 
-旧 run 的失败状态不被本机修后结果覆盖，须在包含修复的后续提交重新运行。
+旧 run 的失败状态不被本机修后结果覆盖。含下述修复的新检查点 `8fdf9b6b8efe93a98ab2c798446ea057958e2310` 已推送并精确远端读回：
+
+- [Context structure 39993227368](https://github.com/Seven128/Starward/actions/runs/39993227368)：**success**。
+- [Product CI 39993219808](https://github.com/Seven128/Starward/actions/runs/39993219808)：**success**，head SHA精确为上述8fdf9b6b；2026-10-23 17:23:27 UTC终态。job120550014445实际通过release-code、native App/API/admin消费者、后端构建、非部署WEAPP包/inspection、此前失败的隔离基础设施及OCI构建。
+- 本次工作区后续Sky资源家族及规则配置新改动不在这个提交/CI范围内。
 
 ## 两个同责任的夹具假设
 
@@ -34,4 +38,4 @@
 
 只使用自建 compose `starward-ci-repair-20261024-d1873e` 的 127.0.0.1:60729/59479、合成随机库/queue。结束已停止且无监听；容器/卷保留，未删除。原共享 Docker 55432/56379 未操作。没有 IDE、手机、ADB、共享 API/桥/队列、VPN 或现用/冻结构建操作。
 
-独立审查已完整核对两文件 diff、生产退休/worker owner及四份失败/修后日志，另行执行 runner 语法和限定 diff 检查，均通过；未发现该范围未解决的 P1/P2。审阅者没有修改文件或重启服务。后续远端 CI 仍待包含修复的提交，本地通过不关闭目标运行时、部署/长期运行或完整 Goal。
+独立审查已完整核对两文件 diff、生产退休/worker owner及四份失败/修后日志，另行执行 runner 语法和限定 diff 检查，均通过；未发现该范围未解决的 P1/P2。审阅者没有修改文件或重启服务。含修复的远端CI终态见上；本地通过不关闭目标运行时、部署/长期运行或完整Goal。

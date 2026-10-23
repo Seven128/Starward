@@ -13,7 +13,7 @@ import type { SkyArtworkLevelsContribution, SkyArtworkLevelsDraw } from "./sky-a
 import { registerSkyNativeImageLifetime, skyNativeImageIsCurrent } from "./sky-artwork-loader";
 import { skySdssOpticalFrame, skyPreparedOpticalFrame } from "./sky-sdss-optical-frame";
 import { completeLegacySkyOptical, completeScienceSkyOptical, completePreparedSkyOptical, liveSkyOpticalCompletion,
-  sameSkyOpticalCompletion, sameSkyOpticalInput } from "./sky-sdss-optical-completion";
+  acceptedSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput } from "./sky-sdss-optical-completion";
 
 import * as exactIdentity from "./sky-target-optical-identity";
 import { preparedOpticalTestPublication } from "./sky-prepared-optical-test-support";
@@ -74,6 +74,11 @@ test("actual positive fine and coarse keep all exact fields and an immutable rec
   assert(completed);
   assert.strictEqual(completed.sciencePublication, publication);
   assert.equal(completed.reference, publication.objectRef); assert.equal(completed.publicationHash, publication.publicationHash);
+  assert.strictEqual(acceptedSkyOpticalCompletion(completed, w.frame), completed);
+  assert.equal(acceptedSkyOpticalCompletion(completed, { ...w.frame, sciencePublication: replacement }), null,
+    "an equal bitmap cannot lend a different publication to this attempt");
+  assert.equal(acceptedSkyOpticalCompletion({ ...completed, kind: "prepared", preparedPublication: publication } as any, w.frame), null,
+    "a different optical family cannot borrow this receipt");
   assert.deepEqual(completed.participatingFields.map(field => [field.slot, field.image, field.level, field.asset]),
     [["fine", w.image, "DETAIL", publication.levels.DETAIL], ["coarse", w.parent, "MEDIUM", publication.levels.MEDIUM]]);
   assert(Object.isFrozen(completed)); assert(Object.isFrozen(completed.participatingFields));

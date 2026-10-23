@@ -16,7 +16,7 @@ import { skyOpticalSourceCredit } from "./sky-optical-source-credit";
 import { skyHipsSourceCredit } from "./sky-hips-source-credit";
 import type { ContextVersion } from "../../services/observation-context-version";
 import type { SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
-import { skyPageAcceptedTestFrame } from "./sky-optical-page-test-support";
+import { skyPageAcceptedTestFrame, skyPageSceneTestDependencies } from "./sky-optical-page-test-support";
 import { createSkyViewBasis } from "./sky-view-projection";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
 
@@ -87,6 +87,7 @@ function harness(options: { unloadedMap?: boolean } = {}) {
   },{sdssOptical:completion("M:51"),preparedRegions:[],opticalHips:[],bodyImages:[]},
   {catalogVersion:"controlled-navigation",catalogHash:"controlled-navigation",objects:[]});
   const sandbox: Record<string, any> = {
+    ...skyPageSceneTestDependencies,
     contextSession: session, observationTime: time, timeBinding: binding, committedAt: at,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
     activeContext: context, timeSaving: false, mode: "NIGHT", alignmentMode: "auto", active: true,

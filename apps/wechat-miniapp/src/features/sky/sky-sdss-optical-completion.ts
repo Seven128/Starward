@@ -133,6 +133,27 @@ export function liveSkyOpticalCompletion(completion: SkyTargetOpticalCompletion 
   return Object.freeze({ ...completion, participatingFields: Object.freeze(fields) }) as SkyTargetOpticalCompletion;
 }
 
+/** Join an actual completion to this paint attempt's admitted descriptors.
+ * Current discovery or another family's equal bitmap/hash cannot lend its
+ * publication to a completed frame. Native liveness remains field-specific. */
+export function acceptedSkyOpticalCompletion(completion: SkyTargetOpticalCompletion | null | undefined,
+  frame: SkyTargetOpticalImage | null | undefined): SkyTargetOpticalCompletion | null {
+  const live = liveSkyOpticalCompletion(completion);
+  if (!frame || !live || live.reference !== frame.reference || live.publicationHash !== frame.publicationHash) return null;
+  const fields = [frame, frame.coarser, frame.fallback];
+  if (live.kind === "legacy") {
+    if (!isSkyLegacyOpticalFrame(frame) || !fields.some(field => field && fieldEqual(field, live.field))) return null;
+  } else {
+    const identity = skyExactTargetOpticalIdentity(frame);
+    if (!identity || identity.kind !== live.kind) return null;
+    const publication = live.kind === "science" ? live.sciencePublication :
+      live.kind === "display" ? live.displayPublication : live.preparedPublication;
+    if (identity.publication !== publication || !live.participatingFields.every(field =>
+      fields.some(ready => ready && "asset" in ready && ready.asset === field.asset && fieldEqual(ready, field)))) return null;
+  }
+  return live;
+}
+
 export function sameSkyOpticalCompletion(a: SkyTargetOpticalCompletion | null | undefined,
   b: SkyTargetOpticalCompletion | null | undefined): boolean {
   if (!a || !b) return !a && !b;
