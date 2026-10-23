@@ -13,6 +13,9 @@ export function createSkyClient(options: { baseUrl?: string; fetcher?: typeof fe
       if (!response.ok) throw new Error(`sky_http_${response.status}`);
       const value: unknown = await response.json();
       if (!isSkyContext(value)) throw new Error("sky_response_invalid");
+      if (!value.context || Object.entries(query).some(([key, expected]) => key === "at"
+        ? Date.parse(value.context.at) !== Date.parse(String(expected))
+        : value.context[key as keyof SkyQuery] !== expected)) throw new Error("sky_response_context_mismatch");
       return value;
     },
   };

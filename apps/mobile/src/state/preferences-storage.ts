@@ -10,10 +10,13 @@ export async function createPreferenceStorage(): Promise<PreferenceRuntimeStorag
       const row = await database.getFirstAsync<{ value: string }>("SELECT value FROM preference_runtime_state WHERE key = ?", key);
       return row?.value ?? null;
     },
-    async write(key, value) {
-      await database.withExclusiveTransactionAsync(async (transaction) => {
-        await transaction.runAsync("INSERT INTO preference_runtime_state(key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at", key, value, new Date().toISOString());
-      });
+    async compareAndSwap(key, expected, value) {
+      // The comparison is part of the write statement. A transaction around an
+      // unconditional write would still lose updates from another connection.
+      const result = expected === null
+        ? await database.runAsync("INSERT INTO preference_runtime_state(key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO NOTHING", key, value, new Date().toISOString())
+        : await database.runAsync("UPDATE preference_runtime_state SET value = ?, updated_at = ? WHERE key = ? AND value = ?", value, new Date().toISOString(), key, expected);
+      return result.changes === 1;
     },
     close: () => database.closeAsync(),
   };

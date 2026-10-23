@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -29,7 +29,7 @@ import {
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { useTabRestorationEvidence } from "../../shell/TabRestorationEvidence";
-import { useShellStore } from "../../state/shell-store";
+import { useDecisionSnapshot } from "../../state/use-decision-snapshot";
 
 type ViewKey = "mobile" | "camera" | "preset" | "checklist" | "version" | "ai";
 const palette = colors.planning;
@@ -101,10 +101,12 @@ function State({
   title,
   body,
   retry,
+  retryLabel = "重试",
 }: {
   title: string;
   body: string;
   retry?: () => void;
+  retryLabel?: string;
 }) {
   return (
     <View style={styles.panel}>
@@ -112,7 +114,7 @@ function State({
       <Text style={styles.evidenceBody}>{body}</Text>
       {retry ? (
         <Pressable onPress={retry} style={styles.retry}>
-          <Text style={styles.retryText}>重试</Text>
+          <Text style={styles.retryText}>{retryLabel}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -280,75 +282,94 @@ export function ShootingScreen() {
     ownerType: "canvas",
     ownerId: "sky-shooting-canvas-owner",
   });
-  const location = useShellStore((state) => state.location);
-  const profiles = useShellStore((state) => state.profiles);
-  const activeProfileId = useShellStore((state) => state.activeProfileId);
-  const profile = profiles.find((item) => item.id === activeProfileId);
+  const context = useDecisionSnapshot();
+  const profile = context.profile;
   const [active, setActive] = useState<ViewKey>("camera");
   const [checklist, setChecklist] = useState<ChecklistItem[]>(() =>
     mergeChecklist([], []),
   );
   const [checklistRevision, setChecklistRevision] = useState(1);
   const [saved, setSaved] = useState<ShootingPlanVersion[]>([]);
-  const scheduledAt = useMemo(
-    () => new Date(Date.now() + 6 * 60 * 60_000).toISOString(),
-    [],
-  );
-  const nightDate = scheduledAt.slice(0, 10);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveConflict, setSaveConflict] = useState(false);
+  const saveAttempt = useRef<ShootingPlanVersion | null>(null);
+  const saveInFlight = useRef(false);
+  const [localReady, setLocalReady] = useState(false);
+  const [localReadError, setLocalReadError] = useState(false);
+  const [readAttempt, setReadAttempt] = useState(0);
   const focalLengthMm = profile?.lensFocalLengthsMm[0] ?? 24;
+  const request = {
+    latitude: context.observer.latitude, longitude: context.observer.longitude,
+    timezone: context.timezone, nightDate: context.observingNight, locationId: context.observer.locationId,
+    scheduledAt: context.moment, target: context.target, focalLengthMm, acceptsStacking: true,
+  };
   const query = useQuery({
-    queryKey: [
-      "shooting-preview",
-      location.latitude,
-      location.longitude,
-      scheduledAt,
-      focalLengthMm,
-    ],
-    queryFn: ({ signal }) =>
-      client.get(
-        {
-          latitude: location.latitude ?? 22.529,
-          longitude: location.longitude ?? 113.9468,
-          timezone: "Asia/Shanghai",
-          nightDate,
-          locationId: location.label || "manual-location",
-          scheduledAt,
-          focalLengthMm,
-          acceptsStacking: true,
-        },
-        signal,
-      ),
+    queryKey: ["shooting-preview", request],
+    queryFn: ({ signal }) => client.get(request, signal),
+    enabled: context.target === "milky-way-core",
     retry: 1,
   });
   useEffect(() => {
+    let active = true;
+    setLocalReadError(false);
     void Promise.all([loadLocalChecklist(), loadLocalShootingVersions()]).then(
       ([local, versions]) => {
+        if (!active) return;
         if (local) {
           setChecklist(mergeChecklist(local.items, []));
           setChecklistRevision(local.revision);
         }
         setSaved(versions);
+        setLocalReady(true);
       },
-    );
-  }, []);
+    ).catch(() => { if (active) setLocalReadError(true); });
+    return () => { active = false; };
+  }, [readAttempt]);
   const persistChecklist = (items: ChecklistItem[]) => {
     const revision = checklistRevision + 1;
     setChecklist(items);
     setChecklistRevision(revision);
     void saveLocalChecklist(items, revision);
   };
-  const persistVersion = () => {
-    if (!query.data) return;
-    const previous = saved.at(-1) ?? null;
-    const next = saveShootingPlanVersion(
-      previous,
-      query.data.camera.input,
-      { iso: query.data.camera.result.settings.iso },
-      new Date().toISOString(),
-    );
-    void saveLocalShootingVersion(next).then(() =>
-      setSaved((all) => [...all, next]),
-    );
+  const persistVersion = (resolveConflict = false) => {
+    if (!localReady || saveInFlight.current) return;
+    if (!saveAttempt.current) {
+      if (!query.data) return;
+      // Capture all input, rule output and identity once. A later Context or
+      // query result must never change an unconfirmed save's retry contents.
+      saveAttempt.current = JSON.parse(JSON.stringify(saveShootingPlanVersion(
+        saved.at(-1) ?? null,
+        query.data.camera.input,
+        { iso: query.data.camera.result.settings.iso },
+        new Date().toISOString(),
+      ))) as ShootingPlanVersion;
+    }
+    saveInFlight.current = true;
+    setSaving(true);
+    setSaveError(null);
+    void (async () => {
+      let next = saveAttempt.current!;
+      // A definite version collision is distinct from an uncertain write. Only
+      // this explicit action may save the retained input as a new revision.
+      if (resolveConflict && saveConflict) {
+        const versions = await loadLocalShootingVersions();
+        const previous = versions.filter(item => item.id === next.id).reduce<ShootingPlanVersion | null>((latest, item) => !latest || item.revision > latest.revision ? item : latest, null);
+        next = saveShootingPlanVersion(previous, next.input, next.userOverrides, new Date().toISOString());
+        saveAttempt.current = next;
+      }
+      setSaveConflict(false);
+      setSaved(await saveLocalShootingVersion(next));
+      saveAttempt.current = null;
+    })().catch((error) => {
+      const next = saveAttempt.current!;
+      const conflict = error instanceof Error && error.message === "shooting_version_conflict";
+      setSaveConflict(conflict);
+      setSaveError(conflict
+        ? `本机已有不同的 r${next.revision}，原地点和时刻 ${next.input.scheduledAt} 已保留。可读取最新记录后，将原方案另存为新版本。`
+        : `拍摄版本 r${next.revision} 保存未确认；原地点和时刻 ${next.input.scheduledAt} 已保留，重试将继续保存这一版。`);
+    })
+      .finally(() => { saveInFlight.current = false; setSaving(false); });
     setActive("version");
   };
   const camera = query.data?.camera;
@@ -361,11 +382,15 @@ export function ShootingScreen() {
       >
         {restoration.evidence}
         <Text testID={query.data ? "shooting-data-ready" : undefined} style={styles.eyebrow}>摄影助手</Text>
-        <Text style={styles.title}>银河广角 · 样例计划</Text>
+        <Text style={styles.title}>摄影方案 · {context.observer.label}</Text>
         <Text style={styles.subtitle}>
           先给可执行参数，再展开假设；不保证成片或现场条件。
         </Text>
         <DecisionContextRevision />
+        {context.target !== "milky-way-core" ? <State title="所选目标尚无摄影规则" body="当前摄影规则仅支持银河；目标选择已保留，不套用银河参数。" /> : null}
+        {query.data ? <Evidence testID="shooting-condition-time" title={`拍摄时刻 ${query.data.context.scheduledAt}`} body={`天气采样 ${query.data.conditions.weatherSampleAt ?? "未知"} · 与拍摄时刻相差 ${query.data.conditions.weatherSampleOffsetMinutes ?? "未知"} 分钟`} meta="天气按其实际小时采样使用；精确拍摄时刻保留在方案版本中。" /> : null}
+        {localReadError ? <State title="本机拍摄记录暂不可读" body="读取完成后才能保存新版本，已有记录保留。" retry={() => setReadAttempt(value => value + 1)} /> : null}
+        {saveError ? <State title={saveConflict ? "拍摄版本发生冲突" : "拍摄版本保存未确认"} body={saveError} retry={() => persistVersion(saveConflict)} retryLabel={saveConflict ? "另存原方案为新版本" : "重试"} /> : null}
         {query.isLoading ? (
           <State
             title="正在生成拍摄方案…"
@@ -509,12 +534,13 @@ export function ShootingScreen() {
           testID={actions[4].id}
           accessibilityRole="button"
           accessibilityLabel={`${actions[4].stableControlId}:${actions[4].accessibilityName}`}
-          accessibilityState={{ selected: active === "version", busy: false }}
-          onPress={persistVersion}
+          accessibilityState={{ selected: active === "version", busy: saving }}
+          disabled={!localReady || (!query.data && !saveAttempt.current) || saving || saveConflict}
+          onPress={() => persistVersion()}
           style={styles.saveButton}
         >
           <Text style={styles.saveButtonText}>
-            保存到行程 revision r{(saved.at(-1)?.revision ?? 0) + 1}
+            {saving ? "正在保存拍摄版本…" : saveAttempt.current ? `重试保存原拍摄版本 r${saveAttempt.current.revision}` : `保存拍摄版本 r${(saved.at(-1)?.revision ?? 0) + 1}`}
           </Text>
         </Pressable>
         {query.data ? <PlanPanels data={query.data} active={active} /> : null}
@@ -525,13 +551,13 @@ export function ShootingScreen() {
             onSave={persistChecklist}
           />
         ) : null}
-        {active === "version" && query.data ? (
+        {active === "version" && saved.length ? (
           <View style={styles.panel}>
             <Evidence
               testID="shooting-plan-version"
-              title={`拍摄方案版本 ${saved.at(-1)?.revision ?? 1}`}
-              body={`规则 ${query.data.camera.result.ruleVersion} · 条件 ${query.data.conditions.capturedAt}`}
-              meta="本地离线版本已保存；加入行程时引用明确 revision。"
+              title={`已保存拍摄方案版本 ${saved.at(-1)!.revision}`}
+              body={`地点 ${saved.at(-1)!.input.locationId} · ${saved.at(-1)!.input.scheduledAt} · 规则 ${saved.at(-1)!.result.ruleVersion} · 条件 ${saved.at(-1)!.input.conditions.capturedAt}`}
+              meta="已保存版本保留原地点和时刻；当前浏览上下文不会改写它。"
             />
             <Evidence
               testID="shooting-change-summary"

@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import { outcomeRoutes, uiContracts } from "./contracts.mjs";
+import { resolveAcceptanceRoute } from "../route-inputs.mjs";
 
 const byTestId = (testId) => `[data-testid=${JSON.stringify(testId)}]`;
 const liveEndpointByOutcome = Object.freeze({
@@ -15,7 +16,7 @@ const liveEndpointByOutcome = Object.freeze({
 });
 
 export async function runFrozenUiCase({ page, baseUrl, outcome, assertion, waitForApi }) {
-  const route = outcomeRoutes[outcome];
+  const route = resolveAcceptanceRoute(outcomeRoutes[outcome]);
   const contract = uiContracts[outcome]?.[assertion.key];
   if (!route || !contract) throw new Error(`unknown_frozen_ui_case:${outcome}:${assertion.key}`);
 

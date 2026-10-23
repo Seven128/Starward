@@ -1,10 +1,20 @@
-# 当前共享验证结果（2026-10-23）
+# 当前共享验证结果（2026-10-23，续检至2026-10-24）
 
 这是完整Goal/H7的验证owner。下列批次针对4b5a610a1aaa76f8cf5a727dd5403af4b72d83e0之后的R20工作区；用户现要求提交为跨机接力检查点，实际提交身份由Git/远端读回确定。下方先记新结果，再保留原失败及原件定位；新结果只覆盖实际执行范围，未验和跳过不能消失。
 
 ## R20本轮新结果
 
-**跨机检查点保留的当前失败：** `packages/domain/src/preferences/runtime.test.ts`新增`changed payload`回归1失败/1过滤skip：同键异内容被旧实现错误replay，生产尚未修。真实双SQLite实例探针同时确认version1但readback只剩一份；[合同核验](R20-PREFERENCES-CONTRACT-REVIEW-20261023.md)记录其条件。F07脚本4/4是对实际日期/时刻/详情错误的复现断言，不是产品通过，见[消费者核验](R20-NATIVE-CONTEXT-TRACE-20261023.md)。这些不能被下方较早通过覆盖，也没有为提交把失败改成skip。
+**当前workspace整合检查：** root使用工作区入口运行`npm run test:mobile:fast`，mobile typecheck与32文件112项通过；独立API workspace typecheck及28文件116项通过。App首次整合因新增ItineraryScreen测试的createElement类型推断失败，改为显式JSX后整个mobile入口复验通过。API运行前后源码hash核对没有API变化；随后validator取消无依据字段上限的定向复验归行程证据。上述当前结果替代根目录可能混入历史tmp的汇总统计；不包括正在实施的小程序F09/F10终态、目标运行时或远端CI。
+
+**F14/F10/F09本批独审纠错完成：** [真实行程草稿](R20-ITINERARY-DRAFT-PERSISTENCE-20261023.md)两项P2修后API21/App17/双typecheck通过，新独审实际HTTP6/App17通过，无该范围未解决P1/P2；首次超限可改重交，未知后重试拒绝仍保pending，观测类型不再用profileId。structured保持整family未通过，来源/路线/分享/协作不被草稿代表链关闭。[独立云量](R20-INDEPENDENT-CLOUD-DELIVERY-20261023.md)地点panel轴/旧覆盖retry及后续时间失败被Scene隐藏三项P2均已修，新的最终独审11项通过，无该范围未解决P1/P2。2026-10-24完整Map页面目录`src/pages/map/*.test.ts`回归448/448、0失败0skip，exit0，32,145.8ms；日志在任务tmp的`map-module-integration-20261024.log`。[F09](R20-SKY-TIME-QUERY-POLICY-20261023.md)跨Context旧hold/ABA草稿P2已修，新独审实际6文件66/66，无该范围未解决P1/P2。各批不能相加冒一次全套。全部目标设备/实际H4/原生性能/OOM仍未验；不以通过数覆盖失败。
+
+**真实Web双标签页CAS已修复并复验：** [真实Chrome证据](R20-PREFERENCES-WEB-CAS-20261023.md)保留旧Web Locks/localStorage两base0均确认version1、刷新仅剩beta的失败。新IndexedDB事务适配通过真实Chrome155双页直接同expected CAS、命令竞争/显式重试、同intent回放、重载、回滚与旧字节迁移；最终DKYwBL证据及输入hash已核，独审无未关闭P1/P2，所建服务/浏览器已关闭。不外推真机/Expo或完整偏好产品验收。
+
+**F07整合及最后恢复修复：** [消费者实现](R20-NATIVE-DECISION-CONSUMERS-20261023.md)共享快照/精确时刻与实际选点接线经独立7文件41项及route/verifier53项检查；真实Shooting组件+存储探针曾复现A已落盘、确认丢失后切B再重试覆盖A版本。root已修冻结attempt、精确读回、版本不可变/显式冲突另存；限定当前root的mobile4文件13项、domain1文件7项通过，新的独审2文件4项通过且无未关闭P1/P2。原根目录7文件34项含两份历史tmp副本，已纠正统计，不能冒当前全套。原失败保留，AsyncStorage跨进程/标签页原子性及设备结果未验。后续F14/F10/F09整合、typecheck及独审终态见上，原中间失败仍保留。
+
+**新机偏好v2批次：** [实现/验证/独审](R20-PREFERENCES-V2-IMPLEMENTATION-20261023.md)已将下方接力失败修复：domain20/20、structured真实当前态/重启及两条反例3/3、真实双SQLite无已确认数据丢失。mobile曾完整27文件81项通过，随后独审三项P2修复的最终定向4文件33项及typecheck通过；独立复核实际2文件14/14。原失败记录保留为修前证据，不再称该偏好边界未实施。各批不能相加冒最终全套；Web真实结果见上，真实Expo/设备仍未验。F07原4项错误复现由生产消费者回归接替，修前及独审失败历史保留。
+
+**跨机检查点原失败（偏好修后结果见上）：** `packages/domain/src/preferences/runtime.test.ts`新增`changed payload`回归1失败/1过滤skip：同键异内容被旧实现错误replay，当时生产尚未修。真实双SQLite实例探针同时确认version1但readback只剩一份；[合同核验](R20-PREFERENCES-CONTRACT-REVIEW-20261023.md)记录其条件。F07脚本4/4是对实际日期/时刻/详情错误的复现断言，不是产品通过，见[消费者核验](R20-NATIVE-CONTEXT-TRACE-20261023.md)。这些不能被下方较早通过覆盖，也没有为提交把失败改成skip。
 
 最新续批见[精确账户媒体](R20-ACCOUNT-MEDIA-BATCHES-20261023.md)及[原生App最终独审](R20-NATIVE-STATE-FINAL-REVIEW-20261023.md)。精确媒体原4项+两条真实丢回复6/6，终态夹具修正后另1/1；probe5/5，原恢复持久化8+普通MEDIA4合跑12/12，提醒15/15、API noEmit通过。App最终生产代码完整fast为25文件/67测试与typecheck通过，独审后增1回归并运行两文件13/13；不冒称一次68项全套。真实PG/Redis和实际React消费者harness各有边界；未跑设备/IDE/构建/整个Mini API/远端CI。最新专用PG/Redis已于20:44按owner停止。
 

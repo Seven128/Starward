@@ -15,6 +15,11 @@ export function createNightReportClient(options: { baseUrl?: string; fetcher?: t
       if (!response.ok) throw new Error(`night_report_http_${response.status}`);
       const value: unknown = await response.json();
       if (!isNightReport(value)) throw new Error("night_report_response_invalid");
+      const context = value.context;
+      if (!context || context.nightDate !== request.nightDate || context.timezone !== request.timezone || context.target !== request.target || context.profile !== request.profile
+        || context.location?.lat !== request.location.lat || context.location?.lon !== request.location.lon
+        || context.route?.origin?.lat !== request.route.origin.lat || context.route?.origin?.lon !== request.route.origin.lon
+        || context.route?.maxTravelMinutes !== request.route.maxTravelMinutes) throw new Error("night_report_response_context_mismatch");
       return value;
     },
   };

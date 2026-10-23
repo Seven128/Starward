@@ -27,6 +27,10 @@ export interface SpotSearchPage { items: SpotSearchItem[]; nextCursor: string | 
 
 export interface SpotSearchProvider { search(request: SpotSearchRequest): Promise<SpotSearchPage>; }
 
+// Identity reads do not have a search origin or an origin-relative distance.
+export type SpotSourceItem = Omit<SpotSearchItem, "distanceMeters">;
+export interface SpotIdentityProvider { findById(id: string): Promise<SpotSourceItem | null>; }
+
 export type SqlQueryClient = {
   query<T extends Record<string, unknown>>(text: string, values: unknown[]): Promise<{ rows: T[] }>;
 };

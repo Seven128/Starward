@@ -22,8 +22,8 @@ import { ShootingPreviewService } from "./modules/shooting/shooting-preview-serv
 import { createShootingRuntime } from "./modules/shooting/runtime";
 import { ProfileService } from "./modules/identity/profile-service";
 import { createIdentityRuntime } from "./modules/identity/runtime";
-import { ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow-service";
 import { createItineraryRuntime } from "./modules/itinerary/runtime";
+import { resolveLocalItineraryOwner } from "./modules/itinerary/itinerary-routes";
 import { FieldService } from "./modules/field/field-service";
 import { createFieldRuntime } from "@starward/domain/offline/runtime";
 import { CommunityWorkflowService } from "./modules/community/community-workflow-service";
@@ -209,11 +209,6 @@ for (const record of await identityRuntime.list({ actorId: "user-demo" })) {
   if (["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"].includes(command ?? "")) profile.command(command as import("./modules/identity/profile-service").ProfileCommand);
 }
 const itineraryRuntime = await createItineraryRuntime({ dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"), releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false } });
-const itineraries = new ItineraryWorkflowService();
-for (const record of await itineraryRuntime.list({ actorId: "user-demo" })) {
-  const command = (record.result.payload as { command?: string } | undefined)?.command;
-  if (["generate", "overview", "add-candidate", "select-route", "refresh", "share-offline", "merge-collaboration", "astronomy-timeline"].includes(command ?? "")) itineraries.command(command as import("./modules/itinerary/itinerary-workflow-service").ItineraryCommand);
-}
 const app = await buildApi({
   nightReports,
   nightReportRuntime,
@@ -231,8 +226,8 @@ const app = await buildApi({
   shootingRuntime,
   profile,
   identityRuntime,
-  itineraries,
-  itineraryRuntime,
+  itineraries: itineraryRuntime.service,
+  resolveItineraryActor: resolveLocalItineraryOwner,
   field: new FieldService(),
   fieldRuntime,
   community: new CommunityWorkflowService(),

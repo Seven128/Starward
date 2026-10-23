@@ -9,8 +9,10 @@ function runtime(bypassOwnershipGuard = false, kind: "time" | "date" = "time") {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const callback = kind === "date" ? "commitMapDate" : "commitMapTime";
   let declaration = "";
+  const expressions = new Map<string, string>();
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(source) === callback) declaration = `const ${node.getText(source)};`;
+    if (ts.isVariableDeclaration(node) && node.initializer) expressions.set(node.name.getText(source), node.initializer.getText(source));
     ts.forEachChild(node, visit);
   };
   visit(source);
@@ -32,22 +34,25 @@ function runtime(bypassOwnershipGuard = false, kind: "time" | "date" = "time") {
   const generation = { current: 0 }, busy = { current: false };
   const contexts: unknown[] = [], failures: unknown[] = [], saving: boolean[] = [];
   const requests: { resolve(value: unknown): void; reject(error: Error): void; patch: Record<string, unknown> }[] = [];
-  const commit = vm.runInNewContext(ts.transpileModule(declaration + `\n${callback};`, {
-    compilerOptions: { target: ts.ScriptTarget.ES2020 },
-  }).outputText, {
+  const scope: Record<string, any> = {
     activeContext, mapResetVersion: 0, detailRequestGeneration: generation, timeRequestBusy: busy,
     timeFrames: [{ atUtc: "2026-09-06T13:00:00Z" }],
     useAppStore: { getState: () => state },
-    setPanelPreviewFrameIndex() {}, setTimePreviewing() {}, setAnnouncement() {},
+    setPreviewAt() {}, setTimePreviewing() {}, setAnnouncement() {},
     setTimeSaving: (value: boolean) => saving.push(value),
-    setTemporalFailure: (value: unknown) => failures.push(value),
+    setTemporalFailure: (value: unknown) => { failures.push(value); scope.temporalFailure = value; },
     setObservationContext: (value: unknown) => contexts.push(value),
-    nearestMapTimeFrameIndex: () => 0, formatContextTime: () => "time", errorMessage: () => "failure",
+    formatContextTime: () => "time", errorMessage: () => "failure",
     selectedMapCivilDate: "2026-10-12", instantForCivilDate,
     isMiniappRequestCancelled: () => false,
     updateObservationContext: (_context: unknown, patch: Record<string, unknown>) => new Promise((resolve, reject) => requests.push({ resolve, reject, patch })),
-  }) as (value: number | string) => Promise<void>;
-  return { commit, state, generation, busy, requests, contexts, failures, saving };
+  };
+  const evaluate = (code: string) => vm.runInNewContext(ts.transpileModule(code, {
+    compilerOptions: { target: ts.ScriptTarget.ES2020 },
+  }).outputText, scope);
+  const commit = evaluate(declaration + `\n${callback};`) as (value: string) => Promise<void>;
+  const expression = (name: string) => { const value = expressions.get(name); assert.ok(value); return evaluate(`(${value});`); };
+  return { commit, state, generation, busy, requests, contexts, failures, saving, scope, expression };
 }
 
 function assertNoStaleEffects(map: ReturnType<typeof runtime>) {
@@ -60,7 +65,7 @@ test("late time success and failure cannot affect a replaced spot, reset, or con
   for (const change of ["spot", "reset", "revision", "selection-generation", "retired-aba"] as const) {
     for (const failure of [false, true]) {
       const map = runtime();
-      const pending = map.commit(0);
+      const pending = map.commit("2026-09-06T13:00:00Z");
       if (change === "spot") map.state.selectedSpotId = "b";
       if (change === "reset") map.state.mapResetVersion++;
       if (change === "revision") map.state.observationContext.revision++;
@@ -77,7 +82,7 @@ test("late time success and failure cannot affect a replaced spot, reset, or con
 test("the stale-response regression detects removal of the production ownership guard", async () => {
   for (const failure of [false, true]) {
     const map = runtime(true);
-    const pending = map.commit(0);
+    const pending = map.commit("2026-09-06T13:00:00Z");
     map.state.selectedSpotId = "b";
     if (failure) map.requests[0]!.reject(new Error("late"));
     else map.requests[0]!.resolve({ data: { selectedAtUtc: "late" } });
@@ -88,8 +93,8 @@ test("the stale-response regression detects removal of the production ownership 
 
 test("same-turn duplicate submit is ignored while a current response still commits", async () => {
   const map = runtime();
-  const pending = map.commit(0);
-  await map.commit(0);
+  const pending = map.commit("2026-09-06T13:00:00Z");
+  await map.commit("2026-09-06T13:00:00Z");
   assert.equal(map.requests.length, 1);
   const context = { selectedAtUtc: "2026-09-06T13:00:00Z", timezone: "UTC" };
   map.requests[0]!.resolve({ data: context });
@@ -100,12 +105,35 @@ test("same-turn duplicate submit is ignored while a current response still commi
 
 test("current time failure remains actionable", async () => {
   const map = runtime();
-  const pending = map.commit(0);
+  const pending = map.commit("2026-09-06T13:00:00Z");
   map.requests[0]!.reject(new Error("current"));
   await pending;
   assert.equal(map.failures.length, 2);
   assert.equal((map.failures[1] as { kind: string; target: string }).kind, "time");
   assert.equal((map.failures[1] as { kind: string; target: string }).target, "2026-09-06T13:00:00Z");
+});
+
+test("cloud time failure remains visible and retries its exact intent while the independent Scene is pending", async () => {
+  const map = runtime(), instant = "2026-09-06T13:00:00Z";
+  map.scope.timeFrames = [];
+  map.scope.selectedSpotId = map.state.selectedSpotId;
+  map.scope.mapDateOptions = [];
+  const pending = map.commit(instant);
+  map.requests[0]!.reject(new Error("temporary time failure")); await pending;
+  const failure = map.expression("visibleTemporalFailure");
+  assert.ok(failure, "a ready cloud axis must not wait for Scene to show its time failure");
+  assert.equal(failure.target, instant);
+  map.scope.visibleTemporalFailure = failure;
+  let retried: Promise<void> | undefined;
+  map.scope.commitMapTime = (value: string) => { retried = map.commit(value); return retried; };
+  map.expression("retryTemporalFailure")();
+  assert.equal(map.requests.length, 2);
+  assert.equal(map.requests[1]!.patch.selectedAt, instant);
+  map.requests[1]!.resolve({ data: { ...map.state.observationContext, selectedAtUtc: instant } }); await retried;
+  assert.equal(map.expression("visibleTemporalFailure"), null);
+  map.scope.temporalFailure = failure;
+  map.generation.current++;
+  assert.equal(map.expression("visibleTemporalFailure"), null, "replaced selection still retires the failure");
 });
 
 test("Map date commit sends the precise local time and observation night through the shared date owner", async () => {
@@ -120,6 +148,7 @@ test("Map date commit sends the precise local time and observation night through
   map.requests[0]!.resolve({ data: next });
   await pending;
   assert.deepEqual(map.contexts, [next]);
+  assert.deepEqual(map.failures, [null], "a successful date commit must not also publish a failure");
   assert.equal(map.busy.current, false);
 });
 

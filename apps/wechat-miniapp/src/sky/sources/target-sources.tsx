@@ -1,13 +1,11 @@
 import { Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { uniqueSourceRecords } from "@starward/miniapp-contracts";
 import { SourcePage } from "@/components/source-page";
 import { Provenance } from "@/components/provenance";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
-import { useResourceQuery } from "@/hooks/use-resource-query";
-import { getSkyTargetInstant } from "@/services/sky-celestial-client";
-import { skyTargetInstantQueryKey } from "@/services/sky-target-instant-response";
+import { useSkyTimeTargetQuery } from "@/features/sky/sky-time-target-query";
 import { useAppStore } from "@/state/app-store";
 import { parseSkyTargetSourceSelection, skyTargetSourceContextMatches } from "@/features/sky/sky-target-sources-route";
 import { useSkySourceRecovery } from "./use-sky-source-recovery";
@@ -16,14 +14,12 @@ export function SkyTargetSourcesPage({ params }: { params: Record<string, unknow
   const selection = parseSkyTargetSourceSelection(params);
   const context = useAppStore(state => state.observationContext);
   const [visible, setVisible] = useState(true);
-  useDidHide(() => setVisible(false));
-  useDidShow(() => setVisible(true));
+  const visibleRef = useRef(true);
+  useDidHide(() => { visibleRef.current = false; setVisible(false); });
+  useDidShow(() => { visibleRef.current = true; setVisible(true); });
   const valid = Boolean(selection && skyTargetSourceContextMatches(selection, context));
-  const result = useResourceQuery({
-    queryKey: skyTargetInstantQueryKey(selection, selection?.dataRevision),
-    queryFn: signal => getSkyTargetInstant(selection!, signal),
-    enabled: visible && valid, staleTime: 60_000,
-  });
+  const result = useSkyTimeTargetQuery(selection, selection?.dataRevision, visible && valid,
+    () => Boolean(visibleRef.current && selection && skyTargetSourceContextMatches(selection, useAppStore.getState().observationContext)));
   const target = valid ? result.data?.data.targets.find(value => value.targetId === selection!.targetId && value.source.id === selection!.sourceId) : undefined;
   const sources = target ? uniqueSourceRecords([target.source, ...(target.activity ? [target.activity.source] : [])]) : [];
   const retry = useSkySourceRecovery(JSON.stringify(selection), visible && valid, () => {

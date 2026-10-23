@@ -8,6 +8,7 @@
     { "id": "observationContextGet", "method": "GET", "path": "/observation-contexts/{contextId}", "requestType": "void", "responseType": "ObservationContextData" },
     { "id": "observationContextPut", "method": "PUT", "path": "/observation-contexts/{contextId}", "requestType": "ObservationContextUpdateBody", "responseType": "ObservationContextUpdateData" },
     { "id": "mapSceneGet", "method": "GET", "path": "/map/scene", "requestType": "MapSceneRequest", "responseType": "MapSceneData" },
+    { "id": "mapCloudGet", "method": "GET", "path": "/map/cloud", "requestType": "MapCloudRequest", "responseType": "MapCloudData" },
     { "id": "mapNightLightGet", "method": "GET", "path": "/map/night-light", "requestType": "MapNightLightRequest", "responseType": "MapLayerData" },
     { "id": "terrainOverlayGet", "method": "GET", "path": "/terrain/overlay", "requestType": "TerrainOverlayRequest", "responseType": "TerrainOverlayData" },
     { "id": "terrainOverlayPreviewGet", "method": "GET", "path": "/terrain/overlay/preview", "requestType": "TerrainOverlayRequest", "responseType": "TerrainOverlayData" },

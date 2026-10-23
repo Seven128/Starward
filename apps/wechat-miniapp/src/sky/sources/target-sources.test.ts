@@ -53,10 +53,14 @@ test("actual target source page keeps the selected credit, rejects replacement i
     { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
     ...scope.bindings, React: { createElement: (type: string, props: any, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", Text: "Text", ScrollView: "ScrollView", SourcePage:"SourcePage",CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
-    useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {}, useThemeClass: () => "",
+    useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }), useDidHide() {}, useDidShow() {}, useThemeClass: () => "",
     useAppStore: store, parseSkyTargetSourceSelection, skyTargetSourceContextMatches, skyTargetInstantQueryKey, uniqueSourceRecords,
     getSkyTargetInstant: async (binding: any) => { requests++; assert.equal(binding.at, at); assert.equal(binding.contextRevision, 2); return query.data; },
-    useResourceQuery: (options: any) => { enabled = options.enabled; queryFn = options.queryFn; return query; },
+    useSkyTimeTargetQuery: (binding: any, revision: string, active: boolean, current: () => boolean) => {
+      enabled = active; assert.equal(revision, "data:2");
+      queryFn = async () => { assert.equal(current(), true); requests++; assert.equal(binding.at, at); return query.data; };
+      return query;
+    },
   });
   const frame = () => elements(scope.render(render, { params: { ...params(), sourceId } }));
   const first = frame(); assert.equal(enabled, true);

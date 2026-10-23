@@ -1,4 +1,4 @@
-import type { MapNightLightRequest, MapSceneRequest } from "@starward/miniapp-contracts";
+import type { MapCloudData, MapCloudRequest, MapNightLightRequest, MapSceneRequest } from "@starward/miniapp-contracts";
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
 import {
   PLAN_NOTES_MAX_LENGTH,
@@ -1164,6 +1164,36 @@ export class MiniappService {
     return envelope(layer, layer.state, layer.source ? [layer.source] : [], layer.source?.limitations ?? []);
   }
 
+  async getMapCloud(input: MapCloudRequest & { userId?: UserId | null }, signal?: AbortSignal): Promise<ApiEnvelope<MapCloudData>> {
+    signal?.throwIfAborted();
+    const deadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs;
+    const context = await this.observationContexts.get(input.contextId, input.userId);
+    signal?.throwIfAborted();
+    const samples = await readMapCloudForecast(this.weather, input.viewport.center, context, deadlineAt, input.viewport.bounds, signal);
+    await this.#assertPrivateContextCurrent(context, input.userId);
+    signal?.throwIfAborted();
+    // Project after all authorization/async boundaries so waiting cannot extend
+    // the acquired source's validity or turn a missing hour into clear sky.
+    const now = Date.now(), layer = projectMapCloudLayer(samples, context.selectedAtUtc, now);
+    const ends = mapCloudForecastEnds(samples, now);
+    const timeFrames = observationFrameTimes(context).map(atUtc => {
+      const frame = projectMapCloudLayer(samples, atUtc, now);
+      return { atUtc, moonPhase: null, spotSignals: {}, dynamicLayer: {
+        kind: "CLOUD" as const, polygons: frame.polygons, state: frame.state,
+      } };
+    });
+    const snapshot = mapCloudSnapshot(samples, input.viewport.bounds, now);
+    if (snapshot) this.telemetry.event("map_cloud_sampled", { samples: samples.length,
+      ...snapshot.requestBudget, viewportAware: true, mixedRetrievalTimes: snapshot.mixedRetrievalTimes,
+      unavailableSamples: snapshot.cells.filter(cell => cell.quality !== "AVAILABLE").length });
+    return envelope({ context, layer, timeFrames, cloudSnapshot: snapshot,
+      forecastValidUntil: ends.length ? new Date(Math.min(...ends)).toISOString() : null,
+    }, layer.state, uniqueSources([...browsingTimezoneSources(context),
+      ...samples.flatMap(sample => sample.forecast?.sources ?? (sample.forecast ? [sample.forecast.source] : [])),
+      ...(layer.source ? [layer.source] : []),
+    ]), layer.source?.limitations ?? [], { validAt: context.selectedAtUtc, contextRevision: context.revision });
+  }
+
   async getMapScene(input: {
     contextId: string;
     filters?: FilterState;
@@ -1177,9 +1207,11 @@ export class MiniappService {
     };
     preferences?: SpotRankingPreferences;
     userId?: UserId | null;
-  }, weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs): Promise<ApiEnvelope<MapSceneData>> {
+  }, weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs, signal?: AbortSignal): Promise<ApiEnvelope<MapSceneData>> {
+    signal?.throwIfAborted();
     const startedAt = Date.now();
     const context = await this.observationContexts.get(input.contextId, input.userId);
+    signal?.throwIfAborted();
     const filters = input.filters ?? EMPTY_FILTER_STATE;
     const layerKind = input.layer ?? "NORMAL";
     const cloudLayer = "TOTAL" as const;
@@ -1228,6 +1260,7 @@ export class MiniappService {
       ? (await this.repository.listSpotPopulation()).filter((spot) =>
         this.repository.kind === "memory" || spot.source.kind !== "TEST_FIXTURE")
       : viewportSpots;
+    signal?.throwIfAborted();
 
     const query = (input.query ?? "").trim().toLocaleLowerCase("zh-CN");
     const queryMatched = query
@@ -1246,20 +1279,25 @@ export class MiniappService {
       : wgs84ToGcj02({ lat: location.wgs84.latitude, lon: location.wgs84.longitude, system: "WGS84" });
     const cloudCenter = input.viewport?.center ?? (anchor && ("latitude" in anchor
       ? anchor : { latitude: anchor.lat, longitude: anchor.lon }));
-    // Start this independent spatial read inside the same overall Map budget.
-    // Catalogue/filter work cannot remove or delay its geographic responsibility.
+    // Keep the legacy combined contract. New Map consumers use getMapCloud so
+    // ready geographic data does not wait for this marker/decision response.
     const cloudWork = layerKind === "CLOUD" && cloudCenter
-      ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt, input.viewport?.bounds)
+      ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt, input.viewport?.bounds, signal)
       : Promise.resolve([]);
+    // Cancellation may settle this independent read before the decision batch.
+    // Observe that rejection now; the awaited owner still propagates it below.
+    void cloudWork.catch(() => {});
     const evaluatedAtMs = Date.now();
     const routeOrigin =
       context.location.kind === "MAP_POINT"
         ? context.location.wgs84
         : context.routeOrigin?.wgs84 ?? null;
     for (let start = 0; start < queryMatched.length; start += 4) {
+      signal?.throwIfAborted();
       const batch = queryMatched.slice(start, start + 4);
       await Promise.all(
         batch.map(async (spot) => {
+          signal?.throwIfAborted();
           const spotContext =
             context.location.kind === "FORMAL_SPOT" &&
             spot.spotId === context.location.spotId
@@ -1275,8 +1313,11 @@ export class MiniappService {
                   eventInstanceId: context.eventInstanceId,
                   targetProfile: context.targetProfile,
                 });
+          signal?.throwIfAborted();
           const detail = await this.repository.getDetail(spot.spotId);
-          const report = await this.astronomy.computeDecision(spotContext, detail ?? undefined, undefined, weatherDeadlineAt);
+          signal?.throwIfAborted();
+          const report = await this.astronomy.computeDecision(spotContext, detail ?? undefined, signal, weatherDeadlineAt);
+          signal?.throwIfAborted();
           reports[spot.spotId] = report;
           const timeSignal = timeSignalFor(
             spot.spotId,
@@ -1330,6 +1371,7 @@ export class MiniappService {
     // Excluded candidates can become UNKNOWN when their hourly evidence expires.
     // Carry that boundary even when there are no visible rows or polygons.
     const cloudSamples = await cloudWork;
+    signal?.throwIfAborted();
     const cloudAcquisition = mapCloudSnapshot(cloudSamples, input.viewport?.bounds ?? null);
     if (cloudAcquisition) this.telemetry.event("map_cloud_sampled", {
       samples: cloudSamples.length, ...cloudAcquisition.requestBudget,
@@ -1363,7 +1405,8 @@ export class MiniappService {
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
     if (cached) {
       await this.#assertPrivateContextCurrent(context, input.userId);
-      return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : cached;
+      signal?.throwIfAborted();
+      return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt, signal) : cached;
     }
     const routeCapability = { state: "UNAVAILABLE" as const, reason: "道路距离与行程时长未接入；距离仅供直线参考", recovery: "NONE" as const };
     const allFilterEvidence = queryMatched.map((spot) => filterEvidence[spot.spotId]!);
@@ -1383,7 +1426,7 @@ export class MiniappService {
           ? "PostGIS published formal spots"
           : "explicit test fixture repository",
     };
-    const layer = layerKind === "LIGHT_POLLUTION" ? await this.readMapNightLight(input.viewport) : layerFor({
+    const layer = layerKind === "LIGHT_POLLUTION" ? await this.readMapNightLight(input.viewport, signal) : layerFor({
       kind: layerKind,
       cloudLayer,
       selectedAtUtc: context.selectedAtUtc,
@@ -1519,7 +1562,8 @@ export class MiniappService {
     await this.#assertPrivateContextCurrent(context, input.userId);
     // Repository/cache waits are part of delivery too. A re-projection shares
     // the original weather budget; it must not silently buy another deadline.
-    return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : result;
+    signal?.throwIfAborted();
+    return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt, signal) : result;
   }
 
   async search(

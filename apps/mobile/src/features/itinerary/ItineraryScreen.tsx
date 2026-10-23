@@ -1,444 +1,135 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  colors,
-  minimumTouchTarget,
-  radii,
-  spacing,
-  type as typeToken,
-} from "@starward/ui-system/tokens";
-import {
-  createItineraryClient,
-  type ItineraryCommand,
-  type ItinerarySnapshot,
-} from "../../data/itinerary-client";
+import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
+import { createItineraryClient, ItineraryRequestError, type ItineraryDraft, type ItineraryDraftInputs, type ItineraryCommandInput } from "../../data/itinerary-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
+import { useShellStore } from "../../state/shell-store";
+import { observerTypeLabels } from "../preferences/observer-labels";
 
-type ViewKey =
-  | "generate"
-  | "overview"
-  | "candidate"
-  | "route"
-  | "refresh"
-  | "share"
-  | "collaboration"
-  | "timeline";
 const palette = colors.planning;
-const client = createItineraryClient({ baseUrl: resolveRuntimeApiBaseUrl() });
-const actions: Array<{
-  key: ViewKey;
-  command: ItineraryCommand;
-  id: string;
-  label: string;
-  stableControlId?: string;
-  accessibilityName?: string;
-}> = [
-  {
-    key: "generate",
-    command: "generate",
-    id: "plan-generate",
-    label: "生成计划",
-    stableControlId: "itinerary-creation-form",
-    accessibilityName: "行程创建表单",
-  },
-  {
-    key: "overview",
-    command: "overview",
-    id: "plan-open-overview",
-    label: "总览",
-    stableControlId: "itinerary-detail-tabs",
-    accessibilityName: "行程详情分区",
-  },
-  {
-    key: "candidate",
-    command: "add-candidate",
-    id: "plan-add-candidate",
-    label: "待规划",
-    stableControlId: "candidate-tray",
-    accessibilityName: "候选地点托盘",
-  },
-  {
-    key: "route",
-    command: "select-route",
-    id: "plan-compare-routes",
-    label: "路线",
-    stableControlId: "route-option-comparator",
-    accessibilityName: "路线方案比较",
-  },
-  { key: "refresh", command: "refresh", id: "plan-refresh", label: "刷新" },
-  {
-    key: "share",
-    command: "share-offline",
-    id: "plan-create-share",
-    label: "分享/离线",
-    stableControlId: "version-and-share-actions",
-    accessibilityName: "版本与分享操作",
-  },
-  {
-    key: "collaboration",
-    command: "merge-collaboration",
-    id: "plan-resolve-conflict",
-    label: "协作",
-    stableControlId: "collaboration-panel",
-    accessibilityName: "协作与冲突面板",
-  },
-  {
-    key: "timeline",
-    command: "astronomy-timeline",
-    id: "plan-open-astronomy",
-    label: "天文阶段",
-    stableControlId: "observation-timeline-editor",
-    accessibilityName: "观测时间线编辑",
-  },
+const defaultClient = createItineraryClient({ baseUrl: resolveRuntimeApiBaseUrl() });
+type DraftForm = { title: string; timezone: string; inputs: ItineraryDraftInputs };
+type ViewKey = "overview" | "candidate" | "route" | "refresh" | "share" | "collaboration" | "timeline";
+const actions: Array<{ key: ViewKey; id: string; label: string }> = [
+  { key: "overview", id: "plan-open-overview", label: "总览" },
+  { key: "candidate", id: "plan-add-candidate", label: "待规划" },
+  { key: "route", id: "plan-compare-routes", label: "路线" },
+  { key: "refresh", id: "plan-refresh", label: "刷新" },
+  { key: "share", id: "plan-create-share", label: "分享/离线" },
+  { key: "collaboration", id: "plan-resolve-conflict", label: "协作" },
+  { key: "timeline", id: "plan-open-astronomy", label: "天文阶段" },
 ];
-function Evidence({
-  testID,
-  title,
-  body,
-  meta,
-}: {
-  testID: string;
-  title: string;
-  body: string;
-  meta?: string;
-}) {
-  return (
-    <View testID={testID} style={styles.evidence}>
-      <Text style={styles.evidenceTitle}>{title}</Text>
-      <Text style={styles.evidenceBody}>{body}</Text>
-      {meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}
-    </View>
-  );
+function Evidence({ testID, title, body, meta }: { testID: string; title: string; body: string; meta?: string }) {
+  return <View testID={testID} style={styles.evidence}><Text style={styles.evidenceTitle}>{title}</Text><Text style={styles.evidenceBody}>{body}</Text>{meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}</View>;
 }
-function localTime(value: string) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(new Date(value));
+function Input({ label, value, onChange, disabled = false }: { label: string; value: string; onChange(value: string): void; disabled?: boolean }) {
+  return <View><Text style={styles.evidenceTitle}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={onChange} editable={!disabled} style={[styles.action, styles.evidenceBody]} /></View>;
 }
-function Panel({ active, data }: { active: ViewKey; data: ItinerarySnapshot }) {
-  const plan = data.itinerary;
-  const primary = plan.stops.find((item) => item.role === "primary");
-  const backups = plan.stops.filter((item) => item.role === "backup");
-  const selected =
-    data.routes.find((item) => item.id === data.selectedRouteId) ??
-    data.routes[0];
-  const target = data.timeline.events.find((item) => item.kind === "target");
-  if (active === "generate")
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="plan-observation-window"
-          title={`观测窗口 ${target ? `${localTime(target.startsAt)}–${localTime(target.endsAt)}` : "待计算"}`}
-          body={`出发 ${localTime(plan.stages[0]!.startsAt)} · 到达 ${selected?.arrivalAt} · 返回 ${data.inputs.latestReturn}`}
-          meta={`${plan.timezone}；草案 revision ${plan.revision}，${data.generation.confirmedDeparture ? "已确认" : "尚未确认出发"}`}
-        />
-        <Evidence
-          testID="plan-main-spot"
-          title={`主地点：${data.generation.primary} · 备选：${data.generation.backup}`}
-          body={data.generation.sources
-            .map((item) => `${item.part} ${item.version}/${item.state}`)
-            .join(" · ")}
-        />
-        <Evidence
-          testID="plan-safety-checklist"
-          title={`安全与装备 ${data.generation.risks.length + data.generation.equipment.length} 项`}
-          body={`${data.generation.equipment.join("、")}；${data.generation.risks.join("；")}`}
-        />
-      </View>
-    );
-  if (active === "overview")
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="plan-overview-map"
-          title="路线地图与分段"
-          body={`驾车 ${plan.routeSnapshot.driveMinutes} 分钟 · 徒步 ${plan.routeSnapshot.walkMinutes} 分钟 · 主地点 1 / 备选 ${backups.length}`}
-          meta={`${plan.routeSnapshot.id} · ${plan.routeSnapshot.generatedAt}`}
-        />
-        <Evidence
-          testID="plan-overview-timeline"
-          title="同一观星夜阶段"
-          body={plan.stages.map((item) => item.kind).join(" → ")}
-        />
-        <Evidence
-          testID="plan-overview-version"
-          title={`地图、阶段与地点共享版本 ${plan.revision}`}
-          body={`天气 ${plan.weatherSnapshot.id} · ${plan.weatherSnapshot.generatedAt}；未刷新来源保持自身版本`}
-        />
-      </View>
-    );
-  if (active === "candidate") {
-    const candidate = data.candidates[0];
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="plan-candidate-source"
-          title={`${candidate?.name} · 来自${candidate?.source}`}
-          body="来源、加入者、推荐原因和坐标权限随候选保留"
-        />
-        <Evidence
-          testID="plan-candidate-role"
-          title="设为备选地点"
-          body={`当前主地点 ${primary?.spotId} 未被替换；候选状态 ${candidate?.state}`}
-        />
-        <Evidence
-          testID="plan-candidate-result"
-          title={`已加入正式 Stop · 版本 ${plan.revision}`}
-          body="编号与 revision 已同步；路线/时间需重算，失败时候选不会删除"
-        />
-      </View>
-    );
-  }
-  if (active === "route")
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="route-distance-tradeoff"
-          title={`${selected?.label}：${selected?.distanceKm} km / ${selected?.driveMinutes} 分钟`}
-          body={`徒步 ${selected?.walkMinutes} 分钟 · ${selected?.toll} · ${selected?.road} · ${selected?.facilities}`}
-        />
-        <Evidence
-          testID="route-risk-tradeoff"
-          title={`风险与取舍：${selected?.risk}`}
-          body={data.routes
-            .map(
-              (item) =>
-                `${item.label} ${item.driveMinutes}分/${item.walkMinutes}分步行`,
-            )
-            .join("；")}
-        />
-        <Evidence
-          testID="route-arrival-tradeoff"
-          title={`预计 ${selected?.arrivalAt} 到达 · ${selected?.windowState}`}
-          body={`选择已保存到 revision ${plan.revision}；详细导航交给外部地图`}
-        />
-      </View>
-    );
-  if (active === "refresh")
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="plan-change-preview"
-          title={`变化预览：${data.refresh.differences.join("、")}`}
-          body={`保留用户编辑：${data.refresh.preservedUserEdits.join("、")}`}
-        />
-        <Evidence
-          testID="plan-saved-version"
-          title={`保存为版本 ${plan.revision}`}
-          body={`原版本 ${data.refresh.previousRevision} 与操作日志保留`}
-        />
-        <Evidence
-          testID="plan-refresh-result"
-          title="刷新结果可恢复"
-          body={`恢复点 revision ${data.refresh.recoveryRevision}；天气 ${plan.weatherSnapshot.id}，路线 ${plan.routeSnapshot.id}`}
-        />
-      </View>
-    );
-  if (active === "share")
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="plan-share-scope"
-          title="公开摘要 · 受限坐标已隐藏"
-          body={
-            data.share?.publicProjection.stops
-              .map((item) => `${item.role}:${item.spotId}`)
-              .join(" · ") ?? "生成中"
-          }
-          meta="每次访问由服务端重新投影；撤回/过期后拒绝"
-        />
-        <Evidence
-          testID="plan-share-expiry"
-          title={`分享链接有效期至 ${data.share?.expiresAt ?? "生成中"}`}
-          body={`导出 ${data.share?.exportedSections.join("、")}`}
-        />
-        <Evidence
-          testID="plan-offline-availability"
-          title={`观测包已下载 · revision ${data.offlinePack?.revision}`}
-          body={`${Math.round((data.offlinePack?.sizeBytes ?? 0) / 1024)} KiB · checksum ${(data.offlinePack?.checksum ?? "").slice(0, 12)}… · ${data.offlinePack?.items.map((item) => `${item.kind}:${item.version}`).join(" / ")}`}
-        />
-      </View>
-    );
-  if (active === "collaboration") {
-    const conflict = data.collaboration.conflicts[0];
-    return (
-      <View style={styles.panel}>
-        <Evidence
-          testID="plan-conflict-original"
-          title={`原版本 ${data.collaboration.recoveryRevision} · ${conflict?.originalActor} 的值`}
-          body={String(conflict?.original)}
-        />
-        <Evidence
-          testID="plan-conflict-incoming"
-          title={`来版 · ${conflict?.incomingActor} 的值`}
-          body={`${String(conflict?.incoming)}；非冲突字段 ${data.collaboration.mergedFields.join("、")} 已增量合并`}
-        />
-        <Evidence
-          testID="plan-conflict-resolution"
-          title="需要解决冲突 · 保留版本"
-          body={`字段 ${conflict?.field} 不自动覆盖；操作游标 ${data.collaboration.cursor}，恢复 revision ${data.collaboration.recoveryRevision}`}
-        />
-      </View>
-    );
-  }
-  const twilight = data.timeline.events.find(
-    (item) => item.kind === "twilight",
-  );
-  const moon = data.timeline.events.find((item) => item.kind === "moonset");
-  return (
-    <View style={styles.panel}>
-      <Evidence
-        testID="plan-twilight-event"
-        title={`天文昏影结束 ${twilight ? localTime(twilight.startsAt) : "未知"}`}
-        body={`${data.timeline.observingNight}；按本地观星夜组织，不复制 DAY 模板`}
-      />
-      <Evidence
-        testID="plan-moon-event"
-        title={`月落 ${moon ? localTime(moon.startsAt) : "未知"}`}
-        body="跨午夜仍属于同一观星夜"
-      />
-      <Evidence
-        testID="plan-target-event"
-        title={`目标银河核心 ${target ? `${localTime(target.startsAt)}–${localTime(target.endsAt)}` : "无窗口"}`}
-        body={
-          data.timeline.valid
-            ? "阶段无重叠；无法赶上的窗口会在节点旁标记"
-            : `冲突：${data.timeline.conflicts.join("、")}`
-        }
-      />
-    </View>
-  );
-}
-export function ItineraryScreen() {
-  const [active, setActive] = useState<ViewKey | null>(null);
-  const queryClient = useQueryClient();
-  const query = useQuery({
-    queryKey: ["itinerary"],
-    queryFn: ({ signal }) => client.get(signal),
-  });
-  const mutation = useMutation({
-    mutationFn: ({ command }: { command: ItineraryCommand }) =>
-      client.command(command),
-    onSuccess: (data) => queryClient.setQueryData(["itinerary"], data),
-  });
-  const data = mutation.data ?? query.data;
-  const run = (item: (typeof actions)[number]) => {
-    setActive(item.key);
-    mutation.mutate({ command: item.command });
+function Panel({ active, plan }: { active: ViewKey; plan: ItineraryDraft }) {
+  if (active === "overview") return <View style={styles.panel}>
+    <Evidence testID="plan-observation-window" title={`${plan.inputs.date} · ${plan.timezone}`} body={`从 ${plan.inputs.origin} 出发 · ${plan.inputs.people} 人 · 目标 ${plan.inputs.target}`} meta={`最晚返回 ${plan.inputs.latestReturnLocal ?? "未指定"}；${plan.inputs.overnight ? "计划过夜" : "不计划过夜"}`} />
+    <Evidence testID="plan-main-spot" title="主备地点尚未选择" body="已保存你填写的行程意向，地点与到达条件仍需核实。" />
+    <Evidence testID="plan-safety-checklist" title="尚未生成可执行计划" body="路线、天气与天文窗口尚未接入。未核实地点开放、道路和天气前，请勿据此出发。" />
+    <Evidence testID="plan-overview-version" title={`已保存草稿 · 版本 ${plan.revision}`} body={`用户填写 · ${plan.updatedAt}`} meta="浏览其他日期或地点不会改写这份行程。" />
+  </View>;
+  const unavailable: Record<Exclude<ViewKey, "overview" | "timeline">, [string, string]> = {
+    candidate: ["暂无候选地点", "地点来源与加入计划功能尚未接入，未添加示例或好友地点。"],
+    route: ["路线尚不可用", "尚无经过核实的路线结果，车程、收费、道路与到达时间未知。"],
+    refresh: ["暂无可刷新资料", "草稿未关联天气、路线或天文来源；已保存内容保持不变。"],
+    share: ["分享与离线包尚不可用", "当前仅保存私人草稿，未生成分享链接，也未下载观测包。"],
+    collaboration: ["当前仅个人编辑", "好友邀请、共同编辑与冲突合并尚未接入。"],
   };
-  return (
-    <SafeAreaView
-      testID="screen-itinerary-and-collaboration"
-      style={styles.screen}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.eyebrow}>
-          行程 · revision {data?.itinerary.revision ?? "—"}
-        </Text>
-        <Text style={styles.title}>
-          {data?.itinerary.title ?? "正在读取计划"}
-        </Text>
-        <Text style={styles.subtitle}>
-          地点、观星夜阶段、路线、分享、离线包与协作操作绑定同一可恢复服务端版本。
-        </Text>
-        <Pressable
-          testID="itinerary-open-field-mode"
-          accessibilityRole="button"
-          accessibilityLabel="进入行程现场模式"
-          onPress={() => router.push("/field")}
-          style={styles.action}
-        >
-          <Text style={styles.actionText}>进入现场模式</Text>
-        </Pressable>
-        <Pressable
-          testID="itinerary-library"
-          accessibilityRole="button"
-          accessibilityLabel={`itinerary-library:已保存行程，${data?.itinerary.title ?? "正在读取"}，revision ${data?.itinerary.revision ?? "未知"}`}
-          onPress={() => setActive("overview")}
-          style={({ pressed }) => [
-            styles.summaryCard,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={styles.evidenceTitle}>已保存行程</Text>
-          <Text style={styles.evidenceBody}>
-            {data?.itinerary.title ?? "正在同步"} · revision{" "}
-            {data?.itinerary.revision ?? "—"}
-          </Text>
-          <Text style={styles.evidenceMeta}>
-            选择后进入同一可恢复版本；离线与冲突状态保持可见。
-          </Text>
-        </Pressable>
-        <Pressable
-          testID="itinerary-overview-card"
-          accessibilityRole="button"
-          accessibilityLabel={`itinerary-overview-card:行程总览，主备地点、最佳窗口、预计到达与风险摘要`}
-          onPress={() => setActive("overview")}
-          style={({ pressed }) => [
-            styles.summaryCard,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={styles.evidenceTitle}>当前总览</Text>
-          <Text style={styles.evidenceBody}>
-            主备地点 · 最佳窗口 · 路线与风险
-          </Text>
-          <Text style={styles.evidenceMeta}>
-            点按查看共享 revision 的地图、阶段和来源。
-          </Text>
-        </Pressable>
-        <DecisionContextRevision />
-        <View style={styles.actions}>
-          {actions.map((item) => (
-            <Pressable
-              key={item.key}
-              testID={item.id}
-              accessibilityRole="button"
-              accessibilityLabel={
-                item.stableControlId
-                  ? `${item.stableControlId}:${item.accessibilityName}`
-                  : item.label
-              }
-              accessibilityState={
-                item.stableControlId === "itinerary-detail-tabs"
-                  ? { selected: active === item.key }
-                  : undefined
-              }
-              onPress={() => run(item)}
-              disabled={mutation.isPending}
-              style={({ pressed }) => [
-                styles.action,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.actionText}>{item.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-        {query.isLoading ? (
-          <Text style={styles.subtitle}>正在同步计划…</Text>
-        ) : null}
-        {query.isError ? (
-          <Pressable onPress={() => query.refetch()} style={styles.retry}>
-            <Text>计划暂不可用，点按重试</Text>
-          </Pressable>
-        ) : null}
-        {active && data ? <Panel active={active} data={data} /> : null}
-        {mutation.isError ? (
-          <Text style={styles.error}>
-            写入未确认，原 revision 与本地操作仍保留。
-          </Text>
-        ) : null}
-      </ScrollView>
-    </SafeAreaView>
-  );
+  if (active !== "timeline") { const [title, body] = unavailable[active]; return <Evidence testID={`plan-${active}-unavailable`} title={title} body={body} />; }
+  return <Evidence testID="plan-target-event" title="天文窗口尚未计算" body={plan.stages.length ? plan.stages.map(stage => `${stage.kind} ${new Intl.DateTimeFormat("zh-CN", { timeZone: plan.timezone, dateStyle: "short", timeStyle: "short" }).format(new Date(stage.startsAt))}`).join("；") : "尚无阶段。保存草稿不会自动生成出发、月落或银河时段。"} meta={plan.stages.length ? "以上是用户填写的阶段，不是计算所得的天文事实。" : plan.timezone} />;
+}
+function errorText(error: unknown): string {
+  if (error instanceof ItineraryRequestError) {
+    if (error.code === "itinerary_api_base_url_missing") return "行程服务未配置，草稿尚未提交。";
+    if (error.code === "itinerary_revision_conflict") return "行程已被更新。请先读取最新版本，再确认要保留的修改。";
+    if (error.code === "itinerary_owner_required") return "行程目前仅在本机个人试用服务中可用。";
+    if (error.code === "itinerary_request_body_too_large" && error.rejected) return "内容过长，尚未保存。请缩短填写内容后重试。";
+    if (error.rejected) return "未保存，请检查日期、人数和必填内容；原行程保持不变。";
+  }
+  return "保存结果尚未确认。原始内容已保留，请重试同一次保存。";
+}
+
+export function ItineraryScreen({ client = defaultClient }: { client?: ReturnType<typeof createItineraryClient> } = {}) {
+  const context = useShellStore(state => state.decisionContext);
+  const location = useShellStore(state => state.location);
+  const profile = useShellStore(state => state.profiles.find(item => item.id === state.decisionContext.profileId));
+  const [active, setActive] = useState<ViewKey>("overview");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [form, setForm] = useState<DraftForm | null>(null);
+  const [editing, setEditing] = useState<ItineraryDraft | null>(null);
+  const queryClient = useQueryClient();
+  const library = useInfiniteQuery({ queryKey: ["itinerary-library"], initialPageParam: undefined as string | undefined, queryFn: ({ signal, pageParam }) => client.list(signal, pageParam), getNextPageParam: page => page.nextCursor ?? undefined });
+  const libraryItems = library.data?.pages.flatMap(page => page.items);
+  const pending = useQuery({ queryKey: ["itinerary-pending"], queryFn: () => client.pending() });
+  const id = selectedId ?? libraryItems?.[0]?.id;
+  const detail = useQuery({ queryKey: ["itinerary", id], queryFn: ({ signal }) => client.get(id!, signal), enabled: !!id });
+  const mutation = useMutation({
+    mutationFn: (input: ItineraryCommandInput | "retry") => input === "retry" ? client.retry() : client.command(input),
+    onSuccess: async plan => { await queryClient.cancelQueries({ queryKey: ["itinerary", plan.id] }); setSelectedId(plan.id); queryClient.setQueryData(["itinerary", plan.id], plan); setForm(null); setEditing(null); setActive("overview"); void queryClient.invalidateQueries({ queryKey: ["itinerary-library"] }); },
+    onSettled: () => { void queryClient.invalidateQueries({ queryKey: ["itinerary-pending"] }); },
+  });
+  const plan = detail.data;
+  const blocked = mutation.isPending || pending.isPending || pending.isError || !!pending.data;
+  const begin = (existing?: ItineraryDraft) => {
+    if (blocked) return;
+    mutation.reset();
+    setEditing(existing ?? null);
+    setForm(existing ? { title: existing.title, timezone: existing.timezone, inputs: { ...existing.inputs } } : {
+      title: `${context.observingNight} 观星行程`, timezone: context.timezone,
+      inputs: { date: context.observingNight, origin: location.source === "unset" ? "" : context.origin, people: 1, transport: "drive", target: context.target, userType: profile?.observerTypes.map(type => observerTypeLabels[type]).filter(Boolean).join("、") ?? "", latestReturnLocal: null, overnight: false, collaborative: false },
+    });
+  };
+  const changeInput = <K extends keyof ItineraryDraftInputs>(key: K, value: ItineraryDraftInputs[K]) => setForm(current => current ? { ...current, inputs: { ...current.inputs, [key]: value } } : current);
+  const save = () => {
+    if (!form || blocked) return;
+    mutation.mutate(editing ? { command: "patch-draft", itineraryId: editing.id, baseRevision: editing.revision, patch: { title: form.title, inputs: form.inputs } } : { command: "create-draft", input: form });
+  };
+  return <SafeAreaView testID="screen-itinerary-and-collaboration" style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <Text style={styles.eyebrow}>行程 · {plan ? `版本 ${plan.revision}` : "私人草稿"}</Text>
+      <Text style={styles.title}>{plan?.title ?? "我的行程"}</Text>
+      <Text style={styles.subtitle}>先保存出行意向，再补充地点、路线和观测条件。</Text>
+      <Pressable testID="itinerary-open-field-mode" onPress={() => router.push("/field")} style={styles.action}><Text style={styles.actionText}>进入现场模式</Text></Pressable>
+      <DecisionContextRevision />
+      <View testID="itinerary-library" style={styles.summaryCard}>
+        <Text style={styles.evidenceTitle}>已保存行程</Text>
+        {libraryItems?.map(item => <Pressable key={item.id} disabled={!!form || mutation.isPending} onPress={() => { setSelectedId(item.id); setActive("overview"); }} style={styles.action}><Text style={styles.evidenceBody}>{item.title} · 版本 {item.revision}</Text></Pressable>)}
+        {libraryItems?.length === 0 ? <Text testID="itinerary-empty" style={styles.subtitle}>还没有行程。新建草稿，保存日期、出发地和观测目标。</Text> : null}
+        {library.hasNextPage ? <Pressable disabled={library.isFetchingNextPage} onPress={() => library.fetchNextPage()} style={styles.action}><Text>读取更早行程</Text></Pressable> : null}
+      </View>
+      {library.isLoading || detail.isLoading ? <Text style={styles.subtitle}>正在读取行程…</Text> : null}
+      {library.isError || detail.isError ? <Pressable onPress={() => { void library.refetch(); if (id) void detail.refetch(); }} style={styles.retry}><Text>读取失败，点按重试</Text></Pressable> : null}
+      <Pressable testID="plan-generate" disabled={blocked} onPress={() => begin()} style={styles.action}><Text style={styles.actionText}>新建草稿</Text></Pressable>
+      {plan ? <Pressable testID="plan-edit" disabled={blocked} onPress={() => begin(plan)} style={styles.action}><Text style={styles.actionText}>编辑草稿</Text></Pressable> : null}
+      {pending.isError ? <Pressable onPress={() => pending.refetch()} style={styles.retry}><Text>待确认保存未能读取，请重试</Text></Pressable> : null}
+      {pending.data ? <View testID="itinerary-pending" style={styles.panel}><Text style={styles.evidenceTitle}>上次保存待确认</Text><Text style={styles.evidenceBody}>{pending.data.command === "create-draft" ? `${pending.data.input.title} · ${pending.data.input.inputs.date}` : `行程 ${pending.data.itineraryId} · 基于版本 ${pending.data.baseRevision}`}</Text><Pressable testID="plan-retry-save" disabled={mutation.isPending} onPress={() => mutation.mutate("retry")} style={styles.action}><Text>重试保存</Text></Pressable></View> : null}
+      {form ? <View testID="itinerary-creation-form" style={styles.panel}>
+        <Input label="行程名称" value={form.title} onChange={title => setForm(current => current && { ...current, title })} disabled={blocked} />
+        <Input label="日期 YYYY-MM-DD" value={form.inputs.date} onChange={value => changeInput("date", value)} disabled={blocked} />
+        <Input label="出发地" value={form.inputs.origin} onChange={value => changeInput("origin", value)} disabled={blocked} />
+        <Input label="人数" value={String(form.inputs.people)} onChange={value => changeInput("people", Number(value))} disabled={blocked} />
+        <Input label="观测目标" value={form.inputs.target} onChange={value => changeInput("target", value)} disabled={blocked} />
+        <Input label="用户类型" value={form.inputs.userType} onChange={value => changeInput("userType", value)} disabled={blocked} />
+        <Input label="最晚返回 HH:mm（可不填）" value={form.inputs.latestReturnLocal ?? ""} onChange={value => changeInput("latestReturnLocal", value || null)} disabled={blocked} />
+        <Text style={styles.evidenceMeta}>时区 {form.timezone} · 当前仅个人编辑</Text>
+        <View style={styles.actions}>{([ ["drive", "驾车"], ["walk", "步行"], ["mixed", "混合交通"] ] as const).map(([value, label]) => <Pressable key={value} disabled={blocked} onPress={() => changeInput("transport", value)} style={styles.action}><Text>{form.inputs.transport === value ? "已选 · " : ""}{label}</Text></Pressable>)}</View>
+        <Pressable disabled={blocked} onPress={() => changeInput("overnight", !form.inputs.overnight)} style={styles.action}><Text>{form.inputs.overnight ? "已选过夜" : "不计划过夜"}</Text></Pressable>
+        <Pressable testID="plan-save-draft" disabled={blocked} onPress={save} style={styles.action}><Text style={styles.actionText}>{mutation.isPending ? "正在保存…" : "保存草稿"}</Text></Pressable>
+        <Pressable disabled={blocked} onPress={() => { setForm(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable>
+      </View> : null}
+      <View style={styles.actions}>{actions.map(item => <Pressable key={item.key} testID={item.id} onPress={() => setActive(item.key)} style={styles.action}><Text style={styles.actionText}>{item.label}</Text></Pressable>)}</View>
+      {plan ? <Panel active={active} plan={plan} /> : null}
+      {mutation.isError ? <View><Text style={styles.error}>{errorText(mutation.error)}</Text>{mutation.error instanceof ItineraryRequestError && mutation.error.code === "itinerary_revision_conflict" ? <Pressable onPress={async () => { const refreshed = await detail.refetch(); if (refreshed.data) begin(refreshed.data); }} style={styles.retry}><Text>保留已存内容，重新编辑</Text></Pressable> : null}</View> : null}
+    </ScrollView>
+  </SafeAreaView>;
 }
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.canvas },

@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
-import { layerSheetOwnsSceneRecovery } from "./map-layer-selection";
 import { retryObservationScene } from "./context-restore";
 
 // Exercise the actual page's projection, notification effect and recovery JSX.
@@ -13,7 +12,7 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const declarations: string[] = [];
   let effect = "", recovery = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "layerSheetOwnsSceneFailure"].includes(node.name.getText(source)))
+    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale"].includes(node.name.getText(source)))
       declarations.push(`const ${node.getText(source)};`);
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes('title: "地图数据异常"'))
       effect = node.arguments[0]!.getText(source);
@@ -34,16 +33,16 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const result = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     scene, bootstrapContext, pageVisible: visible, activeContext: {}, spots: [{}],
     bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE", cloudTimeChoices: [],
-    layerSheetOwnsSceneRecovery, useAppStore: { getState: () => ({ notifications: [], dismissNotification() {} }) },
+    useAppStore: { getState: () => ({ notifications: [], dismissNotification() {} }) },
     isPermissionError: () => false, notify: (notice: { placement: string; tone: string }) => notices.push(notice),
   });
   return { ...result, notices };
 }
 
-test("static light leaves Scene recovery available while cloud retains its existing local retry", () => {
+test("independent light and cloud leave marker Scene recovery available", () => {
   assert.equal(renderFailure("scene", true, true, "layer-sheet", "LIGHT").recovery, true);
   assert.equal(renderFailure("context", true, true, "layer-sheet", "LIGHT").recovery, true);
-  assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, false);
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
   assert.equal(renderFailure("context", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
 });
 

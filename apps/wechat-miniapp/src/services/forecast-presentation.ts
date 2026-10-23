@@ -1,4 +1,4 @@
-import { airQualityBoundaries, projectAirQuality, type HourlySkyRow, type MapSceneData, type MapSpotTimeSignal, type SkyReport, type SpotAirQualityData } from "@starward/miniapp-contracts";
+import { airQualityBoundaries, projectAirQuality, type HourlySkyRow, type MapCloudData, type MapSceneData, type MapSpotTimeSignal, type SkyReport, type SpotAirQualityData } from "@starward/miniapp-contracts";
 import { currentMapCloudFrame, mapCloudBoundaries } from "./map-cloud-presentation";
 
 const HOUR = 3_600_000;
@@ -96,5 +96,18 @@ export const mapForecastPresentation: ForecastPresentation<MapSceneData> = {
     // Keep returned candidates as unknown, matching the BFF filter semantics.
     // Only a new server response can recover candidates previously excluded.
     return { ...data, evaluations, timeFrames, layer, filterEvidence, filterCapabilities };
+  },
+};
+
+export const mapCloudForecastPresentation: ForecastPresentation<MapCloudData> = {
+  boundaries: data => mapCloudBoundaries(data),
+  project(data, now) {
+    const timeFrames = data.timeFrames.map(frame => currentMapCloudFrame(frame, data.cloudSnapshot, now));
+    if (timeFrames.every((frame, index) => frame === data.timeFrames[index])) return data;
+    const selected = timeFrames.find(frame => Date.parse(frame.atUtc) === Date.parse(data.context.selectedAtUtc))?.dynamicLayer;
+    return { ...data, timeFrames, layer: { ...data.layer,
+      polygons: selected?.kind === "CLOUD" ? selected.polygons : [],
+      state: selected?.kind === "CLOUD" ? selected.state : "UNAVAILABLE",
+    } };
   },
 };

@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import YAML from "yaml";
+import { resolveAcceptanceCase, resolveAcceptanceControl, resolveAcceptanceRoute } from "../../tests/acceptance/route-inputs.mjs";
 import {
   applicableControlStates,
   assertExactContractPopulation,
@@ -841,6 +842,7 @@ async function readAndroidDesignEvidenceLog(serial) {
 }
 
 async function androidOpenRoute(serial, appId, route) {
+  route = resolveAcceptanceRoute(route);
   const deepLink = `starward://${route.startsWith("/") ? route : `/${route}`}`;
   await adb(serial, ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", deepLink, appId]);
   await delay(900);
@@ -882,7 +884,7 @@ async function startAndroidProductionJourney(serial, appId, definition, mode = n
   if (!Array.isArray(definition.root_journey) || !definition.root_journey.length) {
     throw new Error(`native_root_journey_missing:${options.outcome}`);
   }
-  for (const actionId of definition.root_journey) {
+  for (const actionId of definition.root_journey.map(id => resolveAcceptanceControl(id))) {
     await tapAndroidNode(serial, actionId);
     await delay(250);
   }
@@ -1207,10 +1209,11 @@ async function configureAndroidDesignCondition(serial, condition) {
 
 function validatePrimaryNavigationState(destination, value) {
   const state = parseStructuredEvidenceValue(value, "starward-tab-restoration-state-v1");
+  const nestedRoute = resolveAcceptanceRoute(destination.nested_route);
   if (state.tab_id !== destination.tab_id
     || state.root_route !== destination.route
-    || state.active_route !== destination.nested_route
-    || state.nested_route !== destination.nested_route
+    || state.active_route !== nestedRoute
+    || state.nested_route !== nestedRoute
     || state.owner_type !== destination.owner_type
     || state.stack_depth < 2
     || state.production_route !== true
@@ -1243,6 +1246,7 @@ async function verifyPrimaryNavigation(serial, appId) {
   for (const destination of destinations) {
     await tapAndroidNode(serial, destination.tab_id);
     await androidWaitForNodes(serial, [destination.root_screen_test_id], androidUiEvidenceTimeoutMs);
+    if (destination.selection_action_test_id) await tapAndroidNode(serial, resolveAcceptanceControl(destination.selection_action_test_id));
     await tapAndroidNode(serial, destination.nested_action_test_id);
     await androidWaitForNodes(
       serial,
@@ -1380,7 +1384,7 @@ async function verifyAllRootJourneys(serial, appId) {
       action_test_id: definition.action_test_id,
       evidence_hash: hash(evidence),
       result_render_sha256: hash(after),
-      root_journey: [...definition.root_journey],
+      root_journey: definition.root_journey.map(id => resolveAcceptanceControl(id)),
       screen_test_id: definition.screen_test_id,
     });
   }
@@ -3280,7 +3284,7 @@ async function runRemoteIos() {
       `cd ${shellQuote(remoteRoot)}`,
       "npm ci --ignore-scripts 1>&2",
       "npx pod-install apps/mobile/ios 1>&2",
-      `node tools/long-task/verify-native-target.mjs ${forwarded.map(shellQuote).join(" ")}`,
+      `${process.env.STARWARD_ACCEPTANCE_SPOT_ID ? `STARWARD_ACCEPTANCE_SPOT_ID=${shellQuote(process.env.STARWARD_ACCEPTANCE_SPOT_ID)} ` : ""}node tools/long-task/verify-native-target.mjs ${forwarded.map(shellQuote).join(" ")}`,
     ].join(" && ");
     const result = await spawnCapture("ssh", [host, remoteCommand], { label: "ios-remote-native-check" });
     process.stderr.write(result.stderr);
@@ -4432,6 +4436,7 @@ async function main(argv = process.argv.slice(2)) {
   for (const key of required) if (!options[key]) throw new Error(`required_argument_missing:${key}`);
   caseDefinition = contracts.outcomes[options.outcome];
   if (!caseDefinition) throw new Error(`native_contract_missing:${options.outcome}`);
+  caseDefinition = resolveAcceptanceCase(caseDefinition);
   startedAt = new Date().toISOString();
   try {
     process.stdout.write(`${JSON.stringify(await execute())}\n`);

@@ -33,6 +33,7 @@ import {
   type ColorPalette,
 } from "@starward/ui-system/tokens";
 import { PreferenceWizard } from "../features/preferences/PreferenceWizard";
+import { createProfileSaveAttempt } from "../features/preferences/profile-save-attempt";
 import { expoPermissionGateway, type PermissionDecision } from "../native/permissions/permission-gateway";
 import { expoForegroundLocationGateway } from "../native/permissions/foreground-location-gateway";
 import { useShellStore } from "../state/shell-store";
@@ -216,7 +217,7 @@ function ProfileSwitcherDialog({
       await onSelect(id);
       if (selection.current === attempt) onClose();
     } catch {
-      if (selection.current === attempt) setSelectionError("当前预设未切换，请重试。");
+      if (selection.current === attempt) setSelectionError("当前预设切换未确认，请重试。");
     } finally {
       if (selection.current === attempt) { selection.current = null; setSelectingId(null); }
     }
@@ -314,6 +315,7 @@ export function MobileShellScreen() {
   const [wizardVisible, setWizardVisible] = useState(false);
   const [quickTarget, setQuickTarget] = useState<QuickTarget>("milky-way");
   const [walking, setWalking] = useState<WalkingChoice>(0.8);
+  const quickSaveAttempt = useRef(createProfileSaveAttempt());
 
   useEffect(() => {
     if (!focused) locationSelection.cancel();
@@ -338,12 +340,12 @@ export function MobileShellScreen() {
     : hydrationState === "error" ? "恢复失败" : persistenceState === "saving"
       ? "正在保存"
       : persistenceState === "error"
-        ? "保存失败"
+        ? "保存未确认"
         : "本机保存";
 
   const saveQuickProfile = async () => {
     const previous = profiles.find((profile) => profile.id === "quick-observing-profile");
-    await saveProfile(makeQuickProfile(quickTarget, walking, previous));
+    await quickSaveAttempt.current.save(JSON.stringify([quickTarget, walking]), () => makeQuickProfile(quickTarget, walking, previous), saveProfile);
   };
 
   const chooseManualLocation = async () => {
@@ -519,7 +521,7 @@ export function MobileShellScreen() {
               accessibilityRole="button"
               accessibilityState={{ busy: persistenceState === "saving" }}
               disabled={persistenceState === "saving"}
-              onPress={() => void saveQuickProfile()}
+              onPress={() => void saveQuickProfile().catch(() => undefined)}
               style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, persistenceState === "saving" && styles.disabled]}
             >
               {persistenceState === "saving"
@@ -529,10 +531,10 @@ export function MobileShellScreen() {
             {preferenceScenario.action(saveQuickProfile)}
             {preferenceScenario.result}
             <Text testID="preference-ranking-impact" accessibilityLiveRegion="polite" style={styles.meta}>
-              {recommendationState === "stale"
-                ? "推荐正在按新预设重算；旧结果已标记 stale。"
-                : persistenceState === "error"
-                  ? persistenceError ?? "偏好保存失败；输入仍保留。"
+              {persistenceState === "error"
+                ? persistenceError ?? "偏好保存未确认；输入仍保留。"
+                : recommendationState === "stale"
+                  ? "推荐正在按新预设重算；旧结果已标记 stale。"
                   : "未选择的完整字段保持“不限制”，不会静默套用样例默认值。"}
             </Text>
           </View>

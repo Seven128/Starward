@@ -25,6 +25,7 @@ export function createForecastClient(options: { baseUrl?: string; fetcher?: type
       if (!response.ok) throw new Error(`forecast_http_${response.status}`);
       const value: unknown = await response.json();
       if (!isForecastBundle(value)) throw new Error("forecast_response_invalid");
+      if (!value.context || Object.entries(query).some(([key, expected]) => value.context[key as keyof ForecastQuery] !== expected)) throw new Error("forecast_response_context_mismatch");
       return value;
     },
   };

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { hashKey } from "@tanstack/react-query";
-import type { ApiEnvelope, MapSceneData, SkyReport, SpotAirQualityData } from "@starward/miniapp-contracts";
-import { airQualityPresentation, mapForecastPresentation, skyForecastPresentation, type ForecastPresentation } from "../services/forecast-presentation";
+import type { ApiEnvelope, MapCloudData, MapSceneData, SkyReport, SpotAirQualityData } from "@starward/miniapp-contracts";
+import { airQualityPresentation, mapCloudForecastPresentation, mapForecastPresentation, skyForecastPresentation, type ForecastPresentation } from "../services/forecast-presentation";
 import { useResourceQuery, type QueryOptions } from "./use-resource-query";
 
 function useForecastQuery<T>(options: QueryOptions<ApiEnvelope<T>>, presentation: ForecastPresentation<T>, refreshOnResume = false) {
@@ -76,6 +76,10 @@ useSkyForecastQuery.presentation = skyForecastPresentation;
 
 export function useMapForecastQuery(options: QueryOptions<ApiEnvelope<MapSceneData>>) {
   return useForecastQuery(options, mapForecastPresentation);
+}
+
+export function useMapCloudForecastQuery(options: QueryOptions<ApiEnvelope<MapCloudData>>) {
+  return useForecastQuery(options, mapCloudForecastPresentation);
 }
 
 export function useAirQualityQuery(options: QueryOptions<ApiEnvelope<SpotAirQualityData>>) {

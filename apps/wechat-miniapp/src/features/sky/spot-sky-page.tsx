@@ -126,7 +126,6 @@ import {
 } from "@/utils/zoned-date";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
-import { getSkyTargetInstant } from "@/services/sky-celestial-client";
 import {
   MiniappApiError,
   getObservationContext,
@@ -158,12 +157,12 @@ import { dragSkyView, INITIAL_MANUAL_SKY_VIEW, type SkyPanMode } from "./sky-man
 import { attachSkyCatalog, resolveSkyDeepSkyScene, resolveSkySceneFrame, skySceneHasContent, type ResolvedSkyReport as SkyReport } from "./sky-stellar-scene";
 import { skySceneFrameFacts, skyPresentedViewFacts } from "./sky-scene-frame-facts";
 import { exactSkyTimeFrame } from "./sky-time-frame";
-import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observation-time";
+import { createSkyObservationTime, skyPresentedTimeCurrent, type SkyTimeEditSource } from "./sky-observation-time";
 import { skyCommandStateSetter } from "./sky-command-state";
 import { createSkyDisclosureCommands, skyHasDisclosure, type SkyControlPanel } from "./sky-disclosure-commands";
 import { SkyBrowseControl, SkyLayerToggle, SkyMenuAction, SkyNavigationMenu, SkySourceSummary } from "./sky-menu";
 import { skyTargetSourcesRoute } from "./sky-target-sources-route";
-import { skyTargetInstantQueryKey } from "@/services/sky-target-instant-response";
+import { useSkyTimeTargetQuery } from "./sky-time-target-query";
 import { sameContextVersion } from "../../services/observation-context-version";
 import { presentSkyTime, selectSkyTimePresentation, skyPresentationTimeModel, skyRulerTime, skyTimeRulerRows,
   type SkyTimePresentation, type SkyTimeRulerRow } from "./sky-time-presentation";
@@ -1531,10 +1530,10 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     contextSession, setObservationContext]);
   const observationTime = useMemo(() => createSkyObservationTime({ latestInstant: Date.now }), []);
   const [timeIntent, setTimeIntent] = useState(() => observationTime.snapshot());
-  const [timeScrubbing, setTimeScrubbing] = useState(false);
+  const timeScrubbing = timeIntent.editing.length > 0;
   const pauseSkyTime = () => setTimeIntent(observationTime.pause());
   const setPreviewIndex = (index: number | null) => {
-    if (index === null) { setTimeScrubbing(false); setTimeIntent(observationTime.cancel()); }
+    if (index === null) { setTimeIntent(observationTime.cancel()); }
     else {
       const at = report.data?.data.hourly[index]?.at;
       if (at) setTimeIntent(observationTime.preview(at));
@@ -2197,12 +2196,12 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     contextFingerprint: rawReportData.context.contextFingerprint,
     at: requestedAt,
   } : null;
-  const fineTarget = useResourceQuery({
-    queryKey: skyTargetInstantQueryKey(fineTargetBinding, rawReportData?.context.dataRevision),
-    queryFn: signal => getSkyTargetInstant(fineTargetBinding!, signal),
-    enabled: pageVisible && Boolean(fineTargetBinding),
-    staleTime: 60_000,
-  });
+  const fineTarget = useSkyTimeTargetQuery(fineTargetBinding, rawReportData?.context.dataRevision,
+    pageVisible && skyResourcesActive && Boolean(fineTargetBinding), () => {
+      const current = observationTime.snapshot();
+      return skyTimeIntentCurrent() && !current.editing.length && current.mode !== "PLAYING" &&
+        !current.playRequested && current.at === fineTargetBinding?.at;
+    });
   const fineTargetData = fineTargetBinding && fineTarget.data?.data &&
     fineTarget.data.data.at === fineTargetBinding.at &&
     fineTarget.data.data.contextFingerprint === fineTargetBinding.contextFingerprint &&
@@ -2748,6 +2747,11 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     const time = observationTime.snapshot();
     return contextSession.canRetireInteraction(skyInteractionRevision) &&
       time.binding === timeBinding && time.committedAt === committedAt;
+  };
+  const setSkyTimeEditing = (source: SkyTimeEditSource, active: boolean) => {
+    if (observationTime.snapshot().editingGeneration !== timeIntent.editingGeneration ||
+      (active ? !skyTimeIntentCurrent() : !skyTimeIntentRetirable())) return;
+    setTimeIntent(observationTime.edit(source, active));
   };
   const cancelSkyTimePreview = () => {
     // Ruler hide/unmount must still retract its drag. An obsolete ruler cannot
@@ -4198,6 +4202,9 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         >
           <SkyTimeControls at={requestedAt} timezone={routeContext.timezone} active={active && !timeSaving && !alignmentEditing}
             current={() => skyTimeIntentCurrent() && skyControlPanelRef.current === "time"}
+            editingCurrent={() => skyTimeIntentCurrent() && skyControlPanelRef.current === "time" &&
+              observationTime.snapshot().editingGeneration === timeIntent.editingGeneration}
+            editingGeneration={timeIntent.editingGeneration}
             playing={timePlaying || timePlayRequested} canPlay={Boolean(!carriedReport && timeGeometryReady && timeModel && geometryReport && skyTimeInputAllowed(requestedAt, Date.now()))}
             previewPending={timePreviewStatus.pending}
             previewFailed={timePreviewStatus.failed}
@@ -4208,6 +4215,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
               if (canvasError) retrySkyCanvas(); else void previewGeometry.retry();
             }}
             onPause={pauseSkyTime} onTogglePlay={toggleSkyTimePlayback}
+            onEditChange={editing => setSkyTimeEditing("fields", editing)}
             onPreview={at => {
               if (!skyTimeIntentCurrent() || !skyTimeInputAllowed(at, Date.now())) return false;
               cancelSkyCalibration(); setTimeIntent(observationTime.preview(at)); return true;
@@ -4236,7 +4244,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             onPreview={onPreview}
             onCommit={settleTimeIndex}
             onCancel={cancelSkyTimePreview}
-            onScrubChange={setTimeScrubbing}
+            onScrubChange={editing => setSkyTimeEditing("ruler", editing)}
           />
         </SkyDisclosureSurface>
         )}</SkyOverlayMotion>

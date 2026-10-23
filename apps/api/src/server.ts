@@ -16,8 +16,8 @@ import type { ShootingPreviewService } from "./modules/shooting/shooting-preview
 import type { AwaitedShootingRuntime } from "./modules/shooting/runtime-types";
 import type { ProfileService } from "./modules/identity/profile-service";
 import type { AwaitedIdentityRuntime } from "./modules/identity/runtime-types";
-import type { ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow-service";
-import type { AwaitedItineraryRuntime } from "./modules/itinerary/runtime-types";
+import type { ItineraryService } from "./modules/itinerary/itinerary-service";
+import type { ItineraryActorResolver } from "./modules/itinerary/itinerary-routes";
 import type { FieldService } from "./modules/field/field-service";
 import type { AwaitedFieldRuntime } from "./modules/field/runtime-types";
 import type { CommunityWorkflowService } from "./modules/community/community-workflow-service";
@@ -39,7 +39,7 @@ export interface ApiDependencies {
   sky?: Pick<SkyContextService, "get">;
   shooting?: Pick<ShootingPreviewService, "get">; shootingRuntime?: AwaitedShootingRuntime;
   profile?: Pick<ProfileService, "get" | "command">; identityRuntime?: AwaitedIdentityRuntime;
-  itineraries?: Pick<ItineraryWorkflowService, "get" | "command">; itineraryRuntime?: AwaitedItineraryRuntime;
+  itineraries?: Pick<ItineraryService, "list" | "get" | "command">; resolveItineraryActor?: ItineraryActorResolver;
   field?: Pick<FieldService, "get" | "command">; fieldRuntime?: AwaitedFieldRuntime;
   community?: Pick<CommunityWorkflowService, "get" | "command">; communityRuntime?: AwaitedCommunityRuntime;
   tools?: Pick<ToolsService, "get" | "command">; notificationToolsRuntime?: AwaitedNotificationToolsRuntime;

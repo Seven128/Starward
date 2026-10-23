@@ -54,7 +54,7 @@ test("static light is displayed while unrelated Scene weather is pending or fail
     lightReadFailed: false, visibleLayerUnavailable: false, lightLayerContentState };
   assert.equal(vm.runInNewContext(expression("lightLayerState"), layerState), "READY");
   assert.equal(mapSceneLayerForOverlay("LIGHT"), "NORMAL", "the marker Scene must not compose the same light again");
-  assert.equal(mapSceneLayerForOverlay("TOTAL_CLOUD"), "CLOUD");
+  assert.equal(mapSceneLayerForOverlay("TOTAL_CLOUD"), "NORMAL", "cloud now has its own read owner too");
 });
 
 test("the actual light retry uses its metadata and image owners without awaiting Scene weather", async () => {

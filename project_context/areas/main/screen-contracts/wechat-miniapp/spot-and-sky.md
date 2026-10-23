@@ -26,6 +26,8 @@
 
 时间编辑交接：键盘草稿在箭头、播放或应用前由同一控件一次性消费；消费后迟到的 blur 不能重写新时刻。覆盖外草稿不能误播原公共时刻，关闭/反向重开后恢复公共时刻的可播放状态。没有键盘编辑的应用及箭头步进保留原瞬间的小数秒；明确六字段键盘编辑按用户输入的秒值解释。公共预览/播放及提交仍由原领域owner判定，不因UI交接增加第二个时钟。
 
+连续编辑资格归同一`sky-observation-time`，区分fields/ruler来源。长按固定原交互资格、预览和结束回调；Context替换、ABA、取消、隐藏或显式Play退休编辑代次及旧草稿，合法预览和同Context供给更新不退休该交互。旧timer或迟到cleanup不能借新render的回调修改/结束新编辑。普通Play/Pause仍读取实时状态，不以长按代次替代其资格。编辑期间精确天空预览继续，最终目标补充只在编辑结束后的有效时刻请求；显式Apply仍归公共Context事务。
+
 时间尺松手/选择刻度仅将同一预览吸附到真实供给刻度，不提交公共Context；取消预览、外点关闭、隐藏和披露替换仍能恢复已提交时刻。跨报告窗口由只读geometry供给补齐，等待/失败保有效已绘天空并标出实际已绘时刻，不能用所选数字或模型已到达冒称画面更新。显式Apply保原Context锁、失败/迟到防护及确认后刷新连续性；接口/共享几何责任见[runtime-and-domain](../../../../architecture/runtime-and-domain.md#cloud-sky-reference-display)。
 
 Sky曲尺的`orientation-ruler-layout`只拥有原生布局投影：同批axis、相邻tick中心和实际scroll offset共同决定程序定位与拖动换算，不能由rpx公式推定原生间距。`useSkyOverlayLayoutReady`沿surface自身过渡结束准入，open阶段本身不代表缩放完成；退出保留内容仍按live active撤销测量资格。resize持拖保留原投影至该次最终提交后再重测，旧窗口/隐藏/卸载读回不得发布；同一供给刻度内的正常Play不逐帧查询布局。它不拥有时间事务，也不将Map的独立尺几何迁入Sky。更换供给窗口时跟随实际active时刻，缺少committed tick不等于取消预览；显式取消仍由页面恢复原窗口与已提交瞬间。测量失败的名义fallback不代表原生对齐已验证，目标结果留在任务证据。

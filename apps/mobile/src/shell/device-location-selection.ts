@@ -64,7 +64,7 @@ export function createDeviceLocationSelection(dependencies: {
           if (!current()) return false;
           const saving = state.phase === "saving";
           update({ phase: saving ? "error" : "unavailable", message: saving
-            ? "已取得设备位置，但未保存成功；原位置保留，请重试。"
+            ? "位置保存结果未确认；当前显示原位置，可重试。"
             : "暂时无法取得设备位置，请检查定位服务后重试，或手动选择地点。" });
           return false;
         } finally {

@@ -5,6 +5,10 @@ export type Target = "milky-way" | "star-trails" | "moon" | "meteor-shower" | "p
 export interface ConditionsSnapshot {
   capturedAt: string;
   sourceVersions: string[];
+  /** Optional for historical versions; never infer exact-time weather. */
+  weatherSampleAt?: string;
+  weatherSampleOffsetMinutes?: number;
+  astronomyAt?: string;
   lightPollutionSqm?: number;
   moonIllumination?: number;
   totalCloudPercent?: number;

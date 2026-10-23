@@ -38,7 +38,9 @@ export async function readMapCloudForecast(
   context: ObservationContext,
   deadlineAt: number,
   bounds?: TerrainBounds,
+  signal?: AbortSignal,
 ): Promise<readonly MapCloudSample[]> {
+  signal?.throwIfAborted();
   const cells = mapCloudQueryPoints(center, bounds);
   return Promise.all(cells.map(async point => {
     const startedAt = new Date().toISOString();
@@ -52,8 +54,9 @@ export async function readMapCloudForecast(
         point: { system: "WGS84", latitude: wgs84.lat, longitude: wgs84.lon },
         localDate: context.localDate, timezone: context.timezone,
         windowUtc: { start: context.nightStartUtc, end: context.nightEndUtc }, signal,
-      }), remaining);
+      }), remaining, signal);
     } catch {
+      signal?.throwIfAborted();
       // Retain independent successful cells; no failed cell becomes clear sky.
     } finally { sample.readEndedAt = new Date().toISOString(); }
     return sample;

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ApiEnvelope, MapSceneData } from "@starward/miniapp-contracts";
+import type { ApiEnvelope, MapCloudData } from "@starward/miniapp-contracts";
 import { currentMapCloudFrame, mapCloudBoundaries } from "../services/map-cloud-presentation";
 
-type CloudView = Pick<MapSceneData, "layer" | "timeFrames" | "cloudSnapshot"> & Pick<ApiEnvelope<MapSceneData>, "sources"> & { clockOffsetMs: number };
-type Input = { scene: ApiEnvelope<MapSceneData> | undefined; scope: string | null; enabled: boolean; selectedAtUtc: string; clockOffsetMs?: number };
+type CloudView = Pick<MapCloudData, "layer" | "timeFrames" | "cloudSnapshot"> & Pick<ApiEnvelope<MapCloudData>, "sources"> & { clockOffsetMs: number };
+type Input = { scene: ApiEnvelope<MapCloudData> | undefined; scope: string | null; enabled: boolean; selectedAtUtc: string; clockOffsetMs?: number };
 
 /** One public acquisition survives a viewport request. It never supplies old
  * spots, account state or a new coverage rectangle. New responses, including
@@ -39,7 +39,7 @@ export function useMapCloudPresentation({ scene, scope, enabled, selectedAtUtc, 
     if (!candidate) return undefined;
     const now = Date.now() + candidate.clockOffsetMs, timeFrames = candidate.timeFrames.map(frame => currentMapCloudFrame(frame, candidate.cloudSnapshot, now));
     const selected = timeFrames.find(frame => Date.parse(frame.atUtc) === Date.parse(selectedAtUtc))?.dynamicLayer;
-    const layer = { ...candidate.layer, polygons: selected?.kind === "CLOUD" ? selected.polygons : [],
+    const layer = { ...candidate.layer, validAt: selectedAtUtc, polygons: selected?.kind === "CLOUD" ? selected.polygons : [],
       state: selected?.kind === "CLOUD" ? selected.state : "UNAVAILABLE" as const };
     return { ...candidate, timeFrames, layer, retaining };
   }, [candidate, elapsed, selectedAtUtc, retaining]);

@@ -9,7 +9,7 @@ const errorResponse = (status: number) => ({ ok: false, status, headers: { get: 
 describe("map HTTP integration", () => {
   it("normalizes bounded OpenStreetMap candidates without inventing facility facts and caches the upstream result", async () => {
     const transport = vi.fn(async () => jsonResponse({ elements: [
-      { id: 7, lat: 22.6, lon: 114.0, tags: { "name:zh": "公开观景点", tourism: "viewpoint", toilets: "yes" } },
+      { type: "node", id: 7, lat: 22.6, lon: 114.0, tags: { "name:zh": "公开观景点", tourism: "viewpoint", toilets: "yes" } },
     ] }));
     const source = new OverpassSpotSearchSource({ transport, now: () => new Date("2026-07-20T12:00:00Z") });
     const request = { center: { lat: 22.529, lon: 113.9468, system: "WGS84" as const }, radiusMeters: 50_000, limit: 10 };
@@ -27,7 +27,7 @@ describe("map HTTP integration", () => {
     let now = new Date("2026-07-20T12:00:00Z");
     const transport = vi.fn()
       .mockResolvedValueOnce(jsonResponse({ elements: [
-        { id: 9, lat: 22.57, lon: 113.99, tags: { name: "有来源候选" } },
+        { type: "node", id: 9, lat: 22.57, lon: 113.99, tags: { tourism: "viewpoint", name: "有来源候选" } },
       ] }))
       .mockRejectedValue(new Error("overpass_unavailable"));
     const source = new OverpassSpotSearchSource({ transport, now: () => now });
@@ -51,7 +51,7 @@ describe("map HTTP integration", () => {
       new URL(input).hostname === "overpass-api.de"
         ? errorResponse(503)
         : jsonResponse({ elements: [
-          { id: 11, lat: 22.58, lon: 114.01, tags: { name: "备用实例候选" } },
+          { type: "node", id: 11, lat: 22.58, lon: 114.01, tags: { tourism: "viewpoint", name: "备用实例候选" } },
         ] })
     ));
     const source = new OverpassSpotSearchSource({ transport });
@@ -76,7 +76,7 @@ describe("map HTTP integration", () => {
   });
 
   it("mounts bounded spots and honest missing-route degradation on the API", async () => {
-    const source = new OverpassSpotSearchSource({ transport: async () => jsonResponse({ elements: [{ id: 8, lat: 22.55, lon: 113.97, tags: { name: "候选点" } }] }) });
+    const source = new OverpassSpotSearchSource({ transport: async () => jsonResponse({ elements: [{ type: "node", id: 8, lat: 22.55, lon: 113.97, tags: { tourism: "viewpoint", name: "候选点" } }] }) });
     const routes = new RouteService({ route: async () => { throw new Error("provider_offline"); } }, { findUsable: async () => null, save: async (snapshot) => snapshot }, () => "route-missing");
     const app = await buildApi({
       nightReports: { create: async () => { throw new Error("not_used"); } }, spots: { getDetail: async () => { throw new Error("not_used"); } },

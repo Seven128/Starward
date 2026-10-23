@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { productionModules } from "./contracts.mjs";
+import { itineraryDraftPersistenceEvidence } from "./itinerary-probe.mjs";
 
 const moduleCache = new Map();
 let typeScriptImporter;
@@ -214,6 +215,7 @@ async function realBusinessLoopEvidence(root, outcome) {
   const module = await load(root, runtimeContract.module);
   const factory = module[runtimeContract.factory];
   if (typeof factory !== "function") return failedBusinessLoop();
+  if (outcome === "itinerary-and-collaboration") return itineraryDraftPersistenceEvidence(factory);
 
   const dataDir = await mkdtemp(path.join(tmpdir(), `starward-${outcome}-`));
   const boundaryInvocations = [];
@@ -227,21 +229,39 @@ async function realBusinessLoopEvidence(root, outcome) {
   const releaseProfile = Object.freeze({ id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false });
   const actorId = `actor-${outcome}`;
   const tokens = [`${outcome}-alpha-317`, `${outcome}-beta-941`];
+  const preferences = outcome === "mobile-shell-and-preferences";
+  const profileModule = preferences ? await load(root, "packages/domain/src/preferences/index.ts") : null;
+  const profiles = preferences ? tokens.map((token, index) => ({
+    ...profileModule.createUnrestrictedProfile("2026-08-12T14:00:00Z"),
+    id: `structured-profile-${index + 1}`, name: token,
+    targets: index === 0 ? ["milky-way"] : ["moon"],
+    equipment: index === 0 ? ["camera", "tripod"] : ["binoculars"],
+  })) : [];
   const requests = tokens.map((token, index) => ({
     outcome,
     actorId,
     operation: runtimeContract.operation,
     idempotencyKey: `${outcome}-idem-${index + 1}`,
-    payload: { token, location: index === 0 ? { lat: 22.529, lon: 113.9468 } : { lat: 39.9042, lon: 116.4074 }, instant: index === 0 ? "2026-08-12T14:00:00Z" : "2026-11-17T12:30:00Z", value: index + 1 },
+    payload: preferences ? { token, profile: profiles[index] }
+      : { token, location: index === 0 ? { lat: 22.529, lon: 113.9468 } : { lat: 39.9042, lon: 116.4074 }, instant: index === 0 ? "2026-08-12T14:00:00Z" : "2026-11-17T12:30:00Z", value: index + 1 },
   }));
   let firstRuntime;
   let secondRuntime;
   try {
     firstRuntime = await factory({ dataDir, boundary, releaseProfile });
     if (!runtimeShapeHealthy(firstRuntime)) return failedBusinessLoop();
+    if (preferences && (typeof firstRuntime.prepare !== "function" || typeof firstRuntime.getProjection !== "function")) return failedBusinessLoop();
+    const beforeState = preferences ? await firstRuntime.getProjection({ actorId }) : [];
+    if (preferences && canonicalJson(beforeState) !== canonicalJson({ profiles: [], revision: 0 })) return failedBusinessLoop();
+    if (preferences) requests[0] = await firstRuntime.prepare(requests[0]);
     const first = await firstRuntime.execute(requests[0]);
+    if (preferences) requests[1] = await firstRuntime.prepare(requests[1]);
     const second = await firstRuntime.execute(requests[1]);
     if (!committedRecordsHealthy([first, second], requests, tokens, outcome, runtimeContract) || first.entityId === second.entityId || canonicalJson(first.result) === canonicalJson(second.result)) return failedBusinessLoop();
+    const writtenProjection = preferences ? await firstRuntime.getProjection({ actorId }) : null;
+    if (preferences && (canonicalJson(first.projection) !== canonicalJson({ profiles: [profiles[0]], activeProfileId: profiles[0].id, revision: 1 })
+      || canonicalJson(writtenProjection) !== canonicalJson({ profiles, activeProfileId: profiles[1].id, revision: 2 })
+      || canonicalJson(second.projection) !== canonicalJson(writtenProjection))) return failedBusinessLoop();
     if (!(await artifactReceiptsHealthy(dataDir, first.sideEffects)) || !(await artifactReceiptsHealthy(dataDir, second.sideEffects))) return failedBusinessLoop();
     await firstRuntime.close();
     firstRuntime = null;
@@ -251,17 +271,24 @@ async function realBusinessLoopEvidence(root, outcome) {
     const restoredFirst = await secondRuntime.read({ outcome, actorId, entityId: first.entityId });
     const restoredSecond = await secondRuntime.read({ outcome, actorId, entityId: second.entityId });
     if (!restoredRecordsHealthy([restoredFirst, restoredSecond], [first, second], tokens)) return failedBusinessLoop();
+    const restoredProjection = preferences ? await secondRuntime.getProjection({ actorId }) : null;
+    if (preferences && canonicalJson(restoredProjection) !== canonicalJson(writtenProjection)) return failedBusinessLoop();
 
     const replay = await secondRuntime.execute(requests[0]);
     if (!replayHealthy(replay, first)) return failedBusinessLoop();
+    if (preferences && (canonicalJson(replay.projection) !== canonicalJson(restoredProjection)
+      || canonicalJson(await secondRuntime.getProjection({ actorId })) !== canonicalJson(restoredProjection))) return failedBusinessLoop();
 
-    const invalid = await secondRuntime.execute({ outcome, actorId, operation: runtimeContract.operation, idempotencyKey: `${outcome}-invalid`, payload: {} }).catch((error) => ({ status: "rejected", error }));
+    const invalidRequest = { outcome, actorId, operation: runtimeContract.operation, idempotencyKey: `${outcome}-invalid`, payload: {} };
+    const invalid = await (async () => secondRuntime.execute(preferences ? await secondRuntime.prepare(invalidRequest) : invalidRequest))()
+      .catch((error) => ({ status: "rejected", error }));
     if (!(["rejected", "failed"].includes(invalid?.status)) || asArray(invalid?.sideEffects).some((item) => item.status === "committed")) return failedBusinessLoop();
+    if (preferences && canonicalJson(await secondRuntime.getProjection({ actorId })) !== canonicalJson(restoredProjection)) return failedBusinessLoop();
     if (!hasAll(boundaryInvocations.map((item) => item.kind), runtimeContract.boundaries)) return failedBusinessLoop();
     if (!(await directoryHasDurableBytes(dataDir))) return failedBusinessLoop();
 
-    const writtenState = [first, second].map(stableRecord);
-    const restoredState = [restoredFirst, restoredSecond].map(stableRecord);
+    const writtenState = preferences ? writtenProjection : [first, second].map(stableRecord);
+    const restoredState = preferences ? restoredProjection : [restoredFirst, restoredSecond].map(stableRecord);
     const writtenSha256 = digest(writtenState);
     const readSha256 = digest(restoredState);
     if (writtenSha256 !== readSha256) return failedBusinessLoop();
@@ -270,16 +297,16 @@ async function realBusinessLoopEvidence(root, outcome) {
     const observedBoundary = boundaryInvocations[0] ?? null;
     const outputCases = [first, second].map((value, index) => ({
       input_sha256: digest(requests[index]),
-      output_sha256: digest(stableRecord(value)),
+      output_sha256: digest(preferences ? value.projection : stableRecord(value)),
     }));
 
     return {
       passes: true,
       evidence: {
         state_delta: {
-          before_sha256: digest([]),
+          before_sha256: digest(beforeState),
           after_sha256: digest(writtenState),
-          changed_fields: ["records", "sideEffects"],
+          changed_fields: preferences ? ["profiles", "activeProfileId", "revision"] : ["records", "sideEffects"],
         },
         durable_readback: {
           write_session_id: `write-${digest({ dataDir, outcome, phase: "write" }).slice(0, 20)}`,
@@ -311,6 +338,9 @@ async function realBusinessLoopEvidence(root, outcome) {
   } finally {
     if (firstRuntime) await Promise.resolve(firstRuntime.close()).catch(() => undefined);
     if (secondRuntime) await Promise.resolve(secondRuntime.close()).catch(() => undefined);
+    if (path.dirname(path.resolve(dataDir)) !== path.resolve(tmpdir()) || !path.basename(dataDir).startsWith(`starward-${outcome}-`)) {
+      throw new Error("business_loop_temporary_directory_outside_scope");
+    }
     await rm(dataDir, { recursive: true, force: true });
   }
 }

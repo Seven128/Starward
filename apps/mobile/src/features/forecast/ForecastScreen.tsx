@@ -15,6 +15,9 @@ import { createForecastClient } from "../../data/forecast-client";
 import { useShellStore } from "../../state/shell-store";
 import { useTabRestorationEvidence } from "../../shell/TabRestorationEvidence";
 import { observingNightHours } from "./observing-night-hours";
+import { useDecisionSnapshot } from "../../state/use-decision-snapshot";
+import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
+import { forecastTarget } from "../../state/decision-context";
 
 const palette = colors.planning;
 type SectionKey = "hourly-professional-view" | "model-disagreement" | "future-trend" | "twilight-and-milky-way" | "layer-provenance";
@@ -114,6 +117,7 @@ function TrendCalendar({ trends, selectedNight, onSelect }: { trends: ForecastTr
     {trends.length ? <ScrollView testID="trend-calendar" accessibilityLabel="七夜趋势日历" horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateRow}>
       {trends.map((trend) => <Pressable
         key={trend.date}
+        testID={`forecast-night-${trend.date}`}
         accessibilityRole="button"
         accessibilityLabel={`${dateLabel(trend.date)}，${trend.conditionText ?? "天气未知"}，可信度 ${Math.round(trend.confidence * 100)}%`}
         accessibilityState={{ selected: trend.date === selectedNight, disabled: trend.status === "missing" }}
@@ -194,7 +198,7 @@ function HourlyMatrix({ series, selectedIndex, onSelect, timezone, isFetching }:
   return <View style={styles.section}>
     <SectionHeading eyebrow="小时级矩阵" title="连续比较专业指标" meta={isFetching ? "正在刷新，保留已加载列" : `${series.run.provider} ${series.run.model}`} />
     {hour ? <View style={styles.selectedHour}>
-      <Text style={styles.selectedHourTitle}>{time(hour.validTimeUtc, timezone)} · 已同步到天文窗口与图层时间</Text>
+      <Text style={styles.selectedHourTitle}>{time(hour.validTimeUtc, timezone)} · 当前时刻对应的小时资料；点选时间列可同步其他页面</Text>
       <View style={styles.evidenceGrid}>
         <Evidence testID="forecast-hourly-cloud" title="分层云" body={`总云 ${percent(hour.totalCloudPct)} · 低云 ${percent(hour.lowCloudPct)} · 中云 ${percent(hour.midCloudPct)} · 高云 ${percent(hour.highCloudPct)}`} meta={hour.missingFields.length ? `缺失：${hour.missingFields.join("、")}` : "全部字段保留供应商质量标记。"} />
         <Evidence testID="forecast-hourly-transparency" title={hour.atmosphere.label} body={`可信度 ${Math.round(hour.atmosphere.confidence * 100)}% · 能见度 ${value(hour.visibilityM === null ? null : hour.visibilityM / 1000, " km")} · AOD ${value(hour.aerosolOpticalDepth)}`} meta={hour.atmosphere.uncertainty} />
@@ -206,6 +210,7 @@ function HourlyMatrix({ series, selectedIndex, onSelect, timezone, isFetching }:
       <ScrollView testID="hourly-matrix" horizontal nestedScrollEnabled showsHorizontalScrollIndicator contentContainerStyle={styles.matrixColumns} accessibilityRole="summary" accessibilityLabel="小时级连续矩阵，可横向浏览并选择时间列">
         {series.hours.map((item, index) => <Pressable
           key={item.validTimeUtc}
+          testID={`forecast-hour-${item.validTimeUtc}`}
           accessibilityRole="button"
           accessibilityLabel={`${time(item.validTimeUtc, timezone)}，${item.conditionText ?? "天气未知"}，${item.quality}`}
           accessibilityState={{ selected: index === selectedIndex }}
@@ -226,7 +231,8 @@ function LayerPanel({ layers, selectedId, onSelect, selectedTime }: { layers: Fo
   useEffect(() => setOpacity(layer?.opacity ?? 0.7), [layer?.id, layer?.opacity]);
   const changeOpacity = (delta: number) => setOpacity((current) => Math.max(0.2, Math.min(1, Math.round((current + delta) * 10) / 10)));
   return <View style={styles.section}>
-    <SectionHeading eyebrow="天气图层" title="切换一个主要证据层" meta={selectedTime ? `${time(selectedTime)} 时刻` : "未选择时间"} />
+    <SectionHeading eyebrow="天气图层" title="切换一个主要证据层" meta={layer ? `${time(layer.timeUtc)} 图层批次时刻` : "暂无图层时刻"} />
+    {layer && selectedTime && layer.timeUtc !== selectedTime ? <Text style={styles.layerLimitation}>图层未按所选精确时刻重算；以下保留原批次来源。</Text> : null}
     {layers.length ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
       {layers.map((item, index) => <Choice key={item.id} testID={index === 0 ? "weather-layer-panel" : undefined} label={item.name} selected={item.id === layer?.id} disabled={item.status === "missing"} onPress={() => onSelect(item.id)} accessibilityLabel={index === 0 ? `天气图层面板，${item.name}，${item.status}` : `${item.name}，${item.status}`} />)}
     </ScrollView> : <State title="当前范围无可用图层" body="保留基础地图；不会用无来源色块模拟天气图层。" />}
@@ -255,22 +261,23 @@ export function ForecastScreen() {
     ownerType: "scroll",
     ownerId: "tonight-forecast-scroll-owner",
   });
-  const location = useShellStore((state) => state.location);
+  const context = useDecisionSnapshot();
+  const commitDecisionContext = useShellStore((state) => state.commitDecisionContext);
   const [activeSection, setActiveSection] = useState<SectionKey>("hourly-professional-view");
-  const [selectedNight, setSelectedNight] = useState(() => new Date().toISOString().slice(0, 10));
+  const selectedNight = context.observingNight;
   const [selectedModel, setSelectedModel] = useState<ModelKey>("primary");
-  const [selectedHourIndex, setSelectedHourIndex] = useState(0);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const pageScrollRef = useRef<ScrollView>(null);
   const sectionOffsets = useRef<Partial<Record<SectionKey, number>>>({});
   const pendingSection = useRef<SectionKey | null>(null);
-  const latitude = location.latitude ?? 22.529;
-  const longitude = location.longitude ?? 113.9468;
+  const { latitude, longitude } = context.observer;
+  const supportedTarget = forecastTarget(context.target);
+  const request = supportedTarget ? { latitude, longitude, timezone: context.timezone, nightDate: selectedNight, target: supportedTarget } : null;
   const query = useQuery({
-    queryKey: ["forecast", latitude, longitude, selectedNight],
-    queryFn: ({ signal }) => client.get({ latitude, longitude, timezone: "Asia/Shanghai", nightDate: selectedNight, target: "milky-way-core" }, signal),
+    queryKey: ["forecast", request, context.target],
+    queryFn: ({ signal }) => client.get(request!, signal),
+    enabled: request !== null,
     retry: 1,
-    placeholderData: (previous) => previous,
   });
   const bundle = query.data;
   const sourceSeries = useMemo(
@@ -282,12 +289,8 @@ export function ForecastScreen() {
     hours: observingNightHours(sourceSeries.hours, selectedNight, bundle?.context.timezone ?? "Asia/Shanghai"),
   } : undefined, [bundle?.context.timezone, selectedNight, sourceSeries]);
 
-  useEffect(() => {
-    if (!series?.hours.length) { setSelectedHourIndex(0); return; }
-    const dusk = bundle?.astronomy.astronomicalDusk;
-    const nextIndex = dusk ? series.hours.findIndex((hour) => hour.validTimeUtc >= dusk) : 0;
-    setSelectedHourIndex(nextIndex >= 0 ? nextIndex : 0);
-  }, [bundle?.context.nightDate, bundle?.astronomy.astronomicalDusk, series?.run.runId]);
+  const selectedHourIndex = series?.hours.length ? series.hours.reduce((best, hour, index) =>
+    Math.abs(Date.parse(hour.validTimeUtc) - Date.parse(context.moment)) < Math.abs(Date.parse(series.hours[best].validTimeUtc) - Date.parse(context.moment)) ? index : best, 0) : 0;
   useEffect(() => {
     if (selectedModel === "comparison" && !bundle?.comparison) setSelectedModel("primary");
   }, [bundle?.comparison, selectedModel]);
@@ -312,13 +315,10 @@ export function ForecastScreen() {
     });
   };
   const selectTimelineTime = (instant: string) => {
-    if (!series?.hours.length) return;
-    const target = Date.parse(instant);
-    const nearest = series.hours.reduce((best, hour, index) => Math.abs(Date.parse(hour.validTimeUtc) - target) < Math.abs(Date.parse(series.hours[best].validTimeUtc) - target) ? index : best, 0);
-    setSelectedHourIndex(nearest); navigateToSection("hourly-professional-view");
+    commitDecisionContext({ moment: instant });
+    navigateToSection("hourly-professional-view");
   };
-  const selectedHour = series?.hours[selectedHourIndex];
-  const locationLabel = location.source === "unset" ? "深圳市 · 手动默认范围" : location.label;
+  const locationLabel = context.observer.label;
 
   return <SafeAreaView testID="screen-forecast-and-astronomy" style={styles.screen}>
     <ScrollView ref={pageScrollRef} onScroll={restoration.onScroll} scrollEventThrottle={restoration.scrollEventThrottle} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
@@ -326,22 +326,24 @@ export function ForecastScreen() {
       <View style={styles.pageHeader}>
         <Text testID={bundle ? "forecast-data-ready" : undefined} style={styles.eyebrow}>专业证据 · {locationLabel}</Text><Text style={styles.title}>为什么这个观星夜值得去</Text>
         <Text style={styles.subtitle}>预测、估算和版本化天文计算分别标注；缺失值、低可信度与实验边界不会被隐藏。</Text>
+        <DecisionContextRevision />
         <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionNav}>
           {sectionActions.map((action) => <Pressable key={action.key} testID={action.testID} accessibilityRole="button" accessibilityState={{ selected: activeSection === action.key }} onPress={() => navigateToSection(action.key)} style={({ pressed }) => [styles.navAction, activeSection === action.key && styles.navActionActive, pressed && styles.pressed]}><Text style={[styles.navActionText, activeSection === action.key && styles.navActionTextActive]}>{action.label}</Text></Pressable>)}
         </ScrollView>
       </View>
 
       {query.isLoading ? <State title="正在加载天气和天文证据…" body="服务端正在合并小时预报、模型来源与版本化天文计算；布局空间会保持稳定。" /> : null}
+      {!supportedTarget ? <State title="所选目标暂无专业预报" body="当前预报尚不支持所选目标；选择已保留，不以银河资料替代。" /> : null}
       {query.isError ? <State title="专业条件暂不可用" body={query.error instanceof Error && query.error.message === "forecast_api_base_url_missing" ? "尚未配置 EXPO_PUBLIC_API_BASE_URL；不会以内置数字替代真实数据。" : "上游或聚合 API 请求失败；可以安全重试。"} retry={() => void query.refetch()} /> : null}
       {bundle?.warnings.map((warning) => <View key={warning} style={styles.warning}><Text style={styles.warningText}>{warning}</Text></View>)}
       {bundle && bundle.status !== "fresh" ? <View style={styles.statusBanner}><Text style={styles.statusBannerTitle}>{bundle.status === "stale" ? "数据已过期" : "部分数据可用"}</Text><Text style={styles.statusBannerBody}>保留可用模型与列；缺失项显示为“—”，不会改写成 0 或 fresh。</Text></View> : null}
 
       {bundle ? <>
         <View collapsable={false} onLayout={(event) => registerSectionOffset("model-disagreement", event.nativeEvent.layout.y)}><ModelSelector bundle={bundle} selected={selectedModel} onSelect={(key) => { setSelectedModel(key); navigateToSection("model-disagreement"); }} /></View>
-        <View collapsable={false} onLayout={(event) => registerSectionOffset("future-trend", event.nativeEvent.layout.y)}><TrendCalendar trends={bundle.trends} selectedNight={selectedNight} onSelect={(date) => { setSelectedNight(date); navigateToSection("future-trend"); }} /></View>
+        <View collapsable={false} onLayout={(event) => registerSectionOffset("future-trend", event.nativeEvent.layout.y)}><TrendCalendar trends={bundle.trends} selectedNight={selectedNight} onSelect={(date) => { commitDecisionContext({ observingNight: date }); navigateToSection("future-trend"); }} /></View>
         <View collapsable={false} onLayout={(event) => registerSectionOffset("twilight-and-milky-way", event.nativeEvent.layout.y)}><Timeline bundle={bundle} onSelectTime={selectTimelineTime} /></View>
-        {series ? <View collapsable={false} onLayout={(event) => registerSectionOffset("hourly-professional-view", event.nativeEvent.layout.y)}><HourlyMatrix series={series} selectedIndex={Math.min(selectedHourIndex, Math.max(0, series.hours.length - 1))} onSelect={(index) => { setSelectedHourIndex(index); navigateToSection("hourly-professional-view"); }} timezone={bundle.context.timezone} isFetching={query.isFetching} /></View> : null}
-        <View collapsable={false} onLayout={(event) => registerSectionOffset("layer-provenance", event.nativeEvent.layout.y)}><LayerPanel layers={bundle.layers} selectedId={selectedLayerId} onSelect={(id) => { setSelectedLayerId(id); navigateToSection("layer-provenance"); }} selectedTime={selectedHour?.validTimeUtc ?? null} /></View>
+        {series ? <View collapsable={false} onLayout={(event) => registerSectionOffset("hourly-professional-view", event.nativeEvent.layout.y)}><HourlyMatrix series={series} selectedIndex={selectedHourIndex} onSelect={(index) => { const hour = series.hours[index]; if (hour) selectTimelineTime(hour.validTimeUtc); }} timezone={bundle.context.timezone} isFetching={query.isFetching} /></View> : null}
+        <View collapsable={false} onLayout={(event) => registerSectionOffset("layer-provenance", event.nativeEvent.layout.y)}><LayerPanel layers={bundle.layers} selectedId={selectedLayerId} onSelect={(id) => { setSelectedLayerId(id); navigateToSection("layer-provenance"); }} selectedTime={context.moment} /></View>
         <View style={styles.provenance}><Text style={styles.provenanceTitle}>本次证据修订</Text><Text style={styles.provenanceBody}>生成 {bundle.generatedAt} · 有效至 {bundle.expiresAt} · {bundle.context.coordinateSystem} · {bundle.context.timezone}</Text></View>
       </> : null}
     </ScrollView>

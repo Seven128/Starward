@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { hashKey } from "@tanstack/react-query";
 import type { HourlySkyRow, MapSceneData, ObservationPlan, SkyReport } from "@starward/miniapp-contracts";
-import { mapForecastPresentation, skyForecastPresentation } from "../services/forecast-presentation";
+import { mapCloudForecastPresentation, mapForecastPresentation, skyForecastPresentation } from "../services/forecast-presentation";
 import { planReference } from "../content/plan/detail/plan-reference-model";
 import { cloudTimeFrameChoices, projectedLayerPolygons, projectMapEvaluations } from "../pages/map/map-time-frame";
 
@@ -69,7 +69,7 @@ test("map removes only expired sample cells and weather choices while preserving
   assert.deepEqual(original, snapshot);
 });
 
-function mountedQuery(sourceData: SkyReport | MapSceneData, map = false, generatedAt?: string) {
+function mountedQuery(sourceData: SkyReport | MapSceneData, map: boolean | "cloud" = false, generatedAt?: string) {
   const ast = ts.createSourceFile("hook.ts", readFileSync(new URL("./use-forecast-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const code = ast.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(ast).replace(/^export /, "")).join("\n");
   const slots: any[] = [], effects: Array<() => void> = [];
@@ -77,8 +77,8 @@ function mountedQuery(sourceData: SkyReport | MapSceneData, map = false, generat
   const query = { data: { data: sourceData, dataState: "FRESH", generatedAt }, updatedAt: Date.now(), isError: false, isPending: false,
     refetch: async () => { refreshes++; return undefined; }, refreshError: new Error("offline") };
   const same = (left: unknown[] | undefined, right: unknown[]) => left && right.every((item, index) => Object.is(item, left[index]));
-  const hook = vm.runInNewContext(ts.transpileModule(code + (map ? ";useMapForecastQuery;" : ";useSkyForecastQuery;"), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-    Date, setTimeout, clearTimeout, hashKey, skyForecastPresentation, mapForecastPresentation, useResourceQuery: () => query,
+  const hook = vm.runInNewContext(ts.transpileModule(code + (map === "cloud" ? ";useMapCloudForecastQuery;" : map ? ";useMapForecastQuery;" : ";useSkyForecastQuery;"), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    Date, setTimeout, clearTimeout, hashKey, skyForecastPresentation, mapForecastPresentation, mapCloudForecastPresentation, useResourceQuery: () => query,
     useRef: (value: unknown) => { const index = cursor++; return slots[index] ??= { current: value }; },
     useState: (value: unknown) => { const index = cursor++; slots[index] ??= value; return [slots[index], (update: any) => { slots[index] = typeof update === "function" ? update(slots[index]) : update; dirty = true; }]; },
     useMemo: (fn: () => unknown, deps: unknown[]) => { const index = cursor++; if (!same(slots[index]?.deps, deps)) slots[index] = { deps, value: fn() }; return slots[index].value; },
@@ -93,7 +93,7 @@ function mountedQuery(sourceData: SkyReport | MapSceneData, map = false, generat
   }, dispose() { slots.forEach(slot => slot?.cleanup?.()); } };
 }
 
-test("a phone clock one second behind the reply retains fresh cloud cells and expires them on the server timeline", t => {
+for (const queryOwner of [true, "cloud"] as const) test(`cloud receipt clock and offline expiry remain correct for ${queryOwner === true ? "legacy Scene" : "independent cloud"}`, t => {
   t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: boundary - 1000 });
   const sourceAt = new Date(boundary).toISOString(), selectedAt = "2026-09-20T12:30:00Z";
   const point = { latitude: 23, longitude: 114 };
@@ -105,7 +105,7 @@ test("a phone clock one second behind the reply retains fresh cloud cells and ex
     timeFrames: [{ atUtc: selectedAt, moonPhase: "FULL", spotSignals: {}, dynamicLayer: { kind: "CLOUD", polygons: [polygon], state: "FRESH" } }],
     layer: { kind: "CLOUD", polygons: [polygon], state: "FRESH" },
   } as unknown as MapSceneData;
-  const host = mountedQuery(original, true, sourceAt);
+  const host = mountedQuery(original, queryOwner, sourceAt);
   try {
     const current = host.render();
     assert.equal(current.data.data.layer.polygons.length, 1, "a just-acquired forecast is not missing because of device clock skew");
@@ -171,7 +171,7 @@ test("empty filtered results still expire, and opening an expired cache revalida
 
 test("all forecast page queries bind the shared lifecycle owner instead of retaining raw report data", () => {
   for (const [file, bindings] of [
-    ["../pages/map/index.tsx", { scene: "useMapForecastQuery", spotSky: "useSkyForecastQuery" }],
+    ["../pages/map/index.tsx", { scene: "useMapForecastQuery", cloud: "useMapCloudForecastQuery", spotSky: "useSkyForecastQuery" }],
     ["../pages/map/search-page.tsx", { scene: "useMapForecastQuery" }],
     ["../features/sky/spot-sky-page.tsx", { reportQuery: "useSkyForecastQuery" }],
     ["../content/plan/detail/plan-editor-page.tsx", { skyQuery: "useSkyForecastQuery" }],

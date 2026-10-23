@@ -986,6 +986,17 @@ export function getMapNightLight(viewport: import("@starward/miniapp-contracts")
   });
 }
 
+export function getMapCloud(contextId: string, viewport: import("@starward/miniapp-contracts").MapCloudRequest["viewport"], signal?: AbortSignal) {
+  return requestOperation("map-cloud", "mapCloudGet", {
+    auth: "OPTIONAL", cache: false,
+    query: [`contextId=${encodeURIComponent(contextId)}`, `centerLat=${viewport.center.latitude.toFixed(6)}`,
+      `centerLng=${viewport.center.longitude.toFixed(6)}`, `zoom=${viewport.zoom}`,
+      `viewportBounds=${[viewport.bounds.west, viewport.bounds.south, viewport.bounds.east, viewport.bounds.north]
+        .map(value => value.toFixed(7)).join(",")}`].join("&"),
+    ...(signal ? { signal } : {}),
+  });
+}
+
 export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal) {
   return requestOperation(`terrain:${input.purpose}`, "terrainOverlayGet", {
     query: terrainOverlayRequestQuery(input),

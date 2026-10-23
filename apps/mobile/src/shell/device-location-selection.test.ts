@@ -63,7 +63,7 @@ describe("foreground location selection", () => {
     save.mockRejectedValueOnce(new Error("disk_full"));
     await expect(selection.request()).resolves.toBe(false);
     expect(selection.getState()).toMatchObject({ phase: "error", permission: "granted" });
-    expect(selection.getState().message).toContain("未保存成功");
+    expect(selection.getState().message).toContain("保存结果未确认");
     await expect(selection.request()).resolves.toBe(true);
     expect(selection.getState()).toMatchObject({ phase: "saved", message: null });
   });

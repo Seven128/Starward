@@ -1,9 +1,9 @@
 import { distanceMeters } from "../../../../../packages/coordinate-system/src/index";
 import { assertHttpsHost, requestJson, type HttpTransport } from "../../../../../packages/data-source-runtime/src/index";
-import type { SpotSearchPage, SpotSearchProvider, SpotSearchRequest } from "./spot-search-service";
+import type { SpotIdentityProvider, SpotSearchPage, SpotSearchProvider, SpotSearchRequest, SpotSourceItem } from "./spot-search-service";
 
-interface OverpassElement { id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }
-interface OverpassPayload { elements?: OverpassElement[]; osm3s?: { timestamp_osm_base?: string } }
+interface OverpassElement { type?: string; id: number; lat?: number; lon?: number; tags?: Record<string, string> }
+interface OverpassPayload { elements: OverpassElement[]; remark?: string; osm3s?: { timestamp_osm_base?: string } }
 
 export interface OverpassSpotSearchSourceOptions {
   transport?: HttpTransport;
@@ -43,11 +43,31 @@ function facilities(tags: Record<string, string>): string[] {
   return found;
 }
 
-export class OverpassSpotSearchSource implements SpotSearchProvider {
+function sourceItem(element: OverpassElement, fetchedAt: string): SpotSourceItem | null {
+  // The existing discovery contract queries nodes only. Do not reinterpret an
+  // identically numbered way/relation, or use a geometric centre as the node.
+  if (element.type !== "node") return null;
+  const { lat, lon } = element;
+  if (!Number.isSafeInteger(element.id) || element.id <= 0 || !Number.isFinite(lat) || !Number.isFinite(lon)
+    || Math.abs(lat!) > 90 || Math.abs(lon!) > 180) return null;
+  const tags = element.tags ?? {};
+  if (tags.tourism !== "viewpoint" && tags.amenity !== "observatory") return null;
+  return {
+    id: `osm-${element.id}`, name: tags["name:zh"] ?? tags.name ?? tags["name:en"] ?? `OpenStreetMap 地点 ${element.id}`,
+    coordinate: { lat: lat!, lon: lon!, system: "WGS84" },
+    status: "provisional", mapState: "insufficient", facilities: facilities(tags),
+    verificationAt: null, imageUrl: null,
+    source: { label: "OpenStreetMap contributors via Overpass API", url: `https://www.openstreetmap.org/node/${element.id}`, licenseId: "ODbL-1.0", fetchedAt },
+    factsBoundary: "POI 仅用于发现候选；夜间开放、停车、设施、安全和架设条件均未现场验证。",
+  };
+}
+
+export class OverpassSpotSearchSource implements SpotSearchProvider, SpotIdentityProvider {
   private readonly endpoints: readonly URL[];
   private readonly now: () => Date;
   private readonly cache = new Map<string, { expiresAt: number; page: SpotSearchPage }>();
   private readonly inflight = new Map<string, Promise<SpotSearchPage>>();
+  private readonly identityInflight = new Map<string, Promise<SpotSourceItem | null>>();
   constructor(private readonly options: OverpassSpotSearchSourceOptions = {}) {
     const endpointValues = options.endpoints ?? (options.endpoint ? [options.endpoint] : defaultOverpassEndpoints);
     if (endpointValues.length === 0) throw new TypeError("overpass_endpoint_required");
@@ -57,6 +77,28 @@ export class OverpassSpotSearchSource implements SpotSearchProvider {
       return endpoint;
     });
     this.now = options.now ?? (() => new Date());
+  }
+
+  async findById(id: string): Promise<SpotSourceItem | null> {
+    // osm-<id> has always represented a node in this provider's search result.
+    // In particular, "current" and arbitrary Overpass syntax are not aliases.
+    const match = /^osm-([1-9]\d*)$/u.exec(id);
+    if (!match || !Number.isSafeInteger(Number(match[1]))) return null;
+    const active = this.identityInflight.get(id);
+    if (active) return structuredClone(await active);
+    const pending = this.fetchById(Number(match[1]));
+    this.identityInflight.set(id, pending);
+    try { return structuredClone(await pending); }
+    finally { this.identityInflight.delete(id); }
+  }
+
+  private async fetchById(nodeId: number): Promise<SpotSourceItem | null> {
+    const payload = await this.requestFromAvailableEndpoint(`[out:json][timeout:30];node(${nodeId});out;`);
+    const element = payload.elements?.find((item) => item.id === nodeId && item.type === "node");
+    // Deep links retain the same candidate scope as discovery, including after
+    // an OSM edit removes its qualifying tags.
+    if (!element) return null;
+    return sourceItem(element, this.now().toISOString());
   }
 
   async search(request: SpotSearchRequest): Promise<SpotSearchPage> {
@@ -92,22 +134,12 @@ export class OverpassSpotSearchSource implements SpotSearchProvider {
     const payload = await this.requestFromAvailableEndpoint(query);
     const fetchedAt = this.now().toISOString();
     const candidates = (payload.elements ?? []).flatMap((element) => {
-      const lat = element.lat ?? element.center?.lat;
-      const lon = element.lon ?? element.center?.lon;
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return [];
-      const tags = element.tags ?? {};
-      const distance = Math.round(distanceMeters(request.center, { lat: lat!, lon: lon! }));
+      const item = sourceItem(element, fetchedAt);
+      if (!item) return [];
+      const distance = Math.round(distanceMeters(request.center, item.coordinate));
       if (distance > request.radiusMeters) return [];
-      const itemFacilities = facilities(tags);
-      if (request.requireFacilities?.some((item) => !itemFacilities.includes(item))) return [];
-      return [{
-        id: `osm-${element.id}`, name: tags["name:zh"] ?? tags.name ?? tags["name:en"] ?? `OpenStreetMap 地点 ${element.id}`,
-        coordinate: { lat: lat!, lon: lon!, system: "WGS84" as const }, distanceMeters: distance,
-        status: "provisional" as const, mapState: "insufficient" as const, facilities: itemFacilities,
-        verificationAt: null, imageUrl: null,
-        source: { label: "OpenStreetMap contributors via Overpass API", url: `https://www.openstreetmap.org/${element.lat === undefined ? "way" : "node"}/${element.id}`, licenseId: "ODbL-1.0", fetchedAt },
-        factsBoundary: "POI 仅用于发现候选；夜间开放、停车、设施、安全和架设条件均未现场验证。",
-      }];
+      if (request.requireFacilities?.some((facility) => !item.facilities.includes(facility))) return [];
+      return [{ ...item, distanceMeters: distance }];
     }).sort((a, b) => a.distanceMeters - b.distanceMeters).slice(0, request.limit);
     const page = { items: candidates, nextCursor: null };
     this.cache.set(cacheKey, { expiresAt: this.now().getTime() + staticSpotCacheTtlMs, page: structuredClone(page) });
@@ -120,7 +152,7 @@ export class OverpassSpotSearchSource implements SpotSearchProvider {
       const url = new URL(endpoint);
       url.searchParams.set("data", query);
       try {
-        return await requestJson<OverpassPayload>({
+        const payload = await requestJson<OverpassPayload>({
           provider: "openstreetmap-overpass-poc",
           url,
           transport: this.options.transport,
@@ -129,6 +161,12 @@ export class OverpassSpotSearchSource implements SpotSearchProvider {
           maxAttempts: 1,
           retryStatuses: [429, 500, 502, 503, 504],
         });
+        // Overpass may return HTTP 200 with a runtime error in `remark` and a
+        // partial/empty result. That is not proof that the requested node is gone.
+        if (!payload || !Array.isArray(payload.elements) || (payload.remark !== undefined && payload.remark !== "")) {
+          throw new Error("openstreetmap_overpass_payload_unavailable");
+        }
+        return payload;
       } catch (error) {
         lastError = error;
       }

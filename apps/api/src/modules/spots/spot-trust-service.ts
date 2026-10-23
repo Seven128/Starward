@@ -45,8 +45,8 @@ export interface ResolvedSpotFact {
 }
 
 export interface SpotTrustRepository {
-  findSpot(id: string): Promise<SpotRecord | null>;
-  listFacts(id: string): Promise<SpotFact[]>;
+  // Identity, canonical coordinate, policy and facts belong to one read.
+  load(id: string): Promise<{ spot: SpotRecord; facts: SpotFact[] } | null>;
 }
 
 const SOURCE_PRIORITY: Record<SpotFact["sourceType"], number> = {
@@ -71,7 +71,7 @@ function approximate(coordinate: Wgs84Coordinate): Wgs84Coordinate {
 
 export function discloseSpotCoordinate(spot: SpotRecord, actor: SpotActor) {
   const exact = canReadExact(spot, actor);
-  if (spot.visibility === "hidden" && !actor.roles.includes("spot-admin")) {
+  if ((spot.visibility === "hidden" || spot.visibility === "private" && !exact) && !actor.roles.includes("spot-admin")) {
     return { level: "hidden" as const, coordinate: null, exact: false, reason: "地点坐标因安全、生态或权利边界隐藏" };
   }
   if (exact || actor.roles.includes("spot-admin")) return { level: "exact" as const, coordinate: { ...spot.coordinate }, exact: true, reason: null };
@@ -106,10 +106,17 @@ export class SpotTrustService {
   constructor(private readonly repository: SpotTrustRepository, private readonly now: () => Date = () => new Date()) {}
 
   async getDetail(id: string, actor: SpotActor) {
-    const spot = await this.repository.findSpot(id);
-    if (!spot) throw new Error("spot_not_found");
+    const snapshot = await this.repository.load(id);
+    if (!snapshot) throw new Error("spot_not_found");
+    const { spot } = snapshot;
+    if (spot.id !== id) throw new Error("spot_source_identity_mismatch");
+    if (!actor.roles.includes("spot-admin") && (spot.visibility === "hidden" || spot.visibility === "private" && !canReadExact(spot, actor))) {
+      // Do not disclose the existence, facts, or even approximate location of a
+      // private/hidden record to an unrelated reader.
+      throw new Error("spot_not_found");
+    }
     const coordinate = discloseSpotCoordinate(spot, actor);
-    const facts = resolveSpotFacts(await this.repository.listFacts(id), this.now());
+    const facts = resolveSpotFacts(snapshot.facts, this.now());
     const safetyConflict = facts.some((fact) => fact.safetyConservative);
     const navigationBlocked = spot.status === "closed" || safetyConflict || !coordinate.exact;
     const actions = (["share", "navigate", "offline", "itinerary"] as SpotAction[]).map((action) => ({

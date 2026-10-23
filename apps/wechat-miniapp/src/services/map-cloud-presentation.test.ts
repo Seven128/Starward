@@ -130,7 +130,9 @@ test("viewport refresh retains only the same public sampled cells and provenance
     assert.equal(pending.sources[0].id, "source:retained");
     assert.equal(pending.context, undefined); assert.equal(pending.spots, undefined);
     assert.deepEqual(Object.keys(pending.timeFrames[0].spotSignals), []);
-    assert.equal(host.render(undefined, "account:night", true, "2026-10-18T13:30:00Z").layer.polygons.length, 0);
+    const selected = host.render(undefined, "account:night", true, "2026-10-18T13:30:00Z");
+    assert.equal(selected.layer.polygons.length, 0);
+    assert.equal(selected.layer.validAt, "2026-10-18T13:30:00Z", "retained coverage cannot mislabel the selected instant");
   } finally { host.dispose(); }
 });
 

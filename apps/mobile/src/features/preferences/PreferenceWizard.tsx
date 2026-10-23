@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -16,6 +16,9 @@ import {
 import { minimumTouchTarget, radii, spacing, type as typeToken, type ColorPalette } from "@starward/ui-system/tokens";
 import { useStarwardTheme } from "../../shell/useStarwardTheme";
 import { preferenceProfileSchema } from "./profile-schema";
+import { createProfileSaveAttempt } from "./profile-save-attempt";
+import { PreferenceProfileRevisionConflict } from "../../state/preference-save-result";
+import { observerTypeLabels } from "./observer-labels";
 
 type WizardStyles = ReturnType<typeof createStyles>;
 const WizardThemeContext = createContext<{ palette: ColorPalette; styles: WizardStyles } | null>(null);
@@ -27,7 +30,7 @@ function useWizardTheme() {
 }
 
 const labels = {
-  observer: { beginner: "新手观星", astrophotographer: "星空摄影", "visual-observer": "目视观测", camping: "露营观星", family: "亲子观星" },
+  observer: observerTypeLabels,
   travel: { drive: "自驾", cycle: "骑行", "public-transit": "公共交通", walk: "步行" },
   target: { stars: "普通星空", "milky-way": "银河", moon: "月亮", planets: "行星", "meteor-shower": "流星雨", comet: "彗星", "space-station": "空间站", "deep-sky": "深空目标", "sunrise-sunset-composite": "日出/日落联合摄影" },
   equipment: { "naked-eye": "裸眼", binoculars: "双筒", telescope: "天文望远镜", phone: "手机", camera: "相机", lens: "镜头", tripod: "三脚架", "equatorial-mount": "赤道仪", filter: "滤镜" },
@@ -92,19 +95,56 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
   const { palette } = useStarwardTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<PreferenceProfile>({
+  const saveAttempt = useRef(createProfileSaveAttempt());
+  const knownRevision = useRef({ id: initial.id, revision: initial.revision });
+  const wasVisible = useRef(visible);
+  const session = useRef(Symbol());
+  const { control, handleSubmit, getValues, reset, formState: { errors, isSubmitting, isDirty } } = useForm<PreferenceProfile>({
     resolver: zodResolver(preferenceProfileSchema),
-    values: initial,
+    defaultValues: initial,
   });
+  useEffect(() => {
+    if (visible !== wasVisible.current) session.current = Symbol();
+    if (visible && !wasVisible.current) {
+      const preserveDraft = getValues().id === initial.id && (isDirty || saveAttempt.current.hasUnresolvedSave());
+      if (!preserveDraft) {
+        reset(initial);
+        knownRevision.current = { id: initial.id, revision: initial.revision };
+        saveAttempt.current = createProfileSaveAttempt();
+        setSaveError(null);
+      }
+    }
+    wasVisible.current = visible;
+  }, [visible, initial, reset, getValues, isDirty]);
 
   const submit = handleSubmit(async (value) => {
-    const now = new Date().toISOString();
+    const owner = session.current;
+    const identity = JSON.stringify(value);
     setSaveError(null);
     try {
-      await onSave({ ...value, revision: value.revision + 1, updatedAt: now });
-      onClose();
-    } catch {
-      setSaveError("保存失败，预设没有被写入本机数据库。请重试。");
+      const saved = await saveAttempt.current.save(identity, () => ({
+        ...value,
+        revision: Math.max(value.revision, knownRevision.current.id === value.id ? knownRevision.current.revision : 0) + 1,
+        updatedAt: new Date().toISOString(),
+      }), onSave);
+      const currentValue = getValues();
+      const current = preferenceProfileSchema.safeParse(currentValue);
+      const unchanged = current.success && JSON.stringify(current.data) === identity;
+      if (currentValue.id === saved.id) {
+        knownRevision.current = { id: saved.id, revision: saved.revision };
+        reset(saved);
+        if (!unchanged) {
+          // The completed candidate advances the baseline without discarding
+          // fields edited while it was in flight, even a currently invalid draft.
+          reset({ ...currentValue, revision: saved.revision, createdAt: saved.createdAt, updatedAt: saved.updatedAt }, { keepDefaultValues: true });
+        }
+      }
+      if (session.current === owner && unchanged) onClose();
+    } catch (error) {
+      if (error instanceof PreferenceProfileRevisionConflict) {
+        knownRevision.current = { id: error.profileId, revision: error.currentRevision };
+        if (session.current === owner) setSaveError("此预设已有新版本。草稿已保留，请核对后再次保存。");
+      } else if (session.current === owner) setSaveError("保存结果未确认，输入已保留。请重试。");
     }
   });
 

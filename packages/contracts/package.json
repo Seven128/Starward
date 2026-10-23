@@ -9,6 +9,7 @@
     "./admin": "./src/admin.ts",
     "./night-report": "./src/night-report.ts",
     "./forecast": "./src/forecast.ts",
+    "./observing-time": "./src/observing-time.ts",
     "./map": "./src/map.ts",
     "./spot": "./src/spot.ts",
     "./sky": "./src/sky.ts",

@@ -1,129 +1,17 @@
-export interface PreferenceRuntimeStorage {
-  kind: "sqlite" | "web-key-value";
-  read(key: string): Promise<string | null>;
-  write(key: string, value: string): Promise<void>;
-  close?(): Promise<void> | void;
-}
-
-export interface PreferenceBoundary {
-  invoke(request: unknown): Promise<unknown>;
-}
-
-export interface PreferenceRuntimeRequest {
-  outcome: "mobile-shell-and-preferences";
-  actorId: string;
-  operation: "preference.save" | "preference.activate" | "shell.location.set" | "shell.destination.set";
-  idempotencyKey: string;
-  payload: Record<string, unknown>;
-}
-
-export interface PreferenceRuntimeRecord {
-  outcome: "mobile-shell-and-preferences";
-  actorId: string;
-  operation: PreferenceRuntimeRequest["operation"];
-  entityId: string;
-  idempotencyKey: string;
-  inputDigest: string;
-  stateVersion: number;
-  result: Record<string, unknown>;
-  committedAt: string;
-}
-
-interface PersistedPreferenceState {
-  schemaVersion: "starward-preferences-runtime-v1";
-  revision: number;
-  records: Record<string, PreferenceRuntimeRecord>;
-  idempotency: Record<string, string>;
-}
+import type { PreferenceBoundary, PreferenceRuntimeInput, PreferenceRuntimeRecord, PreferenceRuntimeRequest, PreferenceRuntimeStorage } from "./runtime-contract";
+import { canonicalJson, defaultDigest } from "./runtime-json";
+import { applyRecord, parseState, projectionOf, STATE_KEY, validateEnvelope, validatePayload, type PreferenceState, type RetainedReceipt } from "./runtime-state";
+import { createNodeSqliteStorage } from "./sqlite-storage";
+export type { PreferenceBoundary, PreferenceDestination, PreferenceLocation, PreferenceProjection, PreferenceRuntimeInput, PreferenceRuntimeRecord, PreferenceRuntimeRequest, PreferenceRuntimeStorage } from "./runtime-contract";
+export { restorePreferenceLocation } from "./runtime-state";
 
 interface RuntimeOptions {
   dataDir?: string;
   storage?: PreferenceRuntimeStorage;
   boundary?: PreferenceBoundary;
-  releaseProfile?: {
-    id: string;
-    productionTrafficAllowed: boolean;
-  };
+  releaseProfile?: { id: string; productionTrafficAllowed: boolean };
   digest?: (value: string) => Promise<string> | string;
   now?: () => Date;
-}
-
-const STATE_KEY = "preferences-runtime-state";
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === undefined) return "null";
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  if (isObject(value)) return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
-  return JSON.stringify(value);
-}
-
-function emptyState(): PersistedPreferenceState {
-  return { schemaVersion: "starward-preferences-runtime-v1", revision: 0, records: {}, idempotency: {} };
-}
-
-function parseState(value: string | null): PersistedPreferenceState {
-  if (!value) return emptyState();
-  const parsed = JSON.parse(value) as Partial<PersistedPreferenceState>;
-  if (parsed.schemaVersion !== "starward-preferences-runtime-v1" || !Number.isInteger(parsed.revision) || !isObject(parsed.records) || !isObject(parsed.idempotency)) {
-    throw new Error("preference_runtime_state_invalid");
-  }
-  return parsed as PersistedPreferenceState;
-}
-
-async function createNodeSqliteStorage(dataDir: string): Promise<PreferenceRuntimeStorage> {
-  const processRuntime = (globalThis as { process?: { getBuiltinModule?: (name: string) => any } }).process;
-  const fileSystem = processRuntime?.getBuiltinModule?.("node:fs")?.promises;
-  const sqlite = processRuntime?.getBuiltinModule?.("node:sqlite");
-  if (!fileSystem || !sqlite?.DatabaseSync) throw new Error("preference_runtime_storage_required");
-  await fileSystem.mkdir(dataDir, { recursive: true });
-  const database = new sqlite.DatabaseSync(`${dataDir.replace(/[\\/]$/u, "")}/preferences.sqlite`);
-  database.exec("PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS preference_runtime_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)");
-  const readStatement = database.prepare("SELECT value FROM preference_runtime_state WHERE key = ?");
-  const writeStatement = database.prepare("INSERT INTO preference_runtime_state(key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at");
-  return {
-    kind: "sqlite",
-    async read(key) {
-      const row = readStatement.get(key) as { value?: string } | undefined;
-      return typeof row?.value === "string" ? row.value : null;
-    },
-    async write(key, value) {
-      database.exec("BEGIN IMMEDIATE");
-      try {
-        writeStatement.run(key, value, new Date().toISOString());
-        database.exec("COMMIT");
-      } catch (error) {
-        database.exec("ROLLBACK");
-        throw error;
-      }
-    },
-    close() {
-      database.close();
-    },
-  };
-}
-
-async function defaultDigest(value: string): Promise<string> {
-  const processRuntime = (globalThis as { process?: { getBuiltinModule?: (name: string) => any } }).process;
-  const nodeCrypto = processRuntime?.getBuiltinModule?.("node:crypto");
-  if (nodeCrypto?.createHash) return nodeCrypto.createHash("sha256").update(value).digest("hex");
-  const subtle = globalThis.crypto?.subtle;
-  if (subtle) {
-    const bytes = await subtle.digest("SHA-256", new TextEncoder().encode(value));
-    return Array.from(new Uint8Array(bytes), (item) => item.toString(16).padStart(2, "0")).join("");
-  }
-  throw new Error("preference_runtime_digest_required");
-}
-
-function validateRequest(request: PreferenceRuntimeRequest): void {
-  if (request.outcome !== "mobile-shell-and-preferences") throw new Error("preference_runtime_outcome_invalid");
-  if (!request.actorId?.trim()) throw new Error("preference_runtime_actor_required");
-  if (!request.idempotencyKey?.trim()) throw new Error("preference_runtime_idempotency_required");
-  if (!["preference.save", "preference.activate", "shell.location.set", "shell.destination.set"].includes(request.operation)) throw new Error("preference_runtime_operation_invalid");
-  if (!isObject(request.payload) || typeof request.payload.token !== "string" || !request.payload.token.trim()) throw new Error("preference_runtime_payload_invalid");
 }
 
 export async function createPreferencesRuntime(options: RuntimeOptions = {}) {
@@ -131,80 +19,140 @@ export async function createPreferencesRuntime(options: RuntimeOptions = {}) {
     throw new Error("preference_runtime_release_profile_invalid");
   }
   const storage = options.storage ?? await createNodeSqliteStorage(options.dataDir ?? "");
-  const calculateDigest = options.digest ?? defaultDigest;
+  if (typeof storage.compareAndSwap !== "function") throw new Error("preference_runtime_atomic_storage_required");
+  const digest = options.digest ?? defaultDigest;
   const now = options.now ?? (() => new Date());
   let closed = false;
-  let serial = Promise.resolve();
+  let serial: Promise<unknown> = Promise.resolve();
 
-  async function loadState(): Promise<PersistedPreferenceState> {
-    if (closed) throw new Error("preference_runtime_closed");
-    return parseState(await storage.read(STATE_KEY));
-  }
-
-  async function execute(request: PreferenceRuntimeRequest) {
-    const task = serial.then(async () => {
-      validateRequest(request);
-      const state = await loadState();
-      const existingEntityId = state.idempotency[request.idempotencyKey];
-      if (existingEntityId) {
-        const existing = state.records[existingEntityId];
-        if (!existing || existing.actorId !== request.actorId || existing.operation !== request.operation) throw new Error("preference_runtime_idempotency_conflict");
-        return { ...existing, status: "replayed" as const, replayed: true, sideEffects: [] as Array<Record<string, unknown>> };
-      }
-
-      const input = { outcome: request.outcome, actorId: request.actorId, operation: request.operation, payload: request.payload };
-      const inputDigest = await calculateDigest(canonicalJson(input));
-      const entityId = `preference-${(await calculateDigest(request.idempotencyKey)).slice(0, 20)}`;
-      const stateVersion = state.revision + 1;
-      const committedAt = now().toISOString();
-      const record: PreferenceRuntimeRecord = {
-        outcome: request.outcome,
-        actorId: request.actorId,
-        operation: request.operation,
-        entityId,
-        idempotencyKey: request.idempotencyKey,
-        inputDigest,
-        stateVersion,
-        result: { token: request.payload.token, payload: structuredClone(request.payload), committedAt },
-        committedAt,
-      };
-      const next: PersistedPreferenceState = {
-        ...state,
-        revision: stateVersion,
-        records: { ...state.records, [entityId]: record },
-        idempotency: { ...state.idempotency, [request.idempotencyKey]: entityId },
-      };
-      await storage.write(STATE_KEY, JSON.stringify(next));
-      return {
-        ...record,
-        status: "succeeded" as const,
-        sideEffects: [{ kind: storage.kind, status: "committed", receiptId: `${entityId}:${stateVersion}` }],
-      };
-    });
+  function enqueue<T>(work: () => Promise<T>): Promise<T> {
+    const task = serial.then(() => { if (closed) throw new Error("preference_runtime_closed"); return work(); });
     serial = task.then(() => undefined, () => undefined);
     return task;
   }
 
+  async function loadState(): Promise<{ state: PreferenceState; raw: string | null }> {
+    const raw = await storage.read(STATE_KEY);
+    const parsed = parseState(raw);
+    if (!parsed.migration) return { state: parsed.state, raw };
+    // Exact original bytes are recovery material, never a second current state.
+    const archiveKey = STATE_KEY + ":legacy:" + await digest(raw!);
+    let archived: string | null;
+    try {
+      await storage.compareAndSwap(archiveKey, null, raw!);
+      archived = await storage.read(archiveKey);
+    } catch {
+      try { archived = await storage.read(archiveKey); } catch { throw new Error("preference_runtime_commit_unknown"); }
+    }
+    if (archived !== raw) throw new Error("preference_runtime_archive_conflict");
+    const nextRaw = JSON.stringify(parsed.state);
+    let changed: boolean;
+    try { changed = await storage.compareAndSwap(STATE_KEY, raw, nextRaw); }
+    catch {
+      const current = await storage.read(STATE_KEY).catch(() => { throw new Error("preference_runtime_commit_unknown"); });
+      if (current === raw) throw new Error("preference_runtime_commit_unknown");
+      const recovered = parseState(current);
+      if (recovered.migration || recovered.state.revision < parsed.state.revision) throw new Error("preference_runtime_commit_unknown");
+      return { state: recovered.state, raw: current };
+    }
+    if (changed) return { state: parsed.state, raw: nextRaw };
+    const current = await storage.read(STATE_KEY);
+    const recovered = parseState(current);
+    if (recovered.migration || recovered.state.revision < parsed.state.revision) throw new Error("preference_runtime_conflict");
+    return { state: recovered.state, raw: current };
+  }
+
+  async function prepare(input: PreferenceRuntimeInput): Promise<PreferenceRuntimeRequest> {
+    validateEnvelope(input);
+    validatePayload(input.operation, input.payload);
+    // Snapshot before awaiting storage; mutation cannot change this intent.
+    const copy = JSON.parse(canonicalJson(input)) as PreferenceRuntimeInput;
+    return enqueue(async () => {
+      const { state } = await loadState();
+      return { ...copy, baseRevision: state.revision, idempotencyKey: "preferences-v2:" + state.revision + ":" + copy.idempotencyKey };
+    });
+  }
+
+  const findReceipt = (state: PreferenceState, key: string) => state.actors.flatMap(a => a.receipts).find(r => r.record.idempotencyKey === key);
+  const inputOf = (request: PreferenceRuntimeRequest) => ({ outcome: request.outcome, actorId: request.actorId, operation: request.operation, payload: request.payload });
+  async function replay(receipt: RetainedReceipt, request: PreferenceRuntimeRequest, state: PreferenceState) {
+    const record = receipt.record;
+    // Preserve legacy identity; serialized payload may have lost undefined fields.
+    if ((!receipt.legacy && (!Number.isSafeInteger(request.baseRevision)
+      || request.baseRevision !== record.stateVersion - 1
+      || !request.idempotencyKey.startsWith("preferences-v2:" + request.baseRevision + ":")))
+      || record.actorId !== request.actorId || record.operation !== request.operation
+      || record.inputDigest !== await digest(canonicalJson(inputOf(request), receipt.legacy))) throw new Error("preference_runtime_idempotency_conflict");
+    return { ...structuredClone(record), status: "replayed" as const, replayed: true,
+      projection: projectionOf(state, request.actorId), sideEffects: [] as Array<Record<string, unknown>> };
+  }
+
+  async function execute(input: PreferenceRuntimeRequest) {
+    validateEnvelope(input);
+    canonicalJson(input, input.baseRevision === undefined);
+    const request = structuredClone(input);
+    return enqueue(async () => {
+      const { state, raw } = await loadState();
+      const retained = findReceipt(state, request.idempotencyKey);
+      if (retained) return replay(retained, request, state);
+      const prefix = "preferences-v2:" + request.baseRevision + ":";
+      if (!Number.isSafeInteger(request.baseRevision) || request.baseRevision !== state.revision
+        || !request.idempotencyKey.startsWith(prefix) || !request.idempotencyKey.slice(prefix.length).trim()) throw new Error("preference_runtime_stale_command");
+      validatePayload(request.operation, request.payload);
+      if (state.revision >= Number.MAX_SAFE_INTEGER) throw new Error("preference_runtime_revision_exhausted");
+      const inputDigest = await digest(canonicalJson(inputOf(request)));
+      const entityId = "preference-" + await digest(request.idempotencyKey);
+      const committedAt = now().toISOString();
+      const record: PreferenceRuntimeRecord = {
+        outcome: request.outcome, actorId: request.actorId, operation: request.operation,
+        idempotencyKey: request.idempotencyKey, entityId, inputDigest, stateVersion: state.revision + 1, committedAt,
+        result: { token: request.payload.token, payload: structuredClone(request.payload), committedAt },
+      };
+      const next = structuredClone(state);
+      applyRecord(next, record);
+      next.revision = record.stateVersion;
+      let changed: boolean;
+      try { changed = await storage.compareAndSwap(STATE_KEY, raw, JSON.stringify(next)); }
+      catch {
+        // A thrown reply can follow commit. Do not silently rebase an unknown write.
+        let recovered: PreferenceState;
+        try { recovered = parseState(await storage.read(STATE_KEY)).state; }
+        catch { throw new Error("preference_runtime_commit_unknown"); }
+        const receipt = findReceipt(recovered, request.idempotencyKey);
+        if (receipt) return replay(receipt, request, recovered);
+        throw new Error("preference_runtime_commit_unknown");
+      }
+      if (!changed) {
+        const recovered = (await loadState()).state;
+        const receipt = findReceipt(recovered, request.idempotencyKey);
+        if (receipt) return replay(receipt, request, recovered);
+        throw new Error("preference_runtime_conflict");
+      }
+      return { ...structuredClone(record), status: "succeeded" as const, replayed: false,
+        projection: projectionOf(next, request.actorId),
+        sideEffects: [{ kind: storage.kind, status: "committed", receiptId: entityId + ":" + record.stateVersion }] as Array<Record<string, unknown>> };
+    });
+  }
+
+  async function getProjection(query: { actorId: string }) {
+    return enqueue(async () => projectionOf((await loadState()).state, query.actorId));
+  }
   async function read(query: { outcome: string; actorId: string; entityId: string }) {
-    await serial;
-    const state = await loadState();
-    const record = state.records[query.entityId];
-    if (!record || record.outcome !== query.outcome || record.actorId !== query.actorId) return { status: "not-found" as const, entityId: query.entityId };
-    return { ...structuredClone(record), status: "succeeded" as const };
+    return enqueue(async () => {
+      const { state } = await loadState();
+      const record = state.actors.find(a => a.actorId === query.actorId)?.receipts.find(r => r.record.entityId === query.entityId)?.record;
+      if (!record || record.outcome !== query.outcome) return { status: "not-found" as const, entityId: query.entityId };
+      return { ...structuredClone(record), projection: projectionOf(state, query.actorId), status: "succeeded" as const };
+    });
   }
-
   async function list(query: { actorId: string }) {
-    await serial;
-    const state = await loadState();
-    return Object.values(state.records).filter((record) => record.actorId === query.actorId).map((record) => structuredClone(record));
+    return enqueue(async () => structuredClone((await loadState()).state.actors.find(a => a.actorId === query.actorId)?.receipts.map(r => r.record) ?? []));
   }
-
   async function close() {
     await serial;
     if (closed) return;
     closed = true;
     await storage.close?.();
   }
-
-  return { execute, read, list, close };
+  return { prepare, execute, getProjection, read, list, close };
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { SpotTrustDetail } from "@starward/contracts/spot";
@@ -38,30 +38,46 @@ function sourceText(detail: SpotTrustDetail | undefined, key: string) {
 }
 
 export function SpotScreen() {
+  const params = useLocalSearchParams<{ spotId?: string | string[] }>();
+  const spotId = typeof params.spotId === "string" && params.spotId.trim() === params.spotId && params.spotId.length > 0 ? params.spotId : null;
   const restoration = useTabRestorationEvidence({
     testID: "tab-restoration-map",
     tabId: "shell-open-map-tab",
     rootRoute: "/map",
-    nestedRoute: "/spot/spot-a",
+    nestedRoute: spotId ? `/spot/${encodeURIComponent(spotId)}` : "/map",
     ownerType: "canvas",
     ownerId: "map-spot-canvas-owner",
   });
   const [active, setActive] = useState<ViewKey>("decision");
-  const query = useQuery({ queryKey: ["spot-detail", "current"], queryFn: ({ signal }) => client.get("current", signal) });
-  const detail = query.data;
+  const query = useQuery({
+    queryKey: ["spot-detail", spotId],
+    queryFn: async ({ signal }) => {
+      try { return await client.get(spotId!, signal); }
+      catch (error) {
+        // A definitive refusal replaces the cached payload. Keeping it only
+        // behind the latest error would revive it on a later transient failure.
+        if (error instanceof Error && error.message === "spot_http_404") return null;
+        throw error;
+      }
+    },
+    enabled: spotId !== null,
+    retry: (count, error) => error.message !== "spot_http_404" && count < 2,
+  });
+  const unavailable = !spotId || query.data === null;
+  const detail = !unavailable && query.data?.id === spotId ? query.data : undefined;
   const safetyConservative = detail?.facts.some((item) => item.safetyConservative) ?? true;
   const recommendation = safetyOverridesRecommendation({ status: detail?.status ?? "caution", safetyConservative, score: null });
   const navigateAction = detail?.actions.find((item) => item.action === "navigate");
   return <SafeAreaView testID="screen-spot-detail-and-trust" style={styles.screen}><ScrollView onScroll={restoration.onScroll} scrollEventThrottle={restoration.scrollEventThrottle} contentContainerStyle={styles.content}>
     {restoration.evidence}
     <View testID="spot-hero" accessible focusable accessibilityRole="summary" accessibilityLabel="地点身份摘要" style={styles.hero}>
-      <Text style={styles.eyebrow}>地点证据 · {detail?.updatedAt ?? "正在同步"}</Text><Text style={styles.title}>{detail?.name ?? "正在加载地点身份…"}</Text>
+      <Text style={styles.eyebrow}>地点证据 · {detail?.updatedAt ?? (unavailable || query.isError ? "未取得" : "正在同步")}</Text><Text style={styles.title}>{detail?.name ?? (unavailable ? "地点不可用" : query.isError ? "地点暂未加载" : "正在加载地点身份…")}</Text>
       <Text style={styles.subtitle}>静态身份与动态证据分开呈现；未知、冲突、临时不可用和安全阻断不会被总分或漂亮卡片覆盖。</Text>
     </View>
     {detail ? <View testID="spot-detail-ready" collapsable={false} style={styles.readySentinel} /> : null}
-    <DecisionContextRevision />
-    {query.isError ? <View style={styles.error}><Text style={styles.errorTitle}>地点证据暂不可用</Text><Text style={styles.errorBody}>保留页面上下文，不展示旧评分或合成事实。</Text><Pressable onPress={() => query.refetch()} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable></View> : null}
-    <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={`${action.stableControlId}:${action.accessibilityName}`} onPress={() => setActive(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
+    <DecisionContextRevision viewedSpot={detail ? { id: detail.id, name: detail.name } : undefined} />
+    {unavailable || query.isError ? <View style={styles.error}><Text style={styles.errorTitle}>{unavailable ? "地点不存在或暂无查看权限" : "地点证据暂不可用"}</Text><Text style={styles.errorBody}>{unavailable ? "请返回地图重新选择地点。" : "当前地点加载失败，可重试或返回地图。"}</Text>{spotId ? <Pressable onPress={() => query.refetch()} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable> : null}<Pressable testID="spot-return-map" onPress={() => router.replace("/map")} style={styles.retry}><Text style={styles.retryText}>返回地图</Text></Pressable></View> : null}
+    {detail ? <><View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={`${action.stableControlId}:${action.accessibilityName}`} onPress={() => setActive(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
     {active === "decision" ? <View style={styles.panel}><Evidence testID="spot-decision-summary" title={recommendation.blocked ? "谨慎 · 资料不足或存在阻断" : "适合继续评估"} body={detail?.statusReason ?? "今晚动态报告尚未生成；不会把历史条件当成当前结论。"} /><Evidence testID="spot-observation-window" title="观测窗口正在刷新" body="地点身份先显示；天气和天文窗口需由同一日期/位置版本生成。" /><Evidence testID="spot-primary-action" title={navigateAction?.allowed ? "可加入计划并核对导航" : "先完成核验，导航暂不可用"} body={navigateAction?.reason ?? "行动权限按坐标与风险策略计算。"} /></View> : null}
     {active === "light" ? <View style={styles.panel}><Evidence testID="spot-light-estimate" title={`卫星夜光辐射：${factText(detail, "light_radiance")}`} body="没有区域校准时不显示 Bortle 或银河可见保证。" /><Evidence testID="spot-horizon-profile" title={`地平线轮廓：${factText(detail, "horizon_profile")}`} body="地形、人工遮挡和全景证据缺失时不合成虚假轮廓。" /><Evidence testID="spot-light-provenance" title="来源与估算边界" body={`${sourceText(detail, "light_radiance")}；当前为估算/缺失边界。`} /></View> : null}
     {active === "media" ? <View style={styles.panel}><Evidence testID="spot-media-capture-time" title="真实缺图 · 拍摄时间未知" body="没有审核媒体时保留空状态，不用装饰图冒充现场实景。" /><Evidence testID="spot-media-source" title="媒体来源：暂无" body={sourceText(detail, "media")} /><Evidence testID="spot-media-moderation" title="审核与隐私管线" body="公开前必须清理 EXIF 位置并保留受保护原图、方向、时间、设备与审核记录。" /></View> : null}
@@ -69,6 +85,7 @@ export function SpotScreen() {
     {active === "safety" ? <View style={styles.panel}><Evidence testID="spot-safety-block" title="安全风险未核验 · 导航阻断" body={detail?.statusReason ?? "正在核对开放、封路、潮汐、山路和治安风险。"} /><Evidence testID="spot-score-suppressed" title="总分已抑制" body="安全缺口不会被暗度、天气或个人偏好抵消。" /><Evidence testID="spot-safe-alternative" title="选择已核验备选" body="返回地图筛选管理员核验且路线可用的地点；本候选仍可作为待核验资料。" /></View> : null}
     {active === "coordinate" ? <View style={styles.panel}><Evidence testID="spot-authoritative-coordinate" title={`权威坐标 WGS84 · ${detail?.coordinate.level ?? "待加载"}`} body={detail?.coordinate.coordinate ? `${detail.coordinate.coordinate.lat.toFixed(2)}, ${detail.coordinate.coordinate.lon.toFixed(2)}` : "坐标已隐藏"} /><Evidence testID="spot-map-coordinate-label" title="WGS84 权威 / GCJ-02 仅地图展示" body="转换结果不得回写天气、天文、PostGIS 或分享真值。" /><Evidence testID="spot-share-coordinate-policy" title="分享、导航、离线和行程同一策略" body={detail?.coordinate.exact ? "当前角色可读取精确点。" : `${detail?.coordinate.reason ?? "仅公开近似区域"}；深链、文件和遥测不含精确坐标。`} /></View> : null}
     {active === "reviews" ? <View style={styles.panel}><Evidence testID="spot-review-dimensions" title="多维评价暂无合格样本" body="暗度、开阔、云量、交通、设施、安全、拥挤、信号和摄影/目视适配将分别统计。" /><Evidence testID="spot-review-trust" title={`可信来源 ${detail?.trust.verifiedSources ?? 0} · 需现场核验`} body="贡献者等级、样本、时间和审核状态逐项展示，不压成单一星级。" /><Evidence testID="spot-review-moderation" title={`冲突：${detail?.trust.conflicts.join("、") || "暂无已识别冲突"}`} body="普通贡献不能覆盖官方或管理员安全阻断；可提交纠错并查看审核状态。" /><Pressable testID="spot-open-contribution" accessibilityRole="button" accessibilityLabel="从地点详情提交实况或纠错" onPress={() => router.push("/contribute")} style={styles.contribute}><Text style={styles.retryText}>提交实况、纠错或评价</Text></Pressable></View> : null}
+    </> : null}
   </ScrollView></SafeAreaView>;
 }
 

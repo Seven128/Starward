@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -14,6 +14,8 @@ import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { useShellStore } from "../../state/shell-store";
 import { persistSkyResolution } from "../../state/sky-runtime";
+import { useDecisionSnapshot } from "../../state/use-decision-snapshot";
+import { skyTarget } from "../../state/decision-context";
 
 type ViewKey =
   | "universal-sky"
@@ -148,27 +150,30 @@ function State({ title, body, retry }: { title: string; body: string; retry?: ()
 }
 
 export function SkyScreen() {
-  const location = useShellStore((state) => state.location);
+  const context = useDecisionSnapshot();
+  const commitDecisionContext = useShellStore((state) => state.commitDecisionContext);
   const scroll = useRef<ScrollView>(null);
   const [active, setActive] = useState<ViewKey>("universal-sky");
-  const [at, setAt] = useState(() => new Date().toISOString());
   const [orientation, setOrientation] = useState<StableOrientation>(() => new OrientationEngine().unavailable());
   const [followingRequested, setFollowingRequested] = useState(false);
   const [persistenceError, setPersistenceError] = useState<string | null>(null);
   const subscription = useRef<{ stop(): void } | null>(null);
-  const latitude = location.latitude ?? 22.529;
-  const longitude = location.longitude ?? 113.9468;
-  const request = useMemo(() => ({ latitude, longitude, elevationM: 0, timezone: "Asia/Shanghai", at, target: "milky-way-core" as const }), [latitude, longitude, at]);
-  const query = useQuery({ queryKey: ["sky", request], queryFn: ({ signal }) => client.get(request, signal), retry: 1 });
+  const { latitude, longitude, label } = context.observer;
+  const supportedTarget = skyTarget(context.target);
+  const request = supportedTarget ? { latitude, longitude, elevationM: 0, timezone: context.timezone, at: context.moment, target: supportedTarget } : null;
+  const query = useQuery({ queryKey: ["sky", request, context.target], enabled: request !== null, queryFn: ({ signal }) => client.get(request!, signal), retry: 1 });
   useEffect(() => () => subscription.current?.stop(), []);
   useEffect(() => {
     if (!query.data) return;
     const data = query.data;
-    void persistSkyResolution({ token: data.selectedTarget?.id ?? data.context.target, at: data.context.at, algorithmVersion: data.algorithm.version, latitude: data.context.latitude, longitude: data.context.longitude, orientationAccuracy: orientation.accuracy }).then(() => setPersistenceError(null)).catch(() => setPersistenceError("天空结果未写入本机数据库；当前画面可查看，但不会冒充已保存。"));
+    let current = true;
+    setPersistenceError(null);
+    void persistSkyResolution({ token: data.selectedTarget?.id ?? data.context.target, at: data.context.at, algorithmVersion: data.algorithm.version, latitude: data.context.latitude, longitude: data.context.longitude, orientationAccuracy: orientation.accuracy }).then(() => { if (current) setPersistenceError(null); }).catch(() => { if (current) setPersistenceError("天空结果未写入本机数据库；当前画面可查看，但不会冒充已保存。"); });
+    return () => { current = false; };
   }, [query.data, orientation.accuracy]);
   const open = async (key: ViewKey) => {
     setActive(key);
-    if (key === "time-jump" && query.data?.bestTargetTime) setAt(query.data.bestTargetTime);
+    if (key === "time-jump" && query.data?.bestTargetTime) commitDecisionContext({ moment: query.data.bestTargetTime });
     if (key === "orientation-follow") {
       if (subscription.current) {
         subscription.current.stop();
@@ -193,18 +198,19 @@ export function SkyScreen() {
     requestAnimationFrame(() => scroll.current?.scrollToEnd({ animated: false }));
   };
   return <SafeAreaView testID="screen-sky-orientation-ar" style={styles.screen}><ScrollView ref={scroll} contentContainerStyle={styles.content}>
-    <Text style={styles.eyebrow}>天空定位 · {location.label}</Text><Text style={styles.title}>目标在哪里，遮挡证据在哪里</Text>
+    <Text style={styles.eyebrow}>天空定位 · {label}</Text><Text style={styles.title}>目标在哪里，遮挡证据在哪里</Text>
     <Text style={styles.subtitle}>通用天空是主路径。方向、相机与 AR 只在能力和精度可信时增强；现场轮廓未知时不猜测。</Text>
     <Pressable testID="sky-open-shooting-assistant" accessibilityRole="button" accessibilityLabel="打开摄影助手" onPress={() => router.push("/shooting")} style={styles.action}>
       <Text style={styles.actionText}>打开摄影助手</Text>
     </Pressable>
     <DecisionContextRevision />
+    {!supportedTarget ? <State title="所选目标尚无天空计算" body="当前天空目录尚不支持所选目标；地点和时刻已保留。" /> : null}
     {query.isLoading ? <State title="正在计算天空状态…" body="服务端按 WGS84 地点、UTC 时刻和版本化天文算法定位亮星、深空目标与轨迹。" /> : null}
     {query.isError ? <State title="天空状态暂不可用" body={query.error instanceof Error && query.error.message === "sky_api_base_url_missing" ? "尚未配置 API 地址；不会以内置星位替代真实计算。" : "请求或计算失败；当前不显示旧星位。"} retry={() => void query.refetch()} /> : null}
     {persistenceError ? <State title="本机保存失败" body={persistenceError} retry={() => void query.refetch()} /> : null}
     {query.data ? <SkyCanvas context={query.data} selected={active === "universal-sky"} onPress={openUniversalSky} /> : null}
-    <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={`${action.stableControlId}:${action.accessibilityName}`} accessibilityState={{ selected: active === action.key }} onPress={() => void open(action.key)} style={({ pressed }) => [styles.action, active === action.key && styles.actionActive, pressed && styles.pressed]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
-    {query.data && active === "universal-sky" ? <UniversalPanel data={query.data} locationLabel={location.label} /> : null}
+    <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} disabled={action.key === "time-jump" && !query.data?.bestTargetTime} accessibilityRole="button" accessibilityLabel={`${action.stableControlId}:${action.accessibilityName}`} accessibilityState={{ selected: active === action.key }} onPress={() => void open(action.key)} style={({ pressed }) => [styles.action, active === action.key && styles.actionActive, pressed && styles.pressed]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
+    {query.data && active === "universal-sky" ? <UniversalPanel data={query.data} locationLabel={label} /> : null}
     {query.data && active === "object-layers" ? <ObjectLayerPanel data={query.data} /> : null}
     {query.data && active === "time-jump" ? <TimePanel data={query.data} /> : null}
     {active === "orientation-follow" ? <OrientationFollowPanel orientation={orientation} following={followingRequested} /> : null}

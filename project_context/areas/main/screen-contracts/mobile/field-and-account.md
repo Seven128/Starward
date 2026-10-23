@@ -20,6 +20,8 @@ This on-demand subdomain node normatively continues the Mobile Screen Contract f
 - Fixed / Overlay ownership: form scroll owns content; pickers/sheets own focus while open; save remains reachable without covering fields or errors.
 - Material controls in order: `shooting-setup-form`, `shooting-preset-picker`, `shooting-recommendation`, `ai-explanation-panel`, `shooting-checklist`, `save-shooting-plan`.
 - Commit / Exit: recommendation is deterministic from versioned input; explanation cannot change the rule result; save writes a new version with context and supports restore.
+- Shooting preserves the exact selected UTC instant in its request, rules and saved input. The nearest weather hour is a separate sample with its own timestamp and offset; astronomical conditions use the exact instant. Unsupported targets remain selected and explicitly unavailable rather than receiving another target's parameters.
+- An unconfirmed local version save retains the complete original attempt, including input, rules, identity and timestamp. Changing the browsing Context cannot change retry content. Exact stored versions may replay; different content at the same version is a conflict. An explicit conflict-resolution action may save the retained input as a new version after reading current history. The existing local storage queue covers one native JS owner; it does not establish cross-process or cross-tab atomicity.
 - Verification emphasis: phone/camera/equipment input variation, assumption and risk copy, offline checklist, durable version save/readback, explanation boundary.
 
 ## `field-offline-safety`

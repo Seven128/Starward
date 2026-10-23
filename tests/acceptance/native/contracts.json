@@ -20,7 +20,7 @@
     {
       "surface_ref": "spot-decision-context",
       "screen_test_id": "screen-spot-detail-and-trust",
-      "root_journey": ["shell-open-map-tab", "map-open-selected-spot-detail"]
+      "root_journey": ["shell-open-map-tab", "map-spot-[spotId]", "map-open-selected-spot-detail"]
     },
     {
       "surface_ref": "route-decision-context",
@@ -57,7 +57,8 @@
       "route": "/map",
       "root_screen_test_id": "screen-map-route-discovery",
     "nested_action_test_id": "map-open-selected-spot-detail",
-    "nested_route": "/spot/spot-a",
+    "selection_action_test_id": "map-spot-[spotId]",
+    "nested_route": "/spot/[spotId]",
     "nested_screen_test_id": "screen-spot-detail-and-trust",
     "nested_ready_test_id": "spot-detail-ready",
     "state_test_id": "tab-restoration-map",
@@ -176,9 +177,9 @@
       "evidence_test_ids": ["map-location-context", "map-data-state", "map-provenance"]
     },
     "spot-detail-and-trust": {
-      "route": "/spot/spot-a",
+      "route": "/spot/[spotId]",
       "screen_test_id": "screen-spot-detail-and-trust",
-      "root_journey": ["shell-open-map-tab", "map-open-selected-spot-detail"],
+      "root_journey": ["shell-open-map-tab", "map-spot-[spotId]", "map-open-selected-spot-detail"],
       "action_test_id": "spot-open-detail",
       "evidence_test_ids": ["spot-decision-summary", "spot-observation-window", "spot-primary-action"]
     },
@@ -190,7 +191,7 @@
       "evidence_test_ids": ["tonight-decision-summary", "tonight-observation-window", "tonight-data-provenance"],
       "cross_surfaces": [
         { "surface_ref": "map-decision-context", "route": "/map", "test_id": "decision-context-revision" },
-        { "surface_ref": "spot-decision-context", "route": "/spot/spot-a", "test_id": "decision-context-revision" },
+        { "surface_ref": "spot-decision-context", "route": "/spot/[spotId]", "test_id": "decision-context-revision" },
         { "surface_ref": "tonight-decision-context", "route": "/tonight", "test_id": "decision-context-revision" }
       ]
     },

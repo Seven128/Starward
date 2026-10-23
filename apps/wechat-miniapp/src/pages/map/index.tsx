@@ -1,7 +1,7 @@
 import { getReducedMotion, useReducedMotion, usePageBlackoutReducedMotion } from "@/hooks/use-reduced-motion";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { SharedButton as Button } from "@/components/shared-button-press";
-import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
+import { useMapCloudForecastQuery, useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { useMapCloudPresentation } from "@/hooks/use-map-cloud-presentation";
 import { useMapNightLight } from "@/hooks/use-map-night-light";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
@@ -67,6 +67,8 @@ import {
   MiniappApiError,
   currentDraftUserId,
   getMapScene,
+  getMapCloud,
+  cancelRequest,
   getSkyReport,
   getSpotOverview,
   resolveObservationContext,
@@ -82,7 +84,6 @@ import { terrainLayerAvailability } from "./terrain-layer-availability";
 import { bufferTerrainBounds } from "./terrain-geometry";
 import { useNativeMapRegion } from "./use-native-map-region";
 import {
-  nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
   cloudForecastStarts,
   mapTimeFrameAt,
@@ -115,7 +116,6 @@ import { PendingProposalPanel } from "./pending-proposal-panel";
 import { privateContributionSelectionTransition, pendingProposalContextLocation, samePendingProposalIntent } from "./private-contribution-transition";
 import {
   layerSheetOverlay,
-  layerSheetOwnsSceneRecovery,
   lightLayerContentState,
   mapLayerKindForOverlay,
   mapSceneLayerForOverlay,
@@ -492,7 +492,7 @@ export default function MapPage() {
     selectSpot(null);
     setSelectedFallback(null);
   }, [currentContributionOwner]);
-  const [panelPreviewFrameIndex, setPanelPreviewFrameIndex] = useState(0);
+  const [previewAt, setPreviewAt] = useState<string | null>(null);
   const [timePreviewing, setTimePreviewing] = useState(false);
   const panelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const markerTapAt = useRef(0);
@@ -748,6 +748,22 @@ export default function MapPage() {
     staleTime: value => value?.data.layer.failureCode ? 0 : 60_000,
   });
 
+  const cloudEnabled = pageVisible && analysisOverlay === "TOTAL_CLOUD" && Boolean(activeContext && nativeViewport.bounds);
+  const cloud = useMapCloudForecastQuery({
+    queryKey: ["map-cloud", accountOwnerId, mapResetVersion, activeContext?.contextId,
+      activeContext?.contextFingerprint, activeContext?.revision,
+      Number(viewport.center.latitude.toFixed(6)), Number(viewport.center.longitude.toFixed(6)), viewport.zoom, nativeViewport.bounds],
+    queryFn: signal => {
+      if (!activeContext || !nativeViewport.bounds) throw new Error("map_cloud_context_or_viewport_pending");
+      return getMapCloud(activeContext.contextId, { ...viewport, bounds: nativeViewport.bounds }, signal);
+    },
+    enabled: cloudEnabled, staleTime: 60_000,
+  });
+  useEffect(() => {
+    if (!cloudEnabled) cancelRequest("map-cloud");
+    return cloudEnabled ? () => { cancelRequest("map-cloud"); } : undefined;
+  }, [cloudEnabled]);
+
   const nightLight = useMapNightLight(nativeViewport.bounds ? { ...viewport, bounds: nativeViewport.bounds } : null,
     pageVisible && analysisOverlay === "LIGHT");
   const nightLayer = analysisOverlay === "LIGHT" ? nightLight.data?.data ?? null : null;
@@ -839,29 +855,32 @@ export default function MapPage() {
   const selected =
     selectedFromScene ??
     (selectedFallback?.spotId === selectedSpotId ? selectedFallback : null);
-  const cloudPresentation = useMapCloudPresentation({ scene: scene.data,
-    clockOffsetMs: scene.forecastClockOffsetMs,
+  const cloudPresentation = useMapCloudPresentation({ scene: cloud.data,
+    clockOffsetMs: cloud.forecastClockOffsetMs,
     enabled: pageVisible && analysisOverlay === "TOTAL_CLOUD",
     scope: timeReference ? JSON.stringify([accountOwnerId, mapResetVersion, timeReference.localDate,
       timeReference.timezone, timeReference.nightStartUtc, timeReference.nightEndUtc]) : null,
     selectedAtUtc: timeReference?.selectedAtUtc ?? "",
   });
-  const timeFrames = cloudPresentation?.timeFrames ?? scene.data?.data.timeFrames ?? [];
-  const cloudTimeChoices = cloudTimeFrameChoices(timeFrames);
+  // The two readers may arrive independently and carry different time axes.
+  // Keep the panel's astronomical facts with Scene; join previews by instant.
+  const timeFrames = scene.data?.data.timeFrames ?? [];
+  const cloudFrames = cloudPresentation?.timeFrames ?? [];
+  const cloudTimeChoices = cloudTimeFrameChoices(cloudFrames);
   const projectedAt = timePreviewing
-    ? timeFrames[panelPreviewFrameIndex]?.atUtc ?? timeReference?.selectedAtUtc ?? ""
+    ? previewAt ?? timeReference?.selectedAtUtc ?? ""
     : timeReference?.selectedAtUtc ?? "";
   const projectedFrame = useMemo(
-    () => mapTimeFrameAt(cloudPresentation?.timeFrames ?? scene.data?.data.timeFrames ?? [], projectedAt),
-    [cloudPresentation?.timeFrames, scene.data?.data.timeFrames, projectedAt],
+    () => mapTimeFrameAt(analysisOverlay === "TOTAL_CLOUD" ? cloudFrames : timeFrames, projectedAt),
+    [analysisOverlay, cloudFrames, timeFrames, projectedAt],
   );
   const projectedEvaluations = useMemo(
     () =>
       projectMapEvaluations(
         scene.data?.data.evaluations ?? {},
-        projectedFrame,
+        mapTimeFrameAt(scene.data?.data.timeFrames ?? [], projectedAt),
       ),
-    [projectedFrame, scene.data?.data.evaluations],
+    [projectedAt, scene.data?.data.evaluations, scene.data?.data.timeFrames],
   );
   const groupedMarkers = useMemo(
     () => markerGroups(spots, viewport.zoom),
@@ -872,7 +891,7 @@ export default function MapPage() {
     ...privateContributionMarkerItems(privateMarkers, 100_000, mode, preferences.largeText),
     ...(bottomPresentation === "spot-editor" && candidateMarker ? [candidateMarker] : []),
   ], [bottomPresentation, candidateMarker, groupedMarkers, mode, preferences.largeText, privateMarkers, selectedSpotId]);
-  const geographicLayer = analysisOverlay === "LIGHT" ? nightLayer : cloudPresentation?.layer ?? scene.data?.data.layer;
+  const geographicLayer = analysisOverlay === "LIGHT" ? nightLayer : analysisOverlay === "TOTAL_CLOUD" ? cloudPresentation?.layer : scene.data?.data.layer;
   const projectedPolygonSource = useMemo(
     () =>
       geographicLayer?.kind === mapLayerKindForOverlay(analysisOverlay)
@@ -1157,6 +1176,7 @@ export default function MapPage() {
     bootstrapContext.data?.dataState === "STALE_USABLE");
   const mapSceneFailed = Boolean(scene.isError || scene.refreshError ||
     scene.data?.dataState === "STALE_USABLE");
+  const cloudFailed = Boolean(cloud.isError || cloud.refreshError || cloud.data?.dataState === "STALE_USABLE");
   const mapDataStale = Boolean(
     (mapContextFailed && bootstrapContext.data) || (mapSceneFailed && scene.data),
   );
@@ -1178,14 +1198,10 @@ export default function MapPage() {
     ...(terrainEnabled && terrainDisclosure?.source ? [terrainDisclosure.source] : []),
   ]);
   const hasGeographicLayer = layerPolygons.length > 0 || (analysisOverlay === "LIGHT" && Boolean(lightInstallation.presentedData?.raster));
-  const layerSheetOwnsSceneFailure = layerSheetOwnsSceneRecovery({
-    open: bottomPresentation === "layer-sheet", overlay: visibleLayer,
-    contextFailed: mapContextFailed, sceneFailed: mapSceneFailed,
-    lightState: lightLayerState, cloudTimeChoiceCount: cloudTimeChoices.length,
-  });
   // Availability is transient; real failures keep recovery with their owner.
   const ordinaryMapNotice = !pageVisible || mapRuntimeError || mapContextFailed || mapSceneFailed || scene.isPending || scene.isFetching
     || (analysisOverlay === "LIGHT" && (lightReadFailed || lightLayerState === "LOADING"))
+    || (analysisOverlay === "TOTAL_CLOUD" && (cloudFailed || cloud.isPending || cloud.isFetching))
     ? null
     : bottomPresentation === "layer-sheet" && visibleLayerUnavailable
       ? visibleLayer === "LIGHT" ? "当前范围暂无光污染数据" : "当前范围暂无云量预报"
@@ -1203,13 +1219,7 @@ export default function MapPage() {
     };
   }, [ordinaryMapNotice, notify]);
   useEffect(() => {
-    if (pageVisible && layerSheetOwnsSceneFailure) {
-      const state = useAppStore.getState();
-      for (const item of state.notifications) {
-        if (item.owner === "map" && item.dedupeKey === "map-scene-failed") state.dismissNotification(item.id);
-      }
-    }
-    if (!pageVisible || pageState === "PERMISSION_DENIED" || (!mapContextFailed && (!mapSceneFailed || layerSheetOwnsSceneFailure))) return;
+    if (!pageVisible || pageState === "PERMISSION_DENIED" || (!mapContextFailed && !mapSceneFailed)) return;
     notify({
       owner: "map",
       placement: "floating",
@@ -1220,7 +1230,7 @@ export default function MapPage() {
         : "观星点数据暂时无法更新，可在页面中重试。",
       dedupeKey: mapContextFailed ? "map-context-failed" : "map-scene-failed",
     });
-  }, [mapContextFailed, mapSceneFailed, layerSheetOwnsSceneFailure, notify, pageState, pageVisible]);
+  }, [mapContextFailed, mapSceneFailed, notify, pageState, pageVisible]);
   useEffect(() => {
     if (!pageVisible || !mapRuntimeError) return;
     notify({ owner: "map", placement: "floating", tone: "info", title: "地图显示异常",
@@ -1278,7 +1288,9 @@ export default function MapPage() {
     temporalFailure.mapResetVersion === mapResetVersion &&
     (temporalFailure.kind === "date"
       ? mapDateOptions.includes(temporalFailure.target)
-      : timeFrames.some(frame => frame.atUtc === temporalFailure.target))
+      // This is the already selected command instant, not a new read from
+      // either independently arriving axis. Missing weather cannot hide retry.
+      : Number.isFinite(Date.parse(temporalFailure.target)))
     ? temporalFailure : null;
 
 
@@ -2043,9 +2055,8 @@ export default function MapPage() {
     await nightLight.refetch();
   };
 
-  const commitMapTime = async (frameIndex: number) => {
-    const nextTime = timeFrames[frameIndex]?.atUtc;
-    if (!activeContext || !nextTime || timeRequestBusy.current) return;
+  const commitMapTime = async (nextTime: string | undefined) => {
+    if (!activeContext || !nextTime || !Number.isFinite(Date.parse(nextTime)) || timeRequestBusy.current) return;
     const requestSelection = useAppStore.getState().selectedSpotId;
     const requestGeneration = detailRequestGeneration.current;
     const isCurrentTimeRequest = () => {
@@ -2060,7 +2071,7 @@ export default function MapPage() {
     };
     if (!isCurrentTimeRequest()) return;
     setTemporalFailure(null);
-    setPanelPreviewFrameIndex(frameIndex);
+    setPreviewAt(nextTime);
     setTimePreviewing(false);
     if (Date.parse(nextTime) === Date.parse(activeContext.selectedAtUtc)) return;
     const edit = useAppStore.getState().beginObservationContextEdit(activeContext);
@@ -2073,9 +2084,7 @@ export default function MapPage() {
       });
       if (!isCurrentTimeRequest()) return;
       setObservationContext(response.data);
-      setPanelPreviewFrameIndex(
-        nearestMapTimeFrameIndex(timeFrames, response.data.selectedAtUtc),
-      );
+      setPreviewAt(response.data.selectedAtUtc);
       setAnnouncement(
         `观测时间已更新为${formatContextTime(
           response.data.selectedAtUtc,
@@ -2084,9 +2093,7 @@ export default function MapPage() {
       );
     } catch (error) {
       if (!isCurrentTimeRequest() || isMiniappRequestCancelled(error)) return;
-      setPanelPreviewFrameIndex(
-        nearestMapTimeFrameIndex(timeFrames, activeContext.selectedAtUtc),
-      );
+      setPreviewAt(activeContext.selectedAtUtc);
       setTemporalFailure({
         kind: "time",
         target: nextTime,
@@ -2217,7 +2224,7 @@ export default function MapPage() {
       });
       if (!isCurrentDateRequest()) return;
       setObservationContext(response.data);
-      setPanelPreviewFrameIndex(0);
+      setPreviewAt(null);
       setAnnouncement(`观测日期已更新为${formatContextTime(response.data.selectedAtUtc, response.data.timezone)}。`);
     } catch (error) {
       if (!isCurrentDateRequest() || isMiniappRequestCancelled(error)) return;
@@ -2245,8 +2252,7 @@ export default function MapPage() {
       void commitMapDate(visibleTemporalFailure.target);
       return;
     }
-    const index = timeFrames.findIndex(frame => frame.atUtc === visibleTemporalFailure.target);
-    if (index >= 0) void commitMapTime(index);
+    void commitMapTime(visibleTemporalFailure.target);
   };
 
   const onPanelShare = async () => {
@@ -2735,7 +2741,7 @@ export default function MapPage() {
               mapRuntimeError ? <SoftButton label="重新加载地图" onClick={() => { void retryNativeMap(); }} /> : null}
             {mapTerrainLoading ? <StatusPanel state="LOADING" detail={presentedTerrainData?.preview
               ? "已显示临时地形，正在加载细节" : presentedTerrainData ? "正在更新地形" : "正在加载地形"} /> : null}
-            {mapDataStale && !layerSheetOwnsSceneFailure ? <StatusPanel
+            {mapDataStale ? <StatusPanel
               state="STALE"
               detail={spots.length > 0 ? "更新失败，暂时显示上次结果。" : "上次结果没有观星点；当前资料暂时无法更新。"}
               recoveryLabel="重试"
@@ -2746,7 +2752,7 @@ export default function MapPage() {
             !(pageState === "LOADING" && bottomPresentation === "spot-panel" && bootstrapReplacementBlocked && visibleSpotContextAttempt) &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
-            pageState !== "STALE" && !(layerSheetOwnsSceneFailure && pageState === "ERROR") ? pageState === "ERROR" ? (
+            pageState !== "STALE" ? pageState === "ERROR" ? (
               <SoftButton label="刷新观星点" onClick={() => void refreshMap()} />
             ) : (
               <StatusPanel
@@ -2888,10 +2894,12 @@ export default function MapPage() {
                 onDatePickerOpenChange={setDatePickerOpen}
                 onDateCommit={(date) => void commitMapDate(date)}
                 onTimePreview={(index) => {
-                  setPanelPreviewFrameIndex(index);
+                  const frame = timeFrames[index];
+                  if (!frame) return;
+                  setPreviewAt(frame.atUtc);
                   setTimePreviewing(true);
                 }}
-                onTimeCommit={(index) => void commitMapTime(index)}
+                onTimeCommit={(index) => void commitMapTime(timeFrames[index]?.atUtc)}
                 onTimeCancel={() => setTimePreviewing(false)}
                 onHandleTouchStart={onHandleTouchStart}
                 onHandleTouchMove={onHandleTouchMove}
@@ -2974,11 +2982,11 @@ export default function MapPage() {
                 </View>
                 {visibleLayer === "TOTAL_CLOUD" ? (
                   <>
-                    {mapSceneFailed && !cloudTimeChoices.length ? <StatusPanel
-                      state={scene.data ? "STALE" : "ERROR"}
-                      detail="云量预报暂不可用，暂时无法选时间。"
-                      recoveryLabel="重试地图数据"
-                      onRecover={() => void refreshMap()}
+                    {cloudFailed ? <StatusPanel
+                      state={cloudTimeChoices.length ? "STALE" : "ERROR"}
+                      detail={cloudTimeChoices.length ? "云量预报更新失败，暂时保留仍有效的覆盖。" : "云量预报暂不可用，暂时无法选时间。"}
+                      recoveryLabel="重试云量预报"
+                      onRecover={() => void cloud.refetch()}
                     /> : null}
                     <ObservationDateControl
                       dates={mapDateOptions}
@@ -3000,27 +3008,27 @@ export default function MapPage() {
                     <MapTimeRuler
                       nightLabel={timeReference ? observationNightLabel(timeReference.localDate, projectedAt, timeReference.timezone, mapTodayCivilDate) : undefined}
                       frames={cloudTimeChoices.map(choice => choice.frame)}
-                      pending={scene.isPending}
+                      pending={cloud.isPending}
                       identity={timeRulerIdentity}
                       selectedAt={timeReference?.selectedAtUtc ?? ""}
                       timezone={timeReference?.timezone ?? "Asia/Shanghai"}
                       disabled={!activeContext || !cloudTimeChoices.length || timeSaving}
-                      emptyMessage={scene.isPending && !scene.data ? "正在加载云量预报。" : mapSceneFailed ? "云量预报暂不可用，请重试。" : "所选日期暂无云量预报。"}
+                      emptyMessage={cloud.isPending && !cloud.data ? "正在加载云量预报。" : cloudFailed ? "云量预报暂不可用，请重试。" : "所选日期暂无云量预报。"}
                       onPreview={(index) => {
                         const choice = cloudTimeChoices[index];
                         if (!choice) return;
-                        setPanelPreviewFrameIndex(choice.sourceIndex);
+                        setPreviewAt(choice.frame.atUtc);
                         setTimePreviewing(true);
                       }}
-                      onCommit={(index) => { const choice = cloudTimeChoices[index]; if (choice) void commitMapTime(choice.sourceIndex); }}
+                      onCommit={(index) => { const choice = cloudTimeChoices[index]; if (choice) void commitMapTime(choice.frame.atUtc); }}
                       onCancel={() => setTimePreviewing(false)}
                     />
                     <MapTemporalFeedback failure={visibleTemporalFailure} onRetry={retryTemporalFailure} />
-                    <Text className={`map-layer-sheet__source-note type-caption${!scene.isPending && !mapSceneFailed ? " map-layer-sheet__source-note--ready" : ""}`}>
+                    <Text className={`map-layer-sheet__source-note type-caption${!cloud.isPending && !cloudFailed ? " map-layer-sheet__source-note--ready" : ""}`}>
                       云量预报 · 仅覆盖有效数据区域
                     </Text>
                     <SourceAttribution presentation="credit" sources={cloudPresentation?.sources ?? []} />
-                    {cloudPresentation ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={mapSceneFailed} starts={cloudForecastStarts(timeFrames)}
+                    {cloudPresentation ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={cloudFailed} starts={cloudForecastStarts(cloudFrames)}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} /> : null}
                   </>
                 ) : lightLayerState === "LOADING" ? (

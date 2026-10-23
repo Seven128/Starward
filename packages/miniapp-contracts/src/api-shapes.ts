@@ -482,6 +482,15 @@ export interface MapNightLightRequest {
   viewport: NonNullable<MapSceneRequest["viewport"]> & { bounds: TerrainBounds };
 }
 
+/** Sampled cloud coverage has no dependency on marker searches, filters or
+ * decisions. Context still supplies the authorized observing night/time. */
+export interface MapCloudRequest {
+  contextId: string;
+  viewport: NonNullable<MapSceneRequest["viewport"]> & { bounds: TerrainBounds };
+}
+
+export type MapCloudData = Pick<MapSceneData, "context" | "forecastValidUntil" | "layer" | "cloudSnapshot" | "timeFrames">;
+
 export interface RouteEstimateRequest {
   contextId: ObservationContext["contextId"];
   spotId: SpotSummary["spotId"];

@@ -4,6 +4,7 @@ import { buildApi } from "../server";
 import { SkyContextService } from "../modules/sky/sky-context-service";
 import { ProfileService } from "../modules/identity/profile-service";
 import { ItineraryWorkflowService } from "../modules/itinerary/itinerary-workflow-service";
+import { SqliteItineraryRepository } from "../modules/itinerary/sqlite-itinerary-repository";
 import { FieldService } from "../modules/field/field-service";
 import { CommunityWorkflowService } from "../modules/community/community-workflow-service";
 import { ToolsService } from "../modules/notifications/tools-service";
@@ -114,13 +115,15 @@ describe("Starward API host", () => {
     expect(changed.json()).toMatchObject({ privacy: { analyticsConsent: false, sharedCoordinate: { precision: "coarse" } } });
   });
 
-  it("serves optimistic itinerary commands and server-filtered share state", async () => {
-    const app = await buildApi({ ...apiDependencies, itineraries: new ItineraryWorkflowService(() => "2026-07-20T00:00:00Z") });
+  it("does not represent legacy demonstration commands as saved itineraries", async () => {
+    const repository = new SqliteItineraryRepository(":memory:");
+    const app = await buildApi({ ...apiDependencies, itineraries: new ItineraryWorkflowService(repository) });
+    app.addHook("onClose", async () => repository.close());
     apps.push(app);
     const initial = await app.inject({ method: "GET", url: "/v1/itineraries" });
-    expect(initial.statusCode).toBe(200); expect(initial.headers["cache-control"]).toBe("private, no-store"); expect(initial.json()).toMatchObject({ schemaVersion: "starward-itinerary-v1", itinerary: { revision: 7 } });
+    expect(initial.statusCode).toBe(409); expect(initial.headers["cache-control"]).toBe("private, no-store"); expect(initial.json()).toMatchObject({ code: "itinerary_client_upgrade_required", legacyRecordsPreserved: true });
     const shared = await app.inject({ method: "POST", url: "/v1/itineraries/commands", payload: { command: "share-offline" } });
-    expect(shared.statusCode).toBe(200); expect(shared.json()).toMatchObject({ share: { publicProjection: { stops: [{ preciseCoordinateIncluded: true }, { preciseCoordinateIncluded: false }] } }, offlinePack: { state: "ready" } });
+    expect(shared.statusCode).toBe(409); expect(shared.json()).not.toHaveProperty("offlinePack");
   });
   it("serves validated field packs and bounded commands",async()=>{const app=await buildApi({...apiDependencies,field:new FieldService(()=>"2026-07-20T15:20:00Z")});apps.push(app);const initial=await app.inject({method:"GET",url:"/v1/field"});expect(initial.statusCode).toBe(200);expect(initial.json()).toMatchObject({schemaVersion:"starward-field-v1",pack:{canActivate:true}});const offline=await app.inject({method:"POST",url:"/v1/field/commands",payload:{command:"enter-offline"}});expect(offline.json()).toMatchObject({offline:{active:true}})});
   it("serves immutable moderated community workflows",async()=>{const app=await buildApi({...apiDependencies,community:new CommunityWorkflowService(()=>"2026-07-20T16:00:00Z")});apps.push(app);const r=await app.inject({method:"POST",url:"/v1/community/commands",payload:{command:"upload-media"}});expect(r.statusCode).toBe(200);expect(r.json()).toMatchObject({schemaVersion:"starward-community-v1",media:{failClosed:true,original:{access:"moderator-only"}}})});

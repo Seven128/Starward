@@ -7,32 +7,47 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { createSkyTimeRepeat, skyCivilInstant, skyTimeInputAllowed, stepSkyCivilTime, type SkyTimeField } from "./sky-time-input";
 
 type TimeStepRect = { left: number; right: number; top: number; bottom: number };
+type TimeControlOwner = { timezone: string; current: () => boolean; editingCurrent: () => boolean;
+  editingGeneration: number; onPreview: (at: string) => boolean;
+  onEditChange: ((active: boolean) => void) | undefined };
 
 /** Civil text is an editing draft. The page's observation-time owner remains
  * authoritative for previews/playback and its Context owns explicit apply. */
-export function SkyTimeControls({ at, timezone, active, current, playing, canPlay, previewPending, previewFailed,
+export function SkyTimeControls({ at, timezone, active, current, editingCurrent, editingGeneration, playing, canPlay, previewPending, previewFailed,
   playbackPending, playbackFailed,
-  onRetryPreview, onPreview, onApply, onTogglePlay, onPause }: {
+  onRetryPreview, onPreview, onApply, onTogglePlay, onPause, onEditChange }: {
   at: string; timezone: string; active: boolean; playing: boolean; canPlay: boolean;
   current: () => boolean;
+  editingCurrent: () => boolean; editingGeneration: number;
   previewPending?: boolean; previewFailed?: boolean; onRetryPreview?: () => void;
   playbackPending?: boolean; playbackFailed?: boolean;
   onPreview: (at: string) => boolean; onApply: (at: string) => void;
   onTogglePlay: () => void; onPause: () => void;
+  onEditChange?: (active: boolean) => void;
 }) {
   const [draft, setDraft] = useState(at), [error, setError] = useState("");
   const [inputText, setInputText] = useState<Partial<Record<SkyTimeField, string>>>({});
   const inputRef = useRef(inputText);
   const previewAccepted = useRef(true);
   const updateInput = (next: Partial<Record<SkyTimeField, string>>) => { inputRef.current = next; setInputText(next); };
-  const live = useRef({ at: draft, active, current, onPreview }); live.current = { at: draft, active, current, onPreview };
+  const owner: TimeControlOwner = { timezone, current, editingCurrent, editingGeneration, onPreview, onEditChange };
+  const live = useRef({ at: draft, active, ...owner });
+  live.current = { at: draft, active, ...owner };
   const repeat = useMemo(() => createSkyTimeRepeat({ schedule: (callback, delay) => setTimeout(callback, delay),
     cancel: handle => clearTimeout(handle as ReturnType<typeof setTimeout>) }), []);
-  const hold = useRef({ revision: 0, measured: false, rect: null as null | TimeStepRect,
+  const hold = useRef({ revision: 0, owner: null as TimeControlOwner | null, measured: false, rect: null as null | TimeStepRect,
     point: null as null | { clientX: number; clientY: number } });
-  const stopHold = useCallback(() => { hold.current.revision++; repeat.stop(); }, [repeat]);
-  useEffect(() => { setDraft(at); updateInput({}); previewAccepted.current = true; setError(""); }, [at, timezone]);
+  const stopHold = useCallback(() => {
+    const previous = hold.current.owner; hold.current.owner = null;
+    hold.current.revision++; repeat.stop();
+    previous?.onEditChange?.(false);
+  }, [repeat]);
+  const ownerCurrent = (expected: TimeControlOwner) => live.current.active && expected.current() &&
+    live.current.current() && expected.timezone === live.current.timezone && expected.editingGeneration === live.current.editingGeneration;
+  const holdCurrent = (expected: TimeControlOwner) => ownerCurrent(expected) && expected.editingCurrent();
+  useEffect(() => { setDraft(at); updateInput({}); previewAccepted.current = true; setError(""); }, [at, timezone, editingGeneration]);
   useEffect(() => { if (!active) { stopHold(); setDraft(at); updateInput({}); previewAccepted.current = true; setError(""); } }, [active]);
+  useEffect(() => { if (hold.current.owner && !holdCurrent(hold.current.owner)) stopHold(); }, [active, current, editingCurrent, editingGeneration, timezone]);
   useEffect(() => () => stopHold(), [stopHold]);
   useDidHide(stopHold);
   const moveOutside = () => {
@@ -40,26 +55,34 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
     if (point && measured && (!rect || point.clientX < rect.left || point.clientX > rect.right ||
       point.clientY < rect.top || point.clientY > rect.bottom)) stopHold();
   };
-  const startHold = (id: string, step: () => boolean) => {
+  const startHold = (id: string, step: (expected: TimeControlOwner) => boolean) => {
     stopHold();
-    if (!live.current.active || !live.current.current()) return;
+    if (!holdCurrent(owner)) return;
     const revision = hold.current.revision;
     hold.current.measured = false; hold.current.rect = null; hold.current.point = null;
-    onPause(); repeat.start(step);
+    onPause(); hold.current.owner = owner; owner.onEditChange?.(true);
+    repeat.start(() => {
+      // The held touch retains its original Context/permission callbacks. A
+      // later render can update the value, never grant that old touch a new owner.
+      const valid = hold.current.revision === revision && holdCurrent(owner) && step(owner);
+      if (!valid) stopHold(); return valid;
+    });
     Taro.nextTick(() => {
       if (hold.current.revision !== revision) return;
+      if (!holdCurrent(owner)) { stopHold(); return; }
       Taro.createSelectorQuery().select(`#${id}`).boundingClientRect().exec(results => {
         if (hold.current.revision !== revision) return;
+        if (!holdCurrent(owner)) { stopHold(); return; }
         const rect = results[0] as TimeStepRect | null;
         hold.current.rect = rect && [rect.left, rect.right, rect.top, rect.bottom].every(Number.isFinite) ? rect : null;
         hold.current.measured = true; moveOutside();
       });
     });
   };
-  const publish = (next: string) => {
-    if (!live.current.active || !live.current.current() || !skyTimeInputAllowed(next, Date.now())) return false;
+  const publish = (next: string, expected = owner) => {
+    if (!ownerCurrent(expected) || !skyTimeInputAllowed(next, Date.now())) return false;
     live.current.at = next; setDraft(next); updateInput({});
-    previewAccepted.current = live.current.onPreview(next);
+    previewAccepted.current = expected.onPreview(next);
     setError(previewAccepted.current ? "" : "此刻的天空暂不可用");
     return true;
   };
@@ -74,13 +97,13 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
     }
     return skyCivilInstant(value, timezone);
   };
-  const step = (field: SkyTimeField, delta: number) => {
-    if (!live.current.active || !live.current.current()) return false;
+  const step = (field: SkyTimeField, delta: number, expected = owner) => {
+    if (!ownerCurrent(expected)) return false;
     const selected = readInput();
     if (!selected) { setError("日期或时间无效"); return false; }
     const next = stepSkyCivilTime(selected, timezone, field, delta, Date.now());
     if (!next) { setError("不能晚于当前时间"); return false; }
-    return publish(next);
+    return publish(next, expected);
   };
   const parts = localParts(new Date(draft), timezone);
   const settleInput = () => {
@@ -97,7 +120,7 @@ export function SkyTimeControls({ at, timezone, active, current, playing, canPla
       <View className="sky-time-field">
         {[1, -1].map(delta => <Button pressVariant="icon" key={delta} id={`sky-time-step-${field}-${delta > 0 ? "up" : "down"}`} className={`sky-time-step sky-time-step--${delta > 0 ? "up" : "down"}`}
           ariaLabel={`${delta > 0 ? "增加" : "减少"}${fieldLabels[field]}`} disabled={!active}
-          onTouchStart={() => startHold(`sky-time-step-${field}-${delta > 0 ? "up" : "down"}`, () => step(field, delta))}
+          onTouchStart={() => startHold(`sky-time-step-${field}-${delta > 0 ? "up" : "down"}`, expected => step(field, delta, expected))}
           onTouchMove={event => { hold.current.point = event.touches[0] ?? null; moveOutside(); }} onTouchEnd={stopHold} onTouchCancel={stopHold}
           onClick={() => repeat.click(() => { if (!live.current.active || !live.current.current()) return false; onPause(); return step(field, delta); })}>
           <SemanticIcon name={delta > 0 ? "sky-up" : "sky-down"} /></Button>)}

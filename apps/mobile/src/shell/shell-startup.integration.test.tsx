@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import type { Root } from "react-dom/client";
 import type { LocationObject } from "expo-location";
+import type { PreferenceProjection } from "@starward/domain/preferences/runtime";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const boundary = vi.hoisted(() => ({
@@ -43,6 +44,10 @@ vi.mock("react-native", async () => {
   };
 });
 
+function reply(projection: Partial<PreferenceProjection> = {}) {
+  return { projection: { profiles: [], revision: 1, ...projection } };
+}
+
 describe("actual shell entry and location button wiring", () => {
   let root: Root;
   let container: HTMLDivElement;
@@ -54,6 +59,12 @@ describe("actual shell entry and location button wiring", () => {
     boundary.focused = true;
     boundary.backgroundListeners.clear();
     boundary.hydratePreferenceRuntime.mockResolvedValue({ profiles: [], location: { source: "manual", label: "已保存出发地" }, activeDestination: "sky" });
+    boundary.persistShellLocation.mockImplementation(async (location) => reply({ location }));
+    boundary.persistPreferenceProfile.mockImplementation(async (profile) => reply({ profiles: [profile], activeProfileId: profile.id }));
+    boundary.persistActiveProfile.mockImplementation(async (activeProfileId) => {
+      const { useShellStore } = await import("../state/shell-store");
+      return reply({ profiles: useShellStore.getState().profiles, activeProfileId });
+    });
     boundary.getForegroundPermissionsAsync.mockResolvedValue({ status: "granted", granted: true, canAskAgain: true });
     boundary.hasServicesEnabledAsync.mockResolvedValue(true);
     (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -145,7 +156,7 @@ describe("actual shell entry and location button wiring", () => {
     const { useShellStore } = await import("../state/shell-store");
     await react.act(async () => root.render(react.createElement(RuntimeRoot, null, react.createElement(MobileShellScreen))));
     await react.act(async () => button("手动选择").click());
-    expect(container.textContent).toContain("手动位置未保存，请重试。");
+    expect(container.textContent).toContain("手动位置保存未确认，请重试。");
     expect(useShellStore.getState().location).toEqual({ source: "manual", label: "已保存出发地" });
     expect(boundary.getForegroundPermissionsAsync).not.toHaveBeenCalled();
   });
@@ -164,7 +175,7 @@ describe("actual shell entry and location button wiring", () => {
     const select = () => [...container.querySelectorAll("button")].find((item) => item.textContent?.startsWith(second.name))!;
     await react.act(async () => select().click());
     expect(useShellStore.getState().activeProfileId).toBe(first.id);
-    expect(container.querySelector('[data-testid="native-modal"]')?.textContent).toContain("当前预设未切换");
+    expect(container.querySelector('[data-testid="native-modal"]')?.textContent).toContain("当前预设切换未确认");
     await react.act(async () => select().click());
     expect(useShellStore.getState().activeProfileId).toBe(second.id);
     expect(container.querySelector('[data-testid="native-modal"]')).toBeNull();
@@ -180,8 +191,8 @@ describe("actual shell entry and location button wiring", () => {
     let rejectOld!: (error: Error) => void;
     let finishCurrent!: () => void;
     boundary.persistActiveProfile
-      .mockImplementationOnce(() => new Promise<void>((resolve, reject) => { finishOld = resolve; rejectOld = reject; }))
-      .mockImplementationOnce(() => new Promise<void>((resolve) => { finishCurrent = resolve; }));
+      .mockImplementationOnce(() => new Promise((resolve, reject) => { finishOld = () => resolve(reply({ profiles: [first, second, third], activeProfileId: second.id })); rejectOld = reject; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { finishCurrent = () => resolve(reply({ profiles: [first, second, third], activeProfileId: third.id })); }));
     const { default: RuntimeRoot } = await import("./RuntimeRoot");
     const { MobileShellScreen } = await import("./MobileShellScreen");
     const { useShellStore } = await import("../state/shell-store");
@@ -204,12 +215,32 @@ describe("actual shell entry and location button wiring", () => {
     expect(boundary.persistActiveProfile.mock.calls.map(([id]) => id)).toEqual([second.id, third.id]);
     const modal = container.querySelector('[data-testid="native-modal"]');
     expect(modal).not.toBeNull();
-    expect(modal?.textContent).not.toContain("当前预设未切换");
+    expect(modal?.textContent).not.toContain("当前预设切换未确认");
     expect(select(third.name).textContent).toContain("正在切换");
     expect(select(third.name).disabled).toBe(true);
     expect(useShellStore.getState().activeProfileId).toBe(outcome === "resolve" ? second.id : first.id);
     await react.act(async () => finishCurrent());
     expect(useShellStore.getState().activeProfileId).toBe(third.id);
     expect(container.querySelector('[data-testid="native-modal"]')).toBeNull();
+  });
+
+  it("retries quick-profile saves with the same candidate and creates a fresh one for changed inputs", async () => {
+    boundary.persistPreferenceProfile.mockRejectedValueOnce(new Error("preference_runtime_commit_unknown"))
+      .mockRejectedValueOnce(new Error("preference_runtime_commit_unknown"));
+    const { default: RuntimeRoot } = await import("./RuntimeRoot");
+    const { MobileShellScreen } = await import("./MobileShellScreen");
+    await react.act(async () => root.render(react.createElement(RuntimeRoot, null, react.createElement(MobileShellScreen))));
+    await react.act(async () => button("保存偏好").click());
+    const first = boundary.persistPreferenceProfile.mock.calls[0][0];
+    expect(container.textContent).toContain("偏好预设保存未确认");
+    await react.act(async () => button("保存偏好").click());
+    expect(boundary.persistPreferenceProfile.mock.calls[1][0]).toBe(first);
+    await react.act(async () => button("行星").click());
+    await react.act(async () => button("保存偏好").click());
+    const changed = boundary.persistPreferenceProfile.mock.calls[2][0];
+    expect(changed).not.toBe(first);
+    expect(changed.targets).toEqual(["planets"]);
+    const { useShellStore } = await import("../state/shell-store");
+    expect(useShellStore.getState().profiles).toEqual([changed]);
   });
 });

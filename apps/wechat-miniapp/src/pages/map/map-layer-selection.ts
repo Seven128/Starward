@@ -13,10 +13,10 @@ export function mapLayerKindForOverlay(overlay: AnalysisOverlay): MapLayerKind {
   return "NORMAL";
 }
 
-/** Static annual light loads independently; the Scene still owns weather-based
- * marker/filter evidence, and must not compose the same raster a second time. */
-export function mapSceneLayerForOverlay(overlay: AnalysisOverlay): MapLayerKind {
-  return overlay === "LIGHT" ? "NORMAL" : mapLayerKindForOverlay(overlay);
+/** Geographic overlays load independently; Scene retains marker/filter
+ * evidence without composing the same coverage a second time. */
+export function mapSceneLayerForOverlay(_overlay: AnalysisOverlay): MapLayerKind {
+  return "NORMAL";
 }
 
 export function lightLayerContentState(input: {
@@ -28,18 +28,4 @@ export function lightLayerContentState(input: {
   if (input.failed) return input.hasData ? "STALE" : "ERROR";
   if (input.pending || !input.hasData) return "LOADING";
   return input.unavailable ? "EMPTY" : "READY";
-}
-
-/** The independent light retry cannot recover weather/marker Scene data.
- * Empty cloud slices still use their Scene recovery inside the sheet. */
-export function layerSheetOwnsSceneRecovery(input: {
-  open: boolean;
-  overlay: LayerSheetOverlay;
-  contextFailed: boolean;
-  sceneFailed: boolean;
-  lightState: ReturnType<typeof lightLayerContentState>;
-  cloudTimeChoiceCount: number;
-}): boolean {
-  if (!input.open || input.contextFailed || !input.sceneFailed) return false;
-  return input.overlay !== "LIGHT" && input.cloudTimeChoiceCount === 0;
 }

@@ -11,7 +11,7 @@ export function validateTimeline(stages: ItineraryStage[]) {
   for (let i = 0; i < ordered.length; i += 1) { if (Date.parse(ordered[i].startsAt) >= Date.parse(ordered[i].endsAt)) conflicts.push(`${ordered[i].id}:invalid-range`); if (i && Date.parse(ordered[i].startsAt) < Date.parse(ordered[i - 1].endsAt)) conflicts.push(`${ordered[i - 1].id}:${ordered[i].id}:overlap`); }
   return { valid: conflicts.length === 0, conflicts, ordered };
 }
-export function applyItineraryPatch(current: Itinerary, input: { idempotencyKey: string; actorId: string; role: ItineraryRole; baseRevision: number; patch: Partial<Pick<Itinerary, "title" | "stops" | "stages">>; at: string }) {
+export function applyItineraryPatch<T extends Pick<Itinerary, "revision" | "sequence" | "operationLog" | "title" | "stops" | "stages">>(current: T, input: { idempotencyKey: string; actorId: string; role: ItineraryRole; baseRevision: number; patch: Partial<Pick<Itinerary, "title" | "stops" | "stages">>; at: string }) {
   if (!input.idempotencyKey) throw new TypeError("idempotency_key_required");
   if (input.role === "viewer") return { status: "forbidden" as const, current };
   if (current.operationLog.some((item) => item.id === input.idempotencyKey)) return { status: "duplicate" as const, current };

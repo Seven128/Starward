@@ -4,6 +4,7 @@ import { createForecastHandler } from "./modules/forecast/forecast-handler";
 import { createMapSpotsHandler, createRouteHandler } from "./modules/map/map-handler";
 import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
+import { registerItineraryRoutes } from "./modules/itinerary/itinerary-routes";
 
 interface CommandRouteConfig {
   base: string;
@@ -85,7 +86,6 @@ function registerShooting(app: FastifyInstance, dependencies: ApiDependencies) {
 function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
   const routes: Array<CommandRouteConfig | null> = [
     dependencies.profile ? { base: "/v1/profile", invalidCode: "invalid_profile_command", commands: ["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"], actorId: "user-demo", outcome: "identity-profile-privacy", operation: "profile.update", privateAuthorization: true, service: dependencies.profile, runtime: dependencies.identityRuntime } : null,
-    dependencies.itineraries ? { base: "/v1/itineraries", invalidCode: "invalid_itinerary_command", commands: ["generate", "overview", "add-candidate", "select-route", "refresh", "share-offline", "merge-collaboration", "astronomy-timeline"], actorId: "user-demo", outcome: "itinerary-and-collaboration", operation: "itinerary.create", privateAuthorization: true, service: dependencies.itineraries, runtime: dependencies.itineraryRuntime } : null,
     dependencies.field ? { base: "/v1/field", invalidCode: "invalid_field_command", commands: ["verify-pack", "toggle-red", "switch-backup", "start-session", "share-location", "save-report", "enter-offline"], actorId: "user-demo", outcome: "field-offline-safety", operation: "field.pack-and-report", service: dependencies.field, runtime: dependencies.fieldRuntime } : null,
     dependencies.community ? { base: "/v1/community", invalidCode: "invalid_community_command", commands: ["submit-spot", "submit-report", "submit-correction", "upload-media", "open-trust", "publish-review"], actorId: "user-demo", outcome: "community-contribution", operation: "community.media-contribute", service: dependencies.community, runtime: dependencies.communityRuntime } : null,
     dependencies.tools ? { base: "/v1/tools", invalidCode: "invalid_tools_command", commands: ["create-rule", "open-risk", "change-controls", "calendar", "position", "professional", "learning"], actorId: "user-demo", outcome: "notifications-and-toolbox", operation: "notification.rule-create", service: dependencies.tools, runtime: dependencies.notificationToolsRuntime } : null,
@@ -96,6 +96,7 @@ function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependenci
 }
 
 export function registerFeatureRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
+  if (dependencies.itineraries) registerItineraryRoutes(app, dependencies.itineraries, dependencies.resolveItineraryActor);
   registerForecast(app, dependencies);
   registerMapAndSky(app, dependencies);
   registerShooting(app, dependencies);

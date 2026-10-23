@@ -5,6 +5,41 @@ import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observa
 const start = "2026-09-29T13:00:00.000Z";
 const end = "2026-09-29T13:30:00.000Z";
 
+test("ruler and civil holds share one exact time intent and retire on public lifecycle boundaries", () => {
+  const time = createSkyObservationTime();
+  const bind = () => time.bind("context:1", start, { startAt: start, endAt: end });
+  bind(); time.edit("fields", true); time.edit("ruler", true);
+  time.preview("2026-09-29T13:12:34.567Z");
+  assert.deepEqual(time.snapshot().editing, ["fields", "ruler"]);
+  time.edit("fields", false);
+  assert.deepEqual(time.snapshot().editing, ["ruler"], "one control cannot settle the other");
+  assert.equal(time.snapshot().at, "2026-09-29T13:12:34.567Z");
+  time.edit("ruler", false); assert.deepEqual(time.snapshot().editing, []);
+  for (const retire of [() => time.cancel(), () => time.hide(0), () => time.requestPlay(),
+    () => time.bind("context:2", start, { startAt: start, endAt: end })]) {
+    bind(); time.edit("fields", true); retire();
+    assert.deepEqual(time.snapshot().editing, []);
+  }
+});
+
+test("editing generations survive valid previews and supply updates but never lifecycle retirement or Context ABA", () => {
+  const time = createSkyObservationTime(), coverage = { startAt: start, endAt: end };
+  time.bind("context:1", start, coverage);
+  const original = time.snapshot().editingGeneration;
+  time.edit("fields", true); time.preview("2026-09-29T13:12:34.567Z");
+  time.bind("context:1", start, null); time.edit("ruler", true); time.edit("ruler", false);
+  assert.equal(time.snapshot().editingGeneration, original);
+  assert.deepEqual(time.snapshot().editing, ["fields"]);
+  time.bind("context:2", start, coverage); time.bind("context:1", start, coverage);
+  assert.notEqual(time.snapshot().editingGeneration, original, "equal Context values are a fresh interaction lifetime");
+  for (const retire of [() => time.cancel(), () => time.hide(0), () => time.requestPlay(), () => time.play(0)]) {
+    time.edit("fields", true); const generation = time.snapshot().editingGeneration;
+    retire();
+    assert.notEqual(time.snapshot().editingGeneration, generation);
+    assert.deepEqual(time.snapshot().editing, []);
+  }
+});
+
 test("1x sky time is one bounded intent across play, pause, hide, cancel and a replaced Context", () => {
   const time = createSkyObservationTime();
   assert.equal(time.bind("context:1", start, { startAt: start, endAt: end }).at, start);

@@ -262,6 +262,7 @@ export class MiniappController {
     @Query("preferences") preferences?: string,
     @Headers("authorization") authorization?: string,
     @Query("viewportBounds") viewportBounds?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
   ) {
     const userId = await this.service.auth.optionalPrincipal(authorization);
     const parsedFilters = parseFilters(filters);
@@ -272,7 +273,7 @@ export class MiniappController {
       ...(zoom === undefined ? {} : { zoom }),
       ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
     });
-    return this.service.getMapScene({
+    return withTerrainRead(reply, signal => this.service.getMapScene({
       contextId: required(contextId, "observation_context_required"),
       layer: parseLayer(layer),
       cloudLayer: parseCloudLayer(cloudLayer),
@@ -281,7 +282,31 @@ export class MiniappController {
       ...(viewport ? { viewport } : {}),
       ...(parsedPreferences ? { preferences: parsedPreferences } : {}),
       ...(userId ? { userId } : {}),
+    }, undefined, signal));
+  }
+
+  @Get("map/cloud")
+  async mapCloud(
+    @Query("contextId") contextId?: string,
+    @Query("centerLat") centerLat?: string,
+    @Query("centerLng") centerLng?: string,
+    @Query("zoom") zoom?: string,
+    @Query("viewportBounds") viewportBounds?: string,
+    @Headers("authorization") authorization?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
+  ) {
+    const userId = await this.service.auth.optionalPrincipal(authorization);
+    const viewport = parseViewport({
+      ...(centerLat === undefined ? {} : { centerLat }),
+      ...(centerLng === undefined ? {} : { centerLng }),
+      ...(zoom === undefined ? {} : { zoom }),
+      ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
     });
+    if (!viewport?.bounds) throw new BadRequestException("map_viewport_required");
+    return withTerrainRead(reply, signal => this.service.getMapCloud({
+      contextId: required(contextId, "observation_context_required"),
+      viewport: { ...viewport, bounds: viewport.bounds! }, ...(userId ? { userId } : {}),
+    }, signal));
   }
 
   @Get("map/night-light")

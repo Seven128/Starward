@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createUnrestrictedProfile } from "@starward/domain/preferences";
+import type { PreferenceProjection } from "@starward/domain/preferences/runtime";
 
 const runtime = vi.hoisted(() => ({
   hydratePreferenceRuntime: vi.fn(),
@@ -10,6 +11,22 @@ const runtime = vi.hoisted(() => ({
 }));
 vi.mock("./preferences-runtime", () => runtime);
 
+function reply(projection: Partial<PreferenceProjection> = {}) {
+  return { projection: { profiles: [], revision: 1, ...projection } };
+}
+
+function setupRuntime() {
+  vi.resetModules();
+  vi.resetAllMocks();
+  runtime.persistPreferenceProfile.mockImplementation(async (profile) => reply({ profiles: [profile], activeProfileId: profile.id }));
+  runtime.persistActiveProfile.mockImplementation(async (activeProfileId) => {
+    const { useShellStore } = await import("./shell-store");
+    return reply({ profiles: useShellStore.getState().profiles, activeProfileId });
+  });
+  runtime.persistShellLocation.mockImplementation(async (location) => reply({ location }));
+  runtime.persistShellDestination.mockImplementation(async (activeDestination) => reply({ activeDestination }));
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (error: Error) => void;
@@ -18,7 +35,7 @@ function deferred<T>() {
 }
 
 describe("shell startup recovery", () => {
-  beforeEach(() => { vi.resetModules(); vi.resetAllMocks(); });
+  beforeEach(setupRuntime);
 
   it("restores the other saved fields even after an early tab selection succeeds", async () => {
     const saved = { ...createUnrestrictedProfile(), id: "saved-family", name: "家人观星" };
@@ -50,7 +67,7 @@ describe("shell startup recovery", () => {
 
   it("shares the startup read and keeps restoration independent from a pending save", async () => {
     const read = deferred<{ profiles: never[] }>();
-    const save = deferred<void>();
+    const save = deferred<ReturnType<typeof reply>>();
     runtime.hydratePreferenceRuntime.mockReturnValue(read.promise);
     runtime.persistShellDestination.mockReturnValue(save.promise);
     const { useShellStore } = await import("./shell-store");
@@ -61,7 +78,7 @@ describe("shell startup recovery", () => {
     read.resolve({ profiles: [] });
     await hydration;
     expect(useShellStore.getState()).toMatchObject({ hydrationState: "ready", persistenceState: "saving" });
-    save.resolve();
+    save.resolve(reply({ activeDestination: "map" }));
     await writing;
     await useShellStore.getState().hydrateFromRuntime();
     expect(runtime.hydratePreferenceRuntime).toHaveBeenCalledOnce();
@@ -112,7 +129,7 @@ describe("shell startup recovery", () => {
 
   it("keeps an earlier failed write recoverable when a retry was queued before it failed", async () => {
     const first = deferred<void>();
-    runtime.persistShellLocation.mockReturnValueOnce(first.promise).mockResolvedValueOnce(undefined);
+    runtime.persistShellLocation.mockReturnValueOnce(first.promise).mockResolvedValueOnce(reply({ location: { source: "manual", label: "重试位置" } }));
     const { useShellStore } = await import("./shell-store");
     const failed = useShellStore.getState().setManualLocation("第一次");
     const retry = useShellStore.getState().setManualLocation("重试位置");
@@ -122,11 +139,21 @@ describe("shell startup recovery", () => {
     await retry;
     expect(useShellStore.getState()).toMatchObject({ persistenceState: "ready", persistenceError: null, location: { label: "重试位置" } });
   });
+
+  it("uses current projection when an old save is replayed after another profile was selected", async () => {
+    const first = { ...createUnrestrictedProfile(), id: "first", name: "历史保存" };
+    const second = { ...first, id: "second", name: "当前选择" };
+    runtime.persistPreferenceProfile.mockResolvedValue({ replayed: true, ...reply({ profiles: [first, second], activeProfileId: second.id }) });
+    const { useShellStore } = await import("./shell-store");
+    await useShellStore.getState().saveProfile(first);
+    expect(useShellStore.getState().profiles).toEqual([first, second]);
+    expect(useShellStore.getState().activeProfileId).toBe(second.id);
+  });
 });
 
 describe("accepted device location persistence", () => {
   const fix = { latitude: 0, longitude: 0, accuracyMeters: 7.25, timestampMs: 1_792_757_000_000, coordinateSystem: "WGS84" as const };
-  beforeEach(() => { vi.resetModules(); vi.resetAllMocks(); });
+  beforeEach(setupRuntime);
 
   it("saves a valid zero coordinate with the actual accuracy and sampling time", async () => {
     const { useShellStore } = await import("./shell-store");
@@ -138,14 +165,14 @@ describe("accepted device location persistence", () => {
   });
 
   it("does not dispatch a queued fix after cancellation", async () => {
-    const blocked = deferred<void>();
+    const blocked = deferred<ReturnType<typeof reply>>();
     runtime.persistShellDestination.mockReturnValue(blocked.promise);
     const { useShellStore } = await import("./shell-store");
     const saving = useShellStore.getState().setDestination("me");
     const controller = new AbortController();
     const location = useShellStore.getState().setDeviceLocation("当前位置", fix, controller.signal);
     controller.abort();
-    blocked.resolve();
+    blocked.resolve(reply({ activeDestination: "me" }));
     await saving;
     await expect(location).resolves.toBe(false);
     expect(runtime.persistShellLocation).not.toHaveBeenCalled();
@@ -153,14 +180,14 @@ describe("accepted device location persistence", () => {
   });
 
   it("serializes a newer manual choice after a dispatched device save", async () => {
-    const device = deferred<void>();
-    runtime.persistShellLocation.mockReturnValueOnce(device.promise).mockResolvedValueOnce(undefined);
+    const device = deferred<ReturnType<typeof reply>>();
+    runtime.persistShellLocation.mockReturnValueOnce(device.promise).mockResolvedValueOnce(reply({ location: { source: "manual", label: "新手动位置" } }));
     const { useShellStore } = await import("./shell-store");
     const first = useShellStore.getState().setDeviceLocation("当前位置", fix);
     await vi.waitFor(() => expect(runtime.persistShellLocation).toHaveBeenCalledOnce());
     const manual = useShellStore.getState().setManualLocation("新手动位置");
     expect(runtime.persistShellLocation).toHaveBeenCalledOnce();
-    device.resolve();
+    device.resolve(reply({ location: { source: "device", label: "当前位置", ...fix } }));
     await first;
     await manual;
     expect(runtime.persistShellLocation).toHaveBeenLastCalledWith({ source: "manual", label: "新手动位置" });

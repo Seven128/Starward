@@ -6,7 +6,10 @@ export interface SkyObservationTimeState {
   reachedEnd: boolean;
   runStartAt: string | null;
   playRequested: boolean;
+  editing: readonly SkyTimeEditSource[];
+  editingGeneration: number;
 }
+export type SkyTimeEditSource = "ruler" | "fields";
 export interface SkyTimeCoverage { startAt: string; endAt: string }
 
 const canonical = (at: string) => Number.isFinite(Date.parse(at)) && new Date(at).toISOString() === at;
@@ -28,13 +31,16 @@ export function skyPresentedTimeCurrent(requestedAt: string, paintedAt: string |
  * zoom, camera, ephemeris and network effects do not live in this owner. */
 export function createSkyObservationTime(options: { latestInstant?: () => number } = {}) {
   let state: SkyObservationTimeState = { binding: "", committedAt: "", at: "", mode: "FIXED", reachedEnd: false, runStartAt: null,
-    playRequested: false };
+    playRequested: false, editing: [], editingGeneration: 0 };
   let coverage: SkyTimeCoverage | null = null;
   let anchor: { elapsedAt: number; instant: number; latestElapsed: number } | null = null;
   const latest = () => options.latestInstant?.() ?? Infinity;
   const covered = (at: string) => Boolean(coverage && canonical(at) &&
     Date.parse(at) >= Date.parse(coverage.startAt) && Date.parse(at) <= Math.min(Date.parse(coverage.endAt), latest()));
   const publish = (change: Partial<SkyObservationTimeState>) => { state = { ...state, ...change }; return state; };
+  // Equal Context/time values after retirement do not revive an earlier
+  // continuous gesture. Ordinary previews and geometry supply keep this lease.
+  const retiredEditing = () => ({ editing: [] as SkyTimeEditSource[], editingGeneration: state.editingGeneration + 1 });
   const pause = () => { anchor = null; return state.mode === "PLAYING" || state.playRequested
     ? publish({ ...(state.mode === "PLAYING" ? { mode: "PAUSED" as const } : {}), runStartAt: null, playRequested: false }) : state; };
   return {
@@ -45,7 +51,7 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
         Date.parse(nextCoverage.endAt) > Date.parse(nextCoverage.startAt) ? nextCoverage : null;
       if (binding !== state.binding || committedAt !== state.committedAt) {
         anchor = null;
-        return publish({ binding, committedAt, at: committedAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false });
+        return publish({ binding, committedAt, at: committedAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false, ...retiredEditing() });
       }
       // Geometry supply can lag a newer cross-window preview or be withdrawn.
       // It controls playback eligibility, never the user's pending time intent.
@@ -61,6 +67,14 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
       anchor = null;
       return publish({ at, mode: at === state.committedAt ? "FIXED" : "PREVIEW", reachedEnd: false, runStartAt: null, playRequested: false });
     },
+    /** Ruler settlement and held civil fields share this intent. Keeping the
+     * two sources distinct prevents one control's cleanup from settling the
+     * other; neither owns a second clock or changes preview precision. */
+    edit(source: SkyTimeEditSource, active: boolean) {
+      if (!state.binding || state.editing.includes(source) === active) return state;
+      if (active) pause();
+      return publish({ editing: active ? [...state.editing, source] : state.editing.filter(value => value !== source) });
+    },
     /** The same time intent owns asynchronous playback preparation. Supply
      * arrival cannot start a request retired by preview, cancel or lifecycle. */
     requestPlay() {
@@ -68,12 +82,12 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
       if (state.mode === "PLAYING" || !state.binding || !canonical(state.at) || (!Number.isFinite(limit) && limit !== Infinity) ||
         Date.parse(state.at) >= limit) return state;
       anchor = null;
-      return publish({ playRequested: true, reachedEnd: false, runStartAt: null });
+      return publish({ playRequested: true, reachedEnd: false, runStartAt: null, ...retiredEditing() });
     },
     play(elapsedAt: number) {
       if (!Number.isFinite(elapsedAt) || !covered(state.at) || Date.parse(state.at) >= Math.min(Date.parse(coverage!.endAt), latest())) return state;
       anchor = { elapsedAt, instant: Date.parse(state.at), latestElapsed: elapsedAt };
-      return publish({ mode: "PLAYING", reachedEnd: false, runStartAt: state.at, playRequested: false });
+      return publish({ mode: "PLAYING", reachedEnd: false, runStartAt: state.at, playRequested: false, ...retiredEditing() });
     },
     tick(elapsedAt: number) {
       if (state.mode !== "PLAYING" || !anchor || !coverage || !Number.isFinite(elapsedAt)) return state;
@@ -89,7 +103,7 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
       return publish({ at, ...(ended ? { mode: "PAUSED" as const, reachedEnd: true, runStartAt: null } : {}) });
     },
     pause,
-    hide(elapsedAt: number) { this.tick(elapsedAt); return pause(); },
-    cancel() { anchor = null; return publish({ at: state.committedAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false }); },
+    hide(elapsedAt: number) { this.tick(elapsedAt); pause(); return state.editing.length ? publish(retiredEditing()) : state; },
+    cancel() { anchor = null; return publish({ at: state.committedAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false, ...retiredEditing() }); },
   };
 }

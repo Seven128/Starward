@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -7,28 +7,20 @@ import type { NightReport, NightReportRequest } from "@starward/contracts/night-
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
 import { createNightReportClient } from "../../data/night-report-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
-import { createTonightContext } from "./index";
 import { useShellStore } from "../../state/shell-store";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
+import { useDecisionSnapshot } from "../../state/use-decision-snapshot";
+import { currentObservingNight, DEFAULT_DECISION_TIMEZONE, decisionTargets, forecastTarget, isObservingNight, shiftObservingNight, type DecisionTarget } from "../../state/decision-context";
 
 type ViewMode = "decision" | "spots" | "target";
 const palette = colors.planning;
 const client = createNightReportClient({ baseUrl: resolveRuntimeApiBaseUrl() });
 
-function localDate(timezone: string, offsetDays = 0) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(Date.now() + offsetDays * 86_400_000));
-}
-
-function requestForCurrentContext(input: { latitude: number; longitude: number; label: string; profile: NightReportRequest["profile"]; maxTravelMinutes: number; nightDate: string }): NightReportRequest {
-  const location = { lat: input.latitude, lon: input.longitude, system: "WGS84" as const, label: input.label };
-  return { requestId: `night-${Date.now()}-${Math.random().toString(36).slice(2)}`, location, timezone: "Asia/Shanghai", nightDate: input.nightDate, profile: input.profile, target: "milky-way-core", route: { origin: location, maxTravelMinutes: input.maxTravelMinutes, modes: ["drive"] } };
-}
-
 function Evidence({ testID, title, body, meta }: { testID: string; title: string; body: string; meta?: string }) {
   return <View testID={testID} style={styles.evidence}><Text style={styles.evidenceTitle}>{title}</Text><Text style={styles.evidenceBody}>{body}</Text>{meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}</View>;
 }
 
-function utcTime(value?: string | null) { return value ? value.slice(11, 16) : "--:--"; }
+function utcTime(value?: string | null) { return value ? new Intl.DateTimeFormat("zh-CN", { timeZone: DEFAULT_DECISION_TIMEZONE, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value)) : "--:--"; }
 const metric = (value: number | null | undefined, suffix: string) => value === null || value === undefined ? "暂无数据" : `${Math.round(value * 10) / 10}${suffix}`;
 const categoryLabel: Record<NightReport["decision"]["category"], string> = { excellent: "非常适合", good: "适合", mixed: "条件一般", "not-recommended": "不建议", "safety-risk": "存在安全风险", "insufficient-data": "暂无法判断" };
 
@@ -125,7 +117,7 @@ function PartialPanel({ report }: { report: NightReport }) {
 function TargetPanel({ report, selectedId, onSelect }: { report: NightReport; selectedId: string; onSelect: (id: string) => void }) {
   const target = report.targets.find((item) => item.id === selectedId) ?? report.targets[0];
   return <View style={styles.panel}>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.targetTabs}>{report.targets.map((item) => <Pressable key={item.id} accessibilityRole="button" onPress={() => onSelect(item.id)} style={[styles.action, item.id === target?.id && styles.actionActive]}><Text style={styles.actionText}>{item.name} · {item.visible ? "可见" : "待确认"}</Text></Pressable>)}</ScrollView>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.targetTabs}>{report.targets.map((item) => <Pressable key={item.id} accessibilityRole="button" disabled={!decisionTargets.includes(item.id as DecisionTarget)} onPress={() => onSelect(item.id)} style={[styles.action, item.id === target?.id && styles.actionActive]}><Text style={styles.actionText}>{item.name} · {item.visible ? "可见" : "待确认"}</Text></Pressable>)}</ScrollView>
     <Evidence testID="target-visible-window" title={`${target?.name ?? "目标"} · ${target?.visible ? "可见" : "不可见"}`} body={target?.window ? `${utcTime(target.window.start)}–${utcTime(target.window.end)}` : "本夜无可见窗口"} meta={target?.impact} />
     <Evidence testID="target-altitude-azimuth" title="最高位置" body={target?.peak ? `高度 ${target.peak.altitudeDeg}° · 方位 ${target.peak.azimuthDeg}° · ${utcTime(target.peak.at)}` : "无峰值位置"} />
     <Evidence testID="target-next-action" title="下一步" body="查看天空遮挡轨迹、视场与所选地点方向；加入计划后共同保存位置和时刻版本。" />
@@ -133,13 +125,10 @@ function TargetPanel({ report, selectedId, onSelect }: { report: NightReport; se
 }
 
 export function TonightScreen() {
-  const location = useShellStore((state) => state.location);
-  const profiles = useShellStore((state) => state.profiles);
-  const activeProfileId = useShellStore((state) => state.activeProfileId);
+  const context = useDecisionSnapshot();
   const commitDecisionContext = useShellStore((state) => state.commitDecisionContext);
-  const activeProfile = profiles.find((profile) => profile.id === activeProfileId);
-  const latitude = location.latitude ?? 22.529;
-  const longitude = location.longitude ?? 113.9468;
+  const activeProfile = context.profile;
+  const { latitude, longitude, label: effectiveLabel } = context.observer;
   const reportProfile: NightReportRequest["profile"] = activeProfile?.observerTypes.includes("family") ? "family"
     : activeProfile?.observerTypes.includes("beginner") ? "beginner"
       : activeProfile?.observerTypes.includes("astrophotographer") || activeProfile?.targets.includes("milky-way") ? "milky-way"
@@ -148,48 +137,50 @@ export function TonightScreen() {
   const maxTravelMinutes = activeProfile?.travel.maxOneWayMinutes ?? 120;
   const [mode, setMode] = useState<ViewMode>("decision");
   const [conditionsExpanded, setConditionsExpanded] = useState(false);
-  const [selectedTargetId, setSelectedTargetId] = useState("milky-way-core");
-  const [dateMode, setDateMode] = useState<"tonight" | "tomorrow" | "custom">("tonight");
-  const [customDate, setCustomDate] = useState(localDate("Asia/Shanghai"));
-  const nightDate = dateMode === "tonight" ? localDate("Asia/Shanghai") : dateMode === "tomorrow" ? localDate("Asia/Shanghai", 1) : customDate;
-  const dateValid = /^\d{4}-\d{2}-\d{2}$/u.test(nightDate) && Number.isFinite(Date.parse(`${nightDate}T12:00:00Z`));
-  const effectiveLabel = location.latitude === undefined || location.longitude === undefined ? "深圳市 · 南山区（POC 地区默认；未使用文本地点定位）" : location.label;
-  const context = createTonightContext({ timezone: "Asia/Shanghai", target: "milky-way-core" });
-  useEffect(() => {
-    commitDecisionContext({
-      observingNight: nightDate,
-      origin: `${latitude.toFixed(4)},${longitude.toFixed(4)}`,
-      profileId: activeProfileId,
-      target: context.target,
-    });
-  }, [activeProfileId, commitDecisionContext, context.target, latitude, longitude, nightDate]);
+  const [editingDate, setEditingDate] = useState(false);
+  const [customDate, setCustomDate] = useState(context.observingNight);
+  const nightDate = context.observingNight;
+  const tonight = currentObservingNight(context.timezone);
+  const tomorrow = shiftObservingNight(tonight, 1);
+  const dateValid = isObservingNight(customDate);
+  const chooseNight = (observingNight: string) => { commitDecisionContext({ observingNight }); setEditingDate(false); };
+  const request: Omit<NightReportRequest, "requestId"> = {
+    location: { lat: latitude, lon: longitude, system: "WGS84", label: effectiveLabel },
+    timezone: context.timezone, nightDate, profile: reportProfile, target: context.target,
+    route: { origin: { lat: context.origin.latitude, lon: context.origin.longitude, system: "WGS84", label: context.origin.label }, maxTravelMinutes, modes: ["drive"] },
+  };
+  const supportedTarget = forecastTarget(context.target) !== null;
   const query = useQuery({
-    queryKey: ["night-report", latitude, longitude, reportProfile, maxTravelMinutes, nightDate, context.target],
-    queryFn: ({ signal }) => client.create(requestForCurrentContext({ latitude, longitude, label: effectiveLabel, profile: reportProfile, maxTravelMinutes, nightDate }), signal),
-    enabled: dateValid,
+    queryKey: ["night-report", request],
+    queryFn: ({ signal }) => client.create({ ...request, requestId: `night-${Date.now()}-${Math.random().toString(36).slice(2)}` }, signal),
     retry: 1,
+    enabled: supportedTarget,
   });
-  const load = (next: ViewMode) => { setMode(next); if (!query.data || query.isError) void query.refetch(); };
+  const load = (next: ViewMode) => { setMode(next); if (supportedTarget && (!query.data || query.isError)) void query.refetch(); };
   return <SafeAreaView testID="screen-tonight-decision" style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>今晚决策 · {context.timezone}</Text><Text style={styles.title}>值得出发吗？</Text>
-      <Text testID="tonight-context" style={styles.context}>{effectiveLabel} · {latitude.toFixed(4)}, {longitude.toFixed(4)} · {nightDate} · {reportProfile} · {location.source === "device" ? "设备位置" : "地区默认/手动上下文"}</Text>
+      <Text testID="tonight-context" style={styles.context}>{effectiveLabel} · {latitude.toFixed(4)}, {longitude.toFixed(4)} · {nightDate} · {reportProfile}</Text>
       <DecisionContextRevision />
+      {!supportedTarget ? <Text style={styles.warningText}>当前夜报尚不支持所选目标；目标已保留，不会替换成银河计算。</Text> : null}
       <View style={styles.actions}>
-        <Pressable testID="tonight-date-tonight" accessibilityRole="button" onPress={() => setDateMode("tonight")} style={[styles.action, dateMode === "tonight" && styles.actionActive]}><Text style={styles.actionText}>今晚</Text></Pressable>
-        <Pressable testID="tonight-date-tomorrow" accessibilityRole="button" onPress={() => setDateMode("tomorrow")} style={[styles.action, dateMode === "tomorrow" && styles.actionActive]}><Text style={styles.actionText}>明晚</Text></Pressable>
-        <Pressable testID="tonight-date-custom" accessibilityRole="button" onPress={() => setDateMode("custom")} style={[styles.action, dateMode === "custom" && styles.actionActive]}><Text style={styles.actionText}>自定义日期</Text></Pressable>
+        <Pressable testID="tonight-date-tonight" accessibilityRole="button" onPress={() => chooseNight(tonight)} style={[styles.action, !editingDate && nightDate === tonight && styles.actionActive]}><Text style={styles.actionText}>今晚</Text></Pressable>
+        <Pressable testID="tonight-date-tomorrow" accessibilityRole="button" onPress={() => chooseNight(tomorrow)} style={[styles.action, !editingDate && nightDate === tomorrow && styles.actionActive]}><Text style={styles.actionText}>明晚</Text></Pressable>
+        <Pressable testID="tonight-date-custom" accessibilityRole="button" onPress={() => { setCustomDate(nightDate); setEditingDate(true); }} style={[styles.action, editingDate && styles.actionActive]}><Text style={styles.actionText}>自定义日期</Text></Pressable>
       </View>
-      {dateMode === "custom" ? <TextInput testID="tonight-custom-date" accessibilityLabel="自定义观星夜日期" value={customDate} onChangeText={setCustomDate} placeholder="YYYY-MM-DD" style={styles.input} /> : null}
-      {!dateValid ? <Text style={styles.warningText}>请输入有效的 YYYY-MM-DD 日期；旧报告不会被无效输入覆盖。</Text> : null}
+      {editingDate ? <><TextInput testID="tonight-custom-date" accessibilityLabel="自定义观星夜日期" value={customDate} onChangeText={setCustomDate} placeholder="YYYY-MM-DD" style={styles.input} />
+        <View style={styles.actions}><Pressable testID="tonight-apply-date" accessibilityRole="button" disabled={!dateValid} onPress={() => dateValid && chooseNight(customDate)} style={styles.action}><Text style={styles.actionText}>应用日期</Text></Pressable><Pressable testID="tonight-cancel-date" accessibilityRole="button" onPress={() => setEditingDate(false)} style={styles.action}><Text style={styles.actionText}>取消</Text></Pressable></View>
+        {!dateValid ? <Text style={styles.warningText}>请输入有效的 YYYY-MM-DD 日期；旧报告不会被无效输入覆盖。</Text> : null}</> : null}
+      <Text style={styles.context}>夜报计算整个观星夜；精确时刻供天空与摄影使用。</Text>
       <Text style={styles.subtitle}>结论、连续窗口、主备地点和行动共享同一版本快照；缺失路线、过期来源与安全阻断不会被总分隐藏。</Text>
       <Pressable testID="tonight-open-forecast" accessibilityRole="button" accessibilityLabel="打开逐小时天气与天文详情" onPress={() => router.push("/forecast")} style={styles.action}>
         <Text style={styles.actionText}>查看逐小时天气与天文</Text>
       </Pressable>
       <DecisionHero report={query.data} failed={query.isError} />
+      {query.data && (query.isFetching || query.isError) ? <Text style={styles.warningText}>{query.isFetching ? "正在刷新" : "更新失败"}，以下保留上次夜报 · {query.data.generatedAt}</Text> : null}
       {query.data ? <DecisionQuickFacts report={query.data} /> : null}
       <View style={styles.actions}>
-        <Pressable testID="tonight-refresh" accessibilityLabel={`location-date-refresh:${effectiveLabel} · ${nightDate} · 刷新夜报`} accessibilityRole="button" onPress={() => { setMode("decision"); void query.refetch(); }} style={styles.action}><Text style={styles.actionText}>刷新夜报</Text></Pressable>
+        <Pressable testID="tonight-refresh" accessibilityLabel={`location-date-refresh:${effectiveLabel} · ${nightDate} · 刷新夜报`} accessibilityRole="button" disabled={!supportedTarget} onPress={() => { setMode("decision"); if (supportedTarget) void query.refetch(); }} style={styles.action}><Text style={styles.actionText}>刷新夜报</Text></Pressable>
         <Pressable testID="tonight-select-primary" accessibilityLabel="plan-backup-selector:查看并选择主备地点" accessibilityRole="button" onPress={() => load("spots")} style={styles.action}><Text style={styles.actionText}>主备地点</Text></Pressable>
         <Pressable testID="tonight-select-target" accessibilityLabel="visible-target-timeline:查看今晚可见目标时间线" accessibilityRole="button" onPress={() => load("target")} style={styles.action}><Text style={styles.actionText}>可见目标</Text></Pressable>
       </View>
@@ -198,7 +189,7 @@ export function TonightScreen() {
       {query.data && mode === "decision" ? <DecisionPanel report={query.data} onOpenSpots={() => setMode("spots")} /> : null}
       {query.data && mode === "decision" ? <ConditionsPanel report={query.data} expanded={conditionsExpanded} onToggle={() => setConditionsExpanded((value) => !value)} /> : null}
       {query.data && mode === "spots" ? <SpotsPanel report={query.data} /> : null}
-      {query.data && mode === "target" ? <TargetPanel report={query.data} selectedId={selectedTargetId} onSelect={setSelectedTargetId} /> : null}
+      {query.data && mode === "target" ? <TargetPanel report={query.data} selectedId={context.target} onSelect={(id) => { if (decisionTargets.includes(id as DecisionTarget)) commitDecisionContext({ target: id as DecisionTarget }); }} /> : null}
       {query.data && query.data.status !== "ready" ? <PartialPanel report={query.data} /> : null}
       {!query.data && !query.isFetching && !query.isError ? <View style={styles.state}><Text style={styles.stateTitle}>准备生成今晚报告</Text><Text style={styles.stateBody}>位置：{effectiveLabel}。报告由聚合 API 生成，不在客户端拼接供应商数据。</Text></View> : null}
     </ScrollView>
