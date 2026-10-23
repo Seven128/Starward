@@ -25,7 +25,8 @@ import { createIdentityRuntime } from "./modules/identity/runtime";
 import { createItineraryRuntime } from "./modules/itinerary/runtime";
 import { resolveLocalItineraryOwner } from "./modules/itinerary/itinerary-routes";
 import { FieldService } from "./modules/field/field-service";
-import { createFieldRuntime } from "@starward/domain/offline/runtime";
+import { createFieldReportRuntime } from "./modules/field/report-runtime";
+import { resolveLocalFieldReportOwner } from "./modules/field/report-routes";
 import { CommunityWorkflowService } from "./modules/community/community-workflow-service";
 import { createCommunityRuntime } from "./modules/community/runtime";
 import { ToolsService } from "./modules/notifications/tools-service";
@@ -181,7 +182,7 @@ const shootingRuntime = await createShootingRuntime({
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
   boundary: { async invoke(request) { return { status: "available", kind: request.kind, token: request.payload.token, mode }; } },
 });
-const fieldRuntime = await createFieldRuntime({
+const fieldReportRuntime = await createFieldReportRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
 });
@@ -229,7 +230,8 @@ const app = await buildApi({
   itineraries: itineraryRuntime.service,
   resolveItineraryActor: resolveLocalItineraryOwner,
   field: new FieldService(),
-  fieldRuntime,
+  fieldReports: fieldReportRuntime.service,
+  resolveFieldReportActor: resolveLocalFieldReportOwner,
   community: new CommunityWorkflowService(),
   communityRuntime,
   tools:new ToolsService(),
@@ -241,7 +243,7 @@ const app = await buildApi({
   qualityRuntime,
   logger: true,
 });
-app.addHook("onClose", async () => { await forecastRuntime.close(); await mapRouteRuntime.close(); await spotTrustRuntime.close(); await nightReportRuntime.close(); await identityRuntime.close(); await itineraryRuntime.close(); await shootingRuntime.close(); await fieldRuntime.close(); await notificationToolsRuntime.close(); await communityRuntime.close(); await adminRuntime.close(); await qualityRuntime.close(); });
+app.addHook("onClose", async () => { await forecastRuntime.close(); await mapRouteRuntime.close(); await spotTrustRuntime.close(); await nightReportRuntime.close(); await identityRuntime.close(); await itineraryRuntime.close(); await shootingRuntime.close(); await fieldReportRuntime.close(); await notificationToolsRuntime.close(); await communityRuntime.close(); await adminRuntime.close(); await qualityRuntime.close(); });
 
 const port = Number(process.env.STARWARD_API_PORT ?? 4318);
 if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error("api_port_invalid");

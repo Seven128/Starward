@@ -96,7 +96,7 @@ export function parseNotificationRuleDefinition(value: unknown): NotificationRul
   if (typeof quiet.start !== "string" || typeof quiet.end !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/u.test(quiet.start) || !/^([01]\d|2[0-3]):[0-5]\d$/u.test(quiet.end)) throw new NotificationRuleValidationError();
   const timezone = text(quiet.timezone);
   try { new Intl.DateTimeFormat("en", { timeZone: timezone }).format(); } catch { throw new NotificationRuleValidationError("invalid_notification_rule_timezone"); }
-  if (!["local", "inbox", "apns", "fcm", "vendor", "expo-poc"].includes(String(input.channel))) throw new NotificationRuleValidationError();
+  if (typeof input.channel !== "string" || !["local", "inbox", "apns", "fcm", "vendor", "expo-poc"].includes(input.channel)) throw new NotificationRuleValidationError();
   const expiresAt = input.expiresAt === null ? null : typeof input.expiresAt === "string" ? normalizeUtcMoment(input.expiresAt) : null;
   if (input.expiresAt !== null && expiresAt === null) throw new NotificationRuleValidationError("invalid_notification_rule_expiry");
   return {

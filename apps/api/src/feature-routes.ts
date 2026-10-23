@@ -6,6 +6,7 @@ import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
 import { registerItineraryRoutes } from "./modules/itinerary/itinerary-routes";
 import { registerNotificationRuleRoutes } from "./modules/notifications/rule-routes";
+import { registerFieldReportRoutes } from "./modules/field/report-routes";
 
 interface CommandRouteConfig {
   base: string;
@@ -89,7 +90,6 @@ function registerShooting(app: FastifyInstance, dependencies: ApiDependencies) {
 function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
   const routes: Array<CommandRouteConfig | null> = [
     dependencies.profile ? { base: "/v1/profile", invalidCode: "invalid_profile_command", commands: ["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"], actorId: "user-demo", outcome: "identity-profile-privacy", operation: "profile.update", privateAuthorization: true, service: dependencies.profile, runtime: dependencies.identityRuntime } : null,
-    dependencies.field ? { base: "/v1/field", invalidCode: "invalid_field_command", commands: ["verify-pack", "toggle-red", "switch-backup", "start-session", "share-location", "save-report", "enter-offline"], actorId: "user-demo", outcome: "field-offline-safety", operation: "field.pack-and-report", service: dependencies.field, runtime: dependencies.fieldRuntime } : null,
     dependencies.community ? { base: "/v1/community", invalidCode: "invalid_community_command", commands: ["submit-spot", "submit-report", "submit-correction", "upload-media", "open-trust", "publish-review"], actorId: "user-demo", outcome: "community-contribution", operation: "community.media-contribute", service: dependencies.community, runtime: dependencies.communityRuntime } : null,
     dependencies.tools ? { base: "/v1/tools", invalidCode: "invalid_tools_command", commands: ["open-risk", "calendar", "position", "professional", "learning"], upgradeCommands: ["create-rule", "change-controls"], actorId: "user-demo", outcome: "notifications-and-toolbox", operation: "notification.rule-create", service: dependencies.tools } : null,
     dependencies.admin ? { base: "/v1/admin/data-status", commandBase: "/v1/admin", invalidCode: "invalid_admin_command", commands: ["provider-tco-evaluate", "job-replay", "spot-merge-review", "moderation-open-case", "source-disable", "dataset-release-preview", "admin-open-audit", "pipeline-open-run"], actorId: "admin-demo", outcome: "admin-data-operations", operation: "admin.job-replay", privateAuthorization: true, service: dependencies.admin, runtime: dependencies.adminRuntime } : null,
@@ -101,6 +101,15 @@ function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependenci
 export function registerFeatureRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
   if (dependencies.itineraries) registerItineraryRoutes(app, dependencies.itineraries, dependencies.resolveItineraryActor);
   if (dependencies.notificationRules) registerNotificationRuleRoutes(app, dependencies.notificationRules, dependencies.resolveNotificationActor);
+  if (dependencies.fieldReports) registerFieldReportRoutes(app, dependencies.fieldReports, dependencies.resolveFieldReportActor);
+  if (dependencies.field) {
+    app.get("/v2/field", (_request, reply) => reply.header("cache-control", "private, no-store").send(dependencies.field!.get()));
+    const upgrade = (_request: unknown, reply: import("fastify").FastifyReply) => reply.code(409).header("cache-control", "private, no-store").send({ code: "field_client_upgrade_required", apiVersion: "v2", legacyRecordsPreserved: true });
+    app.get("/v1/field", upgrade);
+    // Old commands did not contain a user's content, file proof or native result.
+    // Do not acknowledge their generic token as a new field effect.
+    app.post("/v1/field/commands", upgrade);
+  }
   registerForecast(app, dependencies);
   registerMapAndSky(app, dependencies);
   registerShooting(app, dependencies);

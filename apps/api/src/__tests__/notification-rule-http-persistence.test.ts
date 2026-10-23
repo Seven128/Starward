@@ -144,4 +144,14 @@ describe("real notification rule configuration HTTP persistence", () => {
     const grid = await host.post({ ...create("explicit-grid"), input: { ...definition(), location: { kind: "grid", grid: "user-explicit-grid" }, category: "long-term", cooldownMinutes: 1440 } });
     expect(grid.status).toBe(200); expect(grid.body.rule.definition.location).toEqual({ kind: "grid", grid: "user-explicit-grid" });
   });
+  it("rejects a non-string channel before storing a rule, version or receipt", async () => {
+    const path = directory(), host = await server(path), command = create("channel-type");
+    expect(await host.post({ ...command, input: { ...command.input, channel: ["local"] } })).toMatchObject({ status: 400, body: { code: "invalid_notification_rule", outcome: "rejected" } });
+    expect((await host.get()).body.items).toEqual([]);
+    const db = new DatabaseSync(join(path, "notifications-and-toolbox.sqlite"));
+    try {
+      for (const table of ["notification_rules", "notification_rule_versions", "notification_rule_receipts"]) expect(db.prepare(`SELECT count(*) AS count FROM ${table}`).get()).toMatchObject({ count: 0 });
+    } finally { db.close(); }
+    expect((await host.post(command)).body.rule.definition.channel).toBe("local");
+  });
 });

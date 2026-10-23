@@ -2,6 +2,8 @@
 
 Scope: the first real independent-API business path, **explicit draft create → revision patch → current/history read → restart/replay**. This is bounded implementation evidence, not completion of itinerary generation or F14. PLAN R20 remains the sole plan. No device, DevTools, shared API, deployment, remote commit or private database was used.
 
+2026-10-24 follow-up: actual HTTP regressions exposed non-string transport and stage-kind arrays accepted by a coercing enum guard. Both failed before repair, now reject before current/history/receipt effects, and the original key can be corrected and committed. Fresh independent review verified all four related F14 enum repairs and old scalar receipt compatibility; final API workspace135/135 and App types+139/139 passed. The published OpenAPI now describes actual v1 upgrade/typed compatibility and v2 drafts. Exact evidence and retained failures belong to the [shared F14 follow-up](R20-FIELD-STATE-20261024.md#root-独审与最终整合续批); full itinerary/F14 remains incomplete.
+
 ## Implemented owners and actual behavior
 
 - `apps/api/src/modules/itinerary/itinerary-service.ts` owns validated local-owner draft commands. It reuses `applyItineraryPatch`; that domain helper now constrains only the editable fields it uses and preserves other aggregate fields by its generic input type. Pure draft DTOs live in `packages/domain/src/itinerary/draft.ts`; Node storage stays in the API module.

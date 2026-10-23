@@ -32,6 +32,28 @@ function create(key = "create-a", title = "第一份真实输入草稿", origin 
 function pendingStorage() { const values = new Map<string, string>(); return { getItem: async (key: string) => values.get(key) ?? null, setItem: async (key: string, value: string) => { values.set(key, value); }, removeItem: async (key: string) => { values.delete(key); } }; }
 
 describe("real itinerary HTTP persistence", () => {
+  it("rejects a non-string transport before storing a draft, version or receipt", async () => {
+    const path = directory(), host = await server(path), command = create("transport-type");
+    expect(await host.post({ ...command, input: { ...command.input, inputs: { ...command.input.inputs, transport: ["drive"] } } })).toMatchObject({ status: 400, body: { code: "invalid_itinerary_input", outcome: "rejected" } });
+    expect((await host.get("/v2/itineraries")).body.items).toEqual([]);
+    const db = new DatabaseSync(join(path, "itinerary-and-collaboration.sqlite"));
+    try {
+      for (const table of ["itinerary_drafts", "itinerary_draft_versions", "itinerary_draft_receipts"]) expect(db.prepare(`SELECT count(*) AS count FROM ${table}`).get()).toMatchObject({ count: 0 });
+    } finally { db.close(); }
+    expect((await host.post(command)).body.itinerary.inputs.transport).toBe("drive");
+  });
+  it("rejects a non-string stage kind without changing the current draft or consuming the command key", async () => {
+    const path = directory(), host = await server(path), saved = (await host.post(create())).body.itinerary;
+    const stage = { id: "observing", kind: "observation", startsAt: "2026-11-01T13:00:00Z", endsAt: "2026-11-01T14:00:00Z" };
+    const command = { command: "patch-draft", idempotencyKey: "stage-kind-type", itineraryId: saved.id, baseRevision: 1, patch: { stages: [stage] } };
+    expect(await host.post({ ...command, patch: { stages: [{ ...stage, kind: ["observation"] }] } })).toMatchObject({ status: 400, body: { code: "invalid_itinerary_stages", outcome: "rejected" } });
+    expect((await host.get(`/v2/itineraries/${saved.id}`)).body.itinerary).toEqual(saved);
+    const db = new DatabaseSync(join(path, "itinerary-and-collaboration.sqlite"));
+    try {
+      for (const table of ["itinerary_drafts", "itinerary_draft_versions", "itinerary_draft_receipts"]) expect(db.prepare(`SELECT count(*) AS count FROM ${table}`).get()).toMatchObject({ count: 1 });
+    } finally { db.close(); }
+    expect((await host.post(command)).body.itinerary.stages).toEqual([{ ...stage, startsAt: "2026-11-01T13:00:00.000Z", endsAt: "2026-11-01T14:00:00.000Z" }]);
+  });
   it("lets the real client correct an oversized first command after a proven pre-execution rejection", async () => {
     const path = directory(); const host = await server(path); const storage = pendingStorage(); let next = 0;
     const client = createItineraryClient({ baseUrl: host.url, storage, newKey: () => `body-limit-${++next}` });

@@ -25,7 +25,7 @@ function integer(value: unknown, min: number, max = Number.MAX_SAFE_INTEGER): nu
 function inputs(value: unknown): ItineraryDraftInputs {
   const input = object(value);
   keys(input, ["date", "origin", "people", "transport", "target", "userType", "latestReturnLocal", "overnight", "collaborative"]);
-  if (typeof input.date !== "string" || !isObservingNight(input.date) || !["drive", "walk", "mixed"].includes(String(input.transport))
+  if (typeof input.date !== "string" || !isObservingNight(input.date) || typeof input.transport !== "string" || !["drive", "walk", "mixed"].includes(input.transport)
     || typeof input.overnight !== "boolean" || input.collaborative !== false
     || input.latestReturnLocal !== null && (typeof input.latestReturnLocal !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/u.test(input.latestReturnLocal))) {
     throw new ItineraryCommandError(input.collaborative === true ? "itinerary_collaboration_unavailable" : "invalid_itinerary_input");
@@ -40,7 +40,7 @@ function stages(value: unknown): ItineraryStage[] {
     keys(stage, ["id", "kind", "startsAt", "endsAt"]);
     const id = text(stage.id);
     // Computed twilight/moon/target windows require a qualified astronomy source.
-    if (ids.has(id) || !["departure", "scouting", "observation", "return"].includes(String(stage.kind))) throw new ItineraryCommandError("invalid_itinerary_stages");
+    if (ids.has(id) || typeof stage.kind !== "string" || !["departure", "scouting", "observation", "return"].includes(stage.kind)) throw new ItineraryCommandError("invalid_itinerary_stages");
     const startsAt = typeof stage.startsAt === "string" ? normalizeUtcMoment(stage.startsAt) : null;
     const endsAt = typeof stage.endsAt === "string" ? normalizeUtcMoment(stage.endsAt) : null;
     if (!startsAt || !endsAt) throw new ItineraryCommandError("invalid_itinerary_stages");

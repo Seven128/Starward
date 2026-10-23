@@ -41,6 +41,13 @@ root第三次运行`npm run check:miniapp:fast` **exit0**，任务日志`tmp/min
 
 前两次组合失败、717远端失败及每次边界修复均保留。此完整组合不包括原生设备、真实H4、部署或长期运行，也不覆盖在途field新模块。含本批修复的新远端CI须按后续实际提交运行，不能沿用8f结果称新提交全绿。
 
+## 后续 workflow 检查点
+
+上述验证修复已单独提交推送为 `ab47dc01b915ae11080acf4c0a5030e2def3f3dd`，目标分支远端精确读回、ahead/behind0/0。该提交包含父提交f41的通知配置，但排除在途field模块及后续enum修复。
+
+- [Context40003317339](https://github.com/Seven128/Starward/actions/runs/40003317339)：head精确为ab47dc01，**success**。
+- [Product40003311535](https://github.com/Seven128/Starward/actions/runs/40003311535)：head精确为ab47dc01，当前仍在release-code运行，后续步骤未验；job120584760197。不得将本机fast或8f通过填作该run终态。
+
 ## 两个同责任的夹具假设
 
 1. `miniapp-infrastructure.test.ts` 前阶段将三项 PENDING upload 到期，却没有确认其删除。当前生产契约在对象写入回执丢失时仍沿稳定 object key 保留耐久退休意图，后续 formal expiry 必须能再次发现它们。旧断言只期望一项新 key，真实结果是四项，已在新隔离环境复现。

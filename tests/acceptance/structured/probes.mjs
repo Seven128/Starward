@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { productionModules } from "./contracts.mjs";
 import { itineraryDraftPersistenceEvidence } from "./itinerary-probe.mjs";
 import { notificationRuleConfigurationEvidence } from "./notification-rules-probe.mjs";
+import { fieldReportDraftPersistenceEvidence } from "./field-reports-probe.mjs";
 
 const moduleCache = new Map();
 let typeScriptImporter;
@@ -106,7 +107,7 @@ const outcomeRuntimeContracts = Object.freeze({
   "itinerary-and-collaboration": { module: "apps/api/src/modules/itinerary/runtime.ts", factory: "createItineraryRuntime", operation: "itinerary.create", sideEffects: ["sqlite"], boundaries: [] },
   "sky-orientation-ar": { module: "apps/mobile/src/features/sky/runtime.ts", factory: "createSkyRuntime", operation: "sky.resolve", sideEffects: ["sqlite", "native-invocation"], boundaries: ["astronomy", "orientation"] },
   "shooting-assistant": { module: "apps/api/src/modules/shooting/runtime.ts", factory: "createShootingRuntime", operation: "shooting.plan", sideEffects: ["sqlite"], boundaries: ["weather", "astronomy"] },
-  "field-offline-safety": { module: "packages/domain/src/offline/runtime.ts", factory: "createFieldRuntime", operation: "field.pack-and-report", sideEffects: ["sqlite", "filesystem"], boundaries: [] },
+  "field-offline-safety": { module: "apps/api/src/modules/field/report-runtime.ts", factory: "createFieldReportRuntime", operation: "field-report-draft.save", sideEffects: ["sqlite"], boundaries: [] },
   "community-contribution": { module: "apps/api/src/modules/community/runtime.ts", factory: "createCommunityRuntime", operation: "community.media-contribute", sideEffects: ["sqlite", "object-store"], boundaries: ["object-store"] },
   "notifications-and-toolbox": { module: "apps/api/src/modules/notifications/runtime.ts", factory: "createNotificationToolsRuntime", operation: "notification.rule-create", sideEffects: ["sqlite"], boundaries: [] },
   "identity-profile-privacy": { module: "apps/api/src/modules/identity/runtime.ts", factory: "createIdentityRuntime", operation: "profile.update", sideEffects: ["sqlite"], boundaries: [] },
@@ -218,6 +219,7 @@ async function realBusinessLoopEvidence(root, outcome) {
   if (typeof factory !== "function") return failedBusinessLoop();
   if (outcome === "itinerary-and-collaboration") return itineraryDraftPersistenceEvidence(factory);
   if (outcome === "notifications-and-toolbox") return notificationRuleConfigurationEvidence(factory);
+  if (outcome === "field-offline-safety") return fieldReportDraftPersistenceEvidence(factory);
 
   const dataDir = await mkdtemp(path.join(tmpdir(), `starward-${outcome}-`));
   const boundaryInvocations = [];

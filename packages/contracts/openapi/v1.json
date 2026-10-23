@@ -121,25 +121,170 @@
     "/v1/itineraries": {
       "get": {
         "operationId": "getActiveItinerary",
-        "responses": { "200": { "description": "Private versioned itinerary, source snapshots, routes, timeline, sharing and offline state" } }
+        "deprecated": true,
+        "responses": { "409": { "description": "itinerary_client_upgrade_required; use the v2 draft library. Historical generic records are preserved and do not establish route, weather, astronomy, sharing or offline effects.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeClientUpgrade" } } } } }
       }
     },
     "/v1/itineraries/commands": {
       "post": {
         "operationId": "applyItineraryCommand",
+        "deprecated": true,
+        "description": "Compatibility dispatch only: create-draft and patch-draft use the same typed input, owner boundary, atomic receipt and responses as /v2/itineraries/commands. The eight old token-only commands return 409 without creating a new effect. No v1 GET state is available.",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "required": ["command"], "properties": { "command": { "type": "string", "enum": ["generate", "overview", "add-candidate", "select-route", "refresh", "share-offline", "merge-collaboration", "astronomy-timeline"] } } } } }
+          "content": { "application/json": { "schema": { "oneOf": [{ "$ref": "#/components/schemas/ItineraryDraftCommand" }, { "type": "object", "required": ["command"], "properties": { "command": { "type": "string", "enum": ["generate", "overview", "add-candidate", "select-route", "refresh", "share-offline", "merge-collaboration", "astronomy-timeline"] } } }] } } }
         },
-        "responses": { "200": { "description": "Updated optimistic itinerary state" }, "400": { "description": "Unknown command" } }
+        "responses": {
+          "200": { "description": "Saved or replayed typed draft only", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItineraryDraftResult" } } } },
+          "400": { "description": "Unknown command or invalid typed draft input; rejects this request only and does not establish an earlier uncertain attempt's outcome" },
+          "403": { "description": "itinerary_owner_required; no configured local owner or nonloopback peer. Caller-selected identity headers are not authority." },
+          "404": { "description": "itinerary_not_found; no owner-visible draft for a typed patch after receipt lookup" },
+          "409": { "description": "Legacy token requires v2, or typed draft revision/idempotency conflict; a legacy upgrade response contains apiVersion v2 and legacyRecordsPreserved true" },
+          "413": { "description": "itinerary_request_body_too_large; host 64-KiB body limit rejects before receipt lookup. Retain an earlier uncertain attempt's exact input/key." },
+          "422": { "description": "Typed patch has an invalid timeline, or changing its observing date requires an explicit stage review" },
+          "503": { "description": "itinerary_storage_unavailable; outcome unknown, retryWithSameCommand true" }
+        }
       }
     },
-    "/v1/field": { "get": { "operationId": "getFieldState", "responses": { "200": { "description": "Private verified observation pack and field safety state" } } } },
-    "/v1/field/commands": { "post": { "operationId": "applyFieldCommand", "responses": { "200": { "description": "Updated field, offline, safety, share or replay state" }, "400": { "description": "Unknown command" } } } },
+    "/v2/itineraries": {
+      "get": {
+        "operationId": "listItineraryDrafts",
+        "description": "Single local-owner POC, not production or multi-user authentication. Startup resolves the actual loopback peer; unconfigured ownership is refused and caller actor/role headers are ignored. Read and command-handler responses are private, no-store and Vary: authorization; a pre-handler body-limit refusal sets private, no-store only. Lists saved user-input drafts, not qualified routes or departure recommendations.",
+        "parameters": [{ "name": "cursor", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "description": "Use the previous page's nextCursor; omit for the newest created drafts." }],
+        "responses": {
+          "200": { "description": "At most 50 owner-visible current draft summaries, newest creation first", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItineraryDraftLibrary" } } } },
+          "400": { "description": "invalid_itinerary_cursor", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "itinerary_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "itinerary_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v2/itineraries/{id}": {
+      "get": {
+        "operationId": "getItineraryDraft",
+        "description": "Authoritative current owner-visible draft; private, no-store, Vary: authorization. Read this after a command receipt, which may represent an older committed revision.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Current saved draft", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItineraryDraftReadback" } } } },
+          "403": { "description": "itinerary_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "404": { "description": "itinerary_not_found; absent or not visible to this owner", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "itinerary_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v2/itineraries/{id}/revisions/{revision}": {
+      "get": {
+        "operationId": "getItineraryDraftRevision",
+        "description": "Preserved owner-visible historical revision; private, no-store, Vary: authorization. This is not a latest-state read.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "revision", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 } }],
+        "responses": {
+          "200": { "description": "Exact saved draft revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItineraryDraftReadback" } } } },
+          "400": { "description": "invalid_itinerary_revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "itinerary_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "404": { "description": "itinerary_not_found; no such owner-visible revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "itinerary_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v2/itineraries/commands": {
+      "post": {
+        "operationId": "saveItineraryDraft",
+        "description": "Local-owner POC only. Domain-handler responses are private, no-store, Vary: authorization. Current draft, immutable version and input-bound receipt commit in one SQLite transaction. Identical parsed input under the same owner/key replays its original receipt before applying a mutation; changed input under that key conflicts. A receipt can contain an older revision: separately GET current before replacing current UI state. Persist full intent/key before HTTP, retain them through lost reply, 503, authority loss or failed readback, and retry the same command. Input parsing (400) and the host 64-KiB body rejection (413) happen before receipt lookup and refuse only this request; they do not prove an earlier uncertain attempt failed. This saves user intent only; route, weather, astronomy, verified spot binding, collaboration, sharing and offline delivery remain unavailable.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItineraryDraftCommand" } } } },
+        "responses": {
+          "200": { "description": "Saved or replayed draft and receipt; not necessarily the latest current revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItineraryDraftResult" } } } },
+          "400": { "description": "Invalid command, unexpected field, input, timezone, stages or empty patch; outcome rejected for this request only", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "itinerary_owner_required; no configured local owner or nonloopback peer. Does not resolve an earlier uncertain attempt.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "404": { "description": "itinerary_not_found; patch found no owner-visible draft after finding no receipt for this owner/key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "409": { "description": "itinerary_revision_conflict (may include currentRevision), itinerary_idempotency_conflict, itinerary_already_exists or itinerary_command_not_applied. Revision conflict is checked after no receipt was found; idempotency conflict does not mean an earlier effect was absent.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "413": { "description": "itinerary_request_body_too_large; before receipt lookup, not proof about a previous request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "422": { "description": "itinerary_invalid_timeline (conflicts included) or itinerary_stages_require_review; checked after no receipt was found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "itinerary_storage_unavailable; outcome unknown, retryWithSameCommand true", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v1/field": { "get": { "operationId": "getFieldState", "deprecated": true, "responses": { "409": { "description": "field_client_upgrade_required; generic legacy records remain preserved" } } } },
+    "/v1/field/commands": { "post": { "operationId": "applyFieldCommand", "deprecated": true, "responses": { "409": { "description": "field_client_upgrade_required; token-only commands cannot establish a pack, permission, queue, share or saved report" } } } },
+    "/v2/field": { "get": { "operationId": "getFieldCapabilityStatus", "responses": { "200": { "description": "Capability availability only; no verified offline pack, parking route, backup switch, safety session, location share or offline replay is integrated" } } } },
+    "/v2/field-reports": {
+      "get": { "operationId": "listPrivateFieldDrafts", "description": "Single local-owner POC; nonloopback or unconfigured ownership is refused. Caller identity headers are not trusted. Private, no-store. These are user-written notes, not verified observations or community submissions.", "parameters": [{ "name": "cursor", "in": "query", "schema": { "type": "integer", "minimum": 1 } }], "responses": { "200": { "description": "At most 50 current private drafts and an optional nextCursor; scope local-owner-poc" }, "403": { "description": "field_report_owner_required" } } }
+    },
+    "/v2/field-reports/{id}": {
+      "get": { "operationId": "getPrivateFieldDraft", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Authoritative current private draft", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FieldReportReadback" } } } }, "403": { "description": "field_report_owner_required" }, "404": { "description": "No private draft visible to this owner" } } }
+    },
+    "/v2/field-reports/{id}/revisions/{revision}": {
+      "get": { "operationId": "getPrivateFieldDraftRevision", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "revision", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }], "responses": { "200": { "description": "Preserved historical private draft", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FieldReportReadback" } } } }, "403": { "description": "field_report_owner_required" }, "404": { "description": "No such owner-visible revision" } } }
+    },
+    "/v2/field-reports/commands": {
+      "post": { "operationId": "savePrivateFieldDraft", "description": "Current content, immutable version and input-bound idempotent receipt commit in one SQLite transaction. This API save needs a connection; it does not enqueue a device offline write, validate a visit, upload media, send a message or publish a contribution. A retry of a committed old receipt must separately read current state.", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FieldReportCommand" } } } }, "responses": { "200": { "description": "Saved or replayed private draft and receipt", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FieldReportResult" } } } }, "400": { "description": "Invalid typed input, no new effect from this request" }, "403": { "description": "field_report_owner_required" }, "404": { "description": "No current owner-visible draft; checked inside the transaction after no receipt was found" }, "409": { "description": "Revision conflict or changed input under an existing idempotency key" }, "413": { "description": "Body refused before receipt lookup; this refusal does not establish an earlier uncertain request's outcome" }, "503": { "description": "Storage outcome unknown; retain exact input and idempotency key" } } }
+    },
     "/v1/community": { "get": { "operationId": "getCommunityContributionState", "responses": { "200": { "description": "Private immutable contribution and moderation state" } } } },
     "/v1/community/commands": { "post": { "operationId": "applyCommunityCommand", "responses": { "200": { "description": "Updated contribution workflow state" }, "400": { "description": "Unknown command" } } } },
-    "/v1/tools": { "get": { "operationId": "getNotificationAndToolState", "responses": { "200": { "description": "Notification evaluation, celestial calendar and professional tool state" } } } },
-    "/v1/tools/commands": { "post": { "operationId": "applyNotificationOrToolCommand", "responses": { "200": { "description": "Updated notification or tool state" }, "400": { "description": "Unknown command" } } } },
+    "/v1/tools": { "get": { "operationId": "getNotificationAndToolState", "description": "Existing process-local legacy tool state and pipeline declarations only. Returned metadata is not evidence of notification evaluation, permission, scheduling or delivery. Persisted rule definitions use /v2/notification-rules.", "responses": { "200": { "description": "Legacy tools state envelope; not the rule-definition library" } } } },
+    "/v1/tools/commands": {
+      "post": {
+        "operationId": "applyNotificationOrToolCommand",
+        "description": "open-risk, calendar, position, professional and learning retain their existing legacy tool-state behavior. create-rule and change-controls return an explicit upgrade before side effects; they do not create rule definitions or change category-wide notification controls.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["command"], "properties": { "command": { "type": "string", "enum": ["open-risk", "calendar", "position", "professional", "learning", "create-rule", "change-controls"] } } } } } },
+        "responses": { "200": { "description": "Updated process-local state for an existing legacy tool command" }, "400": { "description": "invalid_tools_command" }, "409": { "description": "notification_rule_client_upgrade_required for create-rule/change-controls; apiVersion v2 and legacyRecordsPreserved true", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeClientUpgrade" } } } } }
+      }
+    },
+    "/v2/notification-rules": {
+      "get": {
+        "operationId": "listNotificationRuleDefinitions",
+        "description": "Single local-owner POC, not production or multi-user authentication. Startup resolves the actual loopback peer; unconfigured ownership is refused and caller actor/role headers are ignored. Read and command-handler responses are private, no-store and Vary: authorization; a pre-handler body-limit refusal sets private, no-store only. Definitions are not evaluated or scheduled and do not configure delivery.",
+        "parameters": [{ "name": "cursor", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "description": "Use the previous page's nextCursor; omit for the newest created rules." }],
+        "responses": {
+          "200": { "description": "At most 50 owner-visible current definitions, newest creation first", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleLibrary" } } } },
+          "400": { "description": "invalid_notification_rule_cursor", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "notification_rule_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v2/notification-rules/{id}": {
+      "get": {
+        "operationId": "getNotificationRuleDefinition",
+        "description": "Authoritative current owner-visible definition; private, no-store, Vary: authorization. Read this after a command receipt, which may represent an older committed revision.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Current saved rule definition", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleReadback" } } } },
+          "403": { "description": "notification_rule_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "404": { "description": "notification_rule_not_found; absent or not visible to this owner", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "notification_rule_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v2/notification-rules/{id}/revisions/{revision}": {
+      "get": {
+        "operationId": "getNotificationRuleDefinitionRevision",
+        "description": "Preserved owner-visible historical definition; private, no-store, Vary: authorization. This is not a latest-state read.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "revision", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 } }],
+        "responses": {
+          "200": { "description": "Exact saved rule revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleReadback" } } } },
+          "400": { "description": "invalid_notification_rule_revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "404": { "description": "notification_rule_not_found; no such owner-visible revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "notification_rule_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
+    "/v2/notification-rules/commands": {
+      "post": {
+        "operationId": "saveNotificationRuleDefinition",
+        "description": "Local-owner POC only. Domain-handler responses are private, no-store, Vary: authorization. Definition, immutable version and input-bound receipt commit in one SQLite transaction. Identical parsed input under the same owner/key replays its original receipt before mutation; changed input under that key conflicts. Separately GET current after a receipt so an old replay cannot replace a newer definition. Persist full intent/key before HTTP and retain them through lost replies, 503, authority loss or failed readback. A 400 input rejection or host 64-KiB body rejection (413) occurs before receipt lookup and says nothing about an earlier uncertain attempt. Enablement is saved configuration only: provider evaluation, in-trip itinerary binding, category-wide controls, inbox, native permission/token setup, scheduling and delivery remain unavailable through this contract.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleCommand" } } } },
+        "responses": {
+          "200": { "description": "Saved or replayed rule definition and receipt; not necessarily the latest current revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleResult" } } } },
+          "400": { "description": "Invalid/unexpected typed field, unsupported in-trip binding, timezone or expiry; outcome rejected for this request only", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required; no configured local owner or nonloopback peer. Does not resolve an earlier uncertain attempt.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "404": { "description": "notification_rule_not_found; update found no owner-visible rule after finding no receipt for this owner/key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "409": { "description": "notification_rule_revision_conflict (may include currentRevision), or notification_rule_idempotency_conflict. Revision conflict follows an absent receipt; changed input under an existing key does not establish absence of the old effect.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "413": { "description": "notification_rule_request_body_too_large; before receipt lookup, not proof about a previous request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "503": { "description": "notification_rule_storage_unavailable; outcome unknown, retryWithSameCommand true", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
+        }
+      }
+    },
     "/v1/admin/data-status": {
       "get": { "operationId": "getAdminDataStatus", "responses": { "200": { "description": "Administrative data status envelope" } } }
     },
@@ -155,6 +300,140 @@
   },
   "components": {
     "schemas": {
+      "NativeClientUpgrade": {
+        "type": "object", "additionalProperties": false, "required": ["code", "apiVersion", "legacyRecordsPreserved"],
+        "properties": { "code": { "type": "string", "enum": ["itinerary_client_upgrade_required", "notification_rule_client_upgrade_required"] }, "apiVersion": { "const": "v2" }, "legacyRecordsPreserved": { "const": true } }
+      },
+      "NativeCommandFailure": {
+        "type": "object", "additionalProperties": false, "required": ["code", "outcome"],
+        "properties": { "code": { "type": "string" }, "outcome": { "type": "string", "enum": ["rejected", "unknown"] }, "retryWithSameCommand": { "const": true }, "currentRevision": { "type": "integer", "minimum": 1 }, "conflicts": { "type": "array", "items": { "type": "string" } } },
+        "description": "Domain route failures only. rejected describes this request, not all earlier attempts under the key. Input/body parsing and authority checks can run before receipt lookup; unknown requires retaining the original full intent and idempotency key. A revision/timeline rejection after an absent receipt is distinct from an existing-key input conflict. Framework-level malformed HTTP/JSON errors are outside this envelope."
+      },
+      "NativeCommandText": {
+        "type": "string", "minLength": 1, "pattern": "\\S", "not": { "pattern": "[\\u0000-\\u001f]" },
+        "description": "Nonblank text without U+0000 through U+001F; the parser trims surrounding whitespace. No field-specific length cap is imposed; the host's existing 64-KiB request body limit applies."
+      },
+      "NativeCommandUtcMoment": {
+        "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$",
+        "description": "Real calendar date/time with seconds and an explicit Z or numeric offset; up to three fractional digits. Valid input is normalized to UTC ISO milliseconds. Local time without an offset and rolled-over calendar dates are rejected."
+      },
+      "ItineraryDraftInputs": {
+        "type": "object", "additionalProperties": false, "required": ["date", "origin", "people", "transport", "target", "userType", "latestReturnLocal", "overnight", "collaborative"],
+        "properties": {
+          "date": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Valid local observing-night calendar label, not a UTC instant." },
+          "origin": { "$ref": "#/components/schemas/NativeCommandText" },
+          "people": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+          "transport": { "type": "string", "enum": ["drive", "walk", "mixed"] },
+          "target": { "$ref": "#/components/schemas/NativeCommandText" },
+          "userType": { "$ref": "#/components/schemas/NativeCommandText" },
+          "latestReturnLocal": { "type": ["string", "null"], "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "description": "HH:mm local intent or explicitly null; no computed return time is inferred." },
+          "overnight": { "type": "boolean" },
+          "collaborative": { "type": "boolean", "const": false, "description": "Collaboration is not integrated; true is rejected rather than silently downgraded." }
+        }
+      },
+      "ItineraryDraftStage": {
+        "type": "object", "additionalProperties": false, "required": ["id", "kind", "startsAt", "endsAt"],
+        "properties": { "id": { "$ref": "#/components/schemas/NativeCommandText" }, "kind": { "type": "string", "enum": ["departure", "scouting", "observation", "return"] }, "startsAt": { "$ref": "#/components/schemas/NativeCommandUtcMoment" }, "endsAt": { "$ref": "#/components/schemas/NativeCommandUtcMoment" } },
+        "description": "Explicit user-entered stage only. IDs must be unique within the submitted array. Each start must precede its end and chronological intervals must not overlap. Computed twilight, moonless and target-window stages, and stopId binding, are not accepted by this draft command."
+      },
+      "ItineraryDraftPatch": {
+        "type": "object", "additionalProperties": false, "minProperties": 1,
+        "properties": { "title": { "$ref": "#/components/schemas/NativeCommandText" }, "inputs": { "$ref": "#/components/schemas/ItineraryDraftInputs" }, "stages": { "type": "array", "items": { "$ref": "#/components/schemas/ItineraryDraftStage" } } },
+        "description": "At least one field is required. inputs replaces the full input object. Changing date while existing stages are nonempty requires an explicit stages array, including an explicit empty array to clear them; it does not shift old stages automatically."
+      },
+      "ItineraryDraftCommand": {
+        "oneOf": [
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "input"], "properties": { "command": { "type": "string", "const": "create-draft" }, "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "input": { "type": "object", "additionalProperties": false, "required": ["title", "timezone", "inputs"], "properties": { "title": { "$ref": "#/components/schemas/NativeCommandText" }, "timezone": { "$ref": "#/components/schemas/NativeCommandText", "description": "Timezone accepted by the server's Intl.DateTimeFormat; retained as trimmed user input." }, "inputs": { "$ref": "#/components/schemas/ItineraryDraftInputs" } } } } },
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "itineraryId", "baseRevision", "patch"], "properties": { "command": { "type": "string", "const": "patch-draft" }, "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "itineraryId": { "$ref": "#/components/schemas/NativeCommandText" }, "baseRevision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "patch": { "$ref": "#/components/schemas/ItineraryDraftPatch" } } }
+        ]
+      },
+      "ItineraryDraft": {
+        "type": "object", "additionalProperties": false, "required": ["schemaVersion", "id", "ownerId", "title", "timezone", "revision", "sequence", "createdAt", "updatedAt", "inputs", "source", "stops", "stages", "operationLog", "state", "evidence"],
+        "properties": {
+          "schemaVersion": { "const": "starward-itinerary-draft-v1" }, "id": { "type": "string" }, "ownerId": { "type": "string" }, "title": { "$ref": "#/components/schemas/NativeCommandText" }, "timezone": { "$ref": "#/components/schemas/NativeCommandText" }, "revision": { "type": "integer", "minimum": 1 }, "sequence": { "type": "integer", "minimum": 1 },
+          "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }, "inputs": { "$ref": "#/components/schemas/ItineraryDraftInputs" },
+          "source": { "type": "object", "additionalProperties": false, "required": ["kind", "capturedAt"], "properties": { "kind": { "const": "user-input" }, "capturedAt": { "type": "string", "format": "date-time" } } },
+          "stops": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "spotId", "role", "source", "coordinateVisibility"], "properties": { "id": { "type": "string" }, "spotId": { "type": "string" }, "role": { "type": "string", "enum": ["primary", "backup", "candidate"] }, "source": { "type": "string", "enum": ["user", "friend", "system", "share-import"] }, "coordinateVisibility": { "type": "string", "enum": ["private", "invite_only", "collaborators", "members", "approximate", "public"] } } }, "description": "Current create/patch commands retain an empty list; no destination/stop-binding command is integrated." },
+          "stages": { "type": "array", "items": { "$ref": "#/components/schemas/ItineraryDraftStage" } },
+          "operationLog": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "actorId", "baseRevision", "sequence", "at", "patch"], "properties": { "id": { "$ref": "#/components/schemas/NativeCommandText" }, "actorId": { "type": "string" }, "baseRevision": { "type": "integer", "minimum": 1 }, "sequence": { "type": "integer", "minimum": 1 }, "at": { "type": "string", "format": "date-time" }, "patch": { "$ref": "#/components/schemas/ItineraryDraftPatch" } } } },
+          "state": { "const": "draft" },
+          "evidence": { "type": "object", "additionalProperties": false, "required": ["route", "weather", "astronomy", "spot"], "properties": { "route": { "const": "missing" }, "weather": { "const": "missing" }, "astronomy": { "const": "missing" }, "spot": { "const": "unverified" } } }
+        }
+      },
+      "ItineraryDraftReadback": { "type": "object", "additionalProperties": false, "required": ["schemaVersion", "itinerary"], "properties": { "schemaVersion": { "const": "starward-itinerary-v2" }, "itinerary": { "$ref": "#/components/schemas/ItineraryDraft" } } },
+      "ItineraryDraftResult": {
+        "type": "object", "additionalProperties": false, "required": ["schemaVersion", "status", "replayed", "itinerary", "receipt"],
+        "properties": { "schemaVersion": { "const": "starward-itinerary-v2" }, "status": { "const": "saved" }, "replayed": { "type": "boolean" }, "itinerary": { "$ref": "#/components/schemas/ItineraryDraft" }, "receipt": { "type": "object", "additionalProperties": false, "required": ["idempotencyKey", "itineraryId", "revision", "committedAt"], "properties": { "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "itineraryId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "committedAt": { "type": "string", "format": "date-time" } } } },
+        "description": "The receipt and itinerary describe the original committed effect. replayed true does not promise that revision is still current."
+      },
+      "ItineraryDraftLibrary": {
+        "type": "object", "additionalProperties": false, "required": ["schemaVersion", "items", "nextCursor", "scope"],
+        "properties": { "schemaVersion": { "const": "starward-itinerary-v2" }, "items": { "type": "array", "maxItems": 50, "items": { "type": "object", "additionalProperties": false, "required": ["id", "title", "revision", "updatedAt"], "properties": { "id": { "type": "string" }, "title": { "$ref": "#/components/schemas/NativeCommandText" }, "revision": { "type": "integer", "minimum": 1 }, "updatedAt": { "type": "string", "format": "date-time" } } } }, "nextCursor": { "type": ["string", "null"] }, "scope": { "const": "local-owner-poc" } }
+      },
+      "NotificationRuleDefinition": {
+        "type": "object", "additionalProperties": false, "required": ["location", "category", "target", "threshold", "leadMinutes", "quietHours", "cooldownMinutes", "channel", "enabled", "expiresAt"],
+        "properties": {
+          "location": { "oneOf": [
+            { "type": "object", "additionalProperties": false, "required": ["kind", "label", "latitude", "longitude"], "properties": { "kind": { "type": "string", "const": "place" }, "label": { "$ref": "#/components/schemas/NativeCommandText" }, "latitude": { "type": "number", "minimum": -90, "maximum": 90 }, "longitude": { "type": "number", "minimum": -180, "maximum": 180 }, "spotId": { "$ref": "#/components/schemas/NativeCommandText" } } },
+            { "type": "object", "additionalProperties": false, "required": ["kind", "grid"], "properties": { "kind": { "type": "string", "const": "grid" }, "grid": { "$ref": "#/components/schemas/NativeCommandText" } } }
+          ], "description": "Explicit place coordinates or explicit user grid identity; grid content and selected spot identity are not provider-qualified by saving this definition." },
+          "category": { "type": "string", "enum": ["pretrip", "long-term"], "description": "intrip is rejected because a real itinerary/revision binding is not supplied." },
+          "target": { "$ref": "#/components/schemas/NativeCommandText" },
+          "threshold": { "type": "object", "additionalProperties": false, "required": ["metric", "direction", "value", "unit"], "properties": { "metric": { "$ref": "#/components/schemas/NativeCommandText" }, "direction": { "type": "string", "enum": ["above", "below"] }, "value": { "type": "number" }, "unit": { "$ref": "#/components/schemas/NativeCommandText" } }, "description": "Finite user-configured value with explicit metric and unit; no provider coverage, conversion or rule evaluation is inferred." },
+          "leadMinutes": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+          "quietHours": { "type": "object", "additionalProperties": false, "required": ["start", "end", "timezone"], "properties": { "start": { "type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$" }, "end": { "type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$" }, "timezone": { "$ref": "#/components/schemas/NativeCommandText", "description": "Timezone accepted by the server's Intl.DateTimeFormat; retained as trimmed user input." } } },
+          "cooldownMinutes": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+          "channel": { "type": "string", "enum": ["local", "inbox", "apns", "fcm", "vendor", "expo-poc"], "description": "Configured preference only; no permission, device token, entitlement or delivery path is established." },
+          "enabled": { "type": "boolean" },
+          "expiresAt": { "oneOf": [{ "$ref": "#/components/schemas/NativeCommandUtcMoment" }, { "type": "null" }], "description": "Explicit expiry or null; saving an expired value is not rejected or evaluated by this configuration path." }
+        }
+      },
+      "NotificationRuleCommand": {
+        "oneOf": [
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "input"], "properties": { "command": { "type": "string", "const": "create-rule" }, "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "input": { "$ref": "#/components/schemas/NotificationRuleDefinition" } } },
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "ruleId", "baseRevision", "input"], "properties": { "command": { "type": "string", "const": "update-rule" }, "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "ruleId": { "$ref": "#/components/schemas/NativeCommandText" }, "baseRevision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "input": { "$ref": "#/components/schemas/NotificationRuleDefinition" } } },
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "ruleId", "baseRevision", "enabled"], "properties": { "command": { "type": "string", "const": "set-rule-enabled" }, "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "ruleId": { "$ref": "#/components/schemas/NativeCommandText" }, "baseRevision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "enabled": { "type": "boolean" } } }
+        ], "description": "update-rule replaces the full definition; set-rule-enabled changes only the saved enabled flag. Both require the current baseRevision."
+      },
+      "NotificationRule": {
+        "type": "object", "additionalProperties": false, "required": ["schemaVersion", "id", "ownerId", "revision", "createdAt", "updatedAt", "definition", "evaluation", "delivery"],
+        "properties": { "schemaVersion": { "const": "starward-notification-rule-v1" }, "id": { "type": "string" }, "ownerId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }, "definition": { "$ref": "#/components/schemas/NotificationRuleDefinition" }, "evaluation": { "const": "not-evaluated" }, "delivery": { "const": "not-configured" } }
+      },
+      "NotificationRuleReadback": { "type": "object", "additionalProperties": false, "required": ["schemaVersion", "rule"], "properties": { "schemaVersion": { "const": "starward-notification-rules-v2" }, "rule": { "$ref": "#/components/schemas/NotificationRule" } } },
+      "NotificationRuleResult": {
+        "type": "object", "additionalProperties": false, "required": ["schemaVersion", "status", "replayed", "rule", "receipt"],
+        "properties": { "schemaVersion": { "const": "starward-notification-rules-v2" }, "status": { "const": "saved" }, "replayed": { "type": "boolean" }, "rule": { "$ref": "#/components/schemas/NotificationRule" }, "receipt": { "type": "object", "additionalProperties": false, "required": ["idempotencyKey", "ruleId", "revision", "committedAt"], "properties": { "idempotencyKey": { "$ref": "#/components/schemas/NativeCommandText" }, "ruleId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "committedAt": { "type": "string", "format": "date-time" } } } },
+        "description": "The receipt and rule describe the original committed effect. replayed true does not promise that revision is still current."
+      },
+      "NotificationRuleLibrary": {
+        "type": "object", "additionalProperties": false, "required": ["schemaVersion", "items", "nextCursor", "scope"],
+        "properties": { "schemaVersion": { "const": "starward-notification-rules-v2" }, "items": { "type": "array", "maxItems": 50, "items": { "$ref": "#/components/schemas/NotificationRule" } }, "nextCursor": { "type": ["string", "null"] }, "scope": { "const": "local-owner-poc" } }
+      },
+      "FieldReportInput": {
+        "type": "object", "additionalProperties": false, "required": ["observedAt", "place", "category", "note", "context"],
+        "properties": {
+          "observedAt": { "type": "string", "format": "date-time", "description": "User-confirmed UTC or explicitly offset instant; normalized to UTC. Not an attested device capture." },
+          "place": { "type": "object", "additionalProperties": false, "required": ["label"], "properties": { "label": { "type": "string", "minLength": 1 }, "spotId": { "type": "string", "minLength": 1 } }, "description": "User-confirmed label and optional selected identity. No coordinates, visit verification or coordinate grant is inferred." },
+          "category": { "type": "string", "enum": ["sky", "weather", "access", "other"] },
+          "note": { "type": "string", "minLength": 1 },
+          "context": { "type": "object", "additionalProperties": false, "required": ["revision", "observingNight", "moment", "timezone", "target", "profileId", "profileRevision"], "properties": { "revision": { "type": "integer", "minimum": 1 }, "observingNight": { "type": "string", "format": "date" }, "moment": { "type": "string", "format": "date-time" }, "timezone": { "type": "string", "minLength": 1 }, "target": { "type": "string", "minLength": 1 }, "profileId": { "type": "string", "minLength": 1 }, "profileRevision": { "type": ["integer", "null"], "minimum": 1, "description": "Null when the selected profile is unavailable; never invented from a Context fallback." } } }
+        }
+      },
+      "FieldReportCommand": {
+        "oneOf": [
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "input"], "properties": { "command": { "const": "create-report-draft" }, "idempotencyKey": { "type": "string", "minLength": 1 }, "input": { "$ref": "#/components/schemas/FieldReportInput" } } },
+          { "type": "object", "additionalProperties": false, "required": ["command", "idempotencyKey", "reportId", "baseRevision", "input"], "properties": { "command": { "const": "update-report-draft" }, "idempotencyKey": { "type": "string", "minLength": 1 }, "reportId": { "type": "string", "minLength": 1 }, "baseRevision": { "type": "integer", "minimum": 1 }, "input": { "$ref": "#/components/schemas/FieldReportInput" } } }
+        ]
+      },
+      "FieldReportDraft": {
+        "type": "object", "required": ["schemaVersion", "id", "ownerId", "revision", "createdAt", "updatedAt", "input", "visibility", "publication"],
+        "properties": { "schemaVersion": { "const": "starward-field-report-draft-v1" }, "id": { "type": "string" }, "ownerId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }, "input": { "$ref": "#/components/schemas/FieldReportInput" }, "visibility": { "const": "private" }, "publication": { "const": "not-submitted" } }
+      },
+      "FieldReportReadback": { "type": "object", "required": ["schemaVersion", "report"], "properties": { "schemaVersion": { "const": "starward-field-reports-v2" }, "report": { "$ref": "#/components/schemas/FieldReportDraft" } } },
+      "FieldReportResult": {
+        "type": "object", "required": ["schemaVersion", "status", "replayed", "report", "receipt"],
+        "properties": { "schemaVersion": { "const": "starward-field-reports-v2" }, "status": { "const": "saved" }, "replayed": { "type": "boolean" }, "report": { "$ref": "#/components/schemas/FieldReportDraft" }, "receipt": { "type": "object", "required": ["idempotencyKey", "reportId", "revision", "committedAt"], "properties": { "idempotencyKey": { "type": "string" }, "reportId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "committedAt": { "type": "string", "format": "date-time" } } } }
+      },
       "SkyContext": {
         "type": "object",
         "required": ["schemaVersion", "state", "generatedAt", "algorithm", "context", "catalog", "objects", "selectedTarget", "trajectory", "bestTargetTime", "horizon", "warnings"],
