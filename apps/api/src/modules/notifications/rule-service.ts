@@ -7,11 +7,14 @@ export interface NotificationRuleActor { id: string; scope: "local-owner-poc" }
 export class NotificationRuleCommandError extends Error {
   constructor(readonly code: string, readonly statusCode = 400, readonly details?: Record<string, unknown>) { super(code); }
 }
+export function requireNotificationRuleActor(actor: NotificationRuleActor | null): NotificationRuleActor {
+  if (!actor?.id || actor.scope !== "local-owner-poc") throw new NotificationRuleCommandError("notification_rule_owner_required", 403);
+  return actor;
+}
 export class NotificationRuleService {
   constructor(private readonly repository: NotificationRuleRepository, private readonly now = () => new Date().toISOString()) {}
   private actor(actor: NotificationRuleActor | null) {
-    if (!actor?.id || actor.scope !== "local-owner-poc") throw new NotificationRuleCommandError("notification_rule_owner_required", 403);
-    return actor;
+    return requireNotificationRuleActor(actor);
   }
   list(actor: NotificationRuleActor | null, cursor?: number) { return this.repository.list(this.actor(actor).id, cursor); }
   get(actor: NotificationRuleActor | null, id: string, revision?: number) {

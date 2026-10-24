@@ -24,9 +24,19 @@ export interface ForecastQueryServiceOptions {
   now?: () => Date;
   cacheTtlMs?: number;
   maxCacheEntries?: number;
+  /** Publish this real primary acquisition once; cache recovery retries retain
+   * its original source identity instead of manufacturing a new run. */
+  onPrimaryAcquired?: (input: ForecastPrimaryAcquisition) => void | Promise<void>;
 }
 
-interface CacheEntry { expiresAt: number; bundle: ForecastBundle }
+export interface ForecastPrimaryAcquisition {
+  query: ForecastQuery; run: NormalizedWeatherRun;
+  nightWindow: { startUtc: string; endUtc: string } | null;
+  targetWindow: { startUtc: string; endUtc: string } | null;
+  astronomyAlgorithmVersion: string;
+}
+interface CacheEntry { expiresAt: number; bundle: ForecastBundle; retryPublication?: (() => Promise<void>) | undefined }
+const notificationPublicationWarning = "通知评估暂未确认；预报仍可查看，刷新后会重试。";
 
 const round = (value: number, digits = 2) => Math.round(value * 10 ** digits) / 10 ** digits;
 const average = (values: Array<number | null>) => {
@@ -262,12 +272,19 @@ export class ForecastQueryService {
   }
 
   async get(query: ForecastQuery): Promise<ForecastBundle> {
+    query = { ...query };
     const key = `${query.latitude.toFixed(4)}:${query.longitude.toFixed(4)}:${query.timezone}:${query.nightDate}:${query.target}`;
     const now = this.now().getTime();
     for (const [entryKey, entry] of this.cache)
       if (entry.expiresAt <= now) this.cache.delete(entryKey);
     const cached = this.cache.get(key);
     if (cached) {
+      if (cached.retryPublication) {
+        try {
+          await cached.retryPublication(); cached.retryPublication = undefined;
+          cached.bundle = { ...cached.bundle, warnings: cached.bundle.warnings.filter(warning => warning !== notificationPublicationWarning) };
+        } catch { /* Keep the original acquisition available for bounded cache recovery. */ }
+      }
       this.cache.delete(key);
       this.cache.set(key, cached);
       return { ...cached.bundle, status: "cached" };
@@ -312,8 +329,16 @@ export class ForecastQueryService {
         ...primaryRun.qualityFlags,
       ],
     };
+    const acquisition: ForecastPrimaryAcquisition = { query: { ...query }, run: primaryRun,
+      nightWindow: sky.astronomicalDusk && sky.astronomicalDawn ? { startUtc: sky.astronomicalDusk, endUtc: sky.astronomicalDawn } : null,
+      targetWindow: bundle.astronomy.targetWindow && { startUtc: bundle.astronomy.targetWindow.startUtc, endUtc: bundle.astronomy.targetWindow.endUtc },
+      astronomyAlgorithmVersion: bundle.astronomy.algorithmVersion };
+    const publish = async () => { await this.options.onPrimaryAcquired?.(acquisition); };
+    let retryPublication: (() => Promise<void>) | undefined;
+    try { await publish(); }
+    catch { retryPublication = publish; bundle.warnings.push(notificationPublicationWarning); }
     if (this.maxCacheEntries > 0) {
-      this.cache.set(`${query.latitude.toFixed(4)}:${query.longitude.toFixed(4)}:${query.timezone}:${query.nightDate}:${query.target}`, { expiresAt: now.getTime() + (this.options.cacheTtlMs ?? 30 * 60_000), bundle });
+      this.cache.set(`${query.latitude.toFixed(4)}:${query.longitude.toFixed(4)}:${query.timezone}:${query.nightDate}:${query.target}`, { expiresAt: now.getTime() + (this.options.cacheTtlMs ?? 30 * 60_000), bundle, retryPublication });
       while (this.cache.size > this.maxCacheEntries)
         this.cache.delete(this.cache.keys().next().value!);
     }

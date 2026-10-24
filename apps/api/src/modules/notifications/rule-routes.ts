@@ -1,6 +1,7 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { NotificationRuleCommandError, type NotificationRuleActor, type NotificationRuleService } from "./rule-service";
 import { resolveLocalPocOwner } from "../../local-poc-owner";
+import { restrictNotificationOwner } from "./owner-restriction";
 
 export type NotificationRuleActorResolver = (request: Pick<FastifyRequest, "ip" | "headers">) => Promise<NotificationRuleActor | null>;
 /** Loopback-only POC trust boundary; caller headers are not identity. */
@@ -11,8 +12,11 @@ function commandRequestError(error: FastifyError, _request: FastifyRequest, repl
 }
 export function registerNotificationRuleRoutes(app: FastifyInstance, service: Pick<NotificationRuleService, "list" | "get" | "command">, resolveActor: NotificationRuleActorResolver = async () => null) {
   const respond = async (request: FastifyRequest, reply: FastifyReply, work: (actor: NotificationRuleActor | null) => unknown) => {
-    reply.header("cache-control", "private, no-store").header("vary", "authorization");
-    try { return reply.send(work(await resolveActor(request))); }
+    reply.header("cache-control", "private, no-store").header("vary", "authorization, x-notification-owner");
+    try {
+      const actor = restrictNotificationOwner(await resolveActor(request), request.headers["x-notification-owner"], "notification_rule_owner_mismatch");
+      return reply.send(work(actor));
+    }
     catch (error) {
       if (error instanceof NotificationRuleCommandError) return reply.code(error.statusCode).send({ code: error.code, ...error.details, outcome: "rejected" });
       return reply.code(503).send({ code: "notification_rule_storage_unavailable", outcome: "unknown", retryWithSameCommand: true });

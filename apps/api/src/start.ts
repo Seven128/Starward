@@ -81,7 +81,12 @@ function source(model: string) {
 }
 
 const primaryWeather = source("gfs_seamless");
-const forecast = new ForecastQueryService({ primary: primaryWeather, comparison: primaryWeather.withModels(["ecmwf_ifs025"]) });
+const notificationToolsRuntime = await createNotificationToolsRuntime({
+  dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
+  releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
+});
+const forecast = new ForecastQueryService({ primary: primaryWeather, comparison: primaryWeather.withModels(["ecmwf_ifs025"]),
+  onPrimaryAcquired: input => notificationToolsRuntime.evaluations.acceptForecast(input) });
 const forecastRuntime = await createForecastRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
@@ -186,10 +191,6 @@ const fieldReportRuntime = await createFieldReportRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
 });
-const notificationToolsRuntime = await createNotificationToolsRuntime({
-  dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
-  releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
-});
 const communityRuntime = await createCommunityRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
@@ -237,6 +238,7 @@ const app = await buildApi({
   communityRuntime,
   tools:new ToolsService(),
   notificationRules: notificationToolsRuntime.service,
+  notificationEvaluations: notificationToolsRuntime.evaluations,
   resolveNotificationActor: resolveLocalNotificationOwner,
   admin:new AdminOperationsService(),
   adminRuntime,

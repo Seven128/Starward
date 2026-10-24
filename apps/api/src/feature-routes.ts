@@ -6,6 +6,7 @@ import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
 import { registerItineraryRoutes } from "./modules/itinerary/itinerary-routes";
 import { registerNotificationRuleRoutes } from "./modules/notifications/rule-routes";
+import { registerNotificationInboxRoutes } from "./modules/notifications/inbox-routes";
 import { registerFieldReportRoutes } from "./modules/field/report-routes";
 
 interface CommandRouteConfig {
@@ -101,6 +102,7 @@ function registerCommandRoutes(app: FastifyInstance, dependencies: ApiDependenci
 export function registerFeatureRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
   if (dependencies.itineraries) registerItineraryRoutes(app, dependencies.itineraries, dependencies.resolveItineraryActor);
   if (dependencies.notificationRules) registerNotificationRuleRoutes(app, dependencies.notificationRules, dependencies.resolveNotificationActor);
+  if (dependencies.notificationEvaluations) registerNotificationInboxRoutes(app, dependencies.notificationEvaluations, dependencies.resolveNotificationActor);
   if (dependencies.fieldReports) registerFieldReportRoutes(app, dependencies.fieldReports, dependencies.resolveFieldReportActor);
   if (dependencies.field) {
     app.get("/v2/field", (_request, reply) => reply.header("cache-control", "private, no-store").send(dependencies.field!.get()));

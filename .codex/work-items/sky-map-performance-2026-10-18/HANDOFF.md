@@ -8,16 +8,22 @@
 
 UI外部资料条件未满足期间，[Map故障session首条源码路径](R20-MAP-FAULT-SESSION-20261024.md)已实现并取得[新独审](R20-MAP-FAULT-SESSION-REVIEW-20261024.md)，两代理均结束；真实页面不再等待故障suspend、全局唯一Map id、文件债与native-unknown分别有界。主体60/60、额外独立never-add/remove2/2、type通过；root完整workflow177/177及额外Map/viewport消费者15/15，Context冲突已修。旧handler同入口0/1相关失败保留，root-cwd alias加载失败另存。已普通完整build/官方自动推送gen2，实际Map→My→地图返回；**未触发手机fault、未取得native销毁/物理资源资格，完整Map重构仍欠**。
 
-独立代理 `complete_notification_evaluation_owner` 正按PLAN实际通知/Inbox责任推进原未完成业务：先以现有合规ForecastQueryService的真实qualified run接事件评估，不把自由metric/grid当已支持。默认总/类别opt-in、源资格/边沿/冷却/quiet/去重/SQLite历史/实际App消费者由原owner承接；原生排程/外部通道及完整family义务保留。它的Native API/App WIP不纳入本次Map合批，root不覆盖这些在途文件。此独立工作不改变UI→叠层→Sky结果顺序。
+[目标故障观察入口核对](R20-MAP-FAULT-TARGET-PREPARATION-20261024.md)已交付、代理结束：现有fixture不供产品离线Map/owned raster，也无一次callback门；不新建offline-provider/task-shadow平台。旧R17 builder硬编码冻结代且部分强制reverse，**不得运行**。恢复真实metadata→共享owned文件后再按原context端口评估最小callback+Promise控制；本次没有新诊断build或手机fault。
+
+[通知采集/评估/私有Inbox首条业务路径](R20-NOTIFICATION-EVALUATION-20261024.md)已实施、6项真实P2批修并取得[API终审](R20-NOTIFICATION-EVALUATION-API-REVIEW-20261024.md)/[App终审](R20-NOTIFICATION-EVALUATION-APP-REVIEW-20261024.md)，三代理均结束。实际ForecastQueryService primary acquisition→qualified point/target/night/hour→readiness intent/cursor/edge/due→SQLite Inbox/HTTP/App；default-start真实adapter与非空持久读回已验。缺hour/新源未确认不借旧true；空读/他点成功不清已知失败；两阶段持久输入可恢复，整盘失败仅volatile资格，不冒丢输入后的持久保证。App统一当前authority/编辑锁，权限拒绝撤私有投影，未知不冒空，旧A不盖新B，原pending保留。默认rule/总/类别均off，外部/OS通道仍未启用。
+
+原六条失败保留，终态原反例API2/2、App4/4，当前focused API11/11/App17/17及各自type；root整合API类型+34文件155/155、mobile fast类型+39文件156/156、旧structured3 owner9/9通过，family仍`passes:false`。backend17/App10冻结首尾已核，源作者与审阅者结束，Root收口Context/证据/授权Git；这批Native变更不在先前Map ebb67826内，交付与精确CI以最新main读回为准。它不改变UI→叠层→Sky结果顺序，也不关闭生产/真实供应/Native设备/OS/深链/完整family。
+
+旧rule pending/POST的[唯一判别](R20-RULE-OWNER-RETRY-DISCRIMINATION-20261024.md)原正确结果0/1失败后，已完成[原owner绑定](R20-RULE-OWNER-BINDING-20261024.md)及[新独审](R20-RULE-OWNER-BINDING-REVIEW-20261024.md)：原反例1/1、API11/11、旧helper/App32/32、NightReport HTTP9/9、12份冻结首尾通过；Root最终API类型+35文件158/158、mobile fast类型+39文件157/157。新attempt在dispatch前真实资格化并先存完整原input/key/本地版本化owner，retry不换owner，原A恢复原body/key确认后新保存新key；当前B不被A拒绝撤资格。规则/Inbox共用server owner限制，头不授权。旧无原资格记录原字节unknown，不HTTP重发；旧无头客户端不获新保证。**只准同版API/client配对，mixed/分步部署及production、多版本/legacy可证恢复仍欠。** 默认single-local-owner不能caller头改号，受控可信A/B与生产分别判断。全部作者/审阅者已结束；Root现合批Native源码/证据和精确Git/CI。
 
 ## 源码、交付与检查
 
-- 前三项修复已交付main/origin-main **`63ee13b69d87faada00f8f3af495eeccb6d09609`**，精确远端已读回；这不是包含后续Map批次的最终SHA。当前Map合批交付以本机main最新Git HEAD及远端读回为准，Native API通知WIP另留工作区。另一电脑专用分支不切换、不更新。
-- 精确63ee13b：Context **40065529071 success**、Product **40065529077 success**，不覆盖后续Map源码。Map批次交付后需按新head实查CI。原 `1a8147e3` 的 Context40059873056 success / Product40059872996 failure 仍保留，不用新绿改写旧失败。
+- 上次Map交付 **`ebb67826747808c38dfe38f484235c83dadd1676`** 已推main并精确远端读回；不包含后续Native通知合批。该head Context **40073148459 success**、Product **40073148455 success**；同head staging **40074175129 failure**（host磁盘<10GiB，镜像发布/部署skip，不能称全绿）。Native合批以包含本批通知/资格文件的main最新Git HEAD及远端实读为准，精确新CI须另查。另一电脑专用分支不切换、不更新。
+- 前三修复63ee13b的Context40065529071/Product40065529077均success；额外staging40066538373 **failure**，`host_preflight_disk_below_10_gib`，在镜像发布前的host只读检查失败，后续镜像/部署skip，无本次镜像或部署成功。不盲重跑/清远端磁盘。旧1a8147e3 Context40059873056 success / Product40059872996 failure保留，不称全绿。
 - NightReport [实现](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[最终独审](R20-NIGHT-REPORT-FINAL-REVIEW-20261024.md)、[UTC增量独审](R20-NIGHT-REPORT-TIMEZONE-REVIEW-20261024.md)：派发前冻结完整输入/key/server存储与owner资格；临时结果不清原pending，原owner原key对账，确认后刷新新key。**旧缺原owner资格的记录仍unknown**，当前同key回执不能反推历史归属。HTTP/service16/16；API类型+31文件144/144；mobile fast类型+38文件150/150；四structured owner12/12；默认start smoke通过。生产鉴权/供应/设备/完整family未完成。
 - 管理缓存 [实现](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)/[独审](R20-ADMIN-CACHE-CONFIRMATION-REVIEW-20261024.md)：已知失败需原操作明确COMPLETE才清，缺失/未知/非法、重开和跨窗口保恢复资料；16/16及类型。真实部署缓存仍欠。
 - Native Map [实现](R20-NATIVE-SELECTION-REFRESH-20261024.md)/[最终独审](R20-NATIVE-SELECTION-SEMANTIC-ORIGIN-REVIEW-20261024.md)：事实代次与路线意图分离，唯一语义origin涵盖默认范围/同坐标metadata，marker/summary/observer/route/navigation一致。四个真实失败历史保留；最终31/31、原反例8/8及类型。实际Expo设备/定位/持久化/导航未验。
-- 285件已材料化LFS资产M、`.codex/task-notes/`及外部审查zip保持原状，未纳入提交。上次零字节index.lock经独占/无git writer核查后原件保存在 `tmp/git-index-stale-20261024T051411973.lock`，未杀LFS helper、reset/clean/force/stash或另建worktree。
+- 285件已材料化LFS资产M、`.codex/task-notes/`及外部审查zip保持原状，未纳入提交。两次遗留零字节index.lock经独占/无git writer核查后保全为 `tmp/git-index-stale-20261024T051411973.lock`、`tmp/git-index-stale-20261024T071016086.lock`，未杀LFS helper、reset/clean/force/stash或另建worktree。
 
 ## 当前手机、API与候选
 
@@ -27,6 +33,7 @@ UI外部资料条件未满足期间，[Map故障session首条源码路径](R20-M
 - 首次 feedback **V87XzN** generation1 官方code10：**2051KB > 2048KB**，未送达/未bind，原诊断保留。随后facade迁移实际只减46B，独审反证定位，**候选拒绝**，源码/patch/完整负向build均保存在私有root-usb owner；只撤回本代理新增变化，WEAPP恢复HEAD源码。见[负向结果](R20-CURRENT-PACKAGE-BUDGET-20261024.md)/[独审](R20-CURRENT-PACKAGE-REVIEW-20261024.md)。正式2MiB仍失败，不能再扫同类facade。
 - 当前 feedback **EfkxhB generation2**，`generation-000002-97Hiyw/project`，正常Map修复输出 **339件/5,028,121B/SHA `367a703aca2691d4cb97bb38ac17d33084ab1d977f62facc74cca29b7dadac0a`**。仅新副本既有private大包flag，official auto_preview exit0/success，实际USB Map后bind。当前session **`%TEMP%/starward-device-feedback-EfkxhB/starward-device-test-gEFXaw`**；原gen1完整351件/8,316,201B已逐件保全到private `before-map-session-EfkxhB`，zVWpAs资格失效。
 - root实看本次prebind/Map/My/返回Map四图，两次输入均先新鲜capture与实看。My仍“账户资料暂未取得”，返回Map原底图浏览位置可见，并有Context/夜光/地形不可用通知。最新图 `screen-90b42f76-0bce-4fbe-b74a-e7a511764315.png`，07:01:46.125Z，SHAe1a7b23b…；手机留Map。下一输入必须再capture/实看。**正常My/Picker、实际fault/native销毁/资源未通过**；runtimeAppId/手机源字节仍未独立验证，不能升级最终验收。
+- 官方project_list仍为原四项，当前两代普通auto_preview未新增登记；历史task-notes/位置验证/旧r22入口未擅自移除，未重发旧确认。当前目录清单不是窗口数量，IDE窗口/列表精确退休义务仍归原owner。canonical已按最新WEAPP完整编译，手机gen2为当前实际反馈。
 - 当前电脑shell非提升，防火墙读取与ICS COM读回权限不可用；上文一次只读UAC已取消且未启动，未改网络。WinRT热点Off/clients0/capability Enabled，既有配置存在；历史ICS Apply曾失败回滚，不能盲重放旧脚本。历史LAN成功不是当前手机到API成功。
 
 ## 保留结果与恢复条件

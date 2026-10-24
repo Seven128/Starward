@@ -272,12 +272,12 @@
     "/v2/notification-rules": {
       "get": {
         "operationId": "listNotificationRuleDefinitions",
-        "description": "Single local-owner POC, not production or multi-user authentication. Startup resolves the actual loopback peer; unconfigured ownership is refused and caller actor/role headers are ignored. Read and command-handler responses are private, no-store and Vary: authorization; a pre-handler body-limit refusal sets private, no-store only. Definitions are not evaluated or scheduled and do not configure delivery.",
-        "parameters": [{ "name": "cursor", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "description": "Use the previous page's nextCursor; omit for the newest created rules." }],
+        "description": "Single local-owner POC, not production or multi-user authentication. Startup resolves the actual loopback peer; unconfigured ownership is refused and caller actor/role headers are ignored. Read and command-handler responses are private, no-store and Vary: authorization, x-notification-owner; a pre-handler body-limit refusal sets private, no-store only. Definitions and immutable configuration markers do not supply current evaluation or delivery state.",
+        "parameters": [{ "$ref": "#/components/parameters/NotificationOwnerRestriction" }, { "name": "cursor", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "description": "Use the previous page's nextCursor; omit for the newest created rules." }],
         "responses": {
           "200": { "description": "At most 50 owner-visible current definitions, newest creation first", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleLibrary" } } } },
           "400": { "description": "invalid_notification_rule_cursor", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
-          "403": { "description": "notification_rule_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required or notification_rule_owner_mismatch; no private library or empty-library assertion is returned for another expected owner", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "503": { "description": "notification_rule_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
         }
       }
@@ -285,11 +285,11 @@
     "/v2/notification-rules/{id}": {
       "get": {
         "operationId": "getNotificationRuleDefinition",
-        "description": "Authoritative current owner-visible definition; private, no-store, Vary: authorization. Read this after a command receipt, which may represent an older committed revision.",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "description": "Authoritative current owner-visible definition; private, no-store, Vary: authorization, x-notification-owner. Read this under the original attempt's owner restriction after a command receipt, which may represent an older committed revision.",
+        "parameters": [{ "$ref": "#/components/parameters/NotificationOwnerRestriction" }, { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
         "responses": {
           "200": { "description": "Current saved rule definition", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleReadback" } } } },
-          "403": { "description": "notification_rule_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required or notification_rule_owner_mismatch", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "404": { "description": "notification_rule_not_found; absent or not visible to this owner", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "503": { "description": "notification_rule_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
         }
@@ -298,12 +298,12 @@
     "/v2/notification-rules/{id}/revisions/{revision}": {
       "get": {
         "operationId": "getNotificationRuleDefinitionRevision",
-        "description": "Preserved owner-visible historical definition; private, no-store, Vary: authorization. This is not a latest-state read.",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "revision", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 } }],
+        "description": "Preserved owner-visible historical definition; private, no-store, Vary: authorization, x-notification-owner. This is not a latest-state read or proof of an unqualified attempt's original ownership.",
+        "parameters": [{ "$ref": "#/components/parameters/NotificationOwnerRestriction" }, { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "revision", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 } }],
         "responses": {
           "200": { "description": "Exact saved rule revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleReadback" } } } },
           "400": { "description": "invalid_notification_rule_revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
-          "403": { "description": "notification_rule_owner_required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required or notification_rule_owner_mismatch", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "404": { "description": "notification_rule_not_found; no such owner-visible revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "503": { "description": "notification_rule_storage_unavailable; outcome unknown", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } }
         }
@@ -312,12 +312,13 @@
     "/v2/notification-rules/commands": {
       "post": {
         "operationId": "saveNotificationRuleDefinition",
-        "description": "Local-owner POC only. Domain-handler responses are private, no-store, Vary: authorization. Definition, immutable version and input-bound receipt commit in one SQLite transaction. Identical parsed input under the same owner/key replays its original receipt before mutation; changed input under that key conflicts. Separately GET current after a receipt so an old replay cannot replace a newer definition. Persist full intent/key before HTTP and retain them through lost replies, 503, authority loss or failed readback. A 400 input rejection or host 64-KiB body rejection (413) occurs before receipt lookup and says nothing about an earlier uncertain attempt. Enablement is saved configuration only: provider evaluation, in-trip itinerary binding, category-wide controls, inbox, native permission/token setup, scheduling and delivery remain unavailable through this contract.",
+        "description": "Local-owner POC only. Domain-handler responses are private, no-store, Vary: authorization, x-notification-owner. Definition, immutable version and input-bound receipt commit in one SQLite transaction. Identical parsed input under the same owner/key replays its original receipt before mutation; changed input under that key conflicts. A stable-attempt client obtains the actual owner from uncached /v2/notifications/controls before dispatch, persists that versioned qualification with full input/key, and sends its original owner restriction on every POST and current readback. Missing authority or a different current owner cannot confirm or erase that attempt. Old pending records lacking original qualification remain unknown; a current owner's matching key/input receipt does not reconstruct their history. Requests without the restriction retain their older current-actor behavior and do not gain the new attempt-affinity guarantee. A 400 input rejection or host 64-KiB body rejection (413) occurs before receipt lookup and says nothing about an earlier uncertain attempt. Enablement is configuration only. Actual evaluation/history use /v2/notifications; production identity, in-trip binding, unqualified data and OS/remote delivery remain unavailable.",
+        "parameters": [{ "$ref": "#/components/parameters/NotificationOwnerRestriction" }],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleCommand" } } } },
         "responses": {
           "200": { "description": "Saved or replayed rule definition and receipt; not necessarily the latest current revision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationRuleResult" } } } },
           "400": { "description": "Invalid/unexpected typed field, unsupported in-trip binding, timezone or expiry; outcome rejected for this request only", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
-          "403": { "description": "notification_rule_owner_required; no configured local owner or nonloopback peer. Does not resolve an earlier uncertain attempt.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
+          "403": { "description": "notification_rule_owner_required or notification_rule_owner_mismatch; the authoritative actor is unavailable or differs from the original restriction. This request has no effect but does not resolve an earlier uncertain attempt.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "404": { "description": "notification_rule_not_found; update found no owner-visible rule after finding no receipt for this owner/key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "409": { "description": "notification_rule_revision_conflict (may include currentRevision), or notification_rule_idempotency_conflict. Revision conflict follows an absent receipt; changed input under an existing key does not establish absence of the old effect.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
           "413": { "description": "notification_rule_request_body_too_large; before receipt lookup, not proof about a previous request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NativeCommandFailure" } } } },
@@ -336,9 +337,293 @@
     },
     "/v1/quality/commands": {
       "post": { "operationId": "runQualityEvidenceAction", "responses": { "200": { "description": "Measured quality evidence from the requested operation" }, "400": { "description": "Unknown command" } } }
+    },
+    "/v2/notifications/controls": {
+      "get": {
+        "operationId": "getNotificationControls",
+        "description": "Local-owner POC only, private no-store and Vary: authorization, x-notification-owner. The server derives authority from the loopback peer; caller actor/owner headers cannot authorize access. Read authoritative opt-in state; a missing row is revision 0 with all switches off.",
+        "parameters": [
+          { "$ref": "#/components/parameters/NotificationOwnerRestriction" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current controls",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "schemaVersion",
+                    "controls"
+                  ],
+                  "properties": {
+                    "schemaVersion": {
+                      "const": "starward-notifications-v1"
+                    },
+                    "controls": {
+                      "$ref": "#/components/schemas/NotificationControls"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner unavailable/nonloopback or qualification mismatch; preserve an earlier unknown attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Storage unavailable; effect/processing remains unknown. Retry the original command or read existing history again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/notifications/controls/commands": {
+      "post": {
+        "operationId": "setNotificationControls",
+        "description": "Local-owner POC only, private no-store and Vary: authorization, x-notification-owner. The server derives authority from the loopback peer; caller actor/owner headers cannot authorize access. Atomic revision/CAS, state and input-bound receipt. Same owner/key/input replays its immutable result; read current after replay. Only a revision conflict raised after absent receipt proves no effect for that actor/key. Disable cancels affected pending inbox work; it does not delete history. Global/category opt-in does not authorize OS or remote delivery.",
+        "parameters": [
+          { "$ref": "#/components/parameters/NotificationOwnerRestriction" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationControlsCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Committed or historical replayed controls; separately read current",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationControlsResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid typed command/cursor; parsing precedes receipt lookup and does not settle a prior attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner unavailable/nonloopback or qualification mismatch; preserve an earlier unknown attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision or changed-input idempotency conflict; only the former follows an absent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body rejected before receipt lookup; preserve earlier unknown attempts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Storage unavailable; effect/processing remains unknown. Retry the original command or read existing history again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/notifications/inbox": {
+      "get": {
+        "operationId": "getNotificationInbox",
+        "description": "Local-owner POC only, private no-store and Vary: authorization, x-notification-owner. The server derives authority from the loopback peer; caller actor/owner headers cannot authorize access. Read existing in-App messages, their immutable trigger, later evidence and current validity. New events use the primary normalized acquisition owner; cached recovery replays the same identity. Qualified threshold edges, requested lead time, quiet hours, user cooldown and same-source-event cooldown gate the durable Inbox commit. Native consent/scheduling, in-trip revision binding, regional grid supply and remote adapters remain unimplemented. A durable acquisition-readiness intent precedes event enqueue. Empty queue reads or another source cannot confirm a failed enqueue; only the same accepted source or explicit expiry retirement resolves that readiness. Newer observed sources, including omitted active hours, withhold older candidate/current authority until the matching qualified hour is evaluated. Valid independent hours remain usable. Processing and history reads remain bounded.",
+        "parameters": [
+          { "$ref": "#/components/parameters/NotificationOwnerRestriction" },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded history with ready/processing/unavailable evaluation status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationInboxPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid typed command/cursor; parsing precedes receipt lookup and does not settle a prior attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner unavailable/nonloopback or qualification mismatch; preserve an earlier unknown attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Storage unavailable; effect/processing remains unknown. Retry the original command or read existing history again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/notifications/rules/{id}/activity": {
+      "get": {
+        "operationId": "getNotificationRuleActivity",
+        "description": "Local-owner POC only, private no-store and Vary: authorization, x-notification-owner. The server derives authority from the loopback peer; caller actor/owner headers cannot authorize access. Read actual support/last evaluation/pending/last inbox write without waiting for all rules to process.",
+        "parameters": [
+          { "$ref": "#/components/parameters/NotificationOwnerRestriction" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current evaluation activity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "schemaVersion",
+                    "activity"
+                  ],
+                  "properties": {
+                    "schemaVersion": {
+                      "const": "starward-notifications-v1"
+                    },
+                    "activity": {
+                      "$ref": "#/components/schemas/NotificationRuleActivity"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid typed command/cursor; parsing precedes receipt lookup and does not settle a prior attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner unavailable/nonloopback or qualification mismatch; preserve an earlier unknown attempt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No rule visible to the current owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Storage unavailable; effect/processing remains unknown. Retry the original command or read existing history again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeCommandFailure"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
+    "parameters": {
+      "NotificationOwnerRestriction": {
+        "name": "x-notification-owner", "in": "header", "required": false,
+        "schema": { "type": "string", "minLength": 1 },
+        "description": "Optional restriction on the server-derived notification owner; never authorization. Rule endpoints deny a mismatch with notification_rule_owner_mismatch; execution endpoints use notification_controls_owner_mismatch. Retrying an uncertain rule must reuse its pre-dispatch owner, not the current reader's identity."
+      }
+    },
     "schemas": {
       "NativeClientUpgrade": {
         "type": "object", "additionalProperties": false, "required": ["code", "apiVersion", "legacyRecordsPreserved"],
@@ -437,7 +722,8 @@
       },
       "NotificationRule": {
         "type": "object", "additionalProperties": false, "required": ["schemaVersion", "id", "ownerId", "revision", "createdAt", "updatedAt", "definition", "evaluation", "delivery"],
-        "properties": { "schemaVersion": { "const": "starward-notification-rule-v1" }, "id": { "type": "string" }, "ownerId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }, "definition": { "$ref": "#/components/schemas/NotificationRuleDefinition" }, "evaluation": { "const": "not-evaluated" }, "delivery": { "const": "not-configured" } }
+        "properties": { "schemaVersion": { "const": "starward-notification-rule-v1" }, "id": { "type": "string" }, "ownerId": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }, "definition": { "$ref": "#/components/schemas/NotificationRuleDefinition" }, "evaluation": { "const": "not-evaluated" }, "delivery": { "const": "not-configured" } },
+        "description": "Immutable configuration/version snapshot. Historical evaluation=not-evaluated and delivery=not-configured markers describe this definition-only wire contract, not current execution. Read /v2/notifications/rules/{id}/activity and /v2/notifications/inbox for actual runtime state; original receipts/bytes are not rewritten."
       },
       "NotificationRuleReadback": { "type": "object", "additionalProperties": false, "required": ["schemaVersion", "rule"], "properties": { "schemaVersion": { "const": "starward-notification-rules-v2" }, "rule": { "$ref": "#/components/schemas/NotificationRule" } } },
       "NotificationRuleResult": {
@@ -585,6 +871,718 @@
           "conditions": { "type": "object" },
           "warnings": { "type": "array", "items": { "type": "string" } }, "provenance": { "type": "array", "items": { "type": "object", "required": ["source", "version", "generatedAt"] } }
         }
+      },
+      "NotificationControls": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "ownerId",
+          "revision",
+          "updatedAt",
+          "enabled",
+          "categories"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "const": "starward-notification-controls-v1"
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "categories": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pretrip",
+              "long-term"
+            ],
+            "properties": {
+              "pretrip": {
+                "type": "boolean"
+              },
+              "long-term": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "description": "Defaults are disabled for both total and category controls. Existing enabled rule definitions do not opt in. This controls only the implemented private in-App inbox; native scheduling and remote push remain unconfigured."
+      },
+      "NotificationControlsCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "command",
+          "idempotencyKey",
+          "expectedOwnerId",
+          "baseRevision",
+          "enabled",
+          "categories"
+        ],
+        "properties": {
+          "command": {
+            "const": "set-controls"
+          },
+          "idempotencyKey": {
+            "$ref": "#/components/schemas/NativeCommandText"
+          },
+          "expectedOwnerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "categories": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pretrip",
+              "long-term"
+            ],
+            "properties": {
+              "pretrip": {
+                "type": "boolean"
+              },
+              "long-term": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "description": "expectedOwnerId restricts the actual server-derived POC owner and grants no authority. Persist the complete command/key/owner before dispatch. Authority loss/mismatch or a later parsing refusal cannot resolve an earlier uncertain commit."
+      },
+      "NotificationControlsResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "replayed",
+          "controls",
+          "receipt"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "const": "starward-notifications-v1"
+          },
+          "replayed": {
+            "type": "boolean"
+          },
+          "controls": {
+            "$ref": "#/components/schemas/NotificationControls"
+          },
+          "receipt": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "idempotencyKey",
+              "revision",
+              "committedAt"
+            ],
+            "properties": {
+              "idempotencyKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "committedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "NotificationSourceSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "model",
+          "runId",
+          "modelRunTimeUtc",
+          "acquiredAt",
+          "fetchedAt",
+          "expiresAt",
+          "dataVersion",
+          "use",
+          "sourceLicense",
+          "attribution"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1
+          },
+          "runId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "modelRunTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acquiredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "use": {
+            "enum": [
+              "noncommercial-poc",
+              "production"
+            ]
+          },
+          "sourceLicense": {
+            "type": "string",
+            "minLength": 1
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label",
+                "url",
+                "licenseId",
+                "licenseVersion",
+                "modified"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "licenseId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "licenseVersion": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "modified": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "description": "Retains the normalized source's original acquisition/run/expiry. dataVersion hashes the qualified normalized projection; it does not manufacture an upstream ProviderRun epoch. The default native composition remains noncommercial POC."
+      },
+      "NotificationForecastContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "latitude",
+          "longitude",
+          "timezone",
+          "nightDate",
+          "target"
+        ],
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "nightDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "target": {
+            "enum": [
+              "milky-way-core",
+              "moon",
+              "mercury",
+              "venus",
+              "mars",
+              "jupiter",
+              "saturn"
+            ]
+          }
+        }
+      },
+      "NotificationTriggerSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ruleId",
+          "revision",
+          "eventId",
+          "location",
+          "target",
+          "category",
+          "metric",
+          "unit",
+          "direction",
+          "threshold",
+          "previousValue",
+          "previousSource",
+          "value",
+          "source",
+          "window",
+          "query",
+          "astronomyAlgorithmVersion"
+        ],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "label",
+                  "latitude",
+                  "longitude"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "place"
+                  },
+                  "label": {
+                    "$ref": "#/components/schemas/NativeCommandText"
+                  },
+                  "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "spotId": {
+                    "$ref": "#/components/schemas/NativeCommandText"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "grid"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "grid"
+                  },
+                  "grid": {
+                    "$ref": "#/components/schemas/NativeCommandText"
+                  }
+                }
+              }
+            ],
+            "description": "Explicit place coordinates or explicit user grid identity; grid content and selected spot identity are not provider-qualified by saving this definition."
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "enum": [
+              "pretrip",
+              "long-term"
+            ]
+          },
+          "metric": {
+            "enum": [
+              "totalCloudPct",
+              "windSpeedMps",
+              "windGustMps",
+              "precipitationProbabilityPct",
+              "precipitationMm",
+              "temperatureC"
+            ]
+          },
+          "unit": {
+            "enum": [
+              "%",
+              "m/s",
+              "mm",
+              "°C"
+            ]
+          },
+          "direction": {
+            "enum": [
+              "above",
+              "below"
+            ]
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "previousValue": {
+            "type": "number"
+          },
+          "previousSource": {
+            "$ref": "#/components/schemas/NotificationSourceSnapshot"
+          },
+          "value": {
+            "type": "number"
+          },
+          "source": {
+            "$ref": "#/components/schemas/NotificationSourceSnapshot"
+          },
+          "window": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "startUtc",
+              "endUtc"
+            ],
+            "properties": {
+              "startUtc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "endUtc": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "query": {
+            "$ref": "#/components/schemas/NotificationForecastContext"
+          },
+          "astronomyAlgorithmVersion": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "description": "A same-revision/target/predicted-hour qualified false-to-true transition. The actual hour intersects both the existing astronomical dark and target windows. leadMinutes schedules relative to this interval start; missing/stale/out-of-order data and a moving window are not false measurements."
+      },
+      "NotificationEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "value",
+          "source"
+        ],
+        "properties": {
+          "value": {
+            "type": "number"
+          },
+          "source": {
+            "$ref": "#/components/schemas/NotificationSourceSnapshot"
+          }
+        }
+      },
+      "NotificationInboxMessage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "ownerId",
+          "deliveredAt",
+          "dueAt",
+          "trigger",
+          "evidence",
+          "current",
+          "currentEvidence",
+          "boundary"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deliveredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/NotificationTriggerSnapshot"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/NotificationEvidence"
+          },
+          "current": {
+            "enum": [
+              "same-condition",
+              "condition-reversed",
+              "expired",
+              "unconfirmed"
+            ]
+          },
+          "currentEvidence": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "source"
+                ],
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "source": {
+                    "$ref": "#/components/schemas/NotificationSourceSnapshot"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundary": {
+            "const": "in-app-inbox-only"
+          }
+        },
+        "description": "Immutable original trigger and delivered evidence remain distinct from current qualified state. Expired, reversed or unconfirmed content must not be presented as current travel/safety advice. No OS/push delivery is asserted."
+      },
+      "NotificationInboxPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "ownerId",
+          "checkedAt",
+          "evaluationStatus",
+          "items",
+          "nextCursor",
+          "scope"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "const": "starward-notifications-v1"
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evaluationStatus": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "processing",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/NotificationInboxMessage"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "const": "local-owner-poc"
+          }
+        },
+        "description": "Bounded committed history read. It never waits for the global event queue to drain; processing/unavailable preserves independent existing records and does not certify absence of new notifications. checkedAt lets consumers expire current-state labels without changing original evidence."
+      },
+      "NotificationRuleActivity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ruleId",
+          "revision",
+          "supported",
+          "reason",
+          "lastEvaluation",
+          "lastDeliveryAt",
+          "pending",
+          "evaluationStatus"
+        ],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "supported": {
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastEvaluation": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "eventId",
+                  "at",
+                  "source",
+                  "status",
+                  "consideredWindows",
+                  "queued"
+                ],
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "source": {
+                    "$ref": "#/components/schemas/NotificationSourceSnapshot"
+                  },
+                  "status": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "consideredWindows": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "queued": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastDeliveryAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pending": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "evaluationStatus": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "processing",
+              "unavailable"
+            ]
+          }
+        },
+        "description": "Live evaluation activity is separate from immutable definition/receipt markers. Arbitrary grids, score/unknown metrics, unit mismatches, unknown targets or channels have explicit unsupported reasons. Accepted events are indexed by the actual query point/target and processed in durable bounded pages; no per-rule provider polling occurs."
       }
     }
   }

@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("@react-native-async-storage/async-storage", () => ({ default: {} }));
 vi.mock("expo-crypto", () => ({ randomUUID: () => "generated-rule-key" }));
-import { createNotificationRulesClient } from "./notification-rules-client";
-import { ruleDefinition, ruleResult, savedRule } from "../../../../tests/fixtures/notification-rules";
+import { createNotificationRulesClient as createRuleClient } from "./notification-rules-client";
+import { ruleDefinition, ruleResult, savedRule, withRuleOwnerQualification } from "../../../../tests/fixtures/notification-rules";
 import type { NotificationRuleInput } from "./notification-rules-client";
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 function storage() { const values = new Map<string, string>(); return { values, getItem: async (key: string) => values.get(key) ?? null, setItem: async (key: string, value: string) => { values.set(key, value); }, removeItem: async (key: string) => { values.delete(key); } }; }
 const input = (): NotificationRuleInput => ({ command: "create-rule", input: ruleDefinition() });
+const createNotificationRulesClient = (options: Parameters<typeof createRuleClient>[0]) => createRuleClient({ ...options,
+  fetcher: withRuleOwnerQualification(options?.fetcher ?? fetch) });
 describe("notification configuration pending command owner", () => {
   it("captures payload/key before async storage, joins duplicate taps and blocks another intent", async () => {
     const port = storage(); let release!: () => void;
@@ -86,7 +88,7 @@ describe("notification configuration pending command owner", () => {
     code = "notification_rule_idempotency_conflict"; status = 409;
     await expect(client.retry()).rejects.toMatchObject({ rejected: false }); expect(await client.pending()).not.toBeNull();
   });
-  it("never sends after pending storage fails and never discards a corrupt pending row", async () => {
+  it("never dispatches an effect after pending storage fails and never discards a corrupt pending row", async () => {
     const port = storage(), fetcher = vi.fn();
     const client = createNotificationRulesClient({ baseUrl: "http://api", fetcher: fetcher as typeof fetch, storage: { ...port, setItem: async () => { throw new Error("storage_full"); } } });
     await expect(client.command(input())).rejects.toThrow("storage_full"); expect(fetcher).not.toHaveBeenCalled();

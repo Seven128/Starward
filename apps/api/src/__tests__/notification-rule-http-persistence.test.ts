@@ -25,7 +25,7 @@ afterEach(async () => {
 function directory() { const path = mkdtempSync(join(tmpdir(), "starward-rule-")); directories.push(path); return path; }
 async function server(dataDir: string, resolver: NotificationRuleActorResolver | null = resolveLocalNotificationOwner) {
   const runtime = await createNotificationToolsRuntime({ dataDir });
-  const app = await buildApi({ allowedOrigins: ["http://localhost:8081"], nightReports: { create: async () => { throw new Error("not_used"); } }, spots: { getDetail: async () => { throw new Error("not_used"); } }, resolveSpotActor: async () => ({ userId: null, verified: false, roles: [], invitedSpotIds: [] }), tools: new ToolsService(), notificationRules: runtime.service, resolveNotificationActor: resolver ?? undefined });
+  const app = await buildApi({ allowedOrigins: ["http://localhost:8081"], nightReports: { create: async () => { throw new Error("not_used"); } }, spots: { getDetail: async () => { throw new Error("not_used"); } }, resolveSpotActor: async () => ({ userId: null, verified: false, roles: [], invitedSpotIds: [] }), tools: new ToolsService(), notificationRules: runtime.service, notificationEvaluations: runtime.evaluations, resolveNotificationActor: resolver ?? undefined });
   app.addHook("onClose", runtime.close); apps.push(app);
   const url = await app.listen({ host: "127.0.0.1", port: 0 });
   return {

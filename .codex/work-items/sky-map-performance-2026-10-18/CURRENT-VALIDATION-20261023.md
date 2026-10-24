@@ -2,7 +2,13 @@
 
 ## 2026-10-24 当前继续实施批次
 
+[规则原owner绑定](R20-RULE-OWNER-BINDING-20261024.md)/[新独审](R20-RULE-OWNER-BINDING-REVIEW-20261024.md)已闭受控trusted-actor变化下的已证缺口，原0/1失败保留、原probe修后1/1；新API/旧HTTP11/11、App与旧helper32/32、NightReport HTTP9/9及类型、12份hash通过。**Root最终整合：API type+35文件158/158；mobile fast type+39文件157/157。** 原17+10评估/投影检查及structured9/9只复用其不变责任，不把旧绿色冒后续资格检查。默认固定local-owner、受控可信A/B、production分别判断；同版配对才受此次验证，mixed server/旧无头client与legacy缺原资格恢复仍未准入/未知。当前新Native交付CI以新head为准，不能用ebb旧绿覆盖。
+
+[通知评估/Inbox](R20-NOTIFICATION-EVALUATION-20261024.md)已批修独审实证6项：API缺覆盖hour仍投递/已知enqueue失败误清ready，以及App草稿丢失/未知当空/拒权保旧私有/迟到A覆盖B。原失败均保留，[API终审](R20-NOTIFICATION-EVALUATION-API-REVIEW-20261024.md)原2/2+当前11/11/type，[App终审](R20-NOTIFICATION-EVALUATION-APP-REVIEW-20261024.md)原4/4+当前17/17/type和新freeze首尾通过。Root最终整合为 **API type+34文件155/155；mobile fast type+39文件156/156；旧structured三owner9/9**，各自范围不相加冒全仓，完整family仍`passes:false`。真实startup/上游HTTP adapter/归一器/SQLite/消费者受控结果不认证真实供应/生产/Native设备/OS。旧rule跨owner资格仍缺，另作有界判别。这批新Native源码交付CI须按新head，不能用下文ebb绿色替代。
+
 [Map故障session首路径](R20-MAP-FAULT-SESSION-20261024.md)/[新独审](R20-MAP-FAULT-SESSION-REVIEW-20261024.md)已完成限定源码：主体60/60、独立never-add/remove2/2、type，root完整workflow177/177与3消费者15/15，Context结构及冲突读回通过。精确旧63 handler同入口0/1相关失败保留；两个root-cwd alias加载失败各归原log，workspace cwd终态通过，未改断言。当前完整build339件/5,028,121B/SHA367a703a…、webpack10warnings/exit0，EfkxhB gen2开发大包auto_preview成功/实际USB bind，Map→My→地图返回可见；数据仍失败，没有手机fault/native销毁/资源资格。新Map交付CI需按新head实查，不能用下文63成功替代。
+
+Map交付精确main/origin-main **ebb67826747808c38dfe38f484235c83dadd1676** 已推送读回：Context40073148459及Product40073148455均success。同head Backend staging release40074175129 failure，实际原失败log仍为host_preflight_disk_below_10_gib，镜像/部署skip；未重跑/清远端磁盘。另查精确63ee13b的自动Backend staging release **40066538373 failure**，qualify与配置检查成功，host preflight返回 **host_preflight_disk_below_10_gib**；镜像准备/发布和部署均skip，不能把两项测试CI成功称全部交付绿。原失败log仅留private root-usb owner `ci-63ee13b-staging-failed.private.log`，不暴露远端连接材料或盲清磁盘/重跑部署。
 
 NightReport/管理缓存/原生同id事实刷新三项已实施并取得新独审；各自失败、修正和当前范围见 [NightReport](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[管理](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)、[原生](R20-NATIVE-SELECTION-REFRESH-20261024.md)。NightReport真实HTTP/service16/16、API工作区类型+31文件144/144；mobile fast类型+38文件150/150；管理16/16+类型；四个已改structured owner12/12及Context结构/限定diff通过，均保各自范围，不相加冒全仓。原生最后独审31/31与原同坐标反例8/8；NightReport最终协议独审及UTC增量独审复用17份未变源并检查实际非法时区无落库。
 

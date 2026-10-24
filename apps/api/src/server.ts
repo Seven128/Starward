@@ -27,6 +27,7 @@ import type { CommunityWorkflowService } from "./modules/community/community-wor
 import type { AwaitedCommunityRuntime } from "./modules/community/runtime-types";
 import type { ToolsService } from "./modules/notifications/tools-service";
 import type { NotificationRuleService } from "./modules/notifications/rule-service";
+import type { NotificationEvaluationService } from "./modules/notifications/evaluation-service";
 import type { NotificationRuleActorResolver } from "./modules/notifications/rule-routes";
 import type { AdminOperationsService } from "./modules/admin/admin-operations-service";
 import type { AwaitedAdminRuntime } from "./modules/admin/runtime-types";
@@ -49,6 +50,7 @@ export interface ApiDependencies {
   community?: Pick<CommunityWorkflowService, "get" | "command">; communityRuntime?: AwaitedCommunityRuntime;
   tools?: Pick<ToolsService, "get" | "command">;
   notificationRules?: Pick<NotificationRuleService, "list" | "get" | "command">; resolveNotificationActor?: NotificationRuleActorResolver;
+  notificationEvaluations?: Pick<NotificationEvaluationService, "controls" | "command" | "inbox" | "activity">;
   admin?: Pick<AdminOperationsService, "get" | "command">; adminRuntime?: AwaitedAdminRuntime;
   quality?: Pick<QualityService, "get" | "command">; qualityRuntime?: AwaitedQualityRuntime;
 }

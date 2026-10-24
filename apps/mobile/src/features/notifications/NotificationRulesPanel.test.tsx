@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createNotificationRulesClient } from "../../data/notification-rules-client";
 import type { NotificationRule, NotificationRuleCommand } from "../../../../../packages/domain/src/notifications/rules";
-import { ruleResult, savedRule } from "../../../../../tests/fixtures/notification-rules";
+import { ruleResult, savedRule, withRuleOwnerQualification } from "../../../../../tests/fixtures/notification-rules";
 
 const shell = vi.hoisted(() => ({ state: { decisionContext: { target: "moon", timezone: "Asia/Shanghai" }, selectedSpot: { id: "selected-place", name: "已选地点A", coordinate: { lat: 25, lon: 115 } } as { id: string; name: string; coordinate: { lat: number; lon: number } } | null, location: { label: "出发地", latitude: 23, longitude: 113 }, displayMode: "planning" }, listeners: new Set<() => void>() }));
 vi.mock("../../state/shell-store", async () => { const { useSyncExternalStore } = await import("react"); return { useShellStore: (select: (state: typeof shell.state) => unknown) => useSyncExternalStore(callback => { shell.listeners.add(callback); return () => shell.listeners.delete(callback); }, () => select(shell.state)) }; });
@@ -45,7 +45,7 @@ function transport(loseFirstReply = false) {
     return response({ schemaVersion: "starward-notification-rules-v2", rule: rules.get(decodeURIComponent(String(url).split("/").at(-1)!)) });
   }) as typeof fetch;
   const storage = { getItem: async (key: string) => values.get(key) ?? null, setItem: async (key: string, value: string) => { values.set(key, value); }, removeItem: async (key: string) => { values.delete(key); } };
-  return { values, rules, posts, fetcher, client: () => createNotificationRulesClient({ baseUrl: "http://local-api", storage, fetcher, newKey: () => `key-${++key}` }) };
+  return { values, rules, posts, fetcher, client: () => createNotificationRulesClient({ baseUrl: "http://local-api", storage, fetcher: withRuleOwnerQualification(fetcher), newKey: () => `key-${++key}` }) };
 }
 describe("real Tools notification configuration consumer", () => {
   let root: import("react-dom/client").Root, container: HTMLDivElement, react: typeof import("react"), cache: QueryClient;
@@ -61,13 +61,25 @@ describe("real Tools notification configuration consumer", () => {
   const field = (label: string) => container.querySelector(`input[aria-label="${label}"]`) as HTMLInputElement;
   async function waitFor(check: () => void) { await vi.waitFor(async () => { await react.act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); }); check(); }); }
   async function change(label: string, value: string) { await react.act(async () => { const element = field(label); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(element, value); element.dispatchEvent(new Event("input", { bubbles: true })); }); }
-  async function open(client: ReturnType<typeof createNotificationRulesClient>) {
+  async function open(client: ReturnType<typeof createNotificationRulesClient>, startForm = true) {
     const { ToolsScreen } = await import("./ToolsScreen");
     await react.act(async () => root.render(<QueryClientProvider client={cache}><ToolsScreen rulesClient={client} /></QueryClientProvider>));
     await react.act(async () => button("tools-create-pretrip-rule").click());
     await waitFor(() => expect(container.textContent).toContain("还没有规则"));
-    await react.act(async () => button("notification-new-rule").click());
+    if (startForm) await react.act(async () => button("notification-new-rule").click());
   }
+  it("keeps an unqualified legacy save without exposing or retrying it as the current owner", async () => {
+    const host = transport(), slot = "starward-notification-rule-pending-v2:http://local-api";
+    const raw = ` \n${JSON.stringify({ command: "create-rule", idempotencyKey: "legacy-key", input: savedRule().definition })}\n `;
+    host.values.set(slot, raw);
+    await open(host.client(), false);
+    await waitFor(() => expect(container.textContent).toContain("旧保存的归属尚未确认"));
+    expect(button("notification-retry-save").disabled).toBe(true);
+    expect(container.textContent).not.toContain("原目标 moon");
+    await react.act(async () => button("notification-retry-save").click());
+    expect(host.posts).toHaveLength(0); expect(host.values.get(slot)).toBe(raw);
+    expect(button("notification-new-rule").disabled).toBe(true);
+  });
   it("opens without a write, snapshots the selected place, retries after Context changes, edits and stops the definition", async () => {
     const host = transport(true); await open(host.client());
     expect(host.posts).toHaveLength(0); expect(field("地点名称").value).toBe("已选地点A"); expect(field("纬度 WGS84").value).toBe("25");
@@ -85,7 +97,8 @@ describe("real Tools notification configuration consumer", () => {
     await react.act(async () => button("notification-retry-save").click());
     await waitFor(() => expect(container.textContent).toContain("规则配置已保存 · 版本 2"));
     expect(host.posts[1]).toEqual(host.posts[0]); expect(host.values.size).toBe(0);
-    expect(container.textContent).toContain("尚未评估，尚未投递"); expect(container.textContent).not.toContain("76→82");
+    expect(container.textContent).toContain("系统通知尚未接通");
+    expect(container.textContent).toContain("实际评估与写入记录请查看收件箱"); expect(container.textContent).not.toContain("76→82");
     await react.act(async () => button("notification-edit-rule").click());
     await change("阈值", "30");
     await react.act(async () => button("notification-save-rule").click());

@@ -6,3 +6,13 @@ export function savedRule(revision = 1, definition = ruleDefinition()): Notifica
 export function ruleResult(key = "same-key", rule = savedRule()): NotificationRuleResult {
   return { schemaVersion: "starward-notification-rules-v2", status: "saved", replayed: false, rule, receipt: { idempotencyKey: key, ruleId: rule.id, revision: rule.revision, committedAt: rule.updatedAt } };
 }
+/** Unit transport fixture for the real pre-dispatch qualification contract.
+ * Only that read is supplied here; mutation/readback ports remain explicit. */
+export function withRuleOwnerQualification(fetcher: typeof fetch, ownerId = "local-owner"): typeof fetch {
+  return (async (url, init) => String(url).endsWith("/v2/notifications/controls")
+    ? new Response(JSON.stringify({ schemaVersion: "starward-notifications-v1", controls: {
+      schemaVersion: "starward-notification-controls-v1", ownerId, revision: 0, updatedAt: null,
+      enabled: false, categories: { pretrip: false, "long-term": false },
+    } }))
+    : fetcher(url, init)) as typeof fetch;
+}
