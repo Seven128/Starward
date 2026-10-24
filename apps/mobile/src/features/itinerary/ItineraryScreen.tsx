@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -49,6 +49,9 @@ function Panel({ active, plan }: { active: ViewKey; plan: ItineraryDraft }) {
 function errorText(error: unknown): string {
   if (error instanceof ItineraryRequestError) {
     if (error.code === "itinerary_api_base_url_missing") return "行程服务未配置，草稿尚未提交。";
+    if (error.code === "itinerary_pending_owner_unqualified") return "旧保存的归属尚未确认，暂不能重发。原内容已保留。";
+    if (error.code === "itinerary_owner_mismatch") return "请恢复原保存账户后重试，原内容已保留。";
+    if (error.code === "itinerary_owner_unconfirmed" || error.code === "itinerary_owner_changed") return "保存账户尚未核对，未提交新内容。请重新读取行程。";
     if (error.code === "itinerary_revision_conflict") return "行程已被更新。请先读取最新版本，再确认要保留的修改。";
     if (error.code === "itinerary_owner_required") return "行程目前仅在本机个人试用服务中可用。";
     if (error.code === "itinerary_request_body_too_large" && error.rejected) return "内容过长，尚未保存。请缩短填写内容后重试。";
@@ -64,23 +67,40 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
   const [active, setActive] = useState<ViewKey>("overview");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<DraftForm | null>(null);
+  const [formOwnerId, setFormOwnerId] = useState<string | null>(null), [selectedOwnerId, setSelectedOwnerId] = useState<string | null>(null);
   const [editing, setEditing] = useState<ItineraryDraft | null>(null);
+  const authority = useSyncExternalStore(client.subscribeAuthority, client.authority, client.authority);
+  const ownerId = authority.status === "ready" ? authority.ownerId : null;
+  const planKey = (id: string | undefined, owner = ownerId) => ["itinerary", owner, id];
   const queryClient = useQueryClient();
-  const library = useInfiniteQuery({ queryKey: ["itinerary-library"], initialPageParam: undefined as string | undefined, queryFn: ({ signal, pageParam }) => client.list(signal, pageParam), getNextPageParam: page => page.nextCursor ?? undefined });
-  const libraryItems = library.data?.pages.flatMap(page => page.items);
+  const library = useInfiniteQuery({ queryKey: ["itinerary-library"], initialPageParam: undefined as { cursor: string; ownerId: string } | undefined,
+    queryFn: ({ signal, pageParam }) => client.list(signal, pageParam?.cursor, pageParam?.ownerId),
+    getNextPageParam: page => page.nextCursor && page.ownerQualification && client.canPublishLibrary(page) ? { cursor: page.nextCursor, ownerId: page.ownerQualification.ownerId } : undefined });
+  const libraryPages = library.data?.pages.filter(client.canPublishLibrary);
+  const libraryItems = libraryPages?.length ? libraryPages.flatMap(page => page.items) : undefined;
   const pending = useQuery({ queryKey: ["itinerary-pending"], queryFn: () => client.pending() });
-  const id = selectedId ?? libraryItems?.[0]?.id;
-  const detail = useQuery({ queryKey: ["itinerary", id], queryFn: ({ signal }) => client.get(id!, signal), enabled: !!id });
+  const id = (selectedOwnerId === ownerId ? selectedId : null) ?? libraryItems?.[0]?.id;
+  const detail = useQuery({ queryKey: planKey(id), queryFn: ({ signal }) => client.get(id!, signal, ownerId ?? undefined), enabled: !!id && ownerId !== null });
   const mutation = useMutation({
-    mutationFn: (input: ItineraryCommandInput | "retry") => input === "retry" ? client.retry() : client.command(input),
-    onSuccess: async plan => { await queryClient.cancelQueries({ queryKey: ["itinerary", plan.id] }); setSelectedId(plan.id); queryClient.setQueryData(["itinerary", plan.id], plan); setForm(null); setEditing(null); setActive("overview"); void queryClient.invalidateQueries({ queryKey: ["itinerary-library"] }); },
+    mutationFn: (intent: { input: ItineraryCommandInput; expectedOwnerId: string | null } | "retry") => intent === "retry" ? client.retry() : client.command(intent.input, intent.expectedOwnerId ?? undefined),
+    onSuccess: async plan => {
+      if (!client.canPublish(plan)) return;
+      const key = planKey(plan.id, plan.ownerId);
+      await queryClient.cancelQueries({ queryKey: key });
+      if (!client.canPublish(plan)) return;
+      const current = queryClient.getQueryData<ItineraryDraft>(key);
+      queryClient.setQueryData(key, current && current.ownerId === plan.ownerId && current.revision > plan.revision ? current : plan);
+      setSelectedId(plan.id); setSelectedOwnerId(plan.ownerId); setForm(null); setFormOwnerId(null); setEditing(null); setActive("overview");
+      void queryClient.invalidateQueries({ queryKey: ["itinerary-library"] });
+    },
     onSettled: () => { void queryClient.invalidateQueries({ queryKey: ["itinerary-pending"] }); },
   });
-  const plan = detail.data;
-  const blocked = mutation.isPending || pending.isPending || pending.isError || !!pending.data;
-  const begin = (existing?: ItineraryDraft) => {
-    if (blocked) return;
+  const plan = detail.data && client.canPublish(detail.data) ? detail.data : undefined;
+  const blocked = authority.status !== "ready" || mutation.isPending || pending.isPending || pending.isError || !!pending.data;
+  const begin = (existing?: ItineraryDraft, replaceForm = false) => {
+    if (blocked || form && !replaceForm) return;
     mutation.reset();
+    setFormOwnerId(ownerId);
     setEditing(existing ?? null);
     setForm(existing ? { title: existing.title, timezone: existing.timezone, inputs: { ...existing.inputs } } : {
       title: `${context.observingNight} 观星行程`, timezone: context.timezone,
@@ -89,8 +109,8 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
   };
   const changeInput = <K extends keyof ItineraryDraftInputs>(key: K, value: ItineraryDraftInputs[K]) => setForm(current => current ? { ...current, inputs: { ...current.inputs, [key]: value } } : current);
   const save = () => {
-    if (!form || blocked) return;
-    mutation.mutate(editing ? { command: "patch-draft", itineraryId: editing.id, baseRevision: editing.revision, patch: { title: form.title, inputs: form.inputs } } : { command: "create-draft", input: form });
+    if (!form || blocked || formOwnerId !== ownerId) return;
+    mutation.mutate({ expectedOwnerId: formOwnerId, input: editing ? { command: "patch-draft", itineraryId: editing.id, baseRevision: editing.revision, patch: { title: form.title, inputs: form.inputs } } : { command: "create-draft", input: form } });
   };
   return <SafeAreaView testID="screen-itinerary-and-collaboration" style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -101,17 +121,19 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
       <DecisionContextRevision />
       <View testID="itinerary-library" style={styles.summaryCard}>
         <Text style={styles.evidenceTitle}>已保存行程</Text>
-        {libraryItems?.map(item => <Pressable key={item.id} disabled={!!form || mutation.isPending} onPress={() => { setSelectedId(item.id); setActive("overview"); }} style={styles.action}><Text style={styles.evidenceBody}>{item.title} · 版本 {item.revision}</Text></Pressable>)}
-        {libraryItems?.length === 0 ? <Text testID="itinerary-empty" style={styles.subtitle}>还没有行程。新建草稿，保存日期、出发地和观测目标。</Text> : null}
-        {library.hasNextPage ? <Pressable disabled={library.isFetchingNextPage} onPress={() => library.fetchNextPage()} style={styles.action}><Text>读取更早行程</Text></Pressable> : null}
+        {libraryItems?.map(item => <Pressable key={item.id} disabled={!!form || mutation.isPending} onPress={() => { setSelectedId(item.id); setSelectedOwnerId(ownerId); setActive("overview"); }} style={styles.action}><Text style={styles.evidenceBody}>{item.title} · 版本 {item.revision}</Text></Pressable>)}
+        {ownerId && !library.isError && libraryItems?.length === 0 ? <Text testID="itinerary-empty" style={styles.subtitle}>还没有行程。新建草稿，保存日期、出发地和观测目标。</Text> : null}
+        {library.hasNextPage ? <Pressable disabled={!ownerId || library.isFetchingNextPage} onPress={() => library.fetchNextPage()} style={styles.action}><Text>读取更早行程</Text></Pressable> : null}
       </View>
       {library.isLoading || detail.isLoading ? <Text style={styles.subtitle}>正在读取行程…</Text> : null}
       {library.isError || detail.isError ? <Pressable onPress={() => { void library.refetch(); if (id) void detail.refetch(); }} style={styles.retry}><Text>读取失败，点按重试</Text></Pressable> : null}
-      <Pressable testID="plan-generate" disabled={blocked} onPress={() => begin()} style={styles.action}><Text style={styles.actionText}>新建草稿</Text></Pressable>
-      {plan ? <Pressable testID="plan-edit" disabled={blocked} onPress={() => begin(plan)} style={styles.action}><Text style={styles.actionText}>编辑草稿</Text></Pressable> : null}
+      {authority.status !== "ready" ? <Text testID="itinerary-owner-unconfirmed" style={styles.subtitle}>{authority.status === "denied" ? "当前账户暂不能读取私人行程。原编辑内容和待确认保存已保留。" : "正在核对私人行程的账户…"}</Text> : null}
+      <Pressable testID="plan-generate" disabled={blocked || form !== null} onPress={() => begin()} style={styles.action}><Text style={styles.actionText}>新建草稿</Text></Pressable>
+      {plan ? <Pressable testID="plan-edit" disabled={blocked || form !== null} onPress={() => begin(plan)} style={styles.action}><Text style={styles.actionText}>编辑草稿</Text></Pressable> : null}
       {pending.isError ? <Pressable onPress={() => pending.refetch()} style={styles.retry}><Text>待确认保存未能读取，请重试</Text></Pressable> : null}
-      {pending.data ? <View testID="itinerary-pending" style={styles.panel}><Text style={styles.evidenceTitle}>上次保存待确认</Text><Text style={styles.evidenceBody}>{pending.data.command === "create-draft" ? `${pending.data.input.title} · ${pending.data.input.inputs.date}` : `行程 ${pending.data.itineraryId} · 基于版本 ${pending.data.baseRevision}`}</Text><Pressable testID="plan-retry-save" disabled={mutation.isPending} onPress={() => mutation.mutate("retry")} style={styles.action}><Text>重试保存</Text></Pressable></View> : null}
-      {form ? <View testID="itinerary-creation-form" style={styles.panel}>
+      {pending.data ? <View testID="itinerary-pending" style={styles.panel}><Text style={styles.evidenceTitle}>上次保存待确认</Text><Text style={styles.evidenceBody}>{ownerId && pending.data.ownerQualification?.ownerId === ownerId ? pending.data.command === "create-draft" ? `${pending.data.input.title} · ${pending.data.input.inputs.date}` : `行程 ${pending.data.itineraryId} · 基于版本 ${pending.data.baseRevision}` : "原保存内容已保留，请恢复原账户后重试。"}</Text><Pressable testID="plan-retry-save" disabled={mutation.isPending} onPress={() => mutation.mutate("retry")} style={styles.action}><Text>重试保存</Text></Pressable></View> : null}
+      {form && formOwnerId !== ownerId ? <View><Text style={styles.subtitle}>原账户的编辑内容已保留，恢复后可继续。</Text><Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={() => { setForm(null); setFormOwnerId(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable></View> : null}
+      {form && formOwnerId === ownerId && authority.status === "ready" ? <View testID="itinerary-creation-form" style={styles.panel}>
         <Input label="行程名称" value={form.title} onChange={title => setForm(current => current && { ...current, title })} disabled={blocked} />
         <Input label="日期 YYYY-MM-DD" value={form.inputs.date} onChange={value => changeInput("date", value)} disabled={blocked} />
         <Input label="出发地" value={form.inputs.origin} onChange={value => changeInput("origin", value)} disabled={blocked} />
@@ -123,11 +145,11 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
         <View style={styles.actions}>{([ ["drive", "驾车"], ["walk", "步行"], ["mixed", "混合交通"] ] as const).map(([value, label]) => <Pressable key={value} disabled={blocked} onPress={() => changeInput("transport", value)} style={styles.action}><Text>{form.inputs.transport === value ? "已选 · " : ""}{label}</Text></Pressable>)}</View>
         <Pressable disabled={blocked} onPress={() => changeInput("overnight", !form.inputs.overnight)} style={styles.action}><Text>{form.inputs.overnight ? "已选过夜" : "不计划过夜"}</Text></Pressable>
         <Pressable testID="plan-save-draft" disabled={blocked} onPress={save} style={styles.action}><Text style={styles.actionText}>{mutation.isPending ? "正在保存…" : "保存草稿"}</Text></Pressable>
-        <Pressable disabled={blocked} onPress={() => { setForm(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable>
+        <Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={() => { setForm(null); setFormOwnerId(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable>
       </View> : null}
       <View style={styles.actions}>{actions.map(item => <Pressable key={item.key} testID={item.id} onPress={() => setActive(item.key)} style={styles.action}><Text style={styles.actionText}>{item.label}</Text></Pressable>)}</View>
       {plan ? <Panel active={active} plan={plan} /> : null}
-      {mutation.isError ? <View><Text style={styles.error}>{errorText(mutation.error)}</Text>{mutation.error instanceof ItineraryRequestError && mutation.error.code === "itinerary_revision_conflict" ? <Pressable onPress={async () => { const refreshed = await detail.refetch(); if (refreshed.data) begin(refreshed.data); }} style={styles.retry}><Text>保留已存内容，重新编辑</Text></Pressable> : null}</View> : null}
+      {mutation.isError ? <View><Text style={styles.error}>{errorText(mutation.error)}</Text>{mutation.error instanceof ItineraryRequestError && mutation.error.code === "itinerary_revision_conflict" ? <Pressable onPress={async () => { const refreshed = await detail.refetch(); if (refreshed.data && client.canPublish(refreshed.data)) begin(refreshed.data, true); }} style={styles.retry}><Text>保留已存内容，重新编辑</Text></Pressable> : null}</View> : null}
     </ScrollView>
   </SafeAreaView>;
 }

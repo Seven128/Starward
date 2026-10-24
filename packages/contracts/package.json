@@ -10,6 +10,7 @@
     "./night-report": "./src/night-report.ts",
     "./forecast": "./src/forecast.ts",
     "./observing-time": "./src/observing-time.ts",
+    "./private-command-owner": "./src/private-command-owner.ts",
     "./map": "./src/map.ts",
     "./spot": "./src/spot.ts",
     "./sky": "./src/sky.ts",

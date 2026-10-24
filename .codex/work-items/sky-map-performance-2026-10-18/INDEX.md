@@ -1,6 +1,6 @@
 # Starward 收口任务索引
 
-**当前续批：** 完整无预算 active Goal持续实施；NightReport/管理缓存/原生选择已交付63ee13b、精确两项CI成功。[Map故障session首路径](R20-MAP-FAULT-SESSION-20261024.md)又已实现独审/完整普通build/USB自动推送gen2，正常往返可见，实际fault/native销毁/资源仍欠。My/图层数据失败；正式2MiB仍未修，无收益facade候选已保全撤回。只读UAC一次取消未启动，网络恢复等实际可用条件；通知评估/Inbox与规则原资格增量已独审，正合批交付。唯一当前状态、下一步/服务与交付身份归[HANDOFF](HANDOFF.md)，下文旧状态均按历史，不重复已完成修复。完整Goal/唯一PLAN/全部未完成义务保留。
+**当前续批：** 用户完整授权继续Goal并恢复电脑/USB手机性能方案。当前[环境](R20-PERFORMANCE-ENVIRONMENT-RECOVERY-20261024.md)已有热点/PC保存profile/VPN、neighbor REACHABLE；API本机ready但Public拦手机HTTP。延迟启动的手机真机调试已用WAN进入实际Map/双向消息/活动VM；LAN选错VPN地址回退，电脑capture和管理员令牌仍欠，尚无新profile。[普通主包](R20-PACKAGE-BUDGET-CLOSURE-20261024.md)ef6候选关大包flag官方自动推送/USB绑定通过；true-debug另用了独立IDE开发期大包。私人草稿原owner与拒权后旧读资格已修复并[新独审](R20-PRIVATE-OBSERVATION-DENIAL-FINAL-REVIEW-20261024.md)，Root API158/App169及类型通过，准备合批Git/精确CI。619旧CI不覆盖当前WIP。唯一状态/下一步/Goal工具实读归[HANDOFF](HANDOFF.md)，完整Goal/唯一PLAN/全部未完成义务保留。
 
 [通知评估/私有Inbox实际路径](R20-NOTIFICATION-EVALUATION-20261024.md)已完成本批实现、6项P2修复、API/App新独审；随后[规则原owner绑定](R20-RULE-OWNER-BINDING-20261024.md)又已完成实际判别/修复/新独审，root最终API158/158与mobile157/157及类型。生产/Native/OS/完整family不据此完成，legacy无原资格仍unknown、只准同版配对。最新源码交付/精确CI及网络/手机状态只由HANDOFF持有，不把下文历史freeze/失败/下一步当当前。
 

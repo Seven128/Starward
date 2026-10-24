@@ -80,7 +80,8 @@ function wirelessTransports(output) {
 }
 
 function canonicalActivity(value) {
-  return value?.replace("com.tencent.mm/.", "com.tencent.mm/com.tencent.mm.");
+  return value?.replace("com.tencent.mm/.", "com.tencent.mm/com.tencent.mm.")
+    .replace("com.android.settings/.", "com.android.settings/com.android.settings.");
 }
 const appBrandActivity = /^com\.tencent\.mm\/com\.tencent\.mm\.plugin\.appbrand\.ui\.AppBrandUI\d*$/u;
 const permissionActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandAuthorizeUI";
@@ -88,6 +89,13 @@ const permissionDetailActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.
 const locationPickerActivity = "com.tencent.mm/com.tencent.mm.plugin.location_soso.SoSoProxyUI";
 // Extend only after observing and testing a system-owned OEM permission component.
 const systemLocationActivity = "com.android.permissioncontroller/com.skyui.permissioncontroller.request.ui.SkyGrantPermissionsActivity";
+const tetheringSettingsActivity = "com.android.settings/com.android.settings.Settings$TetherSettingsActivity";
+const wifiTetheringSettingsActivity = "com.android.settings/com.android.settings.Settings$WifiTetherSettingsActivity";
+const tetheringTargets = {
+  more: ["android.settings.TETHER_SETTINGS", "'com.android.settings/.Settings$TetherSettingsActivity'"],
+  wifi: ["com.android.settings.WIFI_TETHER_SETTINGS", "'com.android.settings/.Settings$WifiTetherSettingsActivity'"],
+};
+const isTetheringScope = scope => scope === "tethering-settings" || scope === "wifi-tethering-settings";
 const SCREENSHOT_FOREGROUND_RECHECK_RETRY_LIMIT = 1;
 const SCREENSHOT_FOREGROUND_RECHECK_DELAY_MS = 100;
 const defaultWait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -110,7 +118,7 @@ export function foregroundActivity(output, { permissionScope = "none" } = {}) {
   const activities = [...String(output).matchAll(/(?:mResumedActivity|topResumedActivity)\s*[:=][^\r\n]*?\s([^\s}]+\/[^\s}]+)/gu)]
     .map((match) => canonicalActivity(match[1]));
   const unique = [...new Set(activities)];
-  if (unique.length !== 1) fail("wechat_miniapp_foreground_required");
+  if (unique.length !== 1) fail(isTetheringScope(permissionScope) ? "tethering_settings_foreground_required" : "wechat_miniapp_foreground_required");
   if (permissionScope === "settings") {
     if (![permissionActivity, permissionDetailActivity].includes(unique[0])) fail("permission_settings_foreground_required");
     verifyPermissionOwner(output, unique[0]);
@@ -120,21 +128,50 @@ export function foregroundActivity(output, { permissionScope = "none" } = {}) {
   } else if (permissionScope === "location-picker") {
     if (unique[0] !== locationPickerActivity) fail("location_picker_foreground_required");
     verifyPermissionOwner(output, unique[0]);
+  } else if (isTetheringScope(permissionScope)) {
+    const expected = permissionScope === "wifi-tethering-settings" ? wifiTetheringSettingsActivity : tetheringSettingsActivity;
+    if (unique[0] !== expected) fail("tethering_settings_foreground_required");
   } else if (permissionScope !== "none") fail("permission_scope_invalid");
   else if (!appBrandActivity.test(unique[0])) fail("wechat_miniapp_foreground_required");
   // Each scope still requires its exact focused window; no arbitrary system UI.
   return unique[0];
 }
 
-export function verifyFocusedWindow(output, activity) {
+function primaryWindowState(output) {
   let scope = String(output);
   if (/Display:\s*mDisplayId=/u.test(scope)) {
     const primary = scope.split(/(?=^\s*Display:\s*mDisplayId=)/mu).filter((section) => /^\s*Display:\s*mDisplayId=0\b/u.test(section));
     if (primary.length !== 1) fail("primary_display_focus_unavailable");
     scope = primary[0];
   }
+  return scope;
+}
+
+export function verifyFocusedWindow(output, activity) {
+  const scope = primaryWindowState(output);
   const match = scope.match(/mCurrentFocus=Window\{[^\r\n]*?\s([^\s}]+\/[^\s}]+)/u);
   if (!match || canonicalActivity(match[1]) !== canonicalActivity(activity)) fail("wechat_miniapp_focus_required");
+}
+
+function verifyTetheringBaseWindow(windows, focusState) {
+  const focus = primaryWindowState(focusState).match(/mCurrentFocus=Window\{([a-f0-9]+)\b[^\r\n]*\}/u);
+  if (!focus) fail("tethering_settings_window_unproven");
+  const blocks = String(windows).split(/(?=^[ \t]*Window #\d+ Window\{)/mu)
+    .filter(block => new RegExp(`^[ \\t]*Window #\\d+ Window\\{${focus[1]}\\b`, "mu").test(block));
+  const attrs = blocks.length === 1 ? [...blocks[0].matchAll(/^[ \t]*mAttrs=\{[^\r\n]*/gmu)] : [];
+  // A same-Activity application dialog can contain a password editor. Only the
+  // observed system base window is admitted, never such a dialog or unknown type.
+  if (attrs.length !== 1 || !/\bty=BASE_APPLICATION\b/u.test(attrs[0][0])) fail("tethering_settings_base_window_required");
+}
+
+function verifyTetheringUnlocked(policy) {
+  const delegates = [...String(policy).matchAll(/^[ \t]*KeyguardServiceDelegate[ \t]*\r?\n([\s\S]*?)(?=^[ \t]*KeyguardStateMonitor\b)/gmu)];
+  if (delegates.length !== 1) fail("tethering_settings_unlocked_unproven");
+  for (const field of ["showing", "inputRestricted", "occluded"]) {
+    const values = [...delegates[0][1].matchAll(new RegExp(`^[ \\t]*${field}=(true|false)[ \\t]*$`, "gmu"))];
+    if (values.length !== 1) fail("tethering_settings_unlocked_unproven");
+    if (values[0][1] !== "false") fail("tethering_settings_unlocked_required");
+  }
 }
 
 export function pngSize(bytes) {
@@ -259,13 +296,24 @@ export class AdbDevice {
   async foreground(options) {
     const activity = foregroundActivity((await this.command(["shell", "dumpsys", "activity", "activities"])).toString(), options);
     if (options?.permissionScope === "location-prompt") {
-      const packageInfo = (await this.command(["shell", "dumpsys", "package", "com.android.permissioncontroller"])).toString();
-      if (!/pkgFlags=\[[^\]\r\n]*\bSYSTEM\b/u.test(packageInfo) || !/codePath=\/(?:system|system_ext|product|apex)\//u.test(packageInfo)) fail("permission_controller_system_package_required");
+      await this.verifySystemPackage("com.android.permissioncontroller", "permission_controller_system_package_required");
     }
-    let windows = (await this.command(["shell", "dumpsys", "window", "windows"])).toString();
-    if (!windows.includes("mCurrentFocus")) windows = (await this.command(["shell", "dumpsys", "window", "displays"])).toString();
-    verifyFocusedWindow(windows, activity);
+    if (isTetheringScope(options?.permissionScope)) {
+      if (this.transport !== "usb") fail("tethering_settings_usb_required");
+      await this.verifySystemPackage("com.android.settings", "tethering_settings_system_package_required");
+    }
+    const windows = (await this.command(["shell", "dumpsys", "window", "windows"])).toString();
+    const focusState = windows.includes("mCurrentFocus") ? windows : (await this.command(["shell", "dumpsys", "window", "displays"])).toString();
+    verifyFocusedWindow(focusState, activity);
+    if (isTetheringScope(options?.permissionScope)) {
+      verifyTetheringBaseWindow(windows, focusState);
+      verifyTetheringUnlocked((await this.command(["shell", "dumpsys", "window", "policy"])).toString());
+    }
     return activity;
+  }
+  async verifySystemPackage(name, failure) {
+    const info = (await this.command(["shell", "dumpsys", "package", name])).toString();
+    if (!/pkgFlags=\[[^\]\r\n]*\bSYSTEM\b/u.test(info) || !/codePath=\/(?:system|system_ext|product|apex)\//u.test(info)) fail(failure);
   }
   async screenshot({ permissionScope = "none" } = {}) {
     const activity = await this.foreground({ permissionScope });
@@ -276,15 +324,27 @@ export class AdbDevice {
   }
   async input(action, values, capture, { beforeSend } = {}) {
     const permissionScope = capture.permissionScope ?? "none";
+    const tetheringPage = action === "open-tethering-settings" ? values[0] ?? "more" : undefined;
+    if (action === "open-tethering-settings" && !Object.hasOwn(tetheringTargets, tetheringPage)) fail("tethering_settings_page_invalid");
+    const ownedWifiNavigation = action === "open-tethering-settings" && tetheringPage === "wifi" && permissionScope === "tethering-settings";
     // This scope only returns from the observed native picker, never selects
     // or inspects another place through an unverified native input boundary.
     if (permissionScope === "location-picker" && action !== "back") fail("location_picker_return_only");
-    if (permissionScope !== "none" && !["tap", "back"].includes(action)) fail("permission_input_invalid");
+    if (permissionScope !== "none" && !["tap", "back"].includes(action) && !ownedWifiNavigation) fail("permission_input_invalid");
     const activity = await this.foreground({ permissionScope });
     if (activity !== capture.activity) fail("foreground_changed");
     // screencap dimensions follow current rotation, unlike wm size's natural orientation.
     const current = await this.screenshot({ permissionScope });
     if (current.size.width !== capture.size.width || current.size.height !== capture.size.height) fail("display_changed");
+    if (action === "open-tethering-settings") {
+      if (this.transport !== "usb") fail("tethering_settings_usb_required");
+      await this.verifySystemPackage("com.android.settings", "tethering_settings_system_package_required");
+      verifyTetheringUnlocked((await this.command(["shell", "dumpsys", "window", "policy"])).toString());
+      // Quote the fixed component for Android's shell so '$' is not expanded.
+      const [intent, component] = tetheringTargets[tetheringPage];
+      await this.command(["shell", "am", "start", "--user", "current", "-a", intent, "-n", component], { beforeInvoke: beforeSend });
+      return;
+    }
     let args;
     if (action === "tap" || action === "swipe") args = screenGestureArguments(action, values, current.size);
     else if (action === "text") {

@@ -1,4 +1,5 @@
 import type { ItineraryStage, ItineraryStop, Operation } from "./index";
+import type { PrivateCommandOwnerQualification } from "../../../contracts/src/private-command-owner";
 
 /** User intent is persisted independently of unavailable provider evidence. */
 export interface ItineraryDraftInputs {
@@ -57,4 +58,6 @@ export interface ItineraryDraftLibrary {
   items: Array<Pick<ItineraryDraft, "id" | "title" | "revision" | "updatedAt">>;
   nextCursor: string | null;
   scope: "local-owner-poc";
+  /** Absent on older APIs: readable history is not original-attempt authority. */
+  ownerQualification?: PrivateCommandOwnerQualification;
 }

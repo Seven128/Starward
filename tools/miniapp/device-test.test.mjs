@@ -12,7 +12,7 @@ import { automationEndpoint, inspectRuntime } from "./device-runtime.mjs";
 import { main, parseArguments } from "./device-test.mjs";
 import { terminalQrPng, remoteProgressConsumer, remoteDeadline } from "./device-qr.mjs";
 
-import { activity, permissionsActivity, systemLocationActivity, permissionHistory, png } from "./device-test-fixtures.mjs";
+import { activity, permissionsActivity, systemLocationActivity, tetheringSettingsActivity, wifiTetheringSettingsActivity, unlockedTetheringPolicy, permissionHistory, png } from "./device-test-fixtures.mjs";
 
 const testAppId = ["wx", "1234567890abcdef"].join("");
 const locationPickerActivity = "com.tencent.mm/com.tencent.mm.plugin.location_soso.SoSoProxyUI";
@@ -30,8 +30,12 @@ async function session(t) {
   t.after(() => rm(state.directory, { recursive: true, force: true }));
   return state;
 }
-function adbDriver({ changed = false, permissions = false, osLocation = false, locationPicker = false, systemPackage = true } = {}) {
+function adbDriver({ changed = false, permissions = false, osLocation = false, locationPicker = false, systemPackage = true,
+  tethering = false, wifiTethering = false, tetheringWindowType = "BASE_APPLICATION", tetheringPolicy = unlockedTetheringPolicy, tetheringReplyLost = false } = {}) {
   const calls = [];
+  let tetheringPage = wifiTethering ? "wifi" : tethering ? "more" : null;
+  const tetheringStack = [];
+  const visibleActivity = () => tetheringPage === "wifi" ? wifiTetheringSettingsActivity : tetheringPage === "more" ? tetheringSettingsActivity : locationPicker ? locationPickerActivity : osLocation ? systemLocationActivity : permissions ? permissionsActivity : activity;
   const driver = new AdbDevice("fixture-adb", async (_file, args) => {
     calls.push(args);
     if (args.join(" ") === "version") return Buffer.from("Android Debug Bridge version 1.0.41");
@@ -39,11 +43,28 @@ function adbDriver({ changed = false, permissions = false, osLocation = false, l
     if (args.join(" ") === "-d get-state") return Buffer.from("device\n");
     if (args.join(" ") === "-d get-serialno") return Buffer.from("private-serial\n");
     const command = args.slice(2).join(" ");
-    if (command === "shell dumpsys activity activities") return Buffer.from(locationPicker ? permissionHistory().replaceAll(permissionsActivity, locationPickerActivity) : osLocation ? permissionHistory().replaceAll(permissionsActivity, systemLocationActivity) : permissions ? permissionHistory() : `mResumedActivity: ActivityRecord{abc u0 ${activity} t1}`);
-    if (command === "shell dumpsys window windows") return Buffer.from(`mCurrentFocus=Window{abc u0 ${locationPicker ? locationPickerActivity : osLocation ? systemLocationActivity : permissions ? permissionsActivity : activity}}`);
+    if (command === "shell dumpsys activity activities") return Buffer.from(tetheringPage ? `mResumedActivity: ActivityRecord{abc u0 ${visibleActivity()} t1}` : locationPicker ? permissionHistory().replaceAll(permissionsActivity, locationPickerActivity) : osLocation ? permissionHistory().replaceAll(permissionsActivity, systemLocationActivity) : permissions ? permissionHistory() : `mResumedActivity: ActivityRecord{abc u0 ${activity} t1}`);
+    if (command === "shell dumpsys window windows") return Buffer.from(tetheringPage
+      ? `Window #0 Window{abc u0 ${visibleActivity()}}:\n mAttrs={(0,0)(fillxfill) sim={adjust=resize} ty=${tetheringWindowType} fmt=TRANSLUCENT`
+      : `mCurrentFocus=Window{abc u0 ${visibleActivity()}}`);
+    if (command === "shell dumpsys window displays") return Buffer.from(`Display: mDisplayId=0\n mCurrentFocus=Window{abc u0 ${visibleActivity()}}`);
+    if (command === "shell dumpsys window policy") return Buffer.from(tetheringPolicy);
     if (command === "shell dumpsys package com.android.permissioncontroller") return Buffer.from(systemPackage ? "pkgFlags=[ SYSTEM HAS_CODE ]\n codePath=/system_ext/priv-app/PermissionController" : "pkgFlags=[ HAS_CODE ]\n codePath=/data/app/unknown");
+    if (command === "shell dumpsys package com.android.settings") return Buffer.from(systemPackage ? "pkgFlags=[ SYSTEM HAS_CODE ]\n codePath=/system_ext/priv-app/Settings" : "pkgFlags=[ HAS_CODE ]\n codePath=/data/app/unknown");
+    if (command === "shell am start --user current -a android.settings.TETHER_SETTINGS -n 'com.android.settings/.Settings$TetherSettingsActivity'") {
+      tetheringStack.push(tetheringPage); tetheringPage = "more";
+      if (tetheringReplyLost) throw new Error("device_test_tool_failed");
+      return Buffer.from("Status: ok");
+    }
+    if (command === "shell am start --user current -a com.android.settings.WIFI_TETHER_SETTINGS -n 'com.android.settings/.Settings$WifiTetherSettingsActivity'") {
+      tetheringStack.push(tetheringPage); tetheringPage = "wifi";
+      return Buffer.from("Status: ok");
+    }
     if (command === "exec-out screencap -p") return png(changed ? 2400 : 1080, changed ? 1080 : 2400);
-    if (command.startsWith("shell input")) return Buffer.alloc(0);
+    if (command.startsWith("shell input")) {
+      if (command.endsWith("KEYCODE_BACK")) tetheringPage = tetheringStack.pop() ?? null;
+      return Buffer.alloc(0);
+    }
     throw new Error("unexpected_driver_call");
   });
   return { driver, calls };
@@ -361,6 +382,250 @@ test("native location picker fresh capture permits only one Back, never selectio
   assert.ok(calls.some(args => args.join(" ").endsWith("input keyevent KEYCODE_BACK")));
   await assert.rejects(main(["back", "--session", state.directory], context), /capture_required/u);
   assert.ok(!JSON.stringify(output).includes("private-serial"));
+});
+
+const openTethering = sessionDirectory => ["open-tethering-settings", "--session", sessionDirectory, "--confirm", "authorized_network_setup"];
+
+test("tethering settings has an exact separate activity and explicit USB authorization", () => {
+  const foreground = value => `topResumedActivity=ActivityRecord{abc u0 ${value} t1}`;
+  assert.equal(foregroundActivity(foreground("com.android.settings/.Settings$TetherSettingsActivity"), { permissionScope: "tethering-settings" }), tetheringSettingsActivity);
+  assert.throws(() => foregroundActivity(foreground(tetheringSettingsActivity)), /wechat_miniapp_foreground_required/u);
+  for (const value of ["com.android.settings/.Settings", "com.android.settings/.Settings$WifiTetherSettingsActivity", "com.android.settings/.ConfirmLockPassword", "com.android.systemui/.keyguard.KeyguardActivity", "com.other/.Settings$TetherSettingsActivity", activity]) {
+    assert.throws(() => foregroundActivity(foreground(value), { permissionScope: "tethering-settings" }), /tethering_settings_foreground_required/u);
+  }
+  assert.throws(() => parseArguments(["open-tethering-settings", "--session", "unused"]), /argument_missing/u);
+  assert.throws(() => parseArguments([...openTethering("unused").slice(0, -1), "unrelated"]), /authorization_required/u);
+  assert.throws(() => parseArguments([...openTethering("unused"), "--transport", "wireless"]), /tethering_settings_usb_required/u);
+  assert.throws(() => parseArguments(["capture-tethering-settings", "--session", "unused", "--transport", "wireless"]), /tethering_settings_usb_required/u);
+  assert.throws(() => parseArguments([...openTethering("unused"), "--activity", "com.other/.Activity"]), /argument_invalid/u);
+});
+
+test("owned tethering flow consumes the Mini Program grant, permits fresh tap/Back and retires on return", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver(), output = [];
+  const context = { adb: driver, emit: value => output.push(value) };
+  await assert.rejects(main(["capture-tethering-settings", "--session", state.directory], context), /tethering_settings_owner_required/u);
+  await assert.rejects(main(openTethering(state.directory), context), /recent_capture_required/u);
+  await main(["capture", "--session", state.directory], context);
+  const initial = await loadSession(state.directory);
+  await main(openTethering(state.directory), context);
+  const opened = await loadSession(state.directory);
+  assert.equal(opened.capture, null);
+  assert.equal(opened.tetheringSettings.fromCaptureId, initial.capture.captureId);
+  assert.equal(opened.tetheringSettings.device, initial.capture.device);
+  assert.equal(calls.filter(args => args.includes("am")).length, 1);
+  assert.equal(calls.find(args => args.includes("am")).at(-1), "'com.android.settings/.Settings$TetherSettingsActivity'");
+  await assert.rejects(main(["capture", "--session", state.directory], context), /wechat_miniapp_foreground_required/u);
+  await assert.rejects(main(openTethering(state.directory), context), /recent_capture_required/u);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  assert.equal(output.at(-1).screenScope, "tethering-settings");
+  await main(["tap", "--session", state.directory, "--x", "0.5", "--y", "0.25"], context);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.equal(calls.filter(args => args.includes("input")).length, 1);
+  await assert.rejects(main(["tap", "--session", state.directory, "--x", "0.5", "--y", "0.25"], context), /recent_capture_required/u);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  await main(["back", "--session", state.directory], context);
+  await main(["capture", "--session", state.directory], context);
+  assert.equal((await loadSession(state.directory)).tetheringSettings, undefined);
+  await assert.rejects(main(["capture-tethering-settings", "--session", state.directory], context), /tethering_settings_owner_required/u);
+  assert.equal(calls.filter(args => args.includes("input")).length, 2);
+  assert.ok(!JSON.stringify(output).includes("private-serial"));
+});
+
+test("tethering entry is not dispatched with an expired, scoped, untrusted or locked source", async (t) => {
+  for (const scenario of [
+    { options: {}, expire: true, error: /recent_capture_required/u },
+    { options: { permissions: true }, scoped: true, error: /miniapp_capture_required/u },
+    { options: { systemPackage: false }, error: /system_package_required/u },
+    { options: { tetheringPolicy: unlockedTetheringPolicy.replace("showing=false", "showing=true") }, error: /unlocked_required/u },
+    { options: { tetheringPolicy: "unknown OEM lock state" }, error: /unlocked_unproven/u },
+  ]) {
+    const state = await session(t), { driver, calls } = adbDriver(scenario.options);
+    const context = { adb: driver, emit: () => {} };
+    await main([scenario.scoped ? "capture-permissions" : "capture", "--session", state.directory], context);
+    if (scenario.expire) {
+      await withSession(state.directory, async current => { current.capture.at = Date.now() - 60_001; await writeFile(path.join(state.directory, "session.json"), JSON.stringify(current)); });
+    }
+    await assert.rejects(main(openTethering(state.directory), context), scenario.error);
+    assert.equal(calls.filter(args => args.includes("am")).length, 0);
+    assert.equal((await loadSession(state.directory)).tetheringSettings, undefined);
+  }
+});
+
+test("tethering capture rejects same-activity dialogs, lock/unknown policy and non-system Settings", async () => {
+  for (const options of [
+    { tetheringWindowType: "APPLICATION" },
+    { tetheringWindowType: "APPLICATION_ATTACHED_DIALOG" },
+    { tetheringWindowType: "unknown" },
+    { tetheringPolicy: unlockedTetheringPolicy.replace("inputRestricted=false", "inputRestricted=true") },
+    { tetheringPolicy: unlockedTetheringPolicy.replace("KeyguardServiceDelegate", "unknownDelegate") },
+    { systemPackage: false },
+  ]) {
+    const { driver, calls } = adbDriver({ tethering: true, ...options });
+    await driver.select();
+    await assert.rejects(driver.screenshot({ permissionScope: "tethering-settings" }), /tethering_settings_/u);
+    assert.ok(!calls.some(args => args.includes("screencap")));
+  }
+});
+
+test("tethering capture never authorizes text, swipes or recording and checks dispatch-time freshness", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver();
+  const context = { adb: driver, emit: () => {} };
+  await main(["capture", "--session", state.directory], context);
+  await main(openTethering(state.directory), context);
+  for (const command of [
+    ["text", "--value", "credential"],
+    ["swipe", "--x", ".5", "--y", ".5", "--to-x", ".5", "--to-y", ".8", "--ms", "500"],
+    ["record"], ["record-tap", "--x", ".5", "--y", ".5"],
+  ]) {
+    await main(["capture-tethering-settings", "--session", state.directory], context);
+    await assert.rejects(main([...command, "--session", state.directory], context), /permission_input_invalid|recording_scope_invalid/u);
+    assert.equal((await loadSession(state.directory)).capture, null);
+  }
+  assert.ok(!calls.some(args => args.includes("input") || args.includes("sh")));
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  const capturedAt = (await loadSession(state.directory)).capture.at;
+  let now = capturedAt;
+  t.mock.method(Date, "now", () => now);
+  const screenshot = driver.screenshot.bind(driver);
+  driver.screenshot = async options => { const value = await screenshot(options); now = capturedAt + 60_001; return value; };
+  await assert.rejects(main(["tap", "--session", state.directory, "--x", ".5", "--y", ".5"], context), /recent_capture_required/u);
+  assert.ok(!calls.some(args => args.includes("input")));
+});
+
+test("an uncertain tethering launch retains only its original device scope, not input replay authority", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver({ tetheringReplyLost: true });
+  const context = { adb: driver, emit: () => {} };
+  await main(["capture", "--session", state.directory], context);
+  await assert.rejects(main(openTethering(state.directory), context), /device_test_tool_failed/u);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.ok((await loadSession(state.directory)).tetheringSettings);
+  await assert.rejects(main(openTethering(state.directory), context), /recent_capture_required/u);
+  assert.equal(calls.filter(args => args.includes("am")).length, 1);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  const originalSelect = driver.select.bind(driver);
+  driver.select = async () => "different-device";
+  await assert.rejects(main(["capture-tethering-settings", "--session", state.directory], context), /device_changed_capture_again/u);
+  driver.select = originalSelect;
+});
+
+const openWifiTethering = sessionDirectory => [...openTethering(sessionDirectory), "--page", "wifi"];
+const captureWifiTethering = sessionDirectory => ["capture-tethering-settings", "--session", sessionDirectory, "--page", "wifi"];
+
+test("the observed Wi-Fi tether page has a closed distinct scope and destination", () => {
+  const foreground = value => `topResumedActivity=ActivityRecord{abc u0 ${value} t1}`;
+  assert.equal(foregroundActivity(foreground("com.android.settings/.Settings$WifiTetherSettingsActivity"), { permissionScope: "wifi-tethering-settings" }), wifiTetheringSettingsActivity);
+  for (const value of [tetheringSettingsActivity, "com.android.settings/.Settings", "com.android.settings/.ConfirmLockPassword", "com.other/.Settings$WifiTetherSettingsActivity"]) {
+    assert.throws(() => foregroundActivity(foreground(value), { permissionScope: "wifi-tethering-settings" }), /tethering_settings_foreground_required/u);
+  }
+  assert.equal(parseArguments(openTethering("unused")).options.page, "more");
+  assert.equal(parseArguments(openWifiTethering("unused")).options.page, "wifi");
+  for (const page of ["any", "com.android.settings/.Settings", "wifi;input"]) {
+    assert.throws(() => parseArguments([...openTethering("unused"), "--page", page]), /page_invalid/u);
+    assert.throws(() => parseArguments(["capture-tethering-settings", "--session", "unused", "--page", page]), /page_invalid/u);
+  }
+  assert.throws(() => parseArguments(["open-tethering-settings", "--session", "unused", "--page", "wifi"]), /argument_missing/u);
+});
+
+test("explicit Wi-Fi navigation preserves the original owner and safely returns through both pages", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver(), output = [];
+  const context = { adb: driver, emit: value => output.push(value) };
+  await main(["capture", "--session", state.directory], context);
+  await main(openTethering(state.directory), context);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  const more = await loadSession(state.directory), beforeScreens = calls.filter(args => args.includes("screencap")).length;
+  await assert.rejects(main(captureWifiTethering(state.directory), context), /wifi_tethering_settings_owner_required/u);
+  assert.equal(calls.filter(args => args.includes("screencap")).length, beforeScreens);
+  assert.equal((await loadSession(state.directory)).capture.captureId, more.capture.captureId);
+  await main(openWifiTethering(state.directory), context);
+  const navigated = await loadSession(state.directory);
+  assert.equal(navigated.capture, null);
+  assert.equal(navigated.tetheringSettings.fromCaptureId, more.tetheringSettings.fromCaptureId);
+  assert.equal(navigated.tetheringSettings.device, more.tetheringSettings.device);
+  assert.equal(navigated.tetheringSettings.wifiNavigation.fromCaptureId, more.capture.captureId);
+  assert.equal(navigated.tetheringSettings.wifiNavigation.schema, "starward-device-wifi-tethering-navigation-v1");
+  const navigation = calls.filter(args => args.includes("am")).at(-1);
+  assert.deepEqual(navigation.slice(2), ["shell", "am", "start", "--user", "current", "-a", "com.android.settings.WIFI_TETHER_SETTINGS", "-n", "'com.android.settings/.Settings$WifiTetherSettingsActivity'"]);
+  await main(captureWifiTethering(state.directory), context);
+  assert.equal(output.at(-1).screenScope, "wifi-tethering-settings");
+  await main(["tap", "--session", state.directory, "--x", ".5", "--y", ".25"], context);
+  assert.equal(calls.filter(args => args.includes("input")).length, 1);
+  await assert.rejects(main(["tap", "--session", state.directory, "--x", ".5", "--y", ".25"], context), /recent_capture_required/u);
+  for (const command of [["text", "--value", "credential"], ["swipe", "--x", ".5", "--y", ".5", "--to-x", ".5", "--to-y", ".8", "--ms", "500"], ["record"]]) {
+    await main(captureWifiTethering(state.directory), context);
+    await assert.rejects(main([...command, "--session", state.directory], context), /permission_input_invalid|recording_scope_invalid/u);
+    assert.equal((await loadSession(state.directory)).capture, null);
+  }
+  await main(captureWifiTethering(state.directory), context);
+  await main(["back", "--session", state.directory], context);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  assert.equal(output.at(-1).screenScope, "tethering-settings");
+  assert.ok((await loadSession(state.directory)).tetheringSettings.wifiNavigation);
+  await main(["back", "--session", state.directory], context);
+  await main(["capture", "--session", state.directory], context);
+  assert.equal((await loadSession(state.directory)).tetheringSettings, undefined);
+  await assert.rejects(main(captureWifiTethering(state.directory), context), /tethering_settings_owner_required/u);
+  assert.equal(calls.filter(args => args.includes("am")).length, 2);
+  assert.equal(calls.filter(args => args.includes("input")).length, 3);
+});
+
+test("a direct Wi-Fi entry qualifies only its fixed page and refuses unowned permission sources", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver(), context = { adb: driver, emit: () => {} };
+  await main(["capture", "--session", state.directory], context);
+  await main(openWifiTethering(state.directory), context);
+  await main(captureWifiTethering(state.directory), context);
+  assert.equal((await loadSession(state.directory)).capture.activity, wifiTetheringSettingsActivity);
+  assert.equal(calls.filter(args => args.includes("am")).length, 1);
+  const rejectedState = await session(t), rejected = adbDriver({ permissions: true });
+  await main(["capture-permissions", "--session", rejectedState.directory], { adb: rejected.driver, emit: () => {} });
+  await assert.rejects(main(openWifiTethering(rejectedState.directory), { adb: rejected.driver, emit: () => {} }), /miniapp_capture_required/u);
+  assert.equal(rejected.calls.filter(args => args.includes("am")).length, 0);
+  await withSession(state.directory, async current => {
+    current.tetheringSettings.wifiNavigation = { schema: "unknown", fromCaptureId: "old", requestedAt: Date.now() };
+    await writeFile(path.join(current.directory, "session.json"), JSON.stringify(current));
+  });
+  await assert.rejects(main(captureWifiTethering(state.directory), context), /wifi_tethering_settings_owner_required/u);
+});
+
+test("Wi-Fi navigation that expires before dispatch preserves the already qualified more-page owner", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver(), context = { adb: driver, emit: () => {} };
+  await main(["capture", "--session", state.directory], context);
+  await main(openTethering(state.directory), context);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  const before = await loadSession(state.directory), capturedAt = before.capture.at;
+  let now = capturedAt;
+  t.mock.method(Date, "now", () => now);
+  const screenshot = driver.screenshot.bind(driver);
+  driver.screenshot = async options => { const value = await screenshot(options); now = capturedAt + 60_001; return value; };
+  await assert.rejects(main(openWifiTethering(state.directory), context), /recent_capture_required/u);
+  const after = await loadSession(state.directory);
+  assert.deepEqual(after.tetheringSettings, before.tetheringSettings);
+  assert.equal(after.capture, null);
+  assert.equal(calls.filter(args => args.includes("am")).length, 1);
+});
+
+test("an uncertain fixed Wi-Fi navigation can be captured without replaying it", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver(), context = { adb: driver, emit: () => {} };
+  await main(["capture", "--session", state.directory], context);
+  await main(openTethering(state.directory), context);
+  await main(["capture-tethering-settings", "--session", state.directory], context);
+  const command = driver.command.bind(driver);
+  driver.command = async (args, options) => { const result = await command(args, options); if (args.includes("com.android.settings.WIFI_TETHER_SETTINGS")) throw new Error("device_test_tool_failed"); return result; };
+  await assert.rejects(main(openWifiTethering(state.directory), context), /device_test_tool_failed/u);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.ok((await loadSession(state.directory)).tetheringSettings.wifiNavigation);
+  await assert.rejects(main(openWifiTethering(state.directory), context), /recent_capture_required/u);
+  await main(captureWifiTethering(state.directory), context);
+  assert.equal((await loadSession(state.directory)).capture.activity, wifiTetheringSettingsActivity);
+  assert.equal(calls.filter(args => args.includes("am")).length, 2);
+});
+
+test("the Wi-Fi page keeps the same system, base-window and unlocked guards", async () => {
+  for (const options of [{ tetheringWindowType: "APPLICATION" }, { systemPackage: false }, { tetheringPolicy: unlockedTetheringPolicy.replace("occluded=false", "occluded=true") }]) {
+    const { driver, calls } = adbDriver({ wifiTethering: true, ...options });
+    await driver.select();
+    await assert.rejects(driver.screenshot({ permissionScope: "wifi-tethering-settings" }), /tethering_settings_/u);
+    assert.ok(!calls.some(args => args.includes("screencap")));
+  }
 });
 
 test("pixel coordinates, PNG header and swipe duration have explicit bounds", async () => {

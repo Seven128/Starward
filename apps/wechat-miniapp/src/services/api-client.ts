@@ -18,7 +18,6 @@ import { contributionSubmitBelongsTo, createContributionSubmitRetry } from "./co
 import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo } from "./profile-link-retry";
 import {
   CURRENT_DEEP_SKY_CATALOG_VERSION,
-  MINIAPP_API_OPERATIONS,
   type ApiEnvelope,
   type ApiError,
   type AuthSessionData,

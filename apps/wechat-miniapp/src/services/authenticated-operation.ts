@@ -1,4 +1,4 @@
-import { MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type ApiEnvelope, type AuthSessionData, type MiniappApiJsonOperationId, type MiniappApiRequest, type MiniappApiResponse } from "@starward/miniapp-contracts";
+import { MINIAPP_API_BASE_PATH, MINIAPP_API_JSON_OPERATIONS, type ApiEnvelope, type AuthSessionData, type MiniappApiJsonOperationId, type MiniappApiRequest, type MiniappApiResponse } from "@starward/miniapp-contracts";
 export type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
 export interface RequestOperationScope {
   assertCurrent(): void;
@@ -22,7 +22,7 @@ function operationPath(
   pathParams: Readonly<Record<string, string>> = {},
   query = "",
 ) {
-  let value: string = MINIAPP_API_OPERATIONS[operationId].path;
+  let value: string = MINIAPP_API_JSON_OPERATIONS[operationId].path;
   for (const [key, replacement] of Object.entries(pathParams))
     value = value.replace(
       "{" + key + "}",
@@ -66,7 +66,7 @@ async function requestOperation<K extends MiniappApiJsonOperationId>(
       key,
       operationPath(operationId, options.pathParams, options.query),
       {
-        method: MINIAPP_API_OPERATIONS[operationId].method,
+        method: MINIAPP_API_JSON_OPERATIONS[operationId].method,
         ...(options.body === undefined ? {} : { body: options.body }),
         ...(options.idempotencyKey
           ? { idempotencyKey: options.idempotencyKey }

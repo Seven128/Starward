@@ -32,6 +32,7 @@ This on-demand subdomain node normatively continues the Mobile Screen Contract f
 - Fixed / Overlay ownership: return/safety actions remain reachable in the safe area; native/vendor surfaces require pre-warning in red-light mode; no layer may flash to bright white/blue when controllable.
 - Material controls in order: `offline-pack-manager`, `field-dashboard`, `night-red-mode-toggle`, `field-tool-grid`, `return-to-parking`, `backup-switcher`, `safety-session-panel`, `location-share-action`, `offline-sync-queue`.
 - Commit / Exit: pack activation is atomic after file checksum/version validation; queued writes and share/session state persist; stop/revoke is explicit and idempotent.
+- Private note authority: the Field actor independently qualifies new frozen commands; uncertain retry retains its original owner/body/key. Private list/detail/form projections follow current read qualification, withdraw on denial and reject older results after that denial, while a new successful read can restore access. Scoped recovery input/pending bytes survive withdrawal and cannot become another owner's new note. This does not establish an offline pack/queue, production identity, native storage/lifecycle or full Field completion.
 - Verification emphasis: flight mode plus app kill/restart, corrupt/partial pack rejection, red-light continuity, return route, bounded share expiry/revoke, queue conflict/replay.
 
 ## `community-contribution`

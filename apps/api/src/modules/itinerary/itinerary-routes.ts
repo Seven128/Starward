@@ -1,7 +1,7 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ItineraryCommandError } from "./draft-command";
 import type { ItineraryActor, ItineraryService } from "./itinerary-service";
-import { resolveLocalPocOwner } from "../../local-poc-owner";
+import { resolveLocalPocOwner, restrictLocalPocOwner } from "../../local-poc-owner";
 
 export type ItineraryActorResolver = (request: Pick<FastifyRequest, "ip" | "headers">) => Promise<ItineraryActor | null>;
 
@@ -17,8 +17,11 @@ function commandRequestError(error: FastifyError, _request: FastifyRequest, repl
 
 export function registerItineraryRoutes(app: FastifyInstance, service: Pick<ItineraryService, "list" | "get" | "command">, resolveActor: ItineraryActorResolver = async () => null) {
   const respond = async (request: FastifyRequest, reply: FastifyReply, work: (actor: ItineraryActor | null) => unknown) => {
-    reply.header("cache-control", "private, no-store").header("vary", "authorization");
-    try { return reply.send(work(await resolveActor(request))); }
+    reply.header("cache-control", "private, no-store").header("vary", "authorization, x-private-command-owner");
+    try {
+      const actor = restrictLocalPocOwner(await resolveActor(request), request.headers["x-private-command-owner"], reason => new ItineraryCommandError(`itinerary_owner_${reason}`, 403));
+      return reply.send(work(actor));
+    }
     catch (error) {
       if (error instanceof ItineraryCommandError) return reply.code(error.statusCode).send({ code: error.code, ...error.details, outcome: "rejected" });
       return reply.code(503).send({ code: "itinerary_storage_unavailable", outcome: "unknown", retryWithSameCommand: true });

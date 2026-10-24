@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import type { ApiEnvelope, ContributionMediaData, MiniappApiJsonOperationId, MiniappApiResponse } from "./index.ts";
 import {
@@ -10,13 +11,36 @@ import {
   assertFilterState,
   cloneUserPreferences,
   DEFAULT_USER_PREFERENCES,
+  MINIAPP_API_BASE_PATH,
+  MINIAPP_API_OPERATIONS,
+  MINIAPP_API_JSON_OPERATIONS,
   viewportRadiusKm,
 } from "./index.ts";
+import { MINIAPP_API_BASE_PATH as legacyApiBasePath } from "./generated/miniapp-api.generated.ts";
 import {
   TEST_POPULATION_DISCLOSURE,
   TEST_SPOTS,
   buildTestSpotDetail,
 } from "./catalog.ts";
+
+test("generated complete and JSON transport catalogues preserve declared methods, paths and membership", () => {
+  const declaration = JSON.parse(readFileSync(new URL("../api/miniapp.operations.json", import.meta.url), "utf8")) as {
+    basePath: string;
+    operations: Array<{ id: string; method: string; path: string; responseEnvelope?: boolean }>;
+  };
+  assert.equal(MINIAPP_API_BASE_PATH, declaration.basePath);
+  assert.equal(legacyApiBasePath, declaration.basePath);
+  const complete: Readonly<Record<string, { method: string; path: string }>> = MINIAPP_API_OPERATIONS;
+  const json: Readonly<Record<string, { method: string; path: string }>> = MINIAPP_API_JSON_OPERATIONS;
+  assert.deepEqual(Object.keys(complete), declaration.operations.map(operation => operation.id));
+  assert.deepEqual(Object.keys(json), declaration.operations.filter(operation => operation.responseEnvelope !== false).map(operation => operation.id));
+  for (const operation of declaration.operations) {
+    const transport = { method: operation.method, path: operation.path };
+    assert.deepEqual(complete[operation.id], transport, operation.id);
+    if (operation.responseEnvelope !== false) assert.deepEqual(json[operation.id], transport, operation.id);
+    else assert.equal(Object.hasOwn(json, operation.id), false, operation.id);
+  }
+});
 
 test("published image transport is raw bytes and excluded from the JSON requester", () => {
   const image: MiniappApiResponse<"spotContributionImageGet"> = new Uint8Array([0xff, 0xd8]);

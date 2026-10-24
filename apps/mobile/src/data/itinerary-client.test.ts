@@ -1,13 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("@react-native-async-storage/async-storage", () => ({ default: {} }));
 vi.mock("expo-crypto", () => ({ randomUUID: () => "generated-key" }));
-import { createItineraryClient } from "./itinerary-client";
+import { createItineraryClient as actualItineraryClient } from "./itinerary-client";
+import { qualifiedDraftCommandFetcher } from "../../../../tests/fixtures/private-command-owner";
 import type { ItineraryDraft, ItineraryDraftResult } from "../../../../packages/domain/src/itinerary/draft";
 const input = { command: "create-draft" as const, input: { title: "原始夜晚", timezone: "Asia/Shanghai", inputs: { date: "2026-11-01", origin: "广州", people: 2, transport: "drive" as const, target: "moon", userType: "family", latestReturnLocal: null, overnight: false, collaborative: false as const } } };
 function storage() { const values = new Map<string, string>(); return { values, getItem: async (key: string) => values.get(key) ?? null, setItem: async (key: string, value: string) => { values.set(key, value); }, removeItem: async (key: string) => { values.delete(key); } }; }
 function plan(revision = 1): ItineraryDraft { return { schemaVersion: "starward-itinerary-draft-v1", id: "plan-1", ownerId: "local-owner", title: input.input.title, timezone: input.input.timezone, revision, sequence: revision, createdAt: "2026-10-23T12:00:00Z", updatedAt: "2026-10-23T12:00:00Z", inputs: input.input.inputs, source: { kind: "user-input", capturedAt: "2026-10-23T12:00:00Z" }, state: "draft", evidence: { route: "missing", weather: "missing", astronomy: "missing", spot: "unverified" }, stages: [], stops: [], operationLog: [] }; }
 function reply(key: string): ItineraryDraftResult { return { schemaVersion: "starward-itinerary-v2", status: "saved", replayed: false, itinerary: plan(), receipt: { idempotencyKey: key, itineraryId: "plan-1", revision: 1, committedAt: "2026-10-23T12:00:00Z" } }; }
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
+const createItineraryClient = (options: Parameters<typeof actualItineraryClient>[0] = {}) => actualItineraryClient({ ...options, fetcher: qualifiedDraftCommandFetcher(options.fetcher ?? fetch, "itinerary") });
 
 describe("itinerary client command recovery", () => {
   it("does not turn a generic 413 or a retry parser rejection into proof about an earlier attempt", async () => {

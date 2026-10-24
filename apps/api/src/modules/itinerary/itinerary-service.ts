@@ -12,7 +12,10 @@ export class ItineraryService {
     if (!actor?.id || actor.scope !== "local-owner-poc") throw new ItineraryCommandError("itinerary_owner_required", 403);
     return actor;
   }
-  list(actor: ItineraryActor | null, cursor?: number) { return this.repository.list(this.actor(actor).id, cursor); }
+  list(actor: ItineraryActor | null, cursor?: number) {
+    const owner = this.actor(actor), page = this.repository.list(owner.id, cursor);
+    return { ...page, ownerQualification: { schemaVersion: "starward-private-command-owner-v1" as const, ownerId: owner.id } };
+  }
   get(actor: ItineraryActor | null, id: string, revision?: number) {
     const result = this.repository.read(this.actor(actor).id, id, revision);
     if (!result) throw new ItineraryCommandError("itinerary_not_found", 404);

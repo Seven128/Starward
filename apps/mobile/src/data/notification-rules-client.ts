@@ -1,26 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { randomUUID } from "expo-crypto";
 import { NotificationRuleValidationError, parseNotificationRuleCommand, parseNotificationRuleDefinition, type NotificationRule, type NotificationRuleCommand, type NotificationRuleLibrary, type NotificationRuleResult } from "../../../../packages/domain/src/notifications/rules";
-import { createPendingApiCommand, type CommandInput, type PendingCommandStorage } from "./pending-api-command";
+import type { CommandInput, PendingCommandStorage } from "./pending-api-command";
+import { createOwnerQualifiedApiCommand } from "./owner-qualified-api-command";
 import { createNotificationInboxClient, NotificationInboxRequestError } from "./notification-inbox-client";
 export type { NotificationRule, NotificationRuleDefinition, NotificationRuleCommand } from "../../../../packages/domain/src/notifications/rules";
 export type NotificationRuleInput = CommandInput<NotificationRuleCommand>;
-interface RuleOwnerQualification { schemaVersion: "starward-notification-rule-owner-v1"; ownerId: string }
-type StoredRuleCommand = NotificationRuleCommand & {
-  ownerQualification?: RuleOwnerQualification;
-  /** Captured restriction for a new intent only; never persisted or sent. */
-  requestedOwnerId?: string | null;
-};
-function wireCommand(value: StoredRuleCommand): NotificationRuleCommand {
-  const { ownerQualification: _qualification, requestedOwnerId: _requestedOwner, ...wire } = value;
-  return wire as NotificationRuleCommand;
-}
-function qualification(value: unknown): value is RuleOwnerQualification {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const v = value as Record<string, unknown>;
-  return Object.keys(v).length === 2 && v.schemaVersion === "starward-notification-rule-owner-v1"
-    && typeof v.ownerId === "string" && !!v.ownerId.trim() && !/[\u0000-\u001f]/u.test(v.ownerId);
-}
 // These errors are raised inside mutate, only after this actor/key's receipt
 // was absent. Input parsing and HTTP limits run before that durable lookup.
 const receiptCheckedRejections = new Set(["notification_rule_revision_conflict"]);
@@ -51,36 +36,25 @@ export function createNotificationRulesClient(options: { baseUrl?: string; fetch
     if (expectedOwnerId && rule.ownerId !== expectedOwnerId) throw new NotificationRuleRequestError("notification_rule_readback_unconfirmed", false, undefined, expectedOwnerId);
     return rule;
   };
-  const owner = createPendingApiCommand<StoredRuleCommand, NotificationRule>({
+  const owner = createOwnerQualifiedApiCommand<NotificationRuleCommand, NotificationRule, "starward-notification-rule-owner-v1">({
+    schemaVersion: "starward-notification-rule-owner-v1",
     storage: options.storage ?? AsyncStorage, storageKey: `starward-notification-rule-pending-v2:${baseUrl ?? "unconfigured"}`, newKey: options.newKey ?? randomUUID,
-    parse: value => {
-      try {
-        if (!value || typeof value !== "object" || Array.isArray(value)) throw Error("invalid");
-        const stored = value as StoredRuleCommand;
-        parseNotificationRuleCommand(wireCommand(stored));
-        if (Object.hasOwn(stored, "requestedOwnerId") || Object.hasOwn(stored, "ownerQualification") && !qualification(stored.ownerQualification)) throw Error("invalid");
-      } catch { throw new NotificationRuleRequestError("notification_rule_pending_invalid"); }
-      // Old unqualified bytes remain readable, but cannot acquire a later owner.
-      return value as StoredRuleCommand;
-    },
-    prepare: async command => {
-      const wire = wireCommand(command);
-      try { parseNotificationRuleCommand(wire); }
+    parseCommand: value => { parseNotificationRuleCommand(value); return value as NotificationRuleCommand; },
+    currentOwner,
+    qualify: async (command, expected) => {
+      try { parseNotificationRuleCommand(command); }
       catch (error) { throw new NotificationRuleRequestError(error instanceof NotificationRuleValidationError ? error.code : "invalid_notification_rule_command", true); }
-      const expected = command.requestedOwnerId ?? undefined;
       let qualified;
       try { qualified = await inboxClient.controls(undefined, expected); }
       catch (error) { throw new NotificationRuleRequestError("notification_rule_owner_unconfirmed", false, error instanceof NotificationInboxRequestError ? error.statusCode : undefined, expected); }
       if (!inboxClient.canPublishControls(qualified)) throw new NotificationRuleRequestError("notification_rule_owner_changed_before_dispatch");
-      return { ...wire, ownerQualification: { schemaVersion: "starward-notification-rule-owner-v1", ownerId: qualified.ownerId } };
+      return qualified.ownerId;
     },
     error: reason => new NotificationRuleRequestError(`notification_rule_${reason}`),
     canDiscard: error => error instanceof NotificationRuleRequestError && error.rejected,
-    dispatch: async (command, retry) => {
-      if (!qualification(command.ownerQualification)) throw new NotificationRuleRequestError("notification_rule_pending_owner_unqualified");
-      const originalOwner = command.ownerQualification.ownerId, wire = wireCommand(command);
+    dispatch: async (command, retry, originalOwner) => {
       let result: NotificationRuleResult;
-      try { result = await request<NotificationRuleResult>("/v2/notification-rules/commands", { method: "POST", body: JSON.stringify(wire) }, originalOwner); }
+      try { result = await request<NotificationRuleResult>("/v2/notification-rules/commands", { method: "POST", body: JSON.stringify(command) }, originalOwner); }
       catch (error) {
         if (retry && error instanceof NotificationRuleRequestError && error.rejected && !receiptCheckedRejections.has(error.code)) throw new NotificationRuleRequestError(error.code, false, error.statusCode, originalOwner);
         throw error;
@@ -97,7 +71,7 @@ export function createNotificationRulesClient(options: { baseUrl?: string; fetch
   });
   return {
     ...owner, get, inboxClient,
-    command: (input: NotificationRuleInput, expectedOwnerId = currentOwner()) => baseUrl ? owner.command({ ...input, requestedOwnerId: expectedOwnerId ?? null }) : Promise.reject(new NotificationRuleRequestError("notification_rule_api_base_url_missing")),
+    command: (input: NotificationRuleInput, expectedOwnerId = currentOwner()) => baseUrl ? owner.command(input, expectedOwnerId) : Promise.reject(new NotificationRuleRequestError("notification_rule_api_base_url_missing")),
     list: async (signal?: AbortSignal, cursor?: string, expectedOwnerId = currentOwner()) => {
       const result = await request<NotificationRuleLibrary>(`/v2/notification-rules${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, { signal }, expectedOwnerId);
       if (!Array.isArray(result.items) || result.scope !== "local-owner-poc") throw new NotificationRuleRequestError("notification_rule_response_invalid");

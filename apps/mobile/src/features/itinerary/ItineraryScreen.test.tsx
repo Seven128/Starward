@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createItineraryClient } from "../../data/itinerary-client";
 import type { ItineraryDraftCommand, ItineraryDraft } from "../../../../../packages/domain/src/itinerary/draft";
+import { privateOwnerQualification } from "../../../../../tests/fixtures/private-command-owner";
 
 const shell = vi.hoisted(() => ({ state: { decisionContext: { observingNight: "2026-11-01", timezone: "Asia/Shanghai", origin: "广州", target: "moon", profileId: "quick-observing-profile" }, location: { source: "manual" }, profiles: [{ id: "quick-observing-profile", observerTypes: ["family", "visual-observer"] }] }, listeners: new Set<() => void>() }));
 vi.mock("../../state/shell-store", async () => { const { useSyncExternalStore } = await import("react"); return { useShellStore: (selector: (state: typeof shell.state) => unknown) => useSyncExternalStore(callback => { shell.listeners.add(callback); return () => shell.listeners.delete(callback); }, () => selector(shell.state)) }; });
@@ -56,7 +57,7 @@ describe("itinerary explicit input and retry consumer", () => {
         if (loseReply) { loseReply = false; throw new Error("lost_commit_reply"); }
         return response({ schemaVersion: "starward-itinerary-v2", status: "saved", replayed: command.command === "create-draft", itinerary: saved, receipt: { idempotencyKey: command.idempotencyKey, itineraryId: saved!.id, revision: saved!.revision, committedAt: saved!.updatedAt } });
       }
-      return path.endsWith("/v2/itineraries") ? response({ schemaVersion: "starward-itinerary-v2", items: saved ? [saved] : [], nextCursor: null, scope: "local-owner-poc" }) : response({ schemaVersion: "starward-itinerary-v2", itinerary: saved });
+      return path.endsWith("/v2/itineraries") ? response({ schemaVersion: "starward-itinerary-v2", items: saved ? [saved] : [], nextCursor: null, scope: "local-owner-poc", ownerQualification: privateOwnerQualification() }) : response({ schemaVersion: "starward-itinerary-v2", itinerary: saved });
     }) as typeof fetch;
     let counter = 0;
     const client = createItineraryClient({ baseUrl: "http://local-api", fetcher, newKey: () => `key-${++counter}`, storage: { getItem: async key => values.get(key) ?? null, setItem: async (key, value) => { values.set(key, value); }, removeItem: async key => { values.delete(key); } } });
@@ -95,7 +96,7 @@ describe("itinerary explicit input and retry consumer", () => {
         saved = savedDraft(command);
         return response({ schemaVersion: "starward-itinerary-v2", status: "saved", replayed: false, itinerary: saved, receipt: { idempotencyKey: command.idempotencyKey, itineraryId: saved.id, revision: saved.revision, committedAt: saved.updatedAt } });
       }
-      return String(url).endsWith("/v2/itineraries") ? response({ schemaVersion: "starward-itinerary-v2", items: saved ? [saved] : [], nextCursor: null, scope: "local-owner-poc" }) : response({ schemaVersion: "starward-itinerary-v2", itinerary: saved });
+      return String(url).endsWith("/v2/itineraries") ? response({ schemaVersion: "starward-itinerary-v2", items: saved ? [saved] : [], nextCursor: null, scope: "local-owner-poc", ownerQualification: privateOwnerQualification() }) : response({ schemaVersion: "starward-itinerary-v2", itinerary: saved });
     }) as typeof fetch;
     let counter = 0;
     const client = createItineraryClient({ baseUrl: "http://local-api", fetcher, newKey: () => `key-${++counter}`, storage: { getItem: async key => values.get(key) ?? null, setItem: async (key, value) => { values.set(key, value); }, removeItem: async key => { values.delete(key); } } });
@@ -117,7 +118,7 @@ describe("itinerary explicit input and retry consumer", () => {
   });
   it.each(["base", "missing-profile"])("leaves observer type empty for %s instead of leaking profile identity", async profileId => {
     shell.state = { ...shell.state, decisionContext: { ...shell.state.decisionContext, profileId }, profiles: [{ id: "base", observerTypes: [] }] };
-    const client = createItineraryClient({ baseUrl: "http://local-api", fetcher: (async () => response({ schemaVersion: "starward-itinerary-v2", items: [], nextCursor: null, scope: "local-owner-poc" })) as typeof fetch, storage: { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined } });
+    const client = createItineraryClient({ baseUrl: "http://local-api", fetcher: (async () => response({ schemaVersion: "starward-itinerary-v2", items: [], nextCursor: null, scope: "local-owner-poc", ownerQualification: privateOwnerQualification() })) as typeof fetch, storage: { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined } });
     const { ItineraryScreen } = await import("./ItineraryScreen");
     await react.act(async () => root.render(<QueryClientProvider client={cache}><ItineraryScreen client={client} /></QueryClientProvider>));
     await waitFor(() => expect(button("plan-generate").disabled).toBe(false));

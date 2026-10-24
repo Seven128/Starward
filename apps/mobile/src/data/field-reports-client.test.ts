@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("@react-native-async-storage/async-storage", () => ({ default: {} }));
 vi.mock("expo-crypto", () => ({ randomUUID: () => "field-client-key" }));
-import { createFieldReportsClient } from "./field-reports-client";
+import { createFieldReportsClient as actualFieldReportsClient } from "./field-reports-client";
+import { qualifiedDraftCommandFetcher } from "../../../../tests/fixtures/private-command-owner";
 import { fieldReportInput, fieldReportResult, savedFieldReport } from "../../../../tests/fixtures/field-reports";
 
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
+const createFieldReportsClient = (options: Parameters<typeof actualFieldReportsClient>[0] = {}) => actualFieldReportsClient({ ...options, fetcher: qualifiedDraftCommandFetcher(options.fetcher ?? fetch, "field") });
 function storage() { const values = new Map<string, string>(); return { values, getItem: async (key: string) => values.get(key) ?? null, setItem: async (key: string, value: string) => { values.set(key, value); }, removeItem: async (key: string) => { values.delete(key); } }; }
 describe("private field report client intent and receipts", () => {
   it.each(["invalid_field_report", "field_report_request_body_too_large"])("retains an uncertain committed attempt when a retry is refused before receipt lookup: %s", async code => {

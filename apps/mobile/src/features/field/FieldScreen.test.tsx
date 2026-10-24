@@ -6,6 +6,7 @@ import { createFieldClient } from "../../data/field-client";
 import { createFieldReportsClient } from "../../data/field-reports-client";
 import type { FieldReportCommand, FieldReportDraft } from "../../../../../packages/domain/src/offline/field-reports";
 import { fieldReportInput, fieldReportResult, savedFieldReport } from "../../../../../tests/fixtures/field-reports";
+import { privateOwnerQualification } from "../../../../../tests/fixtures/private-command-owner";
 import { createDecisionContext } from "../../state/decision-context";
 
 const shell = vi.hoisted(() => {
@@ -52,7 +53,7 @@ function transport(loseFirstReply = false) {
       if (loss) { loss = false; throw new Error("lost_committed_field_reply"); }
       return response(receipt);
     }
-    if (String(url).endsWith("/v2/field-reports")) return response({ schemaVersion: "starward-field-reports-v2", scope: "local-owner-poc", items: [...reports.values()], nextCursor: null });
+    if (String(url).endsWith("/v2/field-reports")) return response({ schemaVersion: "starward-field-reports-v2", scope: "local-owner-poc", items: [...reports.values()], nextCursor: null, ownerQualification: privateOwnerQualification() });
     return response({ schemaVersion: "starward-field-reports-v2", report: reports.get(decodeURIComponent(String(url).split("/").at(-1)!)) });
   }) as typeof fetch;
   const storage = { getItem: async (key: string) => values.get(key) ?? null, setItem: async (key: string, value: string) => { values.set(key, value); }, removeItem: async (key: string) => { values.delete(key); } };

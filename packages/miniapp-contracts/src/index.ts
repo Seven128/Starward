@@ -49,7 +49,10 @@ export * from "./constellation-catalog.ts";
 export * from "./api-shapes.ts";
 export * from "./optical-hips-rights.ts";
 export * from "./optical-hips-source-identity.ts";
-export * from "./generated/miniapp-api.generated.ts";
+export { MINIAPP_API_OPERATIONS } from "./generated/miniapp-api.generated.ts";
+export type { MiniappApiOperationTypes, MiniappApiOperationId, MiniappApiJsonOperationId, MiniappApiRequest, MiniappApiResponse } from "./generated/miniapp-api.generated.ts";
+export { MINIAPP_API_BASE_PATH } from "./generated/miniapp-api-base.generated.ts";
+export { MINIAPP_API_JSON_OPERATIONS } from "./generated/miniapp-api-json.generated.ts";
 
 export * from "./account-profile.ts";
 export * from "./contribution-intake.ts";

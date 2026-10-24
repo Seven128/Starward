@@ -2,6 +2,14 @@
 
 ## 2026-10-24 当前继续实施批次
 
+**用户最新转向已记录：** 先保全源码/候选进度，再由root完整授权恢复电脑/USB手机的既有主用性能环境。手机原有热点/PC保存profile/VPN已连、neighbor REACHABLE，API新host本机ready200但Public仍拦手机HTTP。15:34Z实际手机显示LAN选VPN虚拟地址失败、回退WAN；**延迟启动的独立真机调试窗已有非零双向消息/队列0和Memory活动VM、15:37Z实际Map**，已不再是完全未到运行时。8001/8002无实listener，另两个内部debug端口不充LAN；未采新profile/Heap，电脑capture仍失败、shell非提升，不能冒LAN/完整性能可用。保原RPC错误与独立服务端结果回执、不重发remote。
+
+[主包本批](R20-PACKAGE-BUDGET-CLOSURE-20261024.md)已完成JSON窄表/BASE与原共享SCSS加载归属，并分别新独审。082ae普通完整输出339件/5,037,752B、main2,025,868B，较原367a净减7168B；15pins首尾、build exit0/10既有warnings。只换当前真实LAN origin后为**339件/5,037,760B/SHAef6eeee2…，main2,025,876B**，旧origin零残留。**HGyEOG/gen1 AKYc0l正常官方auto_preview success，shared/private大包开关均false**，完整generation current已核；实际MM Map后bind嵌套G2HMxB，15:06Z新session图已实看。三WXSS全声明/级联、JSON88实际派发/原134完整表保全，不冒完整UI/发布。独立IDE真机调试另报2062>2048KB，private调试大包设置已有条件恢复owner，但尚无LAN/Profiler通过。619 CI不覆盖本WIP。
+
+[私人草稿首独审](R20-PRIVATE-DRAFT-OWNER-BINDING-INDEPENDENT-REVIEW-20261024.md)保留26原pins、185refs/34实际合同范围和拒权后旧读重获ready的真实P2。随后[两文件修复](R20-PRIVATE-OBSERVATION-DENIAL-REPAIR-20261024.md)/[最终新独审](R20-PRIVATE-OBSERVATION-DENIAL-FINAL-REVIEW-20261024.md)通过：合格/缺资格旧200四条实际HTTP/SQLite路径都不撤后续403，明确新读可恢复；原A拒权不撤B。Root最终**API type+35文件158/158；mobile fast type+41文件169/169**；新26/JSON11/SCSS4/设备6 source pins逐件一致，Context结构、skill4/4、三SDK输出一致通过。所有作者/审阅者/测试已结束。旧pending、生产/同版部署/Native设备/全family义务继续保留，当前Git/精确CI未由619绿色覆盖。
+
+最新交付精确 **61953dd160b6dc77eaff44c3b4b12e2dd4dbcb51** 已main推送/远端读回：Context40086242752与Product40086242719均success，精确head终态已读。后续Backend staging release40087278634 failure，实际代码`host_preflight_disk_below_10_gib`，镜像发布和部署skip；原失败log保留private root-usb owner，不称全绿。既有只读host-storage观察40086578390 success，同head，可用10,403,938,304B约9.69GiB，低于10GiB；未改Secret/连接/主机，未prune或重跑部署，归属/引用与清理边界见[容量观察](R20-STAGING-STORAGE-OBSERVATION-20261024.md)。
+
 [规则原owner绑定](R20-RULE-OWNER-BINDING-20261024.md)/[新独审](R20-RULE-OWNER-BINDING-REVIEW-20261024.md)已闭受控trusted-actor变化下的已证缺口，原0/1失败保留、原probe修后1/1；新API/旧HTTP11/11、App与旧helper32/32、NightReport HTTP9/9及类型、12份hash通过。**Root最终整合：API type+35文件158/158；mobile fast type+39文件157/157。** 原17+10评估/投影检查及structured9/9只复用其不变责任，不把旧绿色冒后续资格检查。默认固定local-owner、受控可信A/B、production分别判断；同版配对才受此次验证，mixed server/旧无头client与legacy缺原资格恢复仍未准入/未知。当前新Native交付CI以新head为准，不能用ebb旧绿覆盖。
 
 [通知评估/Inbox](R20-NOTIFICATION-EVALUATION-20261024.md)已批修独审实证6项：API缺覆盖hour仍投递/已知enqueue失败误清ready，以及App草稿丢失/未知当空/拒权保旧私有/迟到A覆盖B。原失败均保留，[API终审](R20-NOTIFICATION-EVALUATION-API-REVIEW-20261024.md)原2/2+当前11/11/type，[App终审](R20-NOTIFICATION-EVALUATION-APP-REVIEW-20261024.md)原4/4+当前17/17/type和新freeze首尾通过。Root最终整合为 **API type+34文件155/155；mobile fast type+39文件156/156；旧structured三owner9/9**，各自范围不相加冒全仓，完整family仍`passes:false`。真实startup/上游HTTP adapter/归一器/SQLite/消费者受控结果不认证真实供应/生产/Native设备/OS。旧rule跨owner资格仍缺，另作有界判别。这批新Native源码交付CI须按新head，不能用下文ebb绿色替代。

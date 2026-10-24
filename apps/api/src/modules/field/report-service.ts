@@ -13,7 +13,10 @@ export class FieldReportService {
     if (!actor?.id || actor.scope !== "local-owner-poc") throw new FieldReportCommandError("field_report_owner_required", 403);
     return actor;
   }
-  list(actor: LocalPocOwner | null, cursor?: number) { return this.repository.list(this.actor(actor).id, cursor); }
+  list(actor: LocalPocOwner | null, cursor?: number) {
+    const owner = this.actor(actor), page = this.repository.list(owner.id, cursor);
+    return { ...page, ownerQualification: { schemaVersion: "starward-private-command-owner-v1" as const, ownerId: owner.id } };
+  }
   get(actor: LocalPocOwner | null, id: string, revision?: number) {
     const report = this.repository.read(this.actor(actor).id, id, revision);
     if (!report) throw new FieldReportCommandError("field_report_not_found", 404);

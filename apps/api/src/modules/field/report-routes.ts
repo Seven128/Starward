@@ -1,6 +1,6 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { FieldReportCommandError, type FieldReportService } from "./report-service";
-import { resolveLocalPocOwner, type LocalPocOwner, type LocalPocOwnerResolver } from "../../local-poc-owner";
+import { resolveLocalPocOwner, restrictLocalPocOwner, type LocalPocOwner, type LocalPocOwnerResolver } from "../../local-poc-owner";
 
 export type FieldReportActorResolver = LocalPocOwnerResolver;
 export const resolveLocalFieldReportOwner = resolveLocalPocOwner;
@@ -10,8 +10,11 @@ function commandRequestError(error: FastifyError, _request: FastifyRequest, repl
 }
 export function registerFieldReportRoutes(app: FastifyInstance, service: Pick<FieldReportService, "list" | "get" | "command">, resolveActor: FieldReportActorResolver = async () => null) {
   const respond = async (request: FastifyRequest, reply: FastifyReply, work: (actor: LocalPocOwner | null) => unknown) => {
-    reply.header("cache-control", "private, no-store").header("vary", "authorization");
-    try { return reply.send(work(await resolveActor(request))); }
+    reply.header("cache-control", "private, no-store").header("vary", "authorization, x-private-command-owner");
+    try {
+      const actor = restrictLocalPocOwner(await resolveActor(request), request.headers["x-private-command-owner"], reason => new FieldReportCommandError(`field_report_owner_${reason}`, 403));
+      return reply.send(work(actor));
+    }
     catch (error) {
       if (error instanceof FieldReportCommandError) return reply.code(error.statusCode).send({ code: error.code, ...error.details, outcome: "rejected" });
       return reply.code(503).send({ code: "field_report_storage_unavailable", outcome: "unknown", retryWithSameCommand: true });

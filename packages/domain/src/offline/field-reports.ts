@@ -1,4 +1,5 @@
 import { isObservingNight, normalizeUtcMoment } from "../../../contracts/src/observing-time";
+import type { PrivateCommandOwnerQualification } from "../../../contracts/src/private-command-owner";
 
 /** Private, user-written notes. These snapshots do not attest a visit or publish a report. */
 export interface FieldReportContext {
@@ -51,6 +52,7 @@ export interface FieldReportLibrary {
   items: FieldReportDraft[];
   nextCursor: string | null;
   scope: "local-owner-poc";
+  ownerQualification?: PrivateCommandOwnerQualification;
 }
 export class FieldReportValidationError extends Error {
   constructor(readonly code = "invalid_field_report") { super(code); }

@@ -2,6 +2,16 @@
 export const activity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandUI";
 export const permissionsActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandAuthorizeUI";
 export const systemLocationActivity = "com.android.permissioncontroller/com.skyui.permissioncontroller.request.ui.SkyGrantPermissionsActivity";
+export const tetheringSettingsActivity = "com.android.settings/com.android.settings.Settings$TetherSettingsActivity";
+export const wifiTetheringSettingsActivity = "com.android.settings/com.android.settings.Settings$WifiTetherSettingsActivity";
+export const unlockedTetheringPolicy = `    mKeyguardOccluded=false mKeyguardOccludedChanged=false mPendingKeyguardOccluded=false
+    KeyguardServiceDelegate
+      showing=false
+      inputRestricted=false
+      occluded=false
+      deviceHasKeyguard=true
+      KeyguardStateMonitor
+`;
 export function permissionHistory({ from = "com.tencent.mm", underlyingTask = 41, underlyingUser = 0 } = {}) {
   return `topResumedActivity=ActivityRecord{abc u0 ${permissionsActivity} t41}
   * Hist  #1: ActivityRecord{abc u0 ${permissionsActivity} t41}

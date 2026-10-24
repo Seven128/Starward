@@ -1,3 +1,5 @@
+@use "../../components/spot-identity-card.scss";
+
 // Private record surfaces belong to the content route. The shared intake editor
 // is also mounted by Map and must not promote these rules into the main package.
 .contribution-records { display: flex; flex-direction: column; gap: 22rpx; }

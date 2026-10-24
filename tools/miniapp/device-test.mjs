@@ -15,6 +15,8 @@ const help = `Mini Program owner-assisted physical-device diagnostics (not accep
   capture-permissions --session <directory> [--transport usb|wireless] (target Mini Program's WeChat permission page only)
   capture-location --session <directory> [--transport usb|wireless] (known Android location prompt requested by WeChat only)
   capture-location-picker --session <directory> [--transport usb|wireless] (owned observed WeChat location picker; only Back return allowed)
+  open-tethering-settings --session <directory> --confirm authorized_network_setup [--page more|wifi] (USB; reviewed Mini Program capture, or owned more-page capture for wifi)
+  capture-tethering-settings --session <directory> [--page more|wifi] (USB; exact owned system page only, tap/Back only)
   tap --session <directory> --x <0..1> --y <0..1> [--transport usb|wireless]
   swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..${MAX_SWIPE_DURATION_MS}> [--transport usb|wireless]
   record-tap|record-swipe (same tap/swipe arguments; private Mini Program video, --seconds 6..15, default 6)
@@ -33,6 +35,9 @@ Each capture returns its own immutable screenshot path, capture time and SHA-256
 Review the returned path; do not assume screen.png. Screenshots are private.
 Stop deletes this tool's session, not the phone bundle or WeChat data.`;
 
+const isTetheringScope = scope => scope === "tethering-settings" || scope === "wifi-tethering-settings";
+const tetheringScope = page => page === "wifi" ? "wifi-tethering-settings" : "tethering-settings";
+
 async function saveCapture(state, serial, screenshot, at = Date.now()) {
   // Distinct paths keep historical viewers from rereading a later overwritten
   // frame. Equal bytes still represent distinct observations/input grants.
@@ -50,6 +55,7 @@ async function saveCapture(state, serial, screenshot, at = Date.now()) {
   await writeFile(screenshotMetadata, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600, flag: "wx" });
   state.capture = { at, device: deviceBinding(state, serial), activity: screenshot.activity, size: screenshot.size,
     permissionScope, file: screenshotPath, captureId, sha256 };
+  if (!isTetheringScope(permissionScope)) delete state.tetheringSettings;
   await saveSession(state);
   return { screenshot: screenshotPath, screenshotMetadata, captureId, capturedAt,
     screenshotSha256: sha256, screenshotBytes: screenshot.bytes.length, screenScope };
@@ -64,9 +70,12 @@ export function parseArguments(argv) {
   required["record-swipe"] = required.swipe;
   required.record = ["session"];
   required["capture-location-picker"] = ["session"];
-  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "capture-location-picker", "tap", "swipe", "record-tap", "record-swipe", "record", "back", "text"]);
+  required["open-tethering-settings"] = ["session", "confirm"];
+  required["capture-tethering-settings"] = ["session"];
+  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "capture-location-picker", "open-tethering-settings", "capture-tethering-settings", "tap", "swipe", "record-tap", "record-swipe", "record", "back", "text"]);
   const allowed = Object.fromEntries(Object.entries(required).map(([key, values]) => [key, transportActions.has(key) ? [...values, "transport"] : values]));
   for (const key of ["record", "record-tap", "record-swipe"]) allowed[key].push("seconds");
+  for (const key of ["open-tethering-settings", "capture-tethering-settings"]) allowed[key].push("page");
   if (!allowed[action]) fail("action_invalid");
   for (let i = 0; i < rest.length; i += 2) {
     const key = rest[i]?.slice(2);
@@ -76,6 +85,12 @@ export function parseArguments(argv) {
   if (required[action].some((key) => options[key] === undefined)) fail("argument_missing");
   options.transport ??= "usb";
   if (transportActions.has(action) && !["usb", "wireless"].includes(options.transport)) fail("transport_invalid");
+  if (["open-tethering-settings", "capture-tethering-settings"].includes(action) && options.transport !== "usb") fail("tethering_settings_usb_required");
+  if (["open-tethering-settings", "capture-tethering-settings"].includes(action)) {
+    options.page ??= "more";
+    if (!["more", "wifi"].includes(options.page)) fail("tethering_settings_page_invalid");
+  }
+  if (action === "open-tethering-settings" && options.confirm !== "authorized_network_setup") fail("tethering_settings_authorization_required");
   if (options.seconds !== undefined && !/^(?:[6-9]|1[0-5])$/u.test(options.seconds)) fail("recording_duration_invalid");
   return { action, options };
 }
@@ -92,6 +107,7 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
   if (action === "stop") { await stopSession(options.session); emit({ stopped: true, phoneDataChanged: false }); return; }
   const observed = await withSession(options.session, async (state) => {
     if (["remote", "inspect"].includes(action)) {
+      if (state.tetheringSettings) fail("tethering_settings_scope_active");
       const endpoint = automationEndpoint(options.endpoint);
       if (action === "remote") emit({ state: "waiting_for_official_remote_debug", qrPreview: path.join(state.directory, "remote-qr.png"), instruction: "User scans when remote_qr_ready. Authorized Mini Program permission tests are operator-controlled after screenshot review." });
       let raw;
@@ -110,10 +126,22 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
     }
     const device = adb ?? new AdbDevice(await findAdb());
     const serial = await device.select({ transport: options.transport });
-    if (["capture", "capture-permissions", "capture-location", "capture-location-picker"].includes(action)) {
+    const requireTetheringOwner = (permissionScope = "tethering-settings") => {
+      if (options.transport !== "usb") fail("tethering_settings_usb_required");
+      const owner = state.tetheringSettings;
+      if (owner?.schema !== "starward-device-tethering-owner-v1" || typeof owner.fromCaptureId !== "string") fail("tethering_settings_owner_required");
+      if (owner.device !== deviceBinding(state, serial)) fail("device_changed_capture_again");
+      if (permissionScope === "wifi-tethering-settings") {
+        const navigation = owner.wifiNavigation;
+        if (navigation?.schema !== "starward-device-wifi-tethering-navigation-v1" || typeof navigation.fromCaptureId !== "string" || !navigation.fromCaptureId || !Number.isFinite(navigation.requestedAt)) fail("wifi_tethering_settings_owner_required");
+      }
+      return owner;
+    };
+    if (["capture", "capture-permissions", "capture-location", "capture-location-picker", "capture-tethering-settings"].includes(action)) {
+      if (action === "capture-tethering-settings") requireTetheringOwner(tetheringScope(options.page));
       state.capture = null;
       await saveSession(state);
-      const permissionScope = action === "capture-permissions" ? "settings" : action === "capture-location" ? "location-prompt" : action === "capture-location-picker" ? "location-picker" : "none";
+      const permissionScope = action === "capture-permissions" ? "settings" : action === "capture-location" ? "location-prompt" : action === "capture-location-picker" ? "location-picker" : action === "capture-tethering-settings" ? tetheringScope(options.page) : "none";
       const screenshot = await device.screenshot({ permissionScope });
       const saved = await saveCapture(state, serial, screenshot);
       return { ...saved, size: screenshot.size, actualScreen: true, runtimeAppIdVerified: false, acceptance: "not_evaluated" };
@@ -122,9 +150,31 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
       const inputAction = action.startsWith("record-") ? action.slice(7) : action;
       const values = inputAction === "tap" ? [Number(options.x), Number(options.y)] : inputAction === "swipe" ? [Number(options.x), Number(options.y), Number(options["to-x"]), Number(options["to-y"]), Number(options.ms)] : inputAction === "text" ? [options.value] : [];
       const capture = state.capture;
+      if (isTetheringScope(capture.permissionScope)) requireTetheringOwner(capture.permissionScope);
       // Consume input authorization before sending: retries need a new observation.
       state.capture = null;
       await saveSession(state);
+      if (action === "open-tethering-settings") {
+        const sourceScope = capture.permissionScope ?? "none";
+        const fromOwnedMore = options.page === "wifi" && sourceScope === "tethering-settings";
+        if ((sourceScope !== "none" && !fromOwnedMore) || typeof capture.captureId !== "string") fail("tethering_settings_miniapp_capture_required");
+        const previousOwner = state.tetheringSettings;
+        state.tetheringSettings = fromOwnedMore ? { ...requireTetheringOwner() } : { schema: "starward-device-tethering-owner-v1", device: deviceBinding(state, serial), fromCaptureId: capture.captureId, requestedAt: Date.now() };
+        if (options.page === "wifi") state.tetheringSettings.wifiNavigation = { schema: "starward-device-wifi-tethering-navigation-v1", fromCaptureId: capture.captureId, requestedAt: Date.now() };
+        await saveSession(state);
+        let dispatched = false;
+        try {
+          await device.input(action, [options.page], capture, { beforeSend: () => { assertCapture({ ...state, capture }, serial); dispatched = true; } });
+        } catch (error) {
+          if (!dispatched) {
+            if (previousOwner) state.tetheringSettings = previousOwner;
+            else delete state.tetheringSettings;
+            await saveSession(state);
+          }
+          throw error;
+        }
+        return { actionSent: action, page: options.page, acceptance: "not_evaluated", next: options.page === "wifi" ? "capture-tethering-settings --page wifi, then inspect" : "capture-tethering-settings_and_inspect" };
+      }
       if (action === "record" || action.startsWith("record-")) {
         const recordOptions = options.seconds === undefined ? {} : { seconds: Number(options.seconds) };
         const record = action === "record" ? await recordDeviceScreen(device, capture, recordOptions)
@@ -138,7 +188,7 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
           actualScreen: true, runtimeAppIdVerified: false, acceptance: "not_evaluated",
           next: "inspect_actual_video_and_screenshot" };
       }
-      await device.input(inputAction, values, capture);
+      await device.input(inputAction, values, capture, isTetheringScope(capture.permissionScope) ? { beforeSend: () => assertCapture({ ...state, capture }, serial) } : undefined);
       return { actionSent: action, acceptance: "not_evaluated", next: "capture_and_inspect_result" };
     }
   });
