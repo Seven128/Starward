@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { moderationSummary } from "./admin-operations-client.mjs";
 
 async function inputJson(filePath) {
@@ -130,16 +131,31 @@ async function createCandidate({ option, request, output }) {
   const sourcePath = option("input");
   const reason = option("reason");
   if (!sourcePath || !reason) throw new Error("admin_candidate_input_missing");
+  const key = idempotency(option);
   const candidate = await inputJson(sourcePath);
-  const result = await request("/v2/admin/spots", {
-    method: "POST",
+  const contract = { version: 1, method: "POST", path: "/v2/admin/spots/candidate-commands" };
+  const principal = await spotCommandPrincipal(request, "spot.candidate.create", contract);
+  const result = await request(contract.path, {
+    method: contract.method,
+    headers: { "idempotency-key": key },
     body: JSON.stringify({ ...candidate, reason }),
   });
+  const readback = spotCommandReadback(result, principal, "spot.candidate.create", key, 1);
+  const spot = readback?.detail?.spot;
+  if (!spot || typeof spot.spotId !== "string" || !/^spot:[a-zA-Z0-9._:-]+$/u.test(spot.spotId) ||
+      (candidate.spotId !== undefined && spot.spotId !== candidate.spotId) ||
+      ["name", "region", "address"].some(field => spot[field] !== candidate[field]?.trim()) ||
+      ["timezone", "visibilityPolicy", "source"].some(field => !isDeepStrictEqual(spot[field], candidate[field])) ||
+      spot.wgs84?.latitude !== candidate.latitude || spot.wgs84?.longitude !== candidate.longitude ||
+      spot.altitudeM !== (candidate.altitudeM ?? null) || spot.status !== "DATA_INSUFFICIENT" ||
+      readback.assessment?.complete !== false)
+    throw new Error("admin_spot_command_readback_unverified_preserve_input_and_key");
   output({
-    spotId: result.detail.spot.spotId,
-    status: result.detail.spot.status,
-    publicationComplete: result.assessment.complete,
-    issues: result.assessment.issues,
+    spotId: spot.spotId,
+    status: spot.status,
+    publicationComplete: readback.assessment.complete,
+    issues: readback.assessment.issues,
+    receipt: result.receipt,
   });
 }
 
@@ -149,16 +165,57 @@ async function patchSpot({ positional, option, request, output }) {
   const reason = option("reason");
   if (!sourcePath || !reason)
     throw new Error("admin_spot_patch_input_missing");
+  const key = idempotency(option);
+  const expectedRevision = revision(option, "revision");
   const patch = await inputJson(sourcePath);
-  const result = await request(`/v2/admin/spots/${encodeURIComponent(spotId)}`, {
-    method: "PATCH",
-    body: JSON.stringify({ ...patch, reason }),
+  const contract = { version: 1, method: "PATCH", path: "/v2/admin/spots/:spotId/commands" };
+  const principal = await spotCommandPrincipal(request, "spot.patch", contract);
+  const result = await request(contract.path.replace(":spotId", encodeURIComponent(spotId)), {
+    method: contract.method,
+    headers: { "idempotency-key": key },
+    body: JSON.stringify({ ...patch, reason, expectedRevision }),
   });
+  const readback = spotCommandReadback(result, principal, "spot.patch", key, expectedRevision + 1);
+  if (readback?.spot?.spotId !== spotId)
+    throw new Error("admin_spot_command_readback_unverified_preserve_input_and_key");
+  for (const [field, value] of Object.entries(patch)) {
+    if (field === "reason" || field === "expectedRevision") continue;
+    if (field === "wgs84") {
+      if (readback.spot.wgs84?.latitude !== value?.latitude || readback.spot.wgs84?.longitude !== value?.longitude)
+        throw new Error("admin_spot_command_readback_unverified_preserve_input_and_key");
+      continue;
+    }
+    const owner = Object.hasOwn(readback.spot, field) ? readback.spot : readback;
+    const expected = ["name", "region", "address"].includes(field) && typeof value === "string" ? value.trim() : value;
+    if (!Object.hasOwn(owner, field) || !isDeepStrictEqual(owner[field], expected))
+      throw new Error("admin_spot_command_readback_unverified_preserve_input_and_key");
+  }
   output({
-    spotId: result.spot.spotId,
-    status: result.spot.status,
-    lastVerifiedAt: result.spot.lastVerifiedAt,
+    spotId: readback.spot.spotId,
+    status: readback.spot.status,
+    lastVerifiedAt: readback.spot.lastVerifiedAt,
+    receipt: result.receipt,
   });
+}
+
+async function spotCommandPrincipal(request, operation, expectedContract) {
+  const principal = await request("/v2/admin/session");
+  const advertised = principal?.commandContracts?.[operation];
+  if (typeof principal?.actorId !== "string" || advertised?.version !== expectedContract.version ||
+      advertised?.method !== expectedContract.method || advertised?.path !== expectedContract.path)
+    throw new Error("admin_spot_command_contract_upgrade_required:no_write_sent");
+  return principal;
+}
+
+function spotCommandReadback(result, principal, operation, key, resultingRevision) {
+  const receipt = result?.receipt;
+  if (!receipt || (receipt.status !== "COMMITTED" && receipt.status !== "REPLAYED") ||
+      receipt.actorId !== principal.actorId || receipt.operation !== operation || receipt.idempotencyKey !== key ||
+      receipt.resultingRevision !== resultingRevision || typeof receipt.receiptId !== "string" ||
+      !receipt.receiptId.startsWith("receipt:") || !result.readback ||
+      !isDeepStrictEqual(result.result, result.readback) || !isDeepStrictEqual(receipt.readback, result.readback))
+    throw new Error("admin_spot_command_receipt_unverified_preserve_input_and_key");
+  return result.readback;
 }
 
 const handlers = new Map([

@@ -161,6 +161,34 @@ export interface AdminSpotCandidateInput {
   reason: string;
 }
 
+interface AdminSpotCommandIdentity {
+  idempotencyKey: string;
+  /** The complete parsed HTTP input, including fields normalized by the adapter. */
+  requestBody: unknown;
+}
+
+interface AdminSpotCandidateWrite {
+  candidate: AdminSpotCandidateInput;
+  actorId: string;
+  requestId: string;
+}
+
+interface AdminSpotPatchWrite {
+  spotId: SpotId;
+  patch: AdminSpotPatch;
+  actorId: string;
+  requestId: string;
+}
+
+interface AdminSpotPatchCommandIdentity extends AdminSpotCommandIdentity {
+  expectedSpotRevision: number;
+}
+
+type AdminSpotCandidateResult = {
+  detail: SpotDetail;
+  assessment: ReturnType<typeof evaluateSpotCompleteness>;
+};
+
 export type AdminContributionEvidenceClaim =
   | "ACCESS_LAST_ROAD"
   | "ACCESS_PARKING"
@@ -2539,13 +2567,20 @@ export class PostgresMiniappRepository
     return result.rows;
   }
 
-  async adminCreateSpotCandidate(input: {
-    candidate: AdminSpotCandidateInput;
-    actorId: string;
-    requestId: string;
-  }) {
+  async adminCreateSpotCandidate(input: AdminSpotCandidateWrite & { command: AdminSpotCommandIdentity }): Promise<AdminMutationResult<AdminSpotCandidateResult>>;
+  async adminCreateSpotCandidate(input: AdminSpotCandidateWrite): Promise<AdminSpotCandidateResult>;
+  async adminCreateSpotCandidate(input: AdminSpotCandidateWrite & { command?: AdminSpotCommandIdentity }): Promise<AdminSpotCandidateResult | AdminMutationResult<AdminSpotCandidateResult>> {
     return this.#transaction(async (client) => {
       const candidate = input.candidate;
+      const command = input.command;
+      const requestDigest = command ? digest({ operation: "spot.candidate.create", candidate, body: command.requestBody }) : undefined;
+      if (command) {
+        await this.#lockAdminReceiptIdentity(client, input.actorId, command.idempotencyKey);
+        const replay = await this.#adminReceiptReplay<AdminSpotCandidateResult>(
+          client, input.actorId, command.idempotencyKey, "spot.candidate.create", requestDigest,
+        );
+        if (replay) return replay;
+      }
       const spotId = (candidate.spotId ?? `spot:${randomUUID()}`) as SpotId;
       if (candidate.source.kind === "TEST_FIXTURE" || candidate.source.state === "SAMPLE_DATA")
         throw new Error("admin_candidate_source_not_publishable");
@@ -2785,17 +2820,33 @@ export class PostgresMiniappRepository
          ) VALUES ($1, $2, 'SPOT_CANDIDATE_CREATE', 'SPOT', $3, $4, NULL, $5)`,
         [randomUUID(), input.actorId, spotId, input.requestId, detail],
       );
-      return { detail, assessment };
+      const result = { detail, assessment };
+      if (!command) return result;
+      return this.#commitAdminResult(client, {
+        operation: "spot.candidate.create", scopeId: input.actorId, idempotencyKey: command.idempotencyKey,
+        requestId: input.requestId, actorId: input.actorId, result, readback: result,
+        resultingRevision: 1, assessmentDigest: assessment.assessmentDigest,
+        eventType: "SpotCandidateCreated", eventPayload: { spotId, revision: 1 }, requestDigest: requestDigest!,
+      });
     });
   }
 
-  async adminPatchSpot(input: {
-    spotId: SpotId;
-    patch: AdminSpotPatch;
-    actorId: string;
-    requestId: string;
-  }) {
+  async adminPatchSpot(input: AdminSpotPatchWrite & { command: AdminSpotPatchCommandIdentity }): Promise<AdminMutationResult<SpotDetail>>;
+  async adminPatchSpot(input: AdminSpotPatchWrite): Promise<SpotDetail>;
+  async adminPatchSpot(input: AdminSpotPatchWrite & { command?: AdminSpotPatchCommandIdentity }): Promise<SpotDetail | AdminMutationResult<SpotDetail>> {
     return this.#transaction(async (client) => {
+      const command = input.command;
+      const requestDigest = command ? digest({ operation: "spot.patch", spotId: input.spotId,
+        patch: input.patch, expectedSpotRevision: command.expectedSpotRevision, body: command.requestBody }) : undefined;
+      if (command) {
+        if (!Number.isSafeInteger(command.expectedSpotRevision) || command.expectedSpotRevision < 1)
+          throw new Error("admin_spot_revision_invalid");
+        await this.#lockAdminReceiptIdentity(client, input.actorId, command.idempotencyKey);
+        const replay = await this.#adminReceiptReplay<SpotDetail>(
+          client, input.actorId, command.idempotencyKey, "spot.patch", requestDigest,
+        );
+        if (replay) return replay;
+      }
       const selected = await client.query<{
         payload: SpotSummary;
         detail: SpotDetail;
@@ -2811,6 +2862,8 @@ export class PostgresMiniappRepository
       );
       const current = selected.rows[0];
       if (!current) throw new Error("formal_spot_not_found");
+      if (command && current.version !== command.expectedSpotRevision)
+        throw new Error("spot_revision_conflict");
       if (
         input.patch.status === "PUBLISHED" &&
         current.status !== "PUBLISHED"
@@ -3139,7 +3192,13 @@ export class PostgresMiniappRepository
           nextDetail,
         ],
       );
-      return nextDetail;
+      if (!command) return nextDetail;
+      return this.#commitAdminResult(client, {
+        operation: "spot.patch", scopeId: input.actorId, idempotencyKey: command.idempotencyKey,
+        requestId: input.requestId, actorId: input.actorId, result: nextDetail, readback: nextDetail,
+        resultingRevision: nextRevision, assessmentDigest: assessment.assessmentDigest,
+        eventType: "SpotPatched", eventPayload: { spotId: input.spotId, revision: nextRevision }, requestDigest: requestDigest!,
+      });
     });
   }
 
@@ -5011,6 +5070,15 @@ export class PostgresMiniappRepository
         actorId,
       ],
     );
+  }
+
+  async #lockAdminReceiptIdentity(client: PoolClient, scopeId: string, idempotencyKey: string) {
+    if (typeof idempotencyKey !== "string" || !idempotencyKey || idempotencyKey.length > 200 || idempotencyKey !== idempotencyKey.trim())
+      throw new Error("admin_idempotency_key_invalid");
+    // A missing row cannot be locked with SELECT FOR UPDATE. Reserve the identity
+    // before any business row so concurrent first submissions share one result.
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
+      [JSON.stringify(["admin-operation-receipt", scopeId, idempotencyKey])]);
   }
 
   async #adminReceiptReplay<T>(

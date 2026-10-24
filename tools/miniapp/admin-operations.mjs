@@ -38,10 +38,10 @@ function printHelp() {
   media <uploadId> --out <private-image-path>
   resolve <caseId> <APPROVED|REJECTED> --reason <text> --revision <n> --idempotency-key <stable-key>
   merge <caseId> <spotId> --claims <comma-list> --reason <text> --submission-revision <n> --spot-revision <n> --idempotency-key <stable-key>
-  candidate-create --input <json> --reason <text>
-  spot-patch <spotId> --input <json> --reason <text>
+  candidate-create --input <json> --reason <text> --idempotency-key <stable-key>
+  spot-patch <spotId> --input <json> --reason <text> --revision <n> --idempotency-key <stable-key>
 
-token 不接受命令行参数，避免进入 shell 历史。丢失 resolve/merge 回执时保留全部参数和同一 key 重试；未知结果不能改输入或换 key。case-export 与 media 使用独占新文件，避免覆盖已有证据。
+token 不接受命令行参数，避免进入 shell 历史。丢失写入回执时保留原输入文件、全部参数和同一 key，显式重试；未知结果不能改输入或换 key。candidate-create/spot-patch 会先确认服务支持其回执版本，旧服务须先升级，不会向其发送这两种写入。case-export 与 media 使用独占新文件，避免覆盖已有证据。
 `);
 }
 

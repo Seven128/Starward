@@ -66,7 +66,7 @@ root本机结果：最终同一生产audit **exit0/零漏洞**（`tmp/admin-ci-a
 
 新只读独审`/root/production_dependency_patch_review_20261024`已完成，无这三文件新增P1/P2；独立audit exit0/零漏洞，四份官方tarball的integrity/metadata及五处实际包全部普通文件逐件一致。其首次检查因`npm ls`的Nest→Fastify INVALID前提而exit1，失败保留；对HEAD/final全部workspace manifest+lock分别用同源Arborist loadVirtual/buildIdealTree只读对照，旧5.12.5和新5.12.7均有同一INVALID，最终ideal tree不回落，因此不把既有npm11.13图诊断当本补丁新增缺陷。真实CI用Node24.21/npm11.19，与本机24.16/npm11.13不同；冷安装/完整pipeline仍以精确新head实际CI为准，不扩大工具矩阵。报告`tmp/production-dependency-patch-review-20261024/review.md` SHA-256 `440400762a7a13b0c826198e343ddf06ba822f11f12dce728c6b6e260039f376`；三文件前后hash一致，reviewer已结束。
 
-本补丁精确Git/CI仍待实际结果；并行legacy命令源码不混入此依赖批次。所有npm install中间日志、原主lock、生成缓存原件及registry metadata保留任务tmp；没有Git reset/clean/force/stash或新worktree。
+本补丁已提交推送`4dcf56d0a2e54c468be7438397add429685166be`并精确远端读回、ahead/behind0/0；[Product40048384492](https://github.com/Seven128/Starward/actions/runs/40048384492)**success**（2026-10-24 01:18:34 UTC终态），[Context40048388751](https://github.com/Seven128/Starward/actions/runs/40048388751)**success**，两者head均精确为4dcf56d0。Product job120735232250实际通过冷安装、生产audit、release-code、App/API/admin消费者、后端及非部署WEAPP构建/inspection、隔离infra与OCI构建；原e468失败保持不变。CI Node24.21.0/npm11.19.0的冷安装已成立，不把此前本机dry-run冒成该结果。并行legacy命令源码不在此依赖批次或CI范围内。所有npm install中间日志、原主lock、生成缓存原件及registry metadata保留任务tmp；没有Git reset/clean/force/stash或新worktree。
 
 ## 两个同责任的夹具假设
 

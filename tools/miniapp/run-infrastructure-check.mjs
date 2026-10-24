@@ -51,6 +51,7 @@ const queueName = `starward-miniapp-${runId}`;
 const startedAt = new Date().toISOString();
 const output = [];
 let testStatus = null;
+let adminSpotCommands = null;
 let apiChecks = null;
 let backupRestore = null;
 
@@ -192,6 +193,13 @@ try {
   );
   testStatus = test.status;
   stage("integration:complete");
+  stage("admin-spot-commands:start");
+  run(process.execPath, ["--import", "tsx", "--test", "src/admin-spot-commands-postgres.test.ts"], {
+    cwd: path.join(root, "workers", "miniapp-api"),
+    env: { ...process.env, ADMIN_SPOT_COMMAND_TEST_DATABASE_URL: databaseUrl },
+  });
+  adminSpotCommands = { status: "passed", database: "same_isolated_run_database", transport: "http_and_real_operator_cli" };
+  stage("admin-spot-commands:complete");
   stage("backup-restore:start");
   const backup = await createBackup({ databaseName, outputPath: backupPath });
   const restored = await restoreBackup({
@@ -637,7 +645,7 @@ try {
 const result = {
   schema_version: "miniapp-infrastructure-session-v1",
   run_id: runId,
-  status: testStatus === 0 ? "passed" : "failed",
+  status: testStatus === 0 && adminSpotCommands?.status === "passed" ? "passed" : "failed",
   started_at: startedAt,
   completed_at: new Date().toISOString(),
   services: {
@@ -646,6 +654,7 @@ const result = {
     redis_bullmq: "isolated_key_namespace",
   },
   api_admin: apiChecks,
+  admin_spot_commands: adminSpotCommands,
   backup_restore: backupRestore,
   test_output_sha256: createHash("sha256")
     .update(output.join(""))

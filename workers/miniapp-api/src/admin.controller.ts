@@ -39,6 +39,11 @@ const CONTRIBUTION_EVIDENCE_CLAIMS = new Set<AdminContributionEvidenceClaim>([
   "SITE_MEDIA_PROVENANCE",
 ]);
 
+const SPOT_COMMAND_CONTRACTS = {
+  "spot.candidate.create": { version: 1, method: "POST", path: "/v2/admin/spots/candidate-commands" },
+  "spot.patch": { version: 1, method: "PATCH", path: "/v2/admin/spots/:spotId/commands" },
+} as const;
+
 function requireText(value: unknown, field: string, maximum: number) {
   if (typeof value !== "string" || !value.trim() || value.length > maximum)
     throw new Error(`admin_${field}_invalid`);
@@ -107,7 +112,11 @@ export class AdminController {
   async session(@Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const principal = authenticateAdmin(token, actor);
     assertAdminOperation(principal, "SESSION_READ");
-    return envelope({ ...principal, operations: adminOperations(principal) });
+    const operations = adminOperations(principal);
+    return envelope({ ...principal, operations, commandContracts: {
+      ...(operations.includes("SPOT_CREATE") ? { "spot.candidate.create": SPOT_COMMAND_CONTRACTS["spot.candidate.create"] } : {}),
+      ...(operations.includes("SPOT_EDIT") ? { "spot.patch": SPOT_COMMAND_CONTRACTS["spot.patch"] } : {}),
+    } });
   }
 
   @Get("dashboard")
@@ -138,6 +147,7 @@ export class AdminController {
   @Post("spots")
   async createSpotCandidate(
     @Body() body: Partial<AdminSpotCandidateInput>,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
@@ -148,7 +158,7 @@ export class AdminController {
     const reason = requireText(body.reason, "reason", 500);
     if (
       body.spotId !== undefined &&
-      !/^spot:[a-zA-Z0-9._:-]+$/u.test(body.spotId)
+      (typeof body.spotId !== "string" || !/^spot:[a-zA-Z0-9._:-]+$/u.test(body.spotId))
     )
       throw new Error("admin_spot_id_invalid");
     if (!body.timezone || !["Asia/Shanghai", "Asia/Hong_Kong", "Asia/Macau"].includes(body.timezone))
@@ -205,22 +215,45 @@ export class AdminController {
       source,
       reason,
     };
-    const result = await context.repository.adminCreateSpotCandidate({
+    const input = {
       candidate,
       actorId: context.actorId,
       requestId: context.requestId,
-    });
+    };
+    const result = idempotencyKey === undefined
+      ? await context.repository.adminCreateSpotCandidate(input)
+      : await context.repository.adminCreateSpotCandidate({ ...input,
+        command: { idempotencyKey: requireIdempotency(idempotencyKey), requestBody: body } });
     return committedEnvelope(result, this.service.cache, ["search:"]);
+  }
+
+  @Post("spots/candidate-commands")
+  async createSpotCandidateCommand(
+    @Body() body: Partial<AdminSpotCandidateInput>,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Headers("x-admin-token") token?: string,
+    @Headers("x-admin-actor") actor?: string,
+  ) {
+    // An absent key stays invalid at this entry; it cannot select legacy mode.
+    return this.createSpotCandidate(body, idempotencyKey ?? "", token, actor);
   }
 
   @Patch("spots/:spotId")
   async patchSpot(
     @Param("spotId") spotId: string,
-    @Body() body: Partial<AdminSpotPatch>,
+    @Body() body: Partial<AdminSpotPatch> & { expectedRevision?: number },
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "SPOT_EDIT");
+    const command = idempotencyKey === undefined ? undefined : {
+      idempotencyKey: requireIdempotency(idempotencyKey),
+      expectedSpotRevision: requireRevision(body.expectedRevision),
+      requestBody: body,
+    };
+    if (body.expectedRevision !== undefined && command === undefined)
+      throw new Error("admin_idempotency_key_required");
     if (!spotId.startsWith("spot:")) throw new Error("formal_spot_not_found");
     const reason = requireText(body.reason, "reason", 500);
     if (body.name !== undefined) requireText(body.name, "name", 120);
@@ -362,13 +395,26 @@ export class AdminController {
         ? { dataDisclosure: body.dataDisclosure }
         : {}),
     };
-    const result = await context.repository.adminPatchSpot({
+    const input = {
       spotId: decodeURIComponent(spotId) as SpotId,
       patch,
       actorId: context.actorId,
       requestId: context.requestId,
-    });
+    };
+    const result = command === undefined ? await context.repository.adminPatchSpot(input)
+      : await context.repository.adminPatchSpot({ ...input, command });
     return committedEnvelope(result, this.service.cache, ["map:", `spot-overview:${spotId}`, "favorites:"]);
+  }
+
+  @Patch("spots/:spotId/commands")
+  async patchSpotCommand(
+    @Param("spotId") spotId: string,
+    @Body() body: Partial<AdminSpotPatch> & { expectedRevision?: number },
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Headers("x-admin-token") token?: string,
+    @Headers("x-admin-actor") actor?: string,
+  ) {
+    return this.patchSpot(spotId, body, idempotencyKey ?? "", token, actor);
   }
 
   @Post("spots/:spotId/publish")

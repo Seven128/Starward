@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createAdminRequest } from "./admin-operations-client.mjs";
 import { runAdminCommand } from "./admin-operations-commands.mjs";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 test("operator credentials work without caller-selected actor and optional assertion stays explicit", async () => {
   const original = globalThis.fetch;
@@ -48,4 +51,91 @@ test("operator reports a post-commit cache failure without losing the saved resu
     assert.equal(calls, 1);
     assert.match(warnings[0], /变更已提交.*不要另建操作或盲目重发/u);
   } finally { globalThis.fetch = original; }
+});
+
+test("operator refuses candidate and patch writes before dispatch when an older server cannot promise their receipt contract", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-admin-contract-"));
+  try {
+    const input = path.join(directory, "input.json");
+    await writeFile(input, JSON.stringify({ name: "Synthetic input" }));
+    for (const command of ["candidate-create", "spot-patch"]) {
+      const calls = [], options = { input, reason: "Original reason", revision: "1", "idempotency-key": "original-key" };
+      let failure;
+      try {
+        await runAdminCommand(command, { positional: () => "spot:one", option: name => options[name], output() {},
+          request: async (route, init) => { calls.push({ route, init });
+            if (route === "/v2/admin/session") return { actorId: "admin:owner", operations: ["SPOT_CREATE", "SPOT_EDIT"] };
+            return { detail: { spot: { spotId: "spot:one" } }, assessment: { complete: false }, spot: { spotId: "spot:one" } };
+          } });
+      } catch (error) { failure = error; }
+      assert.equal(calls.filter(call => call.init?.method).length, 0, "unsupported server must never receive a write whose key it may ignore");
+      assert.match(failure?.message ?? "", /admin_spot_command_contract_upgrade_required/u);
+      assert.deepEqual(calls.map(call => call.route), ["/v2/admin/session"]);
+    }
+  } finally {
+    assert.equal(path.dirname(path.resolve(directory)), path.resolve(tmpdir()));
+    assert.match(path.basename(directory), /^starward-admin-contract-/u);
+    await rm(directory, { recursive: true });
+  }
+});
+
+test("a newer session response cannot make the operator fall through to a legacy write handler during migration", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-admin-contract-"));
+  try {
+    const input = path.join(directory, "input.json");
+    await writeFile(input, JSON.stringify({ name: "Synthetic input" }));
+    const options = { input, reason: "Original reason", "idempotency-key": "original-key" };
+    let legacyEffects = 0, failure;
+    const routes = [];
+    try {
+      await runAdminCommand("candidate-create", { option: name => options[name], output() {},
+        request: async route => {
+          routes.push(route);
+          if (route === "/v2/admin/session") return { actorId: "admin:owner", commandContracts: {
+            "spot.candidate.create": { version: 1, method: "POST", path: "/v2/admin/spots/candidate-commands" } } };
+          if (route === "/v2/admin/spots") { ++legacyEffects; return { detail: { spot: { spotId: "spot:one" } }, assessment: { complete: false } }; }
+          throw new Error("admin_http_404:NOT_FOUND:no_request_id");
+        } });
+    } catch (error) { failure = error; }
+    assert.equal(legacyEffects, 0, "a different server generation must reject the new route before any legacy effect");
+    assert.match(failure?.message ?? "", /admin_http_404/u);
+    assert.deepEqual(routes, ["/v2/admin/session", "/v2/admin/spots/candidate-commands"]);
+  } finally {
+    assert.equal(path.dirname(path.resolve(directory)), path.resolve(tmpdir()));
+    assert.match(path.basename(directory), /^starward-admin-contract-/u);
+    await rm(directory, { recursive: true });
+  }
+});
+
+test("operator does not report a patch as verified when a matched receipt carries a previous or missing requested effect", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-admin-contract-"));
+  try {
+    const input = path.join(directory, "input.json");
+    for (const [patch, stale] of [
+      [{ name: "Required new name" }, { spot: { spotId: "spot:one", name: "Previous name" } }],
+      [{ accessTags: ["NO_HIKE"] }, { spot: { spotId: "spot:one" } }],
+    ]) {
+      await writeFile(input, JSON.stringify(patch));
+      const options = { input, reason: "Original reason", revision: "1", "idempotency-key": "original-key" };
+      const calls = [], outputs = [];
+      await assert.rejects(() => runAdminCommand("spot-patch", {
+        positional: () => "spot:one", option: name => options[name], output: value => outputs.push(value),
+        request: async (route, init) => {
+          calls.push({ route, init });
+          if (route === "/v2/admin/session") return { actorId: "admin:owner", commandContracts: {
+            "spot.patch": { version: 1, method: "PATCH", path: "/v2/admin/spots/:spotId/commands" } } };
+          return { result: stale, readback: stale, receipt: { receiptId: "receipt:one", operation: "spot.patch",
+            actorId: "admin:owner", idempotencyKey: "original-key", status: "COMMITTED", resultingRevision: 2, readback: stale } };
+        },
+      }), /admin_spot_command_readback_unverified_preserve_input_and_key/u);
+      assert.equal(outputs.length, 0);
+      assert.equal(calls.filter(call => call.init?.method).length, 1, "unverified outcome cannot trigger automatic retries");
+      assert.equal(calls[1].init.headers["idempotency-key"], "original-key");
+      assert.deepEqual(JSON.parse(calls[1].init.body), { ...patch, reason: "Original reason", expectedRevision: 1 });
+    }
+  } finally {
+    assert.equal(path.dirname(path.resolve(directory)), path.resolve(tmpdir()));
+    assert.match(path.basename(directory), /^starward-admin-contract-/u);
+    await rm(directory, { recursive: true });
+  }
 });
