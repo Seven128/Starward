@@ -1,5 +1,16 @@
 # 当前共享验证结果（2026-10-23，续检至2026-10-24）
 
+## 2026-10-25 当前行程/比较交付检查点
+
+行程历史/完整diff/源revision引用restore及秒ms/DST呈现已批修，并取得API与App两份新独审；same-owner成功观察身份复用其前一修复。Native nullable比较/实际ForecastScreen也已新独审，保真实0/缺测/partial/stale和原主数据/全小时。Root最终API type+37文件171/171、mobile fast type+44文件194/194通过，Context结构/限定diff通过；原严格失败和全部旧source bytes保全。三份新独审均结束、对应24/17pins首尾一致，无新P1/P2；真实Native/旧HTTP缓存与mixed/production/实际IFS和完整family仍未认证。
+
+微信只读Picker已从真实搜索入口打开，经back-only原生scope取消、查询保留并回Map；同一ef6普通重开官方success/源gen不变，均仅development_feedback。手机当前普通Map；自有旧源码/debug窗口在15pin/canonical同步核对后官方关闭，只余项目列表，原件/临时文件保留。无性能采集、无新build/冻结代修改或全局quit。
+## 2026-10-25 最新优先级与验证范围
+
+2026-10-25用户最新执行优先级：层叠性能、云观星播放性能（含相关内存/OOM）后置，保留未完成义务、既有证据与冻结代，OOM仍未解决。继续其余UI、显示/时刻/权限/数据正确性、业务、持久化、恢复、必要验证和交付；这两类性能采集及其Windows/LAN/Profiler环境不再是当前门槛。当前先收口在途的行程历史/差异/恢复新revision及已证拒权交错，再按同一PLAN继续可执行责任。六字段正确性、取消/显式应用、原生资源身份与安全退休、科学精度和完整星数等要求保留。当前不用处理UAC或重启Codex，必要现场动作以后按实际依赖准备。
+
+get_goal最新active。既有采集/失败/未验范围按原条件保留；新行程模块/同owner旧403批修未最终冻结/独审，真实供给只证主GFS/SQLite基线，IFS未确认/Inbox0，不扩成完整供给/通知/Native验收。
+
 ## 2026-10-24 当前继续实施批次
 
 **用户最新转向已记录：** 先保全源码/候选进度，再由root完整授权恢复电脑/USB手机的既有主用性能环境。手机原有热点/PC保存profile/VPN已连、neighbor REACHABLE，API新host本机ready200但Public仍拦手机HTTP。15:34Z实际手机显示LAN选VPN虚拟地址失败、回退WAN；**延迟启动的独立真机调试窗已有非零双向消息/队列0和Memory活动VM、15:37Z实际Map**，已不再是完全未到运行时。8001/8002无实listener，另两个内部debug端口不充LAN；未采新profile/Heap，电脑capture仍失败、shell非提升，不能冒LAN/完整性能可用。保原RPC错误与独立服务端结果回执、不重发remote。
@@ -8,7 +19,9 @@
 
 [私人草稿首独审](R20-PRIVATE-DRAFT-OWNER-BINDING-INDEPENDENT-REVIEW-20261024.md)保留26原pins、185refs/34实际合同范围和拒权后旧读重获ready的真实P2。随后[两文件修复](R20-PRIVATE-OBSERVATION-DENIAL-REPAIR-20261024.md)/[最终新独审](R20-PRIVATE-OBSERVATION-DENIAL-FINAL-REVIEW-20261024.md)通过：合格/缺资格旧200四条实际HTTP/SQLite路径都不撤后续403，明确新读可恢复；原A拒权不撤B。Root最终**API type+35文件158/158；mobile fast type+41文件169/169**；新26/JSON11/SCSS4/设备6 source pins逐件一致，Context结构、skill4/4、三SDK输出一致通过。所有作者/审阅者/测试已结束。旧pending、生产/同版部署/Native设备/全family义务继续保留，当前Git/精确CI未由619绿色覆盖。
 
-最新交付精确 **61953dd160b6dc77eaff44c3b4b12e2dd4dbcb51** 已main推送/远端读回：Context40086242752与Product40086242719均success，精确head终态已读。后续Backend staging release40087278634 failure，实际代码`host_preflight_disk_below_10_gib`，镜像发布和部署skip；原失败log保留private root-usb owner，不称全绿。既有只读host-storage观察40086578390 success，同head，可用10,403,938,304B约9.69GiB，低于10GiB；未改Secret/连接/主机，未prune或重跑部署，归属/引用与清理边界见[容量观察](R20-STAGING-STORAGE-OBSERVATION-20261024.md)。
+最新交付精确 **5767cba34ab9f4be7c7a82bf18ae4eefa583dd87** 已main推送/远端读回，0/0：Context **40108570967 success**、Product **40108570971 success**。随后Backend staging **40109602334 failure**，精确原log `host_preflight_disk_below_10_gib`，镜像发布/部署skip；原件private root-usb `ci-5767cba3-staging-failed.private.log`，不称全绿/已部署、不重跑或清远端。2026-10-25新行程版本恢复模块与有限真实供给判别在途，未由此head结果覆盖；原Native158/App169只对应已交付批次。
+
+前次交付精确 **61953dd160b6dc77eaff44c3b4b12e2dd4dbcb51** 已main推送/远端读回：Context40086242752与Product40086242719均success，精确head终态已读。后续Backend staging release40087278634 failure，实际代码`host_preflight_disk_below_10_gib`，镜像发布和部署skip；原失败log保留private root-usb owner，不称全绿。既有只读host-storage观察40086578390 success，同head，可用10,403,938,304B约9.69GiB，低于10GiB；未改Secret/连接/主机，未prune或重跑部署，归属/引用与清理边界见[容量观察](R20-STAGING-STORAGE-OBSERVATION-20261024.md)。
 
 [规则原owner绑定](R20-RULE-OWNER-BINDING-20261024.md)/[新独审](R20-RULE-OWNER-BINDING-REVIEW-20261024.md)已闭受控trusted-actor变化下的已证缺口，原0/1失败保留、原probe修后1/1；新API/旧HTTP11/11、App与旧helper32/32、NightReport HTTP9/9及类型、12份hash通过。**Root最终整合：API type+35文件158/158；mobile fast type+39文件157/157。** 原17+10评估/投影检查及structured9/9只复用其不变责任，不把旧绿色冒后续资格检查。默认固定local-owner、受控可信A/B、production分别判断；同版配对才受此次验证，mixed server/旧无头client与legacy缺原资格恢复仍未准入/未知。当前新Native交付CI以新head为准，不能用ebb旧绿覆盖。
 

@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { commandDigest } from "../../persistence/command-transaction";
 import { applyItineraryPatch } from "../../../../../packages/domain/src/itinerary/index";
-import type { ItineraryDraft, ItineraryDraftCommand } from "../../../../../packages/domain/src/itinerary/draft";
+import type { ItineraryDraft, ItineraryDraftCommand, ItineraryDraftEditableContent } from "../../../../../packages/domain/src/itinerary/draft";
+import { isRestorableItineraryRevision, itineraryDraftRestoreContent } from "../../../../../packages/domain/src/itinerary/draft-content";
 import { ItineraryCommandError, parseItineraryDraftCommand } from "./draft-command";
 import type { ItineraryDraftRepository } from "./sqlite-itinerary-repository";
 
@@ -21,6 +22,11 @@ export class ItineraryService {
     if (!result) throw new ItineraryCommandError("itinerary_not_found", 404);
     return result;
   }
+  history(actor: ItineraryActor | null, id: string, cursor?: number) {
+    const owner = this.actor(actor), result = this.repository.history(owner.id, id, cursor);
+    if (!result) throw new ItineraryCommandError("itinerary_not_found", 404);
+    return { ...result, ownerQualification: { schemaVersion: "starward-private-command-owner-v1" as const, ownerId: owner.id } };
+  }
   command(actor: ItineraryActor | null, value: unknown) {
     const owner = this.actor(actor);
     const command = parseItineraryDraftCommand(value);
@@ -37,14 +43,26 @@ export class ItineraryService {
         state: "draft", stops: [], stages: [], operationLog: [], evidence: { route: "missing", weather: "missing", astronomy: "missing", spot: "unverified" } };
     }
     if (!current) throw new ItineraryCommandError("itinerary_not_found", 404);
-    const { inputs, ...patch } = command.patch;
+    // commit invokes this callback only after the original actor/key receipt
+    // lookup, inside its existing write transaction. A replay never re-resolves
+    // historical content or re-applies it to a later current revision.
+    let contentPatch: Partial<ItineraryDraftEditableContent>;
+    if (command.command === "restore-draft") {
+      if (current.revision !== command.baseRevision) throw new ItineraryCommandError("itinerary_revision_conflict", 409, { currentRevision: current.revision });
+      const historical = this.repository.read(actor.id, id, command.sourceRevision);
+      if (!historical) throw new ItineraryCommandError("itinerary_restore_source_not_found", 404);
+      if (!isRestorableItineraryRevision(historical, { id, ownerId: actor.id, revision: command.sourceRevision })) throw new ItineraryCommandError("itinerary_restore_source_incompatible", 422);
+      try { contentPatch = itineraryDraftRestoreContent(current, historical); }
+      catch { throw new ItineraryCommandError("itinerary_restore_source_incompatible", 422); }
+    } else contentPatch = command.patch;
+    const { inputs, ...patch } = contentPatch;
     if (inputs && inputs.date !== current.inputs.date && current.stages.length && !patch.stages) throw new ItineraryCommandError("itinerary_stages_require_review", 422);
     const result = applyItineraryPatch(current, { idempotencyKey: command.idempotencyKey, actorId: actor.id, role: "owner", baseRevision: command.baseRevision, patch, at });
     if (result.status === "conflict") throw new ItineraryCommandError("itinerary_revision_conflict", 409, { currentRevision: current.revision });
     if (result.status === "invalid-timeline") throw new ItineraryCommandError("itinerary_invalid_timeline", 422, { conflicts: result.conflicts });
     if (result.status !== "applied") throw new ItineraryCommandError("itinerary_command_not_applied", 409);
     const next = { ...result.value, inputs: inputs ?? current.inputs, updatedAt: at };
-    next.operationLog[next.operationLog.length - 1] = { ...next.operationLog.at(-1)!, patch: command.patch };
+    next.operationLog[next.operationLog.length - 1] = { ...next.operationLog.at(-1)!, patch: contentPatch };
     return next;
   }
 }

@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import type { ItineraryDraft, ItineraryDraftLibrary, ItineraryDraftResult } from "../../../../../packages/domain/src/itinerary/draft";
+import type { ItineraryDraft, ItineraryDraftHistory, ItineraryDraftLibrary, ItineraryDraftResult } from "../../../../../packages/domain/src/itinerary/draft";
 import { ItineraryCommandError } from "./draft-command";
 import { commitWithReceipt } from "../../persistence/command-transaction";
 
@@ -9,6 +9,7 @@ interface BodyRow { body: string }
 export interface ItineraryDraftRepository {
   read(actorId: string, id: string, revision?: number): ItineraryDraft | null;
   list(actorId: string, cursor?: number): ItineraryDraftLibrary;
+  history(actorId: string, id: string, cursor?: number): Omit<ItineraryDraftHistory, "ownerQualification"> | null;
   commit(input: { actorId: string; key: string; digest: string; id: string }, mutate: (current: ItineraryDraft | null) => ItineraryDraft): ItineraryDraftResult;
   close(): void;
 }
@@ -49,6 +50,12 @@ export class SqliteItineraryRepository implements ItineraryDraftRepository {
     const rows = this.database.prepare("SELECT rowid AS cursor, id, revision, json_extract(body, '$.title') AS title, json_extract(body, '$.updatedAt') AS updatedAt FROM itinerary_drafts WHERE actor_id = ? AND rowid < ? ORDER BY rowid DESC LIMIT 51").all(actorId, cursor) as Array<{ cursor: number; id: string; title: string; revision: number; updatedAt: string }>;
     const page = rows.slice(0, 50);
     return { schemaVersion: "starward-itinerary-v2", items: page.map(({ cursor: _cursor, ...item }) => item), nextCursor: rows.length > 50 ? String(page.at(-1)!.cursor) : null, scope: "local-owner-poc" };
+  }
+  history(actorId: string, id: string, cursor?: number): Omit<ItineraryDraftHistory, "ownerQualification"> | null {
+    if (!this.database.prepare("SELECT 1 FROM itinerary_drafts WHERE id = ? AND actor_id = ?").get(id, actorId)) return null;
+    const rows = this.database.prepare("SELECT revision, json_extract(body, '$.sequence') AS sequence, json_extract(body, '$.title') AS title, json_extract(body, '$.updatedAt') AS updatedAt FROM itinerary_draft_versions WHERE id = ? AND actor_id = ? AND revision < COALESCE(?, 9223372036854775807) ORDER BY revision DESC LIMIT 51").all(id, actorId, cursor ?? null) as ItineraryDraftHistory["items"];
+    const items = rows.slice(0, 50);
+    return { schemaVersion: "starward-itinerary-v2", itineraryId: id, items, nextCursor: rows.length > 50 ? String(items.at(-1)!.revision) : null, scope: "local-owner-poc" };
   }
   commit(input: { actorId: string; key: string; digest: string; id: string }, mutate: (current: ItineraryDraft | null) => ItineraryDraft): ItineraryDraftResult {
     const committed = commitWithReceipt(this.database, { ...input, receiptTable: "itinerary_draft_receipts", conflict: () => new ItineraryCommandError("itinerary_idempotency_conflict", 409) }, () => {

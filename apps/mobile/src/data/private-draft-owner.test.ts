@@ -136,3 +136,50 @@ it.each(["itinerary", "field"] as DraftFamily[])("%s rejects list results begun 
     expect(host.requests.every(request => request.method === "GET")).toBe(true);
   } finally { release(); await host.close(); }
 });
+
+it.each(["itinerary", "field"] as DraftFamily[])("%s keeps a fresh same-owner qualification after an older held refusal arrives", async family => {
+  const host = await privateDraftHttp(); let release = () => {};
+  try {
+    const saved = family === "itinerary" ? host.seedItinerary() : host.seedField();
+    const client = family === "itinerary" ? host.itineraryClient() : host.fieldClient(); await client.list();
+    let signalReady!: () => void; const ready = new Promise<void>(resolve => { signalReady = resolve; }), held = new Promise<void>(resolve => { release = resolve; });
+    let hold = true;
+    host.intercept(async (request, response) => { if (hold && request.path.endsWith(`/${saved.id}`) && response.status === 403) { hold = false; signalReady(); await held; } return response; });
+    host.actor(family, null); const oldGet = client.get(saved.id).then(() => null, error => error); await ready;
+    host.actor(family, "owner-A"); const fresh = await client.list();
+    expect(client.authority()).toEqual({ status: "ready", ownerId: "owner-A" }); expect(client.canPublish(fresh.ownerQualification!)).toBe(true);
+    release(); expect(await oldGet).toMatchObject({ statusCode: 403 });
+    expect(client.authority()).toEqual({ status: "ready", ownerId: "owner-A" }); expect(client.canPublish(fresh.ownerQualification!)).toBe(true);
+    expect(host.requests.map(request => request.status)).toEqual([200, 403, 200]); expect(host.requests.every(request => request.method === "GET")).toBe(true); expect(host.values.size).toBe(0);
+  } finally { release(); await host.close(); }
+});
+
+it.each((["itinerary", "field"] as DraftFamily[]).flatMap(family => (["pending", "unavailable"] as const).map(outcome => ({ family, outcome }))))("$family does not advance authority for a replacement read that is $outcome", async ({ family, outcome }) => {
+  const host = await privateDraftHttp(); let releaseRefusal = () => {}, releaseList = () => {};
+  try {
+    const saved = family === "itinerary" ? host.seedItinerary() : host.seedField();
+    const client = family === "itinerary" ? host.itineraryClient() : host.fieldClient(); const original = await client.list();
+    let refusalReady!: () => void, listReady!: () => void;
+    const refused = new Promise<void>(resolve => { refusalReady = resolve; }), listed = new Promise<void>(resolve => { listReady = resolve; });
+    const heldRefusal = new Promise<void>(resolve => { releaseRefusal = resolve; }), heldList = new Promise<void>(resolve => { releaseList = resolve; });
+    let holdRefusal = true, holdList = true;
+    host.intercept(async (request, response) => {
+      if (holdRefusal && request.path.endsWith(`/${saved.id}`) && response.status === 403) { holdRefusal = false; refusalReady(); await heldRefusal; }
+      const listPath = family === "itinerary" ? "/v2/itineraries" : "/v2/field-reports";
+      if (holdList && request.path === listPath && response.ok) { holdList = false; listReady();
+        if (outcome === "unavailable") return new Response(JSON.stringify({ code: `${family === "itinerary" ? "itinerary" : "field_report"}_storage_unavailable`, outcome: "unknown" }), { status: 503 });
+        await heldList;
+      }
+      return response;
+    });
+    host.actor(family, null); const oldGet = client.get(saved.id).then(() => null, error => error); await refused;
+    host.actor(family, "owner-A"); const pendingList = client.list().then(value => ({ value }), error => ({ error })); await listed;
+    if (outcome === "unavailable") { expect(await pendingList).toMatchObject({ error: { statusCode: 503 } }); expect(client.authority()).toEqual({ status: "ready", ownerId: "owner-A" }); }
+    releaseRefusal(); expect(await oldGet).toMatchObject({ statusCode: 403 });
+    expect(client.authority()).toEqual({ status: "denied", ownerId: "owner-A" }); expect(client.canPublish(original.ownerQualification!)).toBe(false);
+    releaseList(); expect(await pendingList).toMatchObject(outcome === "pending" ? { error: { code: family === "itinerary" ? "itinerary_owner_changed" : "field_report_owner_changed" } } : { error: { statusCode: 503 } });
+    expect(client.authority()).toEqual({ status: "denied", ownerId: "owner-A" });
+    const restored = await client.list(); expect(client.canPublish(restored.ownerQualification!)).toBe(true);
+    expect(host.requests.every(request => request.method === "GET")).toBe(true); expect(host.values.size).toBe(0);
+  } finally { releaseRefusal(); releaseList(); await host.close(); }
+});

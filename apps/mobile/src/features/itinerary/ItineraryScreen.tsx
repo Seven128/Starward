@@ -4,11 +4,14 @@ import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
-import { createItineraryClient, ItineraryRequestError, type ItineraryDraft, type ItineraryDraftInputs, type ItineraryCommandInput } from "../../data/itinerary-client";
+import { createItineraryClient, ItineraryRequestError, type ItineraryDraft, type ItineraryDraftCommand, type ItineraryDraftInputs, type ItineraryCommandInput } from "../../data/itinerary-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { useShellStore } from "../../state/shell-store";
 import { observerTypeLabels } from "../preferences/observer-labels";
+import { compareItineraryDraftContent, itineraryDraftRestoreInput, snapshotItineraryDraftContentRevision, type ItineraryDraftContentField, type ItineraryDraftContentRevision } from "../../../../../packages/domain/src/itinerary/draft-content";
+import type { ItineraryDraftEditableContent } from "../../../../../packages/domain/src/itinerary/draft";
+import { normalizeUtcMoment } from "../../../../../packages/contracts/src/observing-time";
 
 const palette = colors.planning;
 const defaultClient = createItineraryClient({ baseUrl: resolveRuntimeApiBaseUrl() });
@@ -53,11 +56,103 @@ function errorText(error: unknown): string {
     if (error.code === "itinerary_owner_mismatch") return "请恢复原保存账户后重试，原内容已保留。";
     if (error.code === "itinerary_owner_unconfirmed" || error.code === "itinerary_owner_changed") return "保存账户尚未核对，未提交新内容。请重新读取行程。";
     if (error.code === "itinerary_revision_conflict") return "行程已被更新。请先读取最新版本，再确认要保留的修改。";
+    if (error.code === "itinerary_restore_source_not_found" || error.code === "itinerary_restore_source_incompatible") return "所选历史版本目前不能恢复，当前行程已保留。请重新读取并选择版本。";
     if (error.code === "itinerary_owner_required") return "行程目前仅在本机个人试用服务中可用。";
     if (error.code === "itinerary_request_body_too_large" && error.rejected) return "内容过长，尚未保存。请缩短填写内容后重试。";
     if (error.rejected) return "未保存，请检查日期、人数和必填内容；原行程保持不变。";
   }
   return "保存结果尚未确认。原始内容已保留，请重试同一次保存。";
+}
+function pendingDescription(command: ItineraryDraftCommand) {
+  if (command.command === "create-draft") return `${command.input.title} · ${command.input.inputs.date}`;
+  if (command.command === "restore-draft") return `行程 ${command.itineraryId} · 恢复版本 ${command.sourceRevision} · 基于版本 ${command.baseRevision}`;
+  return `行程 ${command.itineraryId} · 基于版本 ${command.baseRevision}`;
+}
+
+const inputNames: Record<keyof ItineraryDraftInputs, string> = { date: "日期", origin: "出发地", people: "人数", transport: "交通方式", target: "观测目标", userType: "用户类型", latestReturnLocal: "最晚返回", overnight: "过夜安排", collaborative: "编辑方式" };
+const stageNames = { departure: "出发", scouting: "勘察", "blue-hour": "蓝调", observation: "观测", moonless: "无月时段", "target-window": "目标窗口", return: "返回", dawn: "清晨" };
+const localTime = (value: string, timezone: string) => new Intl.DateTimeFormat("zh-CN", { timeZone: timezone, dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+function stageComparisonTime(value: string, timezone: string) {
+  const instant = normalizeUtcMoment(value);
+  if (!instant) return "时刻不可用";
+  // Date's canonical UTC retains the supported milliseconds and disambiguates
+  // folded local hours without requiring newer native Intl precision options.
+  return `${localTime(instant, timezone)}（${instant.replace("T", " ").replace("Z", " UTC")}）`;
+}
+function contentValue(field: ItineraryDraftContentField, value: ItineraryDraftEditableContent, timezone: string) {
+  if (field === "title") return value.title;
+  if (field === "stages") return value.stages.length ? value.stages.map((stage, index) => `${index + 1}. ${stageNames[stage.kind]}（${stage.id}） ${stageComparisonTime(stage.startsAt, timezone)}—${stageComparisonTime(stage.endsAt, timezone)}`).join("\n") : "尚无阶段";
+  const key = field.slice(7) as keyof ItineraryDraftInputs, item = value.inputs[key];
+  if (key === "transport") return ({ drive: "驾车", walk: "步行", mixed: "混合交通" })[value.inputs.transport];
+  if (key === "overnight") return item ? "计划过夜" : "不计划过夜";
+  if (key === "collaborative") return item ? "共同编辑" : "个人编辑";
+  if (key === "people") return `${item} 人`;
+  return item === null ? "未指定" : String(item);
+}
+function HistoryAction({ id, children, onPress, disabled = false }: { id: string; children: string; onPress(): void; disabled?: boolean }) {
+  return <Pressable testID={id} disabled={disabled} onPress={onPress} style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Text style={styles.actionText}>{children}</Text></Pressable>;
+}
+function DraftHistoryPanel({ client, plan, blocked, editing, isSaving, restoreError, onClose, onRestore, readCurrent }: {
+  client: ReturnType<typeof createItineraryClient>; plan: ItineraryDraft; blocked: boolean; editing: boolean; isSaving: boolean; restoreError: unknown;
+  onClose(): void; onRestore(input: ItineraryCommandInput, ownerId: string): void; readCurrent(): Promise<ItineraryDraft | undefined>;
+}) {
+  const [selection, setSelection] = useState<{ revision: number; base: ItineraryDraftContentRevision } | null>(null);
+  const [comparing, setComparing] = useState(false), [comparisonFailed, setComparisonFailed] = useState(false);
+  const history = useInfiniteQuery({ queryKey: ["itinerary-history", plan.ownerId, plan.id], initialPageParam: undefined as string | undefined,
+    queryFn: ({ signal, pageParam }) => client.history(plan.id, signal, pageParam, plan.ownerId),
+    getNextPageParam: page => client.canPublishHistory(page) ? page.nextCursor ?? undefined : undefined });
+  const revision = useQuery({ queryKey: ["itinerary-revision", plan.ownerId, plan.id, selection?.revision],
+    queryFn: ({ signal }) => client.getRevision(plan.id, selection!.revision, signal, plan.ownerId), enabled: selection !== null });
+  const old = revision.data && client.canPublish(revision.data) && revision.data.id === plan.id && revision.data.revision === selection?.revision ? revision.data : undefined;
+  const rows = history.data?.pages.filter(client.canPublishHistory).flatMap(page => page.items);
+  const comparison = selection && old ? compareItineraryDraftContent(selection.base, old) : null;
+  let restoreInput: ItineraryCommandInput | undefined;
+  if (selection && old && old.revision < selection.base.revision) {
+    try { restoreInput = itineraryDraftRestoreInput(selection.base, old); } catch { /* incompatible content stays read-only */ }
+  }
+  const conflict = restoreError instanceof ItineraryRequestError && restoreError.code === "itinerary_revision_conflict";
+  const currentChanged = selection && selection.base.revision !== plan.revision;
+  const select = (number: number) => { setSelection({ revision: number, base: snapshotItineraryDraftContentRevision(plan) }); setComparisonFailed(false); };
+  const recompare = async () => {
+    setComparing(true); setComparisonFailed(false);
+    try { const current = await readCurrent(); if (!current || !client.canPublish(current) || current.id !== plan.id || current.ownerId !== plan.ownerId) { setComparisonFailed(true); return; }
+      setSelection(selected => selected ? { ...selected, base: snapshotItineraryDraftContentRevision(current) } : selected);
+    } catch { setComparisonFailed(true); } finally { setComparing(false); }
+  };
+  const restore = () => {
+    if (!selection || !restoreInput || blocked || editing || conflict || currentChanged || comparing || revision.isFetching || revision.isError || !comparison?.changedFields.length) return;
+    onRestore(restoreInput, selection.base.ownerId);
+  };
+  return <View testID="itinerary-history" style={styles.panel}>
+    <Text style={styles.evidenceTitle}>版本历史</Text><Text style={styles.evidenceMeta}>选中版本只供查看，恢复会新建版本。</Text>
+    <HistoryAction id="plan-close-history" onPress={onClose}>关闭历史</HistoryAction>
+    {history.isPending ? <Text style={styles.subtitle}>正在读取历史…</Text> : null}
+    {selection ? <HistoryAction id="plan-history-choose-version" disabled={isSaving || comparing} onPress={() => setSelection(null)}>选择版本</HistoryAction> : null}
+    {rows?.filter(item => !selection || item.revision === selection.revision).map(item => <HistoryAction key={item.revision} id={`plan-history-revision-${item.revision}`} disabled={isSaving || comparing} onPress={() => select(item.revision)}>{`版本 ${item.revision} · ${item.title} · ${localTime(item.updatedAt, plan.timezone)}`}</HistoryAction>)}
+    {!history.isError && rows?.length === 0 ? <Text style={styles.subtitle}>尚无可读取的版本。</Text> : null}
+    {history.isError ? <View><Text style={styles.error}>历史读取失败，已存行程保持不变。</Text><HistoryAction id="plan-history-retry" onPress={() => { void history.refetch(); }}>重试历史</HistoryAction></View> : null}
+    {!selection && history.hasNextPage ? <HistoryAction id="plan-history-more" disabled={history.isFetchingNextPage} onPress={() => { void history.fetchNextPage(); }}>{history.isFetchingNextPage ? "正在读取…" : "更早版本"}</HistoryAction> : null}
+    {selection ? <View testID="plan-history-comparison" style={styles.comparison}>
+      <Text style={styles.evidenceTitle}>{`比较：当前版本 ${selection.base.revision} → 历史版本 ${selection.revision}`}</Text>
+      {revision.isPending ? <Text style={styles.subtitle}>正在读取所选版本…</Text> : null}
+      {revision.isError ? <View><Text style={styles.error}>{old ? "读取失败，保留上次比较；重试后恢复。" : "所选版本未能读取，尚未恢复。"}</Text><HistoryAction id="plan-history-detail-retry" onPress={() => { void revision.refetch(); }}>重试版本</HistoryAction></View> : null}
+      {comparison?.changedFields.map(field => <View key={field} testID={`plan-history-diff-${field}`} style={styles.difference}>
+        <Text style={styles.evidenceTitle}>{field === "title" ? "行程名称" : field === "stages" ? "用户阶段" : inputNames[field.slice(7) as keyof ItineraryDraftInputs]}</Text>
+        <Text style={styles.evidenceBody}>{`当前：${contentValue(field, comparison.current, plan.timezone)}`}</Text>
+        <Text style={styles.evidenceBody}>{`恢复后：${contentValue(field, comparison.historical, plan.timezone)}`}</Text>
+      </View>)}
+      {comparison && comparison.changedFields.length === 0 ? <Text style={styles.subtitle}>此版本内容与当前相同。</Text> : null}
+      {old && old.revision >= selection.base.revision ? <Text style={styles.subtitle}>请选择较早版本，或重新读取当前行程。</Text> : null}
+      {old && old.revision < selection.base.revision && !restoreInput ? <Text style={styles.error}>版本内容不兼容，暂不能恢复。</Text> : null}
+      {editing ? <Text testID="plan-history-edit-blocked" style={styles.subtitle}>当前还有未保存编辑，请先保存或取消。</Text> : null}
+      {currentChanged || conflict ? <Text style={styles.subtitle}>当前行程已更新，请重新比较。</Text> : null}
+      {restoreError ? <Text style={styles.error}>{restoreError instanceof ItineraryRequestError && restoreError.code === "itinerary_request_body_too_large" && restoreError.rejected ? "版本内容超出服务上限，尚未恢复。原版本保留。" : errorText(restoreError)}</Text> : null}
+      {comparisonFailed ? <Text style={styles.error}>当前版本读取失败，原比较已保留。</Text> : null}
+      <HistoryAction id="plan-history-recompare" disabled={isSaving || comparing} onPress={() => { void recompare(); }}>{comparing ? "正在读取…" : "重新比较"}</HistoryAction>
+      <HistoryAction id="plan-restore-history" disabled={blocked || editing || comparing || revision.isFetching || revision.isError || !!currentChanged || conflict || !restoreInput || !comparison?.changedFields.length} onPress={restore}>{isSaving ? "正在恢复…" : "恢复版本"}</HistoryAction>
+      <HistoryAction id="plan-close-history-comparison" onPress={onClose}>关闭历史</HistoryAction>
+    </View> : null}
+  </View>;
 }
 
 export function ItineraryScreen({ client = defaultClient }: { client?: ReturnType<typeof createItineraryClient> } = {}) {
@@ -69,6 +164,7 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
   const [form, setForm] = useState<DraftForm | null>(null);
   const [formOwnerId, setFormOwnerId] = useState<string | null>(null), [selectedOwnerId, setSelectedOwnerId] = useState<string | null>(null);
   const [editing, setEditing] = useState<ItineraryDraft | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const authority = useSyncExternalStore(client.subscribeAuthority, client.authority, client.authority);
   const ownerId = authority.status === "ready" ? authority.ownerId : null;
   const planKey = (id: string | undefined, owner = ownerId) => ["itinerary", owner, id];
@@ -82,7 +178,7 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
   const id = (selectedOwnerId === ownerId ? selectedId : null) ?? libraryItems?.[0]?.id;
   const detail = useQuery({ queryKey: planKey(id), queryFn: ({ signal }) => client.get(id!, signal, ownerId ?? undefined), enabled: !!id && ownerId !== null });
   const mutation = useMutation({
-    mutationFn: (intent: { input: ItineraryCommandInput; expectedOwnerId: string | null } | "retry") => intent === "retry" ? client.retry() : client.command(intent.input, intent.expectedOwnerId ?? undefined),
+    mutationFn: (intent: { input: ItineraryCommandInput; expectedOwnerId: string | null; origin?: "history" } | "retry") => intent === "retry" ? client.retry() : client.command(intent.input, intent.expectedOwnerId ?? undefined),
     onSuccess: async plan => {
       if (!client.canPublish(plan)) return;
       const key = planKey(plan.id, plan.ownerId);
@@ -91,7 +187,9 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
       const current = queryClient.getQueryData<ItineraryDraft>(key);
       queryClient.setQueryData(key, current && current.ownerId === plan.ownerId && current.revision > plan.revision ? current : plan);
       setSelectedId(plan.id); setSelectedOwnerId(plan.ownerId); setForm(null); setFormOwnerId(null); setEditing(null); setActive("overview");
+      setHistoryOpen(false);
       void queryClient.invalidateQueries({ queryKey: ["itinerary-library"] });
+      void queryClient.invalidateQueries({ queryKey: ["itinerary-history", plan.ownerId, plan.id] });
     },
     onSettled: () => { void queryClient.invalidateQueries({ queryKey: ["itinerary-pending"] }); },
   });
@@ -130,8 +228,15 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
       {authority.status !== "ready" ? <Text testID="itinerary-owner-unconfirmed" style={styles.subtitle}>{authority.status === "denied" ? "当前账户暂不能读取私人行程。原编辑内容和待确认保存已保留。" : "正在核对私人行程的账户…"}</Text> : null}
       <Pressable testID="plan-generate" disabled={blocked || form !== null} onPress={() => begin()} style={styles.action}><Text style={styles.actionText}>新建草稿</Text></Pressable>
       {plan ? <Pressable testID="plan-edit" disabled={blocked || form !== null} onPress={() => begin(plan)} style={styles.action}><Text style={styles.actionText}>编辑草稿</Text></Pressable> : null}
+      {plan ? <HistoryAction id="plan-open-history" onPress={() => setHistoryOpen(true)}>版本历史</HistoryAction> : null}
+      {historyOpen && plan ? <DraftHistoryPanel key={`${plan.ownerId}:${plan.id}`} client={client} plan={plan} blocked={blocked} editing={form !== null} isSaving={mutation.isPending}
+        restoreError={mutation.variables !== "retry" && mutation.variables?.origin === "history" ? mutation.error : null}
+        onClose={() => setHistoryOpen(false)} onRestore={(input, expectedOwnerId) => mutation.mutate({ input, expectedOwnerId, origin: "history" })}
+        readCurrent={async () => { const result = await detail.refetch(); if (!result.isSuccess || !result.data || !client.canPublish(result.data)) return undefined;
+          if (mutation.variables !== "retry" && mutation.variables?.origin === "history" && mutation.error instanceof ItineraryRequestError && mutation.error.code === "itinerary_revision_conflict") mutation.reset();
+          return result.data; }} /> : null}
       {pending.isError ? <Pressable onPress={() => pending.refetch()} style={styles.retry}><Text>待确认保存未能读取，请重试</Text></Pressable> : null}
-      {pending.data ? <View testID="itinerary-pending" style={styles.panel}><Text style={styles.evidenceTitle}>上次保存待确认</Text><Text style={styles.evidenceBody}>{ownerId && pending.data.ownerQualification?.ownerId === ownerId ? pending.data.command === "create-draft" ? `${pending.data.input.title} · ${pending.data.input.inputs.date}` : `行程 ${pending.data.itineraryId} · 基于版本 ${pending.data.baseRevision}` : "原保存内容已保留，请恢复原账户后重试。"}</Text><Pressable testID="plan-retry-save" disabled={mutation.isPending} onPress={() => mutation.mutate("retry")} style={styles.action}><Text>重试保存</Text></Pressable></View> : null}
+      {pending.data ? <View testID="itinerary-pending" style={styles.panel}><Text style={styles.evidenceTitle}>上次保存待确认</Text><Text style={styles.evidenceBody}>{ownerId && pending.data.ownerQualification?.ownerId === ownerId ? pendingDescription(pending.data) : "原保存内容已保留，请恢复原账户后重试。"}</Text><Pressable testID="plan-retry-save" disabled={mutation.isPending} onPress={() => mutation.mutate("retry")} style={styles.action}><Text>重试保存</Text></Pressable></View> : null}
       {form && formOwnerId !== ownerId ? <View><Text style={styles.subtitle}>原账户的编辑内容已保留，恢复后可继续。</Text><Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={() => { setForm(null); setFormOwnerId(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable></View> : null}
       {form && formOwnerId === ownerId && authority.status === "ready" ? <View testID="itinerary-creation-form" style={styles.panel}>
         <Input label="行程名称" value={form.title} onChange={title => setForm(current => current && { ...current, title })} disabled={blocked} />
@@ -149,7 +254,7 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
       </View> : null}
       <View style={styles.actions}>{actions.map(item => <Pressable key={item.key} testID={item.id} onPress={() => setActive(item.key)} style={styles.action}><Text style={styles.actionText}>{item.label}</Text></Pressable>)}</View>
       {plan ? <Panel active={active} plan={plan} /> : null}
-      {mutation.isError ? <View><Text style={styles.error}>{errorText(mutation.error)}</Text>{mutation.error instanceof ItineraryRequestError && mutation.error.code === "itinerary_revision_conflict" ? <Pressable onPress={async () => { const refreshed = await detail.refetch(); if (refreshed.data && client.canPublish(refreshed.data)) begin(refreshed.data, true); }} style={styles.retry}><Text>保留已存内容，重新编辑</Text></Pressable> : null}</View> : null}
+      {mutation.isError && !(historyOpen && mutation.variables !== "retry" && mutation.variables?.origin === "history") ? <View><Text style={styles.error}>{errorText(mutation.error)}</Text>{mutation.error instanceof ItineraryRequestError && mutation.error.code === "itinerary_revision_conflict" ? <Pressable onPress={async () => { const refreshed = await detail.refetch(); if (refreshed.data && client.canPublish(refreshed.data)) begin(refreshed.data, true); }} style={styles.retry}><Text>保留已存内容，重新编辑</Text></Pressable> : null}</View> : null}
     </ScrollView>
   </SafeAreaView>;
 }
@@ -228,4 +333,6 @@ const styles = StyleSheet.create({
   },
   error: { color: palette.danger, fontSize: typeToken.label },
   pressed: { opacity: 0.7 },
+  comparison: { gap: spacing.x1 },
+  difference: { paddingVertical: spacing.x1, borderTopWidth: 1, borderColor: palette.border },
 });

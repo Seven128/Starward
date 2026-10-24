@@ -94,3 +94,22 @@ it.each(["itinerary", "field"] as DraftFamily[])("%s cannot publish an original 
   }
   expect(container.textContent).toContain(family === "itinerary" ? "合成行程B当前资料" : "合成现场B当前资料");
 });
+
+it.each(["itinerary", "field"] as DraftFamily[])("%s treats a same-owner confirmation as fresh without creating a consumer fetch loop", async family => {
+  const saved = family === "itinerary" ? host.seedItinerary() : host.seedField();
+  const client = family === "itinerary" ? host.itineraryClient() : host.fieldClient();
+  const component = family === "itinerary" ? <ItineraryScreen client={client as ReturnType<typeof host.itineraryClient>} /> : <FieldReportsPanel client={client as ReturnType<typeof host.fieldClient>} />;
+  await react.act(async () => root.render(<QueryClientProvider client={cache}>{component}</QueryClientProvider>));
+  await settled(() => expect(client.authority()).toMatchObject({ status: "ready", ownerId: "owner-A" }));
+  const listPath = family === "itinerary" ? "/v2/itineraries" : "/v2/field-reports";
+  const before = host.requests.filter(request => request.path === listPath).length;
+  await react.act(async () => { await cache.invalidateQueries({ queryKey: [family === "itinerary" ? "itinerary-library" : "field-reports"] }); });
+  await settled(() => expect(cache.getQueryCache().getAll().every(query => query.state.fetchStatus === "idle")).toBe(true));
+  // One bounded event-loop drain checks the actual subscriber/Query interaction;
+  // it is not a performance or frame-rate measurement.
+  await react.act(async () => { await new Promise(resolve => setTimeout(resolve, 40)); });
+  expect(host.requests.filter(request => request.path === listPath)).toHaveLength(before + 1);
+  expect(client.authority()).toMatchObject({ status: "ready", ownerId: "owner-A" });
+  expect(family === "itinerary" ? container.textContent?.includes("合成行程私密内容A") : !!container.querySelector(`[data-testid="field-report-${saved.id}"]`)).toBe(true);
+  expect(host.requests.every(request => request.method === "GET")).toBe(true);
+});

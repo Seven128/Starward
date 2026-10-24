@@ -1,4 +1,5 @@
 export type DataQuality = "fresh" | "cached" | "partial" | "missing";
+export { compareForecastModels, forecastComparisonPresentation } from "./model-comparison";
 
 export interface AstronomyEvidenceInput {
   instant: string;

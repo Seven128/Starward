@@ -1,6 +1,7 @@
 import { isObservingNight, normalizeUtcMoment } from "../../../../../packages/contracts/src/observing-time";
 import type { ItineraryStage } from "../../../../../packages/domain/src/itinerary/index";
 import type { ItineraryDraftCommand, ItineraryDraftInputs } from "../../../../../packages/domain/src/itinerary/draft";
+import { itineraryDraftEditableFields, itineraryDraftInputFields } from "../../../../../packages/domain/src/itinerary/draft-content";
 
 export class ItineraryCommandError extends Error {
   constructor(readonly code: string, readonly statusCode = 400, readonly details?: Record<string, unknown>) { super(code); }
@@ -24,7 +25,7 @@ function integer(value: unknown, min: number, max = Number.MAX_SAFE_INTEGER): nu
 }
 function inputs(value: unknown): ItineraryDraftInputs {
   const input = object(value);
-  keys(input, ["date", "origin", "people", "transport", "target", "userType", "latestReturnLocal", "overnight", "collaborative"]);
+  keys(input, Object.keys(itineraryDraftInputFields));
   if (typeof input.date !== "string" || !isObservingNight(input.date) || typeof input.transport !== "string" || !["drive", "walk", "mixed"].includes(input.transport)
     || typeof input.overnight !== "boolean" || input.collaborative !== false
     || input.latestReturnLocal !== null && (typeof input.latestReturnLocal !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/u.test(input.latestReturnLocal))) {
@@ -63,13 +64,17 @@ export function parseItineraryDraftCommand(value: unknown): ItineraryDraftComman
   if (command.command === "patch-draft") {
     keys(command, ["command", "idempotencyKey", "itineraryId", "baseRevision", "patch"]);
     const patch = object(command.patch);
-    keys(patch, ["title", "inputs", "stages"]);
+    keys(patch, Object.keys(itineraryDraftEditableFields));
     if (!Object.keys(patch).length) throw new ItineraryCommandError("empty_itinerary_patch");
     return { command: "patch-draft", idempotencyKey, itineraryId: text(command.itineraryId), baseRevision: integer(command.baseRevision, 1), patch: {
       ...(patch.title === undefined ? {} : { title: text(patch.title) }),
       ...(patch.inputs === undefined ? {} : { inputs: inputs(patch.inputs) }),
       ...(patch.stages === undefined ? {} : { stages: stages(patch.stages) }),
     } };
+  }
+  if (command.command === "restore-draft") {
+    keys(command, ["command", "idempotencyKey", "itineraryId", "baseRevision", "sourceRevision"]);
+    return { command: "restore-draft", idempotencyKey, itineraryId: text(command.itineraryId), baseRevision: integer(command.baseRevision, 1), sourceRevision: integer(command.sourceRevision, 1) };
   }
   throw new ItineraryCommandError("invalid_itinerary_command");
 }

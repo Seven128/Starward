@@ -1,6 +1,6 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { buildApi } from "../../apps/api/src/server";
 import { createItineraryRuntime } from "../../apps/api/src/modules/itinerary/runtime";
 import { createFieldReportRuntime } from "../../apps/api/src/modules/field/report-runtime";
@@ -14,8 +14,9 @@ export const itineraryDraftInput = { command: "create-draft" as const, input: {
     transport: "drive" as const, target: "moon", userType: "family", latestReturnLocal: null, overnight: false, collaborative: false as const },
 } };
 export type DraftFamily = "itinerary" | "field";
-export async function privateDraftHttp() {
-  const directory = mkdtempSync(join(tmpdir(), "starward-private-draft-owner-"));
+export async function privateDraftHttp(setupOptions: { directory?: string } = {}) {
+  const directory = setupOptions.directory ?? mkdtempSync(join(tmpdir(), "starward-private-draft-owner-"));
+  if (dirname(resolve(directory)) !== resolve(tmpdir()) || !basename(directory).startsWith("starward-private-draft-owner-")) throw Error("private_draft_fixture_directory_invalid");
   const itinerary = await createItineraryRuntime({ dataDir: directory });
   const field = await createFieldReportRuntime({ dataDir: directory });
   const actors: Record<DraftFamily, string | null> = { itinerary: "owner-A", field: "owner-A" };

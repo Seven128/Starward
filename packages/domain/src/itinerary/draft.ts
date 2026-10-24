@@ -33,6 +33,9 @@ export interface ItineraryDraft {
   evidence: { route: "missing"; weather: "missing"; astronomy: "missing"; spot: "unverified" };
 }
 
+/** All user-editable content of this draft schema; identity/evidence stay current. */
+export type ItineraryDraftEditableContent = Pick<ItineraryDraft, "title" | "inputs" | "stages">;
+
 export type ItineraryDraftCommand = {
   command: "create-draft";
   idempotencyKey: string;
@@ -42,7 +45,14 @@ export type ItineraryDraftCommand = {
   idempotencyKey: string;
   itineraryId: string;
   baseRevision: number;
-  patch: { title?: string; inputs?: ItineraryDraftInputs; stages?: ItineraryStage[] };
+  patch: Partial<ItineraryDraftEditableContent>;
+} | {
+  command: "restore-draft";
+  idempotencyKey: string;
+  itineraryId: string;
+  baseRevision: number;
+  /** Immutable version under the authorized owner, never caller-supplied content. */
+  sourceRevision: number;
 };
 
 export interface ItineraryDraftResult {
@@ -60,4 +70,13 @@ export interface ItineraryDraftLibrary {
   scope: "local-owner-poc";
   /** Absent on older APIs: readable history is not original-attempt authority. */
   ownerQualification?: PrivateCommandOwnerQualification;
+}
+
+export interface ItineraryDraftHistory {
+  schemaVersion: "starward-itinerary-v2";
+  itineraryId: string;
+  items: Array<Pick<ItineraryDraft, "revision" | "sequence" | "title" | "updatedAt">>;
+  nextCursor: string | null;
+  scope: "local-owner-poc";
+  ownerQualification: PrivateCommandOwnerQualification;
 }

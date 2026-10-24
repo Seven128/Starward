@@ -1,4 +1,6 @@
-# 本机性能分析环境恢复
+# 本机性能分析环境恢复记录（现已后置）
+
+**2026-10-25后续状态：用户已明确把层叠性能、云观星播放性能（含相关内存/OOM）后置。以下环境/失败均保留为采集时记录，不是当前第一步。** Root随后从自有手机浮层正常结束这次WAN调试，以原ef6同generation普通auto_preview重新打开（新单次官方success、源不变），完成只读Picker打开/Back取消/回Map开发反馈。核微信15源pin/canonical ef6不变后，官方关闭自有RTtHkV源码及关联debug窗口，实际只余项目列表。全部临时原件保留；未全局quit/kill、未动VPN/防火墙。PC热点/profile/API owner仍保留供后续正常功能依赖，当前不需用户UAC/重启。具体新状态以HANDOFF与R19-PICKER-READONLY-20261025为准。
 
 用户先要求记录进度，再明确授权root操作电脑与USB手机搞通既有方案，必要人类动作后置。主用仍为“真机调试开发者工具”的Performance/Memory；历史手机LAN/重场景/完整可解析Heap的资格不改，但当前环境必须实证恢复。完整Goal、UI→叠层→Sky顺序、gen34冻结、OOM未解决和全部未完义务保留，不以环境准备关闭产品验收。
 
@@ -37,6 +39,15 @@ Windows原热点/ICS没有启动或变更；原“Meta共享的”标记仍只�
 
 WinRT只读仅找到connected WLAN，VPN无ConnectionProfile，不以WLAN profile冒VPN共享出口。未执行Start/Stop/Configure Tethering或放宽脚本策略。手机既有stay-on=15、screen timeout1800000、keyguard三false只读保留，未改电源/锁屏。
 
+## 2026-10-25 电脑输入边界的有限判别
+
+当前真实手机debug窗口可读Memory面板/活动VM，但普通Tab后焦点仍外层popup document；按[Chrome官方快捷键](https://developer.chrome.com/docs/devtools/shortcuts/)做一次无采集副作用的前一面板导航后，实际仍Memory。未证明输入成功，未开始/导出profile或重复多种键组合。三类窗口与这个新debug窗的capture失败事实仍在，停止同条件UI循环。
+
+[SendInput受完整性级别约束](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)是一项可判别解释，不直接当根因。只用PROCESS_QUERY_LIMITED_INFORMATION/TOKEN_QUERY实读：工具shell和DevTools browser/CLI主进程均RID8192（Medium）、Elevated=false、UIAccess=false、ElevationType=limited、Session2；未实读Sky内部helper，不宣称排除所有权限问题。原生token/安全设置没有变化，也不能把管理员重启冒capture修复保证。
+
+另按[OpenInputDesktop](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-openinputdesktop)/[GetUserObjectInformation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getuserobjectinformationw)只读当前线程与输入desktop：均Default，threadDesktopReceivesInput=true、error0。未切desktop、写安全状态或尝试通过锁屏/UAC；这个结果只限定当前tool shell，不能替代实际图形接口结果。private原件host-process-integrity-readback-20261025.private.json、input-desktop-readback-20261025.private.json保留。
+
+当前仍需管理员系统入口以完成有限firewall资格/修复；电脑图形操作接口本身另待恢复复核。现场可用性已异步询问，未收到答复，不因elapsed time重发RunAs或把原任务完整授权当OS令牌。此后用户已后置两类性能，WAN会话已正常结束；当前继续独立功能/正确性责任，不扩profiler选择或重建冻结代。
 ## 有限防火墙准备与下一边界
 
 原生netsh只读已确认Public/Private ON且BlockInbound/AllowOutbound，38个相关规则块private保全。PowerShell读取权限失败不外推所有只读入口不可用。当前API Public Block的范围覆盖8806；旧API/DevTools例外均带旧scope，未重放。

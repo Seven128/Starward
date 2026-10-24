@@ -18,6 +18,7 @@ import { observingNightHours } from "./observing-night-hours";
 import { useDecisionSnapshot } from "../../state/use-decision-snapshot";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { forecastTarget } from "../../state/decision-context";
+import { forecastComparisonPresentation } from "@starward/domain/forecast";
 
 const palette = colors.planning;
 type SectionKey = "hourly-professional-view" | "model-disagreement" | "future-trend" | "twilight-and-milky-way" | "layer-provenance";
@@ -92,8 +93,9 @@ function ModelSelector({ bundle, selected, onSelect }: { bundle: ForecastBundle;
   const primary = bundle.primary.run;
   const comparison = bundle.comparison?.run;
   const active = selected === "comparison" && bundle.comparison ? comparison : primary;
+  const comparisonView = forecastComparisonPresentation(bundle.modelComparison);
   return <View style={styles.section}>
-    <SectionHeading eyebrow="预报模型" title="先看系统解释，再看模型值" meta={`${Math.round(bundle.modelComparison.confidence * 100)}% 可信度`} />
+    <SectionHeading eyebrow="预报模型" title="先看系统解释，再看模型值" meta={comparisonView.confidenceLabel} />
     <View style={styles.choiceRow}>
       <Choice testID="model-selector" label={`${primary.provider} · ${primary.model}`} accessibilityLabel={`预报模型选择，${primary.provider} ${primary.model}`} selected={selected === "primary"} onPress={() => onSelect("primary")} />
       <Choice label={comparison ? `${comparison.provider} · ${comparison.model}` : "暂无可比较模型"} selected={selected === "comparison"} disabled={!comparison} onPress={() => onSelect("comparison")} />
@@ -106,7 +108,7 @@ function ModelSelector({ bundle, selected, onSelect }: { bundle: ForecastBundle;
       <Evidence testID="forecast-model-a" title={`主模型 · ${primary.provider} ${primary.model}`} body={`批次 ${primary.runId} · ${primary.status}`} meta={`${primary.sourceLicense} · ${time(primary.modelRunTimeUtc, bundle.context.timezone)} 运行`} />
       <Evidence testID="forecast-model-b" title={comparison ? `对比模型 · ${comparison.provider} ${comparison.model}` : "对比模型暂不可用"} body={comparison ? `批次 ${comparison.runId} · ${comparison.status}` : "不复制主模型充当第二模型。"} meta={comparison?.sourceLicense} />
     </View>
-    <Evidence testID="forecast-disagreement" title={`模型${bundle.modelComparison.disagreementStartUtc ? "存在分歧" : "当前一致"}`} body={bundle.modelComparison.explanation} meta={`比较字段：${bundle.modelComparison.comparedFields.join("、") || "暂无"}`} />
+    <Evidence testID="forecast-disagreement" title={comparisonView.title} body={bundle.modelComparison.explanation} meta={`比较指标：${comparisonView.fieldsLabel}`} />
   </View>;
 }
 

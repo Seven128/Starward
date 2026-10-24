@@ -4,14 +4,13 @@ import type {
   ForecastBundle,
   ForecastDataStatus,
   ForecastLayerDescriptor,
-  ForecastModelComparison,
   ForecastModelSeries,
   ForecastQuery,
   ForecastRunDescriptor,
   ForecastTrendDay,
   ProfessionalForecastHour,
 } from "../../../../../packages/contracts/src/forecast";
-import { describeAtmosphere, intersectNightWindows } from "../../../../../packages/domain/src/forecast/index";
+import { compareForecastModels, describeAtmosphere, intersectNightWindows } from "../../../../../packages/domain/src/forecast/index";
 import type { NormalizedWeatherHour, NormalizedWeatherRun } from "../../../../../packages/weather-schema/src/index";
 
 export interface ForecastRunSource {
@@ -220,24 +219,6 @@ function trends(run: NormalizedWeatherRun, query: ForecastQuery): ForecastTrendD
   });
 }
 
-function compare(primary: ForecastModelSeries, secondary: ForecastModelSeries | null): ForecastModelComparison {
-  if (!secondary) return { status: "missing", confidence: 0.45, explanation: "没有已授权的对比模型；当前仅展示主模型。", consensusStartUtc: null, consensusEndUtc: null, disagreementStartUtc: null, disagreementEndUtc: null, comparedFields: [] };
-  const secondaryByTime = new Map(secondary.hours.map((hour) => [hour.validTimeUtc, hour]));
-  const points = primary.hours.map((hour) => ({ primary: hour, secondary: secondaryByTime.get(hour.validTimeUtc) })).filter((point) => point.secondary);
-  const disagreements = points.filter(({ primary: a, secondary: b }) => Math.abs((a.totalCloudPct ?? 0) - (b!.totalCloudPct ?? 0)) >= 25 || Math.abs((a.precipitationProbabilityPct ?? 0) - (b!.precipitationProbabilityPct ?? 0)) >= 30);
-  const consensus = points.filter((point) => !disagreements.includes(point));
-  return {
-    status: disagreements.length ? "partial" : "fresh",
-    confidence: points.length ? round(Math.max(0.35, 0.82 - disagreements.length / points.length * 0.35)) : 0.35,
-    explanation: disagreements.length ? `${disagreements.length} 个小时的云量或降水概率存在显著分歧，临行前需要刷新。` : "两个模型在可比较时段未出现显著分歧。",
-    consensusStartUtc: consensus[0]?.primary.validTimeUtc ?? null,
-    consensusEndUtc: consensus.at(-1)?.primary.validTimeUtc ?? null,
-    disagreementStartUtc: disagreements[0]?.primary.validTimeUtc ?? null,
-    disagreementEndUtc: disagreements.at(-1)?.primary.validTimeUtc ?? null,
-    comparedFields: ["totalCloudPct", "precipitationProbabilityPct"],
-  };
-}
-
 function layers(run: NormalizedWeatherRun, now: Date): ForecastLayerDescriptor[] {
   return ["totalCloudPct", "lowCloudPct", "midCloudPct", "highCloudPct"].map((id, index) => ({
     id,
@@ -308,7 +289,7 @@ export class ForecastQueryService {
     const sky = calculateNightSky({ ...query, elevationM: 0, cadenceMinutes: 30 });
     const primary = series(primaryRun, sky, now);
     const comparison = comparisonResult ? series(comparisonResult, sky, now) : null;
-    const modelComparison = compare(primary, comparison);
+    const modelComparison = compareForecastModels(primary, comparison);
     const status: ForecastDataStatus = primary.run.status === "fresh" && modelComparison.status !== "failed" ? (primaryRun.status === "complete" ? "fresh" : "partial") : primary.run.status;
     const bundle: ForecastBundle = {
       schemaVersion: "starward-forecast-bundle-v1",

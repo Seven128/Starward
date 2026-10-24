@@ -82,10 +82,14 @@ export interface ForecastModelSeries {
 
 export interface ForecastModelComparison {
   status: ForecastDataStatus;
+  /** v1 numeric reference score is usable only with actual comparable fields
+   * and a qualified status; missing/failed values are legacy placeholders. */
   confidence: number;
   explanation: string;
+  /** First uninterrupted span of fully paired agreeing hourly samples. */
   consensusStartUtc: string | null;
   consensusEndUtc: string | null;
+  /** First uninterrupted span with a significant actually paired difference. */
   disagreementStartUtc: string | null;
   disagreementEndUtc: string | null;
   comparedFields: string[];

@@ -26,7 +26,7 @@
 
 正常旅程：当前草稿 → 打开历史 → 选定同一 id 的旧 revision → 看到当前/旧值差异与双方版本 → 明确恢复 → 新 current revision → 重开 App/API 后仍可读，并保留旧两版与新恢复版。历史 preview 始终只读，不因选中某版本改写 shell Context、当前草稿或触发外部效果。
 
-首选复用现有 `patch-draft`：以显示差异所依据的当前 revision 作 baseRevision，完整冻结旧版的 `title + inputs + stages` 作为恢复输入，再走原 pending/HTTP/事务/current readback。当前 DTO 的历史可编辑内容由这三项完整覆盖；timezone 等不可编辑身份和元数据留在同一 aggregate，恢复产生新 sequence、操作日志和时间。没有必要仅为“恢复”字样新建第二业务工作流、命令 broker 或复制整份旧 aggregate。未来 schema 新增可编辑字段时，恢复投影须与负责版本合同共同演进，不能静默遗漏。
+原先静态准备选择的“完整历史内容合成一个patch body”已由后续[真实API审查](R20-ITINERARY-REVISION-API-REVIEW-20261025.md)的合法大历史反例证伪：分次合法保存的40,342B create与27,360B stages patch形成的历史，恢复body为67,596B而413。当前传输选择已由唯一PLAN替换为受校验的不可变源版本引用，仍走原command/pending/actor/CAS/receipt及domain patch效果，不复制第二工作流。完整title+inputs+stages比较/恢复、当前不可编辑身份和科学状态、显式比较base/冲突/未知提交规则仍保留；不可裁字段、拆多次写或整体放宽body limit。
 
 历史入口可复用已有逐 revision GET。若要提供历史列表，只在原 repository/routes 增加私有摘要分页，复用既有 50 条分页基线，按 revision 游标；不要为列表逐个全量拉取所有 snapshot。真正比较某一版时才读取它的完整内容。历史详情必须校验 id、指定 revision 和 schema，不能把 GET current 或别的 id 当成选中的旧版。
 

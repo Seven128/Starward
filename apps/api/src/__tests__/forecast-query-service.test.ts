@@ -2,35 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { finalizeWeatherHour, type NormalizedWeatherRun } from "../../../../packages/weather-schema/src/index";
+import { nativeForecastRun as weatherRun } from "../../../../tests/fixtures/native-forecast";
 import { ForecastQueryService } from "../modules/forecast/forecast-query-service";
 import { buildApi } from "../server";
 import { createForecastHandler } from "../modules/forecast/forecast-handler";
 import { createForecastRuntime } from "../modules/forecast/runtime";
-
-function weatherRun(model: string, cloudOffset = 0): NormalizedWeatherRun {
-  const issuedAt = "2026-07-20T12:00:00.000Z";
-  const runId = `${model}-20260720T12`;
-  const hours = Array.from({ length: 48 }, (_, index) => finalizeWeatherHour({
-    gridCellId: "22.5290,113.9468", providerRunId: runId,
-    validTimeUtc: new Date(Date.parse(issuedAt) + index * 3_600_000).toISOString(),
-    conditionCode: 1, conditionText: "大部晴朗", temperatureC: 28 - index / 12,
-    apparentTemperatureC: 29 - index / 12, relativeHumidityPct: 62, dewPointC: 20,
-    pressureHpa: 1008 + index / 10, totalCloudPct: 12 + cloudOffset, lowCloudPct: 5 + cloudOffset,
-    midCloudPct: 7, highCloudPct: 10, visibilityM: 24_000, windSpeedMps: 2.2,
-    windGustMps: 3.8, windDirectionDeg: 140, precipitationMm: 0,
-    precipitationProbabilityPct: 5, fogProbabilityPct: null, aqi: 24, aqiScale: "European AQI",
-    pm25UgM3: 8, pm10UgM3: 15, aerosolOpticalDepth: 0.12,
-  }));
-  return {
-    provider: "open-meteo", use: "noncommercial-poc", model, runId,
-    modelRunTimeUtc: issuedAt, ingestedAt: issuedAt, resolutionKm: 25, status: "partial",
-    sourceLicense: "open-meteo-CC-BY-4.0@4.0", issuedAt, expiresAt: "2026-07-20T13:00:00.000Z",
-    fetchedAt: issuedAt, latitude: 22.529, longitude: 113.9468, coordinateSystem: "WGS84",
-    hours, warnings: [], attribution: [{ provider: "open-meteo", label: "Weather data by Open-Meteo", url: "https://open-meteo.com/", licenseId: "CC-BY-4.0", licenseVersion: "4.0", modified: true }],
-    qualityFlags: ["fog-probability-unavailable"], rawRetentionAllowed: false,
-  };
-}
 
 describe("forecast query service", () => {
   it("bounds cached locations by recent use and expires entries before reuse", async () => {

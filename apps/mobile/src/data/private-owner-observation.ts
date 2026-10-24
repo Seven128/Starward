@@ -4,8 +4,8 @@ export interface PrivateOwnerAuthority { status: "unknown" | "ready" | "denied";
 export function createPrivateOwnerObservation() {
   let authority: PrivateOwnerAuthority = { status: "unknown", ownerId: null }, generation = 0;
   const listeners = new Set<() => void>();
-  const publish = (value: PrivateOwnerAuthority) => {
-    if (authority.status === value.status && authority.ownerId === value.ownerId) return;
+  const publish = (value: PrivateOwnerAuthority, newQualification = false) => {
+    if (!newQualification && authority.status === value.status && authority.ownerId === value.ownerId) return;
     authority = value; for (const listener of listeners) listener();
   };
   return {
@@ -17,7 +17,9 @@ export function createPrivateOwnerObservation() {
     accept: (ownerId: string, token: { generation: number; authority: PrivateOwnerAuthority }, requestedOwnerId?: string) => {
       if (token.generation !== generation || requestedOwnerId && requestedOwnerId !== ownerId
         || token.authority !== authority && requestedOwnerId && requestedOwnerId !== authority.ownerId) return false;
-      publish({ status: "ready", ownerId }); return true;
+      // A completed server qualification supersedes earlier refusals even when
+      // its owner is unchanged. Merely beginning a read does not do this.
+      publish({ status: "ready", ownerId }, true); return true;
     },
     deny: (statusCode: number | undefined, startedAt: PrivateOwnerAuthority, requestedOwnerId?: string) => {
       if ([401, 403].includes(statusCode ?? 0) && startedAt === authority && (!requestedOwnerId || requestedOwnerId === authority.ownerId)) {

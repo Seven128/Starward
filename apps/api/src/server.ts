@@ -44,7 +44,7 @@ export interface ApiDependencies {
   sky?: Pick<SkyContextService, "get">;
   shooting?: Pick<ShootingPreviewService, "get">; shootingRuntime?: AwaitedShootingRuntime;
   profile?: Pick<ProfileService, "get" | "command">; identityRuntime?: AwaitedIdentityRuntime;
-  itineraries?: Pick<ItineraryService, "list" | "get" | "command">; resolveItineraryActor?: ItineraryActorResolver;
+  itineraries?: Pick<ItineraryService, "list" | "get" | "history" | "command">; resolveItineraryActor?: ItineraryActorResolver;
   field?: Pick<FieldService, "get">;
   fieldReports?: Pick<FieldReportService, "list" | "get" | "command">; resolveFieldReportActor?: FieldReportActorResolver;
   community?: Pick<CommunityWorkflowService, "get" | "command">; communityRuntime?: AwaitedCommunityRuntime;
