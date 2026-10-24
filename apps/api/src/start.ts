@@ -14,7 +14,8 @@ import { createSpotTrustRuntime } from "./modules/spots/runtime";
 import { AstronomyEngineNightReportProvider } from "./modules/astronomy/night-report-astronomy-provider";
 import { NormalizedNightReportWeatherProvider } from "./modules/forecast/night-report-weather-provider";
 import type { NightReportRequest } from "../../../packages/contracts/src/night-report";
-import { InMemoryNightReportRepository, NightReportService, type RouteEvidence, type SpotCandidate } from "./modules/night-report/night-report-service";
+import { NightReportService, type RouteEvidence, type SpotCandidate } from "./modules/night-report/night-report-service";
+import { resolveLocalPocOwner } from "./local-poc-owner";
 import { pocAstronomyEligibilityPolicy, pocWeatherEligibilityPolicy } from "./modules/night-report/runtime-policies";
 import { createNightReportRuntime } from "./modules/night-report/runtime";
 import { SkyContextService } from "./modules/sky/sky-context-service";
@@ -164,12 +165,11 @@ const routeEvidence = {
 };
 const nightReports = new NightReportService(
   { weather: weatherEvidence, astronomy: astronomyEvidence, spots: spotEvidence, routes: routeEvidence },
-  new InMemoryNightReportRepository(),
 );
 const nightReportRuntime = await createNightReportRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },
-  boundary: { async invoke(request) { return { status: "available", kind: request.kind, token: request.payload.token, mode }; } },
+  generator: nightReports,
 });
 const allowedOrigins = (process.env.STARWARD_ALLOWED_ORIGINS ?? "http://127.0.0.1:8081,http://localhost:8081")
   .split(",").map((origin) => origin.trim()).filter(Boolean);
@@ -213,6 +213,7 @@ const itineraryRuntime = await createItineraryRuntime({ dataDir: process.env.STA
 const app = await buildApi({
   nightReports,
   nightReportRuntime,
+  resolveNightReportActor: resolveLocalPocOwner,
   spots: spotTrust,
   spotTrustRuntime,
   resolveSpotActor: async () => ({ userId: null, verified: false, roles: [], invitedSpotIds: [] }),

@@ -68,6 +68,12 @@ root本机结果：最终同一生产audit **exit0/零漏洞**（`tmp/admin-ci-a
 
 本补丁已提交推送`4dcf56d0a2e54c468be7438397add429685166be`并精确远端读回、ahead/behind0/0；[Product40048384492](https://github.com/Seven128/Starward/actions/runs/40048384492)**success**（2026-10-24 01:18:34 UTC终态），[Context40048388751](https://github.com/Seven128/Starward/actions/runs/40048388751)**success**，两者head均精确为4dcf56d0。Product job120735232250实际通过冷安装、生产audit、release-code、App/API/admin消费者、后端及非部署WEAPP构建/inspection、隔离infra与OCI构建；原e468失败保持不变。CI Node24.21.0/npm11.19.0的冷安装已成立，不把此前本机dry-run冒成该结果。并行legacy命令源码不在此依赖批次或CI范围内。所有npm install中间日志、原主lock、生成缓存原件及registry metadata保留任务tmp；没有Git reset/clean/force/stash或新worktree。
 
+## 地点管理命令后续检查点
+
+[地点命令批次](R20-ADMIN-LEGACY-IDEMPOTENCY-20261024.md)已提交推送`05f82bc8287e16e30e782bc1782a4b2c1be6d4da`并精确远端读回、ahead/behind0/0；独审发现的CLI缺字段P2已修并独立复核。此前Product终态后才启动[Product40050054529](https://github.com/Seven128/Starward/actions/runs/40050054529)与[Context40050057437](https://github.com/Seven128/Starward/actions/runs/40050057437)，两者均精确head为05f且实际 **success**。Product在2026-10-24 01:42:28 UTC终态，job120740527675全部24步success，含冷安装/audit、release-code、实际App/API/admin消费者、后端和非部署WEAPP构建/inspection、infra及OCI。
+
+已实际读回该job日志：新`admin-spot-commands:start`为01:41:20.4549276 UTC、`complete`为01:41:22.9592144 UTC；infra run `verify_99a6a352702a4dd5`结果`admin_spot_commands.status=passed`、transport=`http_and_real_operator_cli`，同一隔离数据库的备份恢复指纹一致，整段infra passed。child入口显式提供专用DB变量，失败会抛错；不把此前4dc success或本机直接PG6/6冒作此实跑。无DB的普通unit阶段六项条件skip仍在日志保留，不能冒该阶段已执行PG。另起的NightReport WIP、换机交接提交均不在05f CI范围，未替其运行新精确CI；原e468失败继续保留。
+
 ## 两个同责任的夹具假设
 
 1. `miniapp-infrastructure.test.ts` 前阶段将三项 PENDING upload 到期，却没有确认其删除。当前生产契约在对象写入回执丢失时仍沿稳定 object key 保留耐久退休意图，后续 formal expiry 必须能再次发现它们。旧断言只期望一项新 key，真实结果是四项，已在新隔离环境复现。

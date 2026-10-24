@@ -1,5 +1,5 @@
 import type { DataPart, NightReport, NightReportConditions, NightReportRequest, NightReportSpot, NightReportTarget } from "../../../../../packages/contracts/src/night-report";
-import { assertNightReportRequest } from "../../../../../packages/contracts/src/night-report";
+import { assertNightReportRequest, nightReportMatchesRequest } from "../../../../../packages/contracts/src/night-report";
 import { evaluateRecommendation, selectContinuousWindow } from "../../../../../packages/scoring-engine/src/index";
 
 export type WeatherEvidence = {
@@ -43,7 +43,10 @@ export class InMemoryNightReportRepository implements NightReportRepository {
   private readonly reports = new Map<string, NightReport>();
   async save(report: NightReport) {
     const existing = await this.findByRequestId(report.requestId);
-    if (existing) return existing;
+    if (existing) {
+      if (!nightReportMatchesRequest(existing, { requestId: report.requestId, ...report.context })) throw new Error("night_report_idempotency_conflict");
+      return existing;
+    }
     if (this.reports.has(report.id)) throw new Error("night_report_snapshot_immutable");
     this.reports.set(report.id, structuredClone(report));
     return structuredClone(report);
@@ -76,12 +79,24 @@ function category(score: number, blocked: boolean): NightReport["decision"]["cat
 }
 
 export class NightReportService {
-  constructor(private readonly providers: NightReportProviders, private readonly repository: NightReportRepository, private readonly now: () => Date = () => new Date(), private readonly nextId: () => string = () => crypto.randomUUID()) {}
+  constructor(private readonly providers: NightReportProviders, private readonly repository?: NightReportRepository, private readonly now: () => Date = () => new Date(), private readonly nextId: () => string = () => crypto.randomUUID()) {}
 
   async create(raw: NightReportRequest): Promise<NightReport> {
-    const request = assertNightReportRequest(raw);
+    const request = structuredClone(assertNightReportRequest(raw));
+    if (!this.repository) return this.generate(request);
     const existing = await this.repository.findByRequestId(request.requestId);
-    if (existing) return existing;
+    if (existing) {
+      if (!nightReportMatchesRequest(existing, request)) throw new Error("night_report_idempotency_conflict");
+      return existing;
+    }
+    const saved = await this.repository.save(await this.generate(request));
+    if (!nightReportMatchesRequest(saved, request)) throw new Error("night_report_idempotency_conflict");
+    return saved;
+  }
+
+  /** Aggregation only. The caller owns ephemeral delivery or atomic persistence. */
+  async generate(raw: NightReportRequest): Promise<NightReport> {
+    const request = structuredClone(assertNightReportRequest(raw));
     const generatedAt = this.now().toISOString();
     const [weatherResult, astronomyResult, spotsResult] = await Promise.allSettled([
       this.providers.weather.load(request), this.providers.astronomy.load(request), this.providers.spots.find(request),
@@ -109,7 +124,7 @@ export class NightReportService {
         observationWindow: null, primarySpot: null, backupSpots: [], targets: astronomy?.targets ?? [], conditions: { weather: weather?.summary ?? null, astronomy: astronomy?.summary ?? null, lightPollution: { radiance: null, year: null, state: "unknown", boundary: "尚未接入获许可且经区域校准的夜光数据；不显示伪造 Bortle 或 SQM" } }, parts, warnings,
         provenance: [weather && { source: "weather", version: weather.version, generatedAt: weather.generatedAt }, astronomy && { source: "astronomy", version: astronomy.version, generatedAt: astronomy.generatedAt }, spots && { source: "spot-catalog", version: spots.version, generatedAt: spots.generatedAt }].filter(Boolean) as NightReport["provenance"],
       };
-      return this.repository.save(report);
+      return report;
     }
 
     let routes: RouteEvidence[] = [];
@@ -179,6 +194,6 @@ export class NightReportService {
       observationWindow, primarySpot, backupSpots, targets: astronomy.targets, conditions: { weather: weather.summary ?? null, astronomy: astronomy.summary ?? null, lightPollution: { radiance: null, year: null, state: "unknown", boundary: "尚未接入获许可且经区域校准的夜光数据；不显示伪造 Bortle 或 SQM" } }, parts, warnings,
       provenance: [{ source: "weather", version: weather.version, generatedAt: weather.generatedAt }, { source: "astronomy", version: astronomy.version, generatedAt: astronomy.generatedAt }, { source: "spot-catalog", version: spots.version, generatedAt: spots.generatedAt }, ...routes.map((route) => ({ source: "route", version: route.version, generatedAt: route.generatedAt }))],
     };
-    return this.repository.save(report);
+    return report;
   }
 }

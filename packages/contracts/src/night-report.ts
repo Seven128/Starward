@@ -103,27 +103,61 @@ export type NightReport = {
   provenance: Array<{ source: string; version: string; generatedAt: string }>;
 };
 
-export function assertNightReportRequest(input: NightReportRequest) {
-  if (!input.requestId) throw new Error("night_report_request_id_required");
-  if (input.location.system !== "WGS84" || input.route.origin.system !== "WGS84") throw new Error("night_report_wgs84_required");
-  if (!Number.isFinite(input.location.lat) || input.location.lat < -90 || input.location.lat > 90) throw new Error("night_report_latitude_invalid");
-  if (!Number.isFinite(input.location.lon) || input.location.lon < -180 || input.location.lon > 180) throw new Error("night_report_longitude_invalid");
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(input.nightDate)) throw new Error("night_report_date_invalid");
-  if (!input.timezone.includes("/")) throw new Error("night_report_timezone_invalid");
-  if (!["neutral", "beginner", "family", "milky-way", "visual", "camping"].includes(input.profile)) throw new Error("night_report_profile_invalid");
-  if (!input.target || input.target.length > 80) throw new Error("night_report_target_invalid");
-  if (!Number.isFinite(input.route.maxTravelMinutes) || input.route.maxTravelMinutes <= 0) throw new Error("night_report_route_limit_invalid");
-  if (!input.route.modes.length) throw new Error("night_report_route_mode_required");
-  return input;
+const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+
+export function assertNightReportRequest(value: unknown): NightReportRequest {
+  if (!object(value)) throw new Error("night_report_body_required");
+  if (typeof value.requestId !== "string" || !value.requestId.trim()) throw new Error("night_report_request_id_required");
+  if (!object(value.location) || !object(value.route) || !object(value.route.origin)) throw new Error("night_report_context_invalid");
+  for (const location of [value.location, value.route.origin]) {
+    if (location.system !== "WGS84") throw new Error("night_report_wgs84_required");
+    if (typeof location.lat !== "number" || !Number.isFinite(location.lat) || location.lat < -90 || location.lat > 90) throw new Error("night_report_latitude_invalid");
+    if (typeof location.lon !== "number" || !Number.isFinite(location.lon) || location.lon < -180 || location.lon > 180) throw new Error("night_report_longitude_invalid");
+    if (typeof location.label !== "string") throw new Error("night_report_location_label_invalid");
+  }
+  if (typeof value.nightDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/u.test(value.nightDate) || !Number.isFinite(Date.parse(`${value.nightDate}T00:00:00Z`)) || new Date(`${value.nightDate}T00:00:00Z`).toISOString().slice(0, 10) !== value.nightDate) throw new Error("night_report_date_invalid");
+  if (typeof value.timezone !== "string" || !value.timezone.includes("/")) throw new Error("night_report_timezone_invalid");
+  try { new Intl.DateTimeFormat("en", { timeZone: value.timezone }); } catch { throw new Error("night_report_timezone_invalid"); }
+  if (typeof value.profile !== "string" || !["neutral", "beginner", "family", "milky-way", "visual", "camping"].includes(value.profile)) throw new Error("night_report_profile_invalid");
+  if (typeof value.target !== "string" || !value.target || value.target.length > 80) throw new Error("night_report_target_invalid");
+  if (typeof value.route.maxTravelMinutes !== "number" || !Number.isFinite(value.route.maxTravelMinutes) || value.route.maxTravelMinutes <= 0) throw new Error("night_report_route_limit_invalid");
+  if (!Array.isArray(value.route.modes) || !value.route.modes.length || value.route.modes.some(mode => typeof mode !== "string" || !["drive", "cycle", "transit", "walk"].includes(mode))) throw new Error("night_report_route_mode_required");
+  return value as NightReportRequest;
+}
+
+/** Fixed field order binds every supported input; object insertion order is not identity. */
+export function nightReportRequestIdentity(value: NightReportRequest): string {
+  const input = assertNightReportRequest(value);
+  const location = (item: Wgs84Location) => ({ lat: item.lat, lon: item.lon, system: item.system, label: item.label });
+  return JSON.stringify({ requestId: input.requestId, location: location(input.location), timezone: input.timezone, nightDate: input.nightDate, profile: input.profile, target: input.target, route: { origin: location(input.route.origin), maxTravelMinutes: input.route.maxTravelMinutes, modes: input.route.modes } });
+}
+
+export function nightReportMatchesRequest(report: NightReport, request: NightReportRequest): boolean {
+  try { return report.requestId === request.requestId && nightReportRequestIdentity({ requestId: report.requestId, ...report.context }) === nightReportRequestIdentity(request); }
+  catch { return false; }
+}
+
+export interface NightReportReceipt {
+  requestId: string; reportId: string; revision: number; committedAt: string;
+}
+export interface PersistedNightReport {
+  schemaVersion: "starward-night-report-persistence-v1";
+  scope: "local-owner-poc";
+  report: NightReport;
+  receipt: NightReportReceipt;
+  replayed: boolean;
 }
 
 export function isNightReport(value: unknown): value is NightReport {
   if (!value || typeof value !== "object") return false;
   const report = value as Partial<NightReport>;
   return typeof report.id === "string"
-    && typeof report.revision === "number"
-    && typeof report.generatedAt === "string"
-    && typeof report.expiresAt === "string"
+    && report.id.length > 0
+    && Number.isSafeInteger(report.revision) && report.revision! > 0
+    && typeof report.requestId === "string"
+    && typeof report.generatedAt === "string" && Number.isFinite(Date.parse(report.generatedAt))
+    && typeof report.expiresAt === "string" && Number.isFinite(Date.parse(report.expiresAt))
+    && ["ready", "partial", "insufficient-data", "blocked"].includes(report.status ?? "")
     && Boolean(report.decision && report.parts)
     && Array.isArray(report.backupSpots)
     && Array.isArray(report.targets)

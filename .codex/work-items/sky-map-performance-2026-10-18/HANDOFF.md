@@ -1,8 +1,8 @@
-# 当前交接（2026-10-24，新机继续实施）
+# 当前交接（2026-10-24，已暂停并准备换机）
 
-**当前授权与 Goal：** 用户要求先同步目标分支并继续完整 Goal，随后再次明确“先做不依赖真机调试的部分，继续goal”。本聊天先 get_goal=null，已用 GOAL-OBJECTIVE 的“Goal 正文”全部创建 active Goal，无 token 预算；不是继承旧聊天的 paused 状态。原完整义务和 UI → 叠层 → Sky 产品顺序保留，设备依赖期间推进 R20 独立责任。
+**当前授权与 Goal：** 用户最新要求“提交所有变更，推远端，切换另一电脑继续”。最新get_goal实读为 **paused**，完整目标未完成；本次只冻结并保存交接，未继续扩功能。此前已用GOAL-OBJECTIVE“Goal正文”全部创建无token预算Goal；下一电脑须先get_goal，没有Goal时按全文创建，已有同目标则按真实状态续用，不假称跨聊天自动继承。原UI → 叠层 → Sky及全部未完成义务保留。最新转发入口为[20261024接力提示词](NEW-COMPUTER-PROMPT-20261024.md)。
 
-**源码同步已完成：** 新机 checkout 为E:/dev/worktrees/Starward/remote-main-20260908，分支codex/remote-main-20260908。同步前HEAD60bdd46e、工作区干净；fetch后快进266df53e，无冲突。2c4bb235为偏好/F07/F14草稿/F10/F09，8fdf9b6b为具名帧/CI修复，71703c95为资源家族，f41db68c为通知配置；workflow修复为ab47dc01；field/enum/OpenAPI整合已推送 **f2b255ae5d0a686b677094cd1e34f8c5b4002c28**、精确远端读回、ahead/behind0/0。后续检查点按实际Git/远端读回确定。未reset/clean/force/stash、未创建worktree、未改main。用户后称首次拉取可覆盖，但本机没有需丢弃/合并的改动。管理端恢复新在途文件保留，不混入field提交。
+**源码与交付：** 本机checkout E:/dev/worktrees/Starward/remote-main-20260908，目标分支codex/remote-main-20260908；已从原接力266df53e接续。偏好/F07/F14/F09/F10、Sky具名帧/资源、通知/Field/enum/OpenAPI、管理journal与依赖修复均已分批推送。最近已独审地点命令检查点为05f82bc8287e16e30e782bc1782a4b2c1be6d4da，推送后精确远端读回、ahead/behind0/0。本次新交接提交另含NightReport未完成WIP及当前文档，拉取包含本文的同分支最新提交，最终SHA见用户转发/实际Git。没有reset/clean/force/stash、新worktree或main改动；旧root tmp及私有原件本地保留、不混入源码提交。
 
 **本批已整合：** 偏好v2的SQLite/domain/UI与恢复P2、真实Web事务CAS、F07共享夜/精确时刻/地点身份及摄影稳定retry均已实施并经限定检查/独审。[行程真实草稿](R20-ITINERARY-DRAFT-PERSISTENCE-20261023.md)、[云量独立交付](R20-INDEPENDENT-CLOUD-DELIVERY-20261023.md)与[Sky连续编辑查询](R20-SKY-TIME-QUERY-POLICY-20261023.md)的本批独审发现也已修完并由新reviewer复核；Map目录448项通过。原失败与全部目标缺口保留，完整F14/H4/原生性能/OOM未关闭。所有本批实施/审阅代理已结束，不复用。
 
@@ -75,7 +75,7 @@ LAN后续结果（归另一对话，本轮只读证据）：官方开发期`bigP
 
 ## 当前唯一下一步与后续实施入口
 
-**当前唯一下一步：提交地点管理命令批次、精确远端读回并运行本批CI。** [地点命令证据](R20-ADMIN-LEGACY-IDEMPOTENCY-20261024.md)持原同键重复/混版写入/数组身份失败与新路由、事务回执、revision CAS和真实PG/CLI结果。新独审独立PG6/认证7/消费者15通过；CLI缺请求字段仍确认的P2已修，root修前回归失败、修后15/15，独审原控制2/2+CLI6/6确认、无范围内遗留P1/P2。自有PG/监听已关、库卷保留。原no-key路由仍非幂等，部署凭据、公缓存和未知旧操作对账未验。前批journal已交付e468，其audit失败保留；依赖补丁4dcf56d0精确远端读回、ahead/behind0/0，Product40048384492/Context40048388751均实际success，含冷安装及构建/infra/OCI，排除在途地点命令。详细恢复/浏览器证据归[重开恢复](R20-ADMIN-RESTART-RECOVERY-20261024.md)，原失败及CI范围归[CI证据](R20-CI-INFRASTRUCTURE-20261024.md#管理端交付后的生产依赖审计)。全部设备/部署/性能与完整Goal义务保留。
+**当前唯一下一步（下一电脑恢复实施后）：收口[NightReport WIP](R20-NIGHT-REPORT-PERSISTENCE-20261024.md)。** 本机已停止扩展，作者结束、11份source冻结，自有HTTP/SQLite与工具session已关。真实旧路径的同id变context/重开503、三个非法输入200已保留；快照/receipt、校验和client稳定重试已写入，但只有API/mobile类型exit0，行为/并发/回滚/消费者/structured/OpenAPI/独审未完成。优先验证并修正owner未知提交后身份消失，临时响应可能误清原pending的未收口边界。`probes.mjs`仍按旧generic runtime调用，必须迁移；勿当作当前已通过。[地点命令](R20-ADMIN-LEGACY-IDEMPOTENCY-20261024.md)与此前4dc结果独立，05f Context40050057437/Product40050054529均精确head success，新增PG stage实际passed，见[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)，不覆盖NightReport WIP或换机提交。原no-key地点调用、部署凭据、公缓存/未知操作对账及全部UI/设备/性能/完整Goal义务保留。
 
 [F14私人草稿](R20-FIELD-STATE-20261024.md)已完成本机实现、三批独审和最终整合，含正文保真、null profile及四处真实enum误收修复；API135/135、App类型+139/139、structured3/3及OpenAPI合同复验通过，旧失败保留。在线私人草稿不代表离线包/设备队列/安全/分享；全F14仍未完成。root已推送精确读回f2b255ae，Context40005868190、Product40005906382均实际success；Product终态19:00:35 UTC、job120593615372全部25步通过，仍排除在途admin journal。前一ab47 Context/Product已实际success，不覆盖原717失败。本机Miniapp fast完整exit0仍保68条件skip。原Map448、F09六文件66及研究证据复用，不相加冒一次全套、不宣称OOM已修。Map故障session首个替换/退休仍须目标native资格；原UI→叠层→Sky顺序、全部R/H/A/N和设备后置保持。
 

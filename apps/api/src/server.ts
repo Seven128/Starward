@@ -3,6 +3,8 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { NightReportService } from "./modules/night-report/night-report-service";
 import { createNightReportHandler } from "./modules/night-report/night-report-handler";
 import type { AwaitedNightReportRuntime } from "./modules/night-report/runtime-types";
+import { NightReportPersistenceError } from "./modules/night-report/sqlite-night-report-repository";
+import type { LocalPocOwnerResolver } from "./local-poc-owner";
 import type { SpotTrustService } from "./modules/spots/spot-trust-service";
 import { createSpotTrustHandler, type SpotActorResolver } from "./modules/spots/spot-trust-handler";
 import type { AwaitedSpotTrustRuntime } from "./modules/spots/runtime-types";
@@ -33,7 +35,7 @@ import type { AwaitedQualityRuntime } from "./modules/quality/runtime-types";
 import { registerFeatureRoutes } from "./feature-routes";
 
 export interface ApiDependencies {
-  nightReports: Pick<NightReportService, "create">; nightReportRuntime?: AwaitedNightReportRuntime;
+  nightReports: Pick<NightReportService, "create"> & Partial<Pick<NightReportService, "generate">>; nightReportRuntime?: AwaitedNightReportRuntime; resolveNightReportActor?: LocalPocOwnerResolver;
   spots: Pick<SpotTrustService, "getDetail">; resolveSpotActor: SpotActorResolver; spotTrustRuntime?: AwaitedSpotTrustRuntime;
   allowedOrigins: string[]; logger?: boolean; now?: () => Date;
   forecast?: Pick<ForecastQueryService, "get">; forecastRuntime?: AwaitedForecastRuntime;
@@ -62,10 +64,25 @@ function registerCoreRoutes(app: FastifyInstance, dependencies: ApiDependencies)
   const nightReportHandler = createNightReportHandler(dependencies.nightReports, dependencies.nightReportRuntime);
   app.post("/v1/night-reports", async (request, reply) => {
     const headers = Object.fromEntries(Object.entries(request.headers).map(([key, value]) => [key, value]));
-    const response = await nightReportHandler({ body: request.body, headers });
+    const actor = await dependencies.resolveNightReportActor?.(request) ?? null;
+    const response = await nightReportHandler({ body: request.body, headers, actor });
     for (const [name, value] of Object.entries(response.headers)) reply.header(name, value);
     return reply.code(response.status).send(response.body);
   });
+  const readReport = async (request: import("fastify").FastifyRequest, reply: import("fastify").FastifyReply, result: boolean, id: string) => {
+    reply.header("cache-control", "private, no-store").header("vary", "authorization");
+    try {
+      const actor = await dependencies.resolveNightReportActor?.(request) ?? null;
+      if (!actor) throw new NightReportPersistenceError("night_report_owner_required", 403);
+      if (!dependencies.nightReportRuntime) throw new Error("night_report_storage_unavailable");
+      return reply.send(result ? dependencies.nightReportRuntime.service.result(actor, id) : { schemaVersion: "starward-night-report-persistence-v1", scope: "local-owner-poc", report: dependencies.nightReportRuntime.service.get(actor, id) });
+    } catch (error) {
+      if (error instanceof NightReportPersistenceError) return reply.code(error.statusCode).send({ code: error.code, outcome: "rejected" });
+      return reply.code(503).send({ code: "night_report_storage_unavailable", outcome: "unknown" });
+    }
+  };
+  app.get<{ Params: { id: string } }>("/v1/night-reports/:id", (request, reply) => readReport(request, reply, false, request.params.id));
+  app.get<{ Params: { requestId: string } }>("/v1/night-report-requests/:requestId", (request, reply) => readReport(request, reply, true, request.params.requestId));
   const spotTrustHandler = createSpotTrustHandler(dependencies.spots, dependencies.resolveSpotActor, dependencies.spotTrustRuntime);
   app.get<{ Params: { spotId: string } }>("/v1/spots/:spotId", async (request, reply) => {
     const headers = Object.fromEntries(Object.entries(request.headers).map(([key, value]) => [key, value]));
@@ -89,7 +106,7 @@ function registerErrorHandling(app: FastifyInstance) {
 export async function buildApi(dependencies: ApiDependencies): Promise<FastifyInstance> {
   const allowedOrigins = normalizeOrigins(dependencies.allowedOrigins);
   const app = Fastify({ logger: dependencies.logger ?? false, bodyLimit: 64 * 1024, requestIdHeader: "x-request-id", genReqId: () => crypto.randomUUID() });
-  await app.register(cors, { credentials: true, origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) callback(null, true); else callback(new Error("origin_not_allowed"), false); } });
+  await app.register(cors, { credentials: true, exposedHeaders: ["etag", "x-request-id", "x-night-report-storage", "x-night-report-replayed"], origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) callback(null, true); else callback(new Error("origin_not_allowed"), false); } });
   app.get("/health/live", async () => ({ status: "ok", at: (dependencies.now ?? (() => new Date()))().toISOString() }));
   registerFeatureRoutes(app, dependencies);
   registerCoreRoutes(app, dependencies);

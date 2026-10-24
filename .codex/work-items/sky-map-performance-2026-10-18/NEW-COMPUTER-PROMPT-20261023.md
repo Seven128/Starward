@@ -1,5 +1,7 @@
 # 新电脑接手提示词
 
+2026-10-24 再次换机的最新入口为 [20261024 接力提示词](NEW-COMPUTER-PROMPT-20261024.md)。本文保留上次接力要求；当前代码、NightReport WIP、暂停与CI状态以新提示及最新HANDOFF为准。
+
 把下文整段发给新电脑的 Codex。仓库是 https://github.com/Seven128/Starward ，目标分支是 `codex/remote-main-20260908`；本文件所在的接力提交及其后同分支最新提交为拉取目标。不要只拉 main。
 
 ---

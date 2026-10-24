@@ -152,7 +152,7 @@ export function TonightScreen() {
   const supportedTarget = forecastTarget(context.target) !== null;
   const query = useQuery({
     queryKey: ["night-report", request],
-    queryFn: ({ signal }) => client.create({ ...request, requestId: `night-${Date.now()}-${Math.random().toString(36).slice(2)}` }, signal),
+    queryFn: ({ signal }) => client.load(request, signal),
     retry: 1,
     enabled: supportedTarget,
   });

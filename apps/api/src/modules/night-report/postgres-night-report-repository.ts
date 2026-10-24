@@ -1,4 +1,4 @@
-import type { NightReport } from "../../../../../packages/contracts/src/night-report";
+import { nightReportMatchesRequest, type NightReport } from "../../../../../packages/contracts/src/night-report";
 import type { NightReportRepository } from "./night-report-service";
 
 export type SqlClient = {
@@ -27,6 +27,7 @@ export class PostgresNightReportRepository implements NightReportRepository {
     if (value) return value;
     const existing = await this.findByRequestId(report.requestId);
     if (!existing) throw new Error("night_report_idempotency_race_unresolved");
+    if (!nightReportMatchesRequest(existing, { requestId: report.requestId, ...report.context })) throw new Error("night_report_idempotency_conflict");
     return existing;
   }
 
