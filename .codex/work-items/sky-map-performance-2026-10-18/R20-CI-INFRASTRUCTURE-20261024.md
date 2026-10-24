@@ -46,7 +46,9 @@ root第三次运行`npm run check:miniapp:fast` **exit0**，任务日志`tmp/min
 上述验证修复已单独提交推送为 `ab47dc01b915ae11080acf4c0a5030e2def3f3dd`，目标分支远端精确读回、ahead/behind0/0。该提交包含父提交f41的通知配置，但排除在途field模块及后续enum修复。
 
 - [Context40003317339](https://github.com/Seven128/Starward/actions/runs/40003317339)：head精确为ab47dc01，**success**。
-- [Product40003311535](https://github.com/Seven128/Starward/actions/runs/40003311535)：head精确为ab47dc01，当前仍在release-code运行，后续步骤未验；job120584760197。不得将本机fast或8f通过填作该run终态。
+- [Product40003311535](https://github.com/Seven128/Starward/actions/runs/40003311535)：head精确为ab47dc01，**success**，终态2026-10-23 18:41:57 UTC；job120584760197实际通过release-code、App/API/admin消费者、后端及非部署WEAPP构建/inspection、隔离infra与OCI构建。未运行时保留的pending记录不冒通过；此处按实际终态更新，717原失败不变。
+
+Field/四处enum修复/实际OpenAPI随后已独立提交推送`f2b255ae5d0a686b677094cd1e34f8c5b4002c28`，精确远端读回、ahead/behind0/0，排除新在途admin restart。其[Context40005868190](https://github.com/Seven128/Starward/actions/runs/40005868190)**success**；[Product40005906382](https://github.com/Seven128/Starward/actions/runs/40005906382)**success**，终态2026-10-23 19:00:35 UTC，job120593615372全部25步成功，包括实际App/API/admin消费者、后端、非部署WEAPP构建/inspection和隔离infra/OCI。按本run实际终态记录，未借用ab47结果；等前一Product终态后才启动，未触发concurrency取消旧run。各本地scope归[F14证据](R20-FIELD-STATE-20261024.md)，不关闭设备/原生资源/性能，也不覆盖尚未提交的admin journal。
 
 ## 两个同责任的夹具假设
 

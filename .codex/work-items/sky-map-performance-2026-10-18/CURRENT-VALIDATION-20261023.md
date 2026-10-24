@@ -4,9 +4,11 @@
 
 ## R20本轮新结果
 
+**管理端 journal 本批：** [恢复证据](R20-ADMIN-RESTART-RECOVERY-20261024.md)记录原重开丢失、strict scalar receipt、独审只读身份误退休的真实失败及修复。真实Chrome完成正常重开/跨窗口6POST/2effects、sealed storage/确认清行；单次存储故障保认证读取，阻断与显式恢复0POST，再明确写入1POST/1effect。另查Case旧详情优先于新dashboard；按真实CHANGES_REQUESTED留队机制建立修前失败/修后刷新，浏览器同Case1POST/1effect与显示状态一致。最终root受影响12/12+admin类型通过；最新独审独立12/12、六readback6/6、只读原反例1/1，全部无fail/skip、无未闭合范围内P1/P2。Context/限定diff通过；精确Git/CI尚待交付，不冒前批CI覆盖。原probe误挂Queue的0/6、真实P2和中间截图资格分开保留。浏览器合成HTTP不证明部署/PG/Redis、公缓存、OS crash或完整Goal。
+
 **F14私人现场草稿及后续合同整合：** [Field证据](R20-FIELD-STATE-20261024.md)接通实际表单→专用SQLite current/history/原子receipt→原键重试/当前读回，退役旧field假成功。正文完整保留、缺profile版本null；独审真实发现category数组落库P2，root修前回归失败后修复，并沿同机制实际复现/修复channel、transport、stage.kind数组。新修复独审HTTP25/25+clients23/23及实际三表无效果/旧合法scalar兼容通过；原生接入独审12项+两组各2项，无范围内P1/P2。root在全部正文/enum修复后的最终API类型+30文件135/135、mobile类型+36文件139/139、structured3/3均exit0且无skip。OpenAPI已对齐通知/行程真实v2与v1升级/兼容，root独审/实际DTO schema复验通过；Context结构与限定diff通过。原HTTP404、正文400及四条类型误收200均保留，完整family仍passes:false；在线私人草稿不等于设备SQLite-first队列/离线包、安全/分享或生产鉴权。
 
-**后续远端检查点：** 验证修复已单独推送`ab47dc01b915ae11080acf4c0a5030e2def3f3dd`并精确远端读回；[Context40003317339](https://github.com/Seven128/Starward/actions/runs/40003317339)success，[Product40003311535](https://github.com/Seven128/Starward/actions/runs/40003311535)仍运行，不能填为全绿。其包含通知父提交f41，不包含后续field/enum/OpenAPI整合；下一检查点须按实际source运行，原717失败继续保留。
+**后续远端检查点：** 验证修复已单独推送`ab47dc01b915ae11080acf4c0a5030e2def3f3dd`并精确远端读回；[Context40003317339](https://github.com/Seven128/Starward/actions/runs/40003317339)success，[Product40003311535](https://github.com/Seven128/Starward/actions/runs/40003311535)已实际success，包含release-code、App/API/admin、构建/inspection、infra/OCI。它包含通知父提交f41，不包含后续field/enum/OpenAPI；后者已推送并精确读回f2b255ae，Context40005868190、Product40005906382均实际success（Product终态19:00:35 UTC、job120593615372全部25步通过）。管理端restart新在途不在上述提交/CI内；原717失败继续保留。
 
 **2026-10-24实际远端CI：** 含CI夹具与Sky具名帧的检查点 **8fdf9b6b8efe93a98ab2c798446ea057958e2310** 已推送并精确远端读回。[Context39993227368](https://github.com/Seven128/Starward/actions/runs/39993227368)与[Product39993219808](https://github.com/Seven128/Starward/actions/runs/39993219808)均 **success**；Product实际包含release-code、native App/API/admin消费者、后端及WEAPP构建/inspection、隔离基础设施和OCI构建。旧2c的[Product39985637469](https://github.com/Seven128/Starward/actions/runs/39985637469)仍为历史failure、当时OCI skipped；两个媒体夹具失败及真实隔离修复/独审见[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)。后续资源家族和规则配置不在8f CI范围内；未执行扩展fast组合或设备验收不因CI通过消失。
 

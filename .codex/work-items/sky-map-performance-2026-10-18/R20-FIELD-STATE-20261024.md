@@ -2,6 +2,8 @@
 
 完整 Goal 与 `field-offline-safety` 均未完成。本批只接通用户填写的**私人文字草稿**，不能当作真实离线包、本机离线队列、安全服务、已发送位置、社区实况送审或公开发布。当前 structured family 仍明确 `passes:false`。
 
+本批代码/检查/独审及合同已提交推送为`f2b255ae5d0a686b677094cd1e34f8c5b4002c28`，目标分支精确远端读回、ahead/behind0/0；不含后续管理端restart在途文件。[Context40005868190](https://github.com/Seven128/Starward/actions/runs/40005868190)success；Product终态按[CI证据](R20-CI-INFRASTRUCTURE-20261024.md)实读，不能由前一ab47成功或本地检查代填。
+
 ## 要求、责任与现状
 
 本批沿 `docs/source-plan.md#outcome.field-offline-safety` 的实际输入、状态持久化、重试与恢复责任，以及 native App 的 `field-and-account` Screen Contract；界面沿原生 UI skill、原生 DESIGN profile 和现有 tokens。用户当前暂停设备/开发工具调试及新增无障碍功能，未把这些历史未验改成通过。

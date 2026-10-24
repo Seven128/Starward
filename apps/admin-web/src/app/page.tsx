@@ -10,6 +10,8 @@ import {
 import { Notice } from "./notice";
 import { EventCatalogView } from "./event-catalog-view";
 import { createAdminSessionOwner, createAdminCommandOwner, type AdminSession as AuthSession, type AdminCommandAttempt } from "./admin-session";
+import { createAdminCommandJournal } from "./admin-command-journal";
+import type { AdminCommandInput } from "./admin-session";
 
 type ViewKey =
   | "queue"
@@ -194,25 +196,13 @@ function newIdempotencyKey(prefix: string): string {
   return `${portablePrefix}:${randomId ?? `${Date.now()}-${String(performance.now()).replace(".", "")}`}`;
 }
 
-function getSessionStorage(key: string): string {
+function retireStoredCredentials() {
   try {
-    return window.sessionStorage.getItem(key) ?? "";
+    // Old versions stored a token here. Do not import it or persist a replacement.
+    window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
+    window.sessionStorage.removeItem(SESSION_ACTOR_KEY);
   } catch {
-    return "";
-  }
-}
-
-function setSessionStorage(session: AuthSession | null) {
-  try {
-    if (!session) {
-      window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
-      window.sessionStorage.removeItem(SESSION_ACTOR_KEY);
-      return;
-    }
-    window.sessionStorage.setItem(SESSION_TOKEN_KEY, session.token);
-    window.sessionStorage.setItem(SESSION_ACTOR_KEY, session.actor);
-  } catch {
-    // A session-only token is a convenience, not an authority. The API remains the authority.
+    // Storage access cannot grant authority; credentials remain in session memory.
   }
 }
 
@@ -2437,10 +2427,9 @@ function OperationsSidebar({
 }
 
 export default function AdminPage() {
-  const [initialToken] = useState(() => getSessionStorage(SESSION_TOKEN_KEY));
   const sessionOwner = useRef(createAdminSessionOwner()).current;
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [token, setToken] = useState(initialToken);
+  const [token, setToken] = useState("");
   const requestEnvelope = useCallback(<T,>(path: string, activeSession: AuthSession, init: RequestInit = {}, key?: string) =>
     sessionOwner.read(activeSession, async () => {
       if (init.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
@@ -2450,14 +2439,14 @@ export default function AdminPage() {
     }), [sessionOwner]);
   const [authState, setAuthState] = useState<
     "idle" | "checking" | "authenticated" | "error"
-  >(initialToken ? "checking" : "idle");
+  >("idle");
   const [authError, setAuthError] = useState("");
   const [data, setData] = useState<DashboardData | null>(null);
   const [dashboardState, setDashboardState] = useState<LoadState>(
-    initialToken ? "loading" : "idle",
+    "idle",
   );
   const [queueState, setQueueState] = useState<LoadState>(
-    initialToken ? "loading" : "idle",
+    "idle",
   );
   const [view, setView] = useState<ViewKey>(
     () => (window.location.hash.slice(1) as ViewKey) || "queue",
@@ -2485,12 +2474,12 @@ export default function AdminPage() {
     phase: "idle",
     label: "",
   });
-  type CommandInput = {
-    label: string; path: string; body: JsonRecord;
-    verify?: (fresh: DashboardData, receipt: JsonRecord) => boolean;
-    verifyReadback?: (activeSession: AuthSession, receipt: JsonRecord) => Promise<boolean>;
-  };
-  const commandOwner = useRef(createAdminCommandOwner<CommandInput>(sessionOwner, () => newIdempotencyKey("operation"))).current;
+  type CommandInput = AdminCommandInput;
+  const [commandOwner] = useState(() => createAdminCommandOwner<CommandInput>(sessionOwner, () => newIdempotencyKey("operation"),
+    createAdminCommandJournal({ origin: window.location.origin, audience: new URL(API_BASE || "/", window.location.href).href })));
+  const [journalState, setJournalState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [journalError, setJournalError] = useState("");
+  const mounted = useRef(false);
   const [commandVersion, setCommandVersion] = useState(0);
   const pendingCommand = session ? commandOwner.pending(session) : null;
   void commandVersion;
@@ -2590,6 +2579,9 @@ export default function AdminPage() {
   useEffect(() => {
     if (!session || view !== "case" || !selectedCaseId) return;
     const controller = new AbortController();
+    // Dashboard/readback replacement retires the previous detail too. A Case
+    // requesting changes keeps its ID and remains in the moderation queue.
+    setCaseDetail(null);
     setCaseDetailState("loading");
     requestEnvelope<unknown>(
       `/v2/admin/moderation/cases/${encodeURIComponent(selectedCaseId)}`,
@@ -2612,7 +2604,7 @@ export default function AdminPage() {
         }
       });
     return () => controller.abort();
-  }, [session, selectedCaseId, view]);
+  }, [session, selectedCaseId, view, data]);
 
   useEffect(() => {
     if (!session || view !== "media" || !selectedMediaId) return;
@@ -2672,19 +2664,44 @@ export default function AdminPage() {
     setAuditRows([]); setAuditState("idle"); setMergePreview(null); setMergePreviewState("idle");
     setReplacementPreview(null); setReplacementPreviewState("idle"); setMergeSelections({});
     setCurrentSpotId(""); setSuccessorSpotId(""); setReason(""); setMutation({ phase: "idle", label: "" });
+    setJournalState("idle"); setJournalError("");
+  };
+
+  const restoreJournal = async (activeSession: AuthSession) => {
+    setJournalState("loading"); setJournalError("");
+    try {
+      const restored = await commandOwner.restore(activeSession);
+      sessionOwner.assertCurrent(activeSession);
+      setJournalState("ready");
+      if (restored) {
+        const receipt = commandOwner.knownReceipt(restored);
+        setMutation({ phase: "unverified", label: restored.input.label, ...(receipt ? { receipt } : {}), message:
+          receipt ? `已恢复原操作及先前服务端提交回执；${commandOwner.cacheFailureObserved(restored) ? "曾有公共缓存刷新失败，" : ""}仍需明确重试原操作完成核对。`
+            : "已恢复一笔结果待核对的原操作；刷新或关闭窗口不表示服务端已取消。请明确重试原操作核对。" });
+      } else setMutation({ phase: "idle", label: "" });
+    } catch (error) {
+      if (!sessionOwner.isCurrent(activeSession)) return;
+      // The server-confirmed identity and independent reads remain valid. Only
+      // commands owned by this journal wait for successful recovery storage.
+      setJournalState("error"); setJournalError(getErrorMessage(error));
+    }
   };
 
   const authenticateToken = async (credential: string) => {
     activeRequest.current?.abort();
     const candidate = sessionOwner.begin(credential.trim());
+    let authenticating = candidate;
+    commandOwner.retire();
     setSession(null); clearPrivateState(); setAuthError(""); setAuthState("checking");
     try {
       const identity = await requestEnvelope<{ actorId: string }>("/v2/admin/session", candidate);
       const confirmed = sessionOwner.confirm(candidate, identity.data?.actorId ?? "");
-      setSession(confirmed); setSessionStorage(confirmed); setAuthState("authenticated");
+      authenticating = confirmed;
+      setSession(confirmed); setToken(""); setAuthState("authenticated");
+      await restoreJournal(confirmed);
     } catch (error) {
-      if (!sessionOwner.isCurrent(candidate)) return;
-      sessionOwner.retire(); setSessionStorage(null); setAuthState("error"); setAuthError(getErrorMessage(error));
+      if (!sessionOwner.isCurrent(authenticating)) return;
+      sessionOwner.retire(); commandOwner.retire(); setAuthState("error"); setAuthError(getErrorMessage(error));
     }
   };
   const authenticate = (event: FormEvent<HTMLFormElement>) => {
@@ -2693,14 +2710,20 @@ export default function AdminPage() {
     void authenticateToken(token);
   };
   useEffect(() => {
-    if (initialToken) void authenticateToken(initialToken);
-    return () => { sessionOwner.retire(); activeRequest.current?.abort(); };
+    mounted.current = true;
+    retireStoredCredentials();
+    return () => {
+      mounted.current = false; sessionOwner.retire(); commandOwner.retire(); activeRequest.current?.abort();
+      // React StrictMode immediately repeats setup; only the final unmount closes
+      // the connection. It never deletes an unresolved durable command.
+      queueMicrotask(() => { if (!mounted.current) commandOwner.close(); });
+    };
   }, []);
 
   const signOut = () => {
-    sessionOwner.retire(); activeRequest.current?.abort();
+    sessionOwner.retire(); commandOwner.retire(); activeRequest.current?.abort();
     setSession(null); clearPrivateState(); setToken("");
-    setAuthState("idle"); setAuthError(""); setSessionStorage(null);
+    setAuthState("idle"); setAuthError(""); retireStoredCredentials();
   };
 
   const navigate = (nextView: ViewKey) => {
@@ -2715,6 +2738,30 @@ export default function AdminPage() {
       void loadDashboard(session).catch((error) => {
         if (sessionOwner.isCurrent(session)) setAuthError(getErrorMessage(error));
       });
+  };
+
+  const verifyCommandReadback = async (input: CommandInput, origin: AuthSession, fresh: DashboardData, receipt: JsonRecord) => {
+    // The same declared check is used on first submit and after restart. Targets
+    // come from the original command, never the current form/selection.
+    const check = input.check;
+    switch (check.kind) {
+      case "case-state": return check.states.includes(asString(findCase(fresh, check.caseId)?.state).toUpperCase());
+      case "case-merged": return Boolean(getCasePayload(findCase(fresh, check.caseId) ?? {}).canonicalMerge);
+      case "publication-assessment": {
+        const assessment = spotAssessmentOf(findSpot(fresh, check.spotId) ?? {});
+        return Boolean(Object.keys(assessment).length && (!receipt.assessmentDigest || assessment.assessmentDigest === receipt.assessmentDigest));
+      }
+      case "spot-state": return check.states.includes(spotStatusOf(findSpot(fresh, check.spotId) ?? {}));
+      case "replacement": {
+        const readback = asRecord(receipt.readback ?? receipt.result);
+        return asString(readback.relationState).toUpperCase() === "COMMITTED" && asString(readback.spotId) === check.spotId;
+      }
+      case "media-decision": {
+        const envelope = await requestEnvelope<unknown>(`/v2/admin/contribution-media/${encodeURIComponent(check.mediaId)}/review`, origin, { method: "GET" });
+        const payload = asRecord(envelope.data);
+        return asString(asRecord(payload.media ?? payload).decision).toUpperCase() === check.state;
+      }
+    }
   };
 
   const executeMutation = async (attempt: AdminCommandAttempt<CommandInput>) => {
@@ -2733,16 +2780,15 @@ export default function AdminPage() {
         return;
       }
       if (receipt.actorId !== origin.actor || receipt.idempotencyKey !== idempotencyKey ||
-        !["COMMITTED", "REPLAYED"].includes(asString(receipt.status))) {
+        typeof receipt.status !== "string" || !["COMMITTED", "REPLAYED"].includes(receipt.status)) {
         setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "回执身份或操作标识不匹配，暂不确认结果；保留原操作核对。" });
         return;
       }
-      commandOwner.recordCommitted(attempt, receipt);
+      await commandOwner.recordCommitted(attempt, receipt, asRecord(envelope.postCommit).cacheInvalidation === "FAILED");
       setMutation({ phase: "readback", label: input.label, receipt, requestId: asString(envelope.requestId) });
       const freshResult = await readDashboard(origin);
       sessionOwner.assertCurrent(origin);
-      const readbackMatches = input.verifyReadback ? await input.verifyReadback(origin, receipt)
-        : input.verify ? input.verify(freshResult.data, receipt) : true;
+      const readbackMatches = await verifyCommandReadback(input, origin, freshResult.data, receipt);
       sessionOwner.assertCurrent(origin);
       setData(freshResult.data); setQueueState(freshResult.queueState);
       if (!readbackMatches) {
@@ -2767,19 +2813,34 @@ export default function AdminPage() {
         message: `${knownReceipt ? "先前提交已获服务端回执，尚未完成核对或缓存刷新；本次重试失败不表示此前未提交。" : rejected ? "" : "先前提交结果仍待核对；本次失败不能证明操作未发生。"}${getErrorMessage(error)}`,
         ...(knownReceipt ? { receipt: knownReceipt } : {}), requestId: error instanceof ApiError ? error.requestId : undefined });
     } finally {
-      commandOwner.settle(attempt, confirmed);
+      try { await commandOwner.settle(attempt, confirmed); }
+      catch (error) {
+        if (sessionOwner.isCurrent(origin)) setMutation({ phase: "unverified", label: input.label,
+          receipt: commandOwner.knownReceipt(attempt), message: `服务端结果不因本机记录写回失败而变成未提交；原操作仍保留。${getErrorMessage(error)}` });
+      }
       if (sessionOwner.isCurrent(origin)) setCommandVersion(value => value + 1);
     }
   };
-  const runMutation = (input: CommandInput) => {
+  const runMutation = async (input: CommandInput) => {
     if (!session) return;
-    try { void executeMutation(commandOwner.begin(session, input)); }
-    catch (error) { setMutation({ phase: "unverified", label: pendingCommand?.input.label ?? input.label, message: getErrorMessage(error) }); }
+    if (journalState !== "ready") {
+      setMutation({ phase: "error", label: input.label, message: "本机操作记录尚未恢复，写入已暂停；请先重试读取操作记录。" });
+      return;
+    }
+    const origin = session;
+    setMutation({ phase: "submitting", label: input.label });
+    try { await executeMutation(await commandOwner.begin(origin, input)); }
+    catch (error) { if (sessionOwner.isCurrent(origin)) { setMutation({ phase: "unverified", label: commandOwner.pending(origin)?.input.label ?? input.label, message: getErrorMessage(error) }); setCommandVersion(value => value + 1); } }
   };
-  const retryMutation = () => {
-    if (!session) return;
-    const attempt = commandOwner.retry(session);
-    if (attempt) void executeMutation(attempt);
+  const retryMutation = async () => {
+    if (!session || journalState !== "ready") return;
+    const origin = session;
+    setMutation({ phase: "submitting", label: pendingCommand?.input.label ?? "核对原操作" });
+    try {
+      const attempt = await commandOwner.retry(origin);
+      if (attempt) await executeMutation(attempt);
+      else { setMutation({ phase: "idle", label: "" }); setCommandVersion(value => value + 1); }
+    } catch (error) { if (sessionOwner.isCurrent(origin)) setMutation({ phase: "unverified", label: pendingCommand?.input.label ?? "核对原操作", message: getErrorMessage(error) }); }
   };
 
   const resolveCase = (
@@ -2805,15 +2866,7 @@ export default function AdminPage() {
             : "请求补充",
       path,
       body,
-      verify: (fresh) => {
-        const next = findCase(fresh, selectedCaseId);
-        const state = asString(next?.state).toUpperCase();
-        return resolution === "CHANGES_REQUESTED"
-          ? ["CHANGES_REQUESTED", "NEEDS_CHANGES", "PENDING_CHANGES"].includes(
-              state,
-            )
-          : state === resolution;
-      },
+      check: { kind: "case-state", caseId: selectedCaseId, states: resolution === "CHANGES_REQUESTED" ? ["CHANGES_REQUESTED", "NEEDS_CHANGES", "PENDING_CHANGES"] : [resolution] },
     });
   };
 
@@ -2824,19 +2877,7 @@ export default function AdminPage() {
       label: decision === "ACCEPT" ? "采用媒体" : "不采用媒体",
       path: `/v2/admin/moderation/cases/${encodeURIComponent(selectedCaseId)}/media-decisions`,
       body: { mediaId, decision, reason },
-      verifyReadback: async (activeSession) => {
-        const envelope = await requestEnvelope<unknown>(
-          `/v2/admin/contribution-media/${encodeURIComponent(mediaId)}/review`,
-          activeSession,
-          { method: "GET" },
-        );
-        const payload = asRecord(envelope.data);
-        const media = asRecord(payload.media ?? payload);
-        return (
-          asString(media.decision).toUpperCase() ===
-          (decision === "ACCEPT" ? "ACCEPTED" : "REJECTED")
-        );
-      },
+      check: { kind: "media-decision", mediaId, state: decision === "ACCEPT" ? "ACCEPTED" : "REJECTED" },
     });
   };
 
@@ -2888,10 +2929,7 @@ export default function AdminPage() {
         expectedSpotRevision: findSpot(data, asString(submission.spotId))
           ?.version,
       },
-      verify: (fresh) =>
-        Boolean(
-          getCasePayload(findCase(fresh, selectedCaseId) ?? {}).canonicalMerge,
-        ),
+      check: { kind: "case-merged", caseId: selectedCaseId },
     });
   };
 
@@ -2902,16 +2940,7 @@ export default function AdminPage() {
       label: "重新评估发布完整性",
       path: `/v2/admin/spots/${encodeURIComponent(selectedSpotId)}/publication-assessments`,
       body: { expectedRevision: spot?.version, reason },
-      verify: (fresh, receipt) => {
-        const assessment = spotAssessmentOf(
-          findSpot(fresh, selectedSpotId) ?? {},
-        );
-        return Boolean(
-          Object.keys(assessment).length &&
-          (!receipt.assessmentDigest ||
-            assessment.assessmentDigest === receipt.assessmentDigest),
-        );
-      },
+      check: { kind: "publication-assessment", spotId: selectedSpotId },
     });
   };
 
@@ -2938,8 +2967,7 @@ export default function AdminPage() {
         expectedRevision: spot?.version,
         assessmentDigest: spotAssessmentOf(spot ?? {}).assessmentDigest,
       },
-      verify: (fresh) =>
-        expected.includes(spotStatusOf(findSpot(fresh, selectedSpotId) ?? {})),
+      check: { kind: "spot-state", spotId: selectedSpotId, states: expected },
     });
   };
 
@@ -2991,21 +3019,7 @@ export default function AdminPage() {
           replacementPreview?.digest ?? replacementPreview?.impactDigest,
         reason,
       },
-      verifyReadback:
-        action === "replace"
-          ? async (_activeSession, receipt) => {
-              const readback = asRecord(receipt.readback ?? receipt.result);
-              return (
-                asString(readback.relationState).toUpperCase() ===
-                  "COMMITTED" && asString(readback.spotId) === currentSpotId
-              );
-            }
-          : undefined,
-      verify:
-        action === "retire"
-          ? (fresh) =>
-              spotStatusOf(findSpot(fresh, currentSpotId) ?? {}) === "RETIRED"
-          : undefined,
+      check: action === "replace" ? { kind: "replacement", spotId: currentSpotId } : { kind: "spot-state", spotId: currentSpotId, states: ["RETIRED"] },
     });
   };
 
@@ -3204,9 +3218,17 @@ export default function AdminPage() {
                 读模型未完整返回；缺失字段保持未确认，不会由前端生成。
               </Notice>
             ) : null}
+            {journalState === "error" || journalState === "loading" ? (
+              <Notice tone="warning" title="操作记录尚未恢复">
+                {journalState === "loading" ? "正在读取本机操作记录。" : journalError}
+                审核、合并和地点变更已暂停，工作台仍可读取；原操作记录保持保留。
+                {journalState === "error" ? <button className="control secondary" type="button" onClick={() => void restoreJournal(session)}>重试读取操作记录</button> : null}
+              </Notice>
+            ) : null}
             {pendingCommand ? <Notice tone="warning" title="有一笔操作尚未确认">
               {pendingCommand.input.label}。输入和修订保持原样，先重试核对这笔操作再提交新的更改。
-              <button className="control secondary" type="button" disabled={mutation.phase === "submitting" || mutation.phase === "readback"} onClick={retryMutation}>重试原操作</button>
+              {commandOwner.knownReceipt(pendingCommand) ? `先前提交已获服务端回执；${commandOwner.cacheFailureObserved(pendingCommand) ? "曾有公共缓存刷新失败，" : ""}当前仍待核对。` : "刷新或关闭窗口不表示服务端取消。"}
+              <button className="control secondary" type="button" disabled={journalState !== "ready" || mutation.phase === "submitting" || mutation.phase === "readback"} onClick={retryMutation}>重试原操作</button>
             </Notice> : null}
             {renderView()}
           </main>

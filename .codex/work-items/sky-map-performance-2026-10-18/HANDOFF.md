@@ -2,7 +2,7 @@
 
 **当前授权与 Goal：** 用户要求先同步目标分支并继续完整 Goal，随后再次明确“先做不依赖真机调试的部分，继续goal”。本聊天先 get_goal=null，已用 GOAL-OBJECTIVE 的“Goal 正文”全部创建 active Goal，无 token 预算；不是继承旧聊天的 paused 状态。原完整义务和 UI → 叠层 → Sky 产品顺序保留，设备依赖期间推进 R20 独立责任。
 
-**源码同步已完成：** 新机 checkout 为E:/dev/worktrees/Starward/remote-main-20260908，分支codex/remote-main-20260908。同步前HEAD60bdd46e、工作区干净；fetch后快进266df53e，无冲突。2c4bb235为偏好/F07/F14草稿/F10/F09，8fdf9b6b为具名帧/CI修复，71703c95为资源家族，f41db68c为通知配置；workflow修复已单独推送 **ab47dc01b915ae11080acf4c0a5030e2def3f3dd**、精确远端读回、ahead/behind0/0。后续field/enum/OpenAPI整合检查点按实际Git/远端读回确定。未reset/clean/force/stash、未创建worktree、未改main。用户后称首次拉取可覆盖，但本机没有需丢弃/合并的改动。管理端恢复新在途文件保留，不混入field提交。
+**源码同步已完成：** 新机 checkout 为E:/dev/worktrees/Starward/remote-main-20260908，分支codex/remote-main-20260908。同步前HEAD60bdd46e、工作区干净；fetch后快进266df53e，无冲突。2c4bb235为偏好/F07/F14草稿/F10/F09，8fdf9b6b为具名帧/CI修复，71703c95为资源家族，f41db68c为通知配置；workflow修复为ab47dc01；field/enum/OpenAPI整合已推送 **f2b255ae5d0a686b677094cd1e34f8c5b4002c28**、精确远端读回、ahead/behind0/0。后续检查点按实际Git/远端读回确定。未reset/clean/force/stash、未创建worktree、未改main。用户后称首次拉取可覆盖，但本机没有需丢弃/合并的改动。管理端恢复新在途文件保留，不混入field提交。
 
 **本批已整合：** 偏好v2的SQLite/domain/UI与恢复P2、真实Web事务CAS、F07共享夜/精确时刻/地点身份及摄影稳定retry均已实施并经限定检查/独审。[行程真实草稿](R20-ITINERARY-DRAFT-PERSISTENCE-20261023.md)、[云量独立交付](R20-INDEPENDENT-CLOUD-DELIVERY-20261023.md)与[Sky连续编辑查询](R20-SKY-TIME-QUERY-POLICY-20261023.md)的本批独审发现也已修完并由新reviewer复核；Map目录448项通过。原失败与全部目标缺口保留，完整F14/H4/原生性能/OOM未关闭。所有本批实施/审阅代理已结束，不复用。
 
@@ -16,7 +16,7 @@
 
 ## 当前源码与任务边界
 
-- 当前工作区E:/dev/worktrees/Starward/remote-main-20260908，分支codex/remote-main-20260908；已同步接力266df53e，最新已精确远端读回 **ab47dc01b915ae11080acf4c0a5030e2def3f3dd**；后续身份见实际Git/远端读回，origin/main未改。4b5a610a/5b27a062及旧D盘入口只作历史定位。
+- 当前工作区E:/dev/worktrees/Starward/remote-main-20260908，分支codex/remote-main-20260908；已同步接力266df53e，最新已精确远端读回 **f2b255ae5d0a686b677094cd1e34f8c5b4002c28**；后续身份见实际Git/远端读回，origin/main未改。4b5a610a/5b27a062及旧D盘入口只作历史定位。
 - 前批Sky/通知/fast、field及四处enum修复、OpenAPI的实施与审查均已完成并结束对应owner；field本机最终API135/App139/structured3及合同复验通过。当前管理端restart恢复由新owner实施，尚未独审；root精确保存已审源码，保新在途文件，不整批git add数据、图片或临时目录。原机Harness、冻结构建与私有原件不因Git同步存在。
 - 唯一 [PLAN](PLAN.md) 已按用户授权纳入R20；另一对话正在按明确的主备调试选型修订，**当前内容以文件实读为准，不将并发编辑中的hash冒称冻结身份**。c953cdb6…为此前R20版本，随后先后读到611322ec…和220b046b…；这些是途中身份，不能覆盖回去。d236f3b5…是R20之前版本。本聊天没有把进度/失败写入PLAN，方案采用、实现和验收分别判断；下次继续读最新版及相应skill。
 - 顺序保持：**已采用 UI → 地形/云层/光害完整显示链路、连续交互与内存 → Sky 六字段响应及正常 Play 内存**。受真实条件阻塞的责任保留，继续原 PLAN 内可独立工作。
@@ -31,8 +31,8 @@
 | 叠层资源 | unlink 失败后的有限重试已修；已有文件 pin、原生替换及受控退出证据。 | native 永久 pending、外部销毁、持续使用和退出后的完整资源回落仍需有效证据。 |
 | Sky 响应 A | current-demand/取消不重试修复、r23 真实输入→首 accepted 关联、CPU/r7 映射仍有效。R28 已完成有限观察实现、检查和 gen34 冻结构建。 | R28 最终独审、必要的目标首响应成本关联尚未完成；六字段快速点按/长按与正常 Play 的完整净收益未验收。 |
 | Sky 内存 B | R27 gen33 一次正常全天空 Play、6 检查点及 metrics/terminal 已采集并独审；BSC8404 / loadedSAO2842 / 105tiles / accepted253。8 个旧 wrapper 全收集，5 个 aggregate 与 page callback 同活、3 个均收集。 | 最终强持有者及 pageFn→aggregate 边仍未知，真实 V8 OOM 未修复。停止同问弱寿命追踪；完整 Play/Pause/drain/退出与资源稳定未完成。 |
-| H7 当前共享检查 | 8fdf9b6b实际Context/Product CI success，含release-code、App/API/admin消费者、构建、infra及OCI。717后实际CI失败及本机两次fast失败均已保留并定向修复。root最终完整fast exit0：contracts88/88、MiniAPI993通过/68条件跳过、Miniapp2814/2814、workflow177/177及相关类型/检查通过；UI只获4项source-pattern。 | 新提交远端CI待实际运行；68条件跳过不算验收，field新模块不在本机fast范围。历史354失败、旧42skip及CI失败/原件保留；当前范围见[最新验证证据](CURRENT-VALIDATION-20261023.md)。CI不关闭UI/设备/性能。 |
-| R20 核验问题与三组重构 | 管理/媒体/队列及App F05/F06原结果复用。偏好v2/CAS/迁移与稳定retry、F07真实消费者、F14草稿、F10云量、F09连续编辑和Sky具名帧/资源家族代码与受影响检查/独审已完成；具体范围归专门证据。 | 部署迁移023–026/长期运行；管理legacy幂等、跨窗口未知恢复及凭据迁移；App目标定位/恢复/导航及F14其余实体family；Map session重构、H4真实供给与Sky原生图像/资源/完整六字段/Play/OOM验收继续保留。本地通过不关闭目标运行时或原生资源。 |
+| H7 当前共享检查 | 8fdf9b6b实际Context/Product CI success，含release-code、App/API/admin消费者、构建、infra及OCI。717后实际CI失败及本机两次fast失败均已保留并定向修复。root最终完整fast exit0：contracts88/88、MiniAPI993通过/68条件跳过、Miniapp2814/2814、workflow177/177及相关类型/检查通过；UI只获4项source-pattern。 | ab47与f2精确远端Context/Product均success；新admin批CI待运行。68条件跳过不算验收，field新模块不在本机fast范围。历史354失败、旧42skip及CI失败/原件保留；当前范围见[最新验证证据](CURRENT-VALIDATION-20261023.md)。CI不关闭UI/设备/性能。 |
+| R20 核验问题与三组重构 | 管理/媒体/队列及App F05/F06原结果复用。偏好v2/CAS/迁移与稳定retry、F07真实消费者、F14草稿、F10云量、F09连续编辑、管理journal和Sky具名帧/资源家族代码与受影响检查/独审已完成；具体范围归专门证据。 | 部署迁移023–026/长期运行；管理legacy幂等、部署凭据迁移及存储丢失后的server reconciliation；App目标定位/恢复/导航及F14其余实体family；Map session重构、H4真实供给与Sky原生图像/资源/完整六字段/Play/OOM验收继续保留。本地通过不关闭目标运行时或原生资源。 |
 
 UI 唯一采用增量为 [Stitch 3995519477980461148](https://stitch.google.com/projects/7144519510537620825?node-id=3995519477980461148)，原完整依赖 5205988829884632961、既有 Sky 5385664345158066168 保留。My 已唯一采用，不再选候选；22 项资源/3 废案清理已核。旧 footer/项目“待审”元文字受现有官方编辑能力限制，不能据它重选或重生成。未涉及内容、数据含义、图标、材质、主题和 Sky 构图维持原样。来源统一公共按钮、跳转及真实页面，内容按固定模板或确有差异的模板承载。资源和范围见 [设计交接](../map-ui-design-2026-10-22/HANDOFF.md)、[My 采用与清理](../map-ui-design-2026-10-22/MY-ADOPTION-CLEANUP-20261023.md)、[剩余 UI 独核](R19-REMAINING-UI-SCOPE-20261023.md)。
 
@@ -75,9 +75,9 @@ LAN后续结果（归另一对话，本轮只读证据）：官方开发期`bigP
 
 ## 当前唯一下一步与后续实施入口
 
-**当前唯一下一步：完成管理端未知命令的刷新/重开恢复。** 现owner已核attempt仅在Map、旧page把token存sessionStorage并自动重连；将沿现session/command owner与实际React消费者实施持久journal，同origin/API/credential/server actor隔离，凭据只在内存，原body/key/revision及已知commit fact保全，恢复后显式重试。尚未完成实现/检查/独审或真实浏览器重载，不预记通过；legacy candidate-create/spot-patch非幂等及部署凭据迁移仍是独立缺口。
+**当前唯一下一步：完成本批管理端 journal 的精确提交/远端CI，随后承接 legacy candidate-create/spot-patch 的实际幂等边界。** [刷新/重开恢复](R20-ADMIN-RESTART-RECOVERY-20261024.md)已实现并取得最终新独审无范围内P1/P2：原body/key/revision/known commit fact加密保全，凭据仅内存、重认证后显式重试；真实Chrome6POST/2effects、跨窗口只准入1新操作、封存/确认清行和known receipt/cache FAILED重开/403恢复均已观察。独审发现journal失败退休只读身份的P2，修后保认证读取、写入gate，真实浏览器阻断/显式恢复均0POST，再明确操作1POST/1effect。Case旧详情按生产支持的CHANGES_REQUESTED留队机制修前失败、修后刷新，真实Chrome同Case1POST/1effect且显示CHANGES_REQUESTED。最终本机12/12+类型通过，新独审另实际12/12、六readback6/6、只读原反例1/1均无skip；Context/限定diff通过。所有新建标签/服务已关。精确提交CI不提前填通过；legacy幂等、部署凭据迁移、公缓存恢复与OS crash持久性仍各保范围。
 
-[F14私人草稿](R20-FIELD-STATE-20261024.md)已完成本机实现、三批独审和最终整合，含正文保真、null profile及四处真实enum误收修复；API135/135、App类型+139/139、structured3/3及OpenAPI合同复验通过，旧失败保留。在线私人草稿不代表离线包/设备队列/安全/分享；全F14仍未完成。root保存本批检查点并沿实际source继续远端CI：ab47 Context已success、Product仍运行，不覆盖原717失败。本机Miniapp fast完整exit0仍保68条件skip。原Map448、F09六文件66及研究证据复用，不相加冒一次全套、不宣称OOM已修。Map故障session首个替换/退休仍须目标native资格；原UI→叠层→Sky顺序、全部R/H/A/N和设备后置保持。
+[F14私人草稿](R20-FIELD-STATE-20261024.md)已完成本机实现、三批独审和最终整合，含正文保真、null profile及四处真实enum误收修复；API135/135、App类型+139/139、structured3/3及OpenAPI合同复验通过，旧失败保留。在线私人草稿不代表离线包/设备队列/安全/分享；全F14仍未完成。root已推送精确读回f2b255ae，Context40005868190、Product40005906382均实际success；Product终态19:00:35 UTC、job120593615372全部25步通过，仍排除在途admin journal。前一ab47 Context/Product已实际success，不覆盖原717失败。本机Miniapp fast完整exit0仍保68条件skip。原Map448、F09六文件66及研究证据复用，不相加冒一次全套、不宣称OOM已修。Map故障session首个替换/退休仍须目标native资格；原UI→叠层→Sky顺序、全部R/H/A/N和设备后置保持。
 
 本批实现/证据入口：[头像提交与退休](R20-AVATAR-COMMIT-REPAIR-20261023.md)、[管理授权与命令恢复](R20-ADMIN-AUTH-VALIDATION-20261023.md)、[H7/消费者](R20-SHARED-CHECKS-20261023.md)与[独立复核](R20-CONSUMERS-INDEPENDENT-REVIEW-20261023.md)。管理两项独审反例均已修复，最终后端7/7、实际React页面/会话/CLI7/7及双方noEmit通过；真实HTTP→专用PG另1/1，不能冒实际部署/Redis通过。全Mini API本地套件在最后缓存修复之前结束，当前结果由该套件加上述受影响补验构成，不伪造全套重跑。
 
