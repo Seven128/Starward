@@ -1,5 +1,19 @@
 # 当前共享验证结果（2026-10-23，续检至2026-10-24）
 
+## 2026-10-24 main接续交付
+
+用户明确本机以后在main开发，最新已提交成果及本轮方案/审查交接归origin/main；另一电脑专用分支不随本次推送更新。本机已从同一f9798树切到main，未改生产代码或完整Goal/REQUIREMENTS/INHERITED。提交前context:validate通过；10份任务文档454个本地链接无缺失，定向git diff --check通过。原PLAN的剩余责任修订复用前批独立文档审阅，本次仅统一分支和恢复入口。
+
+工作区仍显示285个已材料化LFS资产的M状态，但git内容diff为空；它们及原始缓存/私有资料不纳入本次文档提交，也不通过清理或覆盖消除状态。已确认的三项P2、NightReport WIP与完整Goal未完成。main推送后的CI必须按实际交接HEAD查询；上述文档检查和旧05f成功均不证明新产品CI通过。旧的“本轮未触发CI”仅指下段审查时点。
+
+## 2026-10-24 f9798接力复核
+
+当前本机已ff-only同步f9798d794d09332be6eac6ef8651ce50865e2d0b，按新lock安装依赖后做限定复核，结果归[总证据](R20-REMOTE-RECONCILIATION-20261024.md)。NightReport真实HTTP/SQLite/client的1/1与Map真实组件1/1是**缺陷复现**；管理缓存“未知状态仍保pending”0/1失败、明确COMPLETE正向1/1通过。三项仍未修，不被下面旧绿结果覆盖。
+
+本轮相关管理15/15、独立API持久模块25/25、domain偏好20/20、native相关27/27、Sky59/59、云HTTP3/3通过；不同责任不相加冒一次全套。gh实读05f Context/Product均success，f9798精确head查询未返回运行。本轮未改生产、未做全仓/设备/构建/部署，未触发CI。依赖和公开文件准备是本机条件，数据库/私有原件/服务/目标结果仍各自核验。
+
+## 发送机器与此前批次（历史范围）
+
 **2026-10-24换机WIP：** [NightReport记录](R20-NIGHT-REPORT-PERSISTENCE-20261024.md)保留真实旧HTTP/SQLite同id误复用/重开503及三个非法输入200。11份source已冻结，root最终API/mobile工作区typecheck各exit0；新行为/并发/回滚/实际消费者/structured/OpenAPI/独审/精确CI均未完成。身份消失后临时响应可能误清owner未知attempt仍未修/未回归验证。此前任一通过批次均不覆盖本WIP。用户要求提交换机，Goal paused，不宣称完整完成。
 
 这是完整Goal/H7的验证owner。下列批次针对4b5a610a1aaa76f8cf5a727dd5403af4b72d83e0之后的R20工作区；用户现要求提交为跨机接力检查点，实际提交身份由Git/远端读回确定。下方先记新结果，再保留原失败及原件定位；新结果只覆盖实际执行范围，未验和跳过不能消失。
