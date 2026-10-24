@@ -2,6 +2,20 @@
 
 本轮沿用户最新“USB 连接、自动推送、人类介入后置”的明确指令准备 `development_feedback`。完整 Goal 未完成，实际当前行动由 HANDOFF 拥有。
 
+**当前为EfkxhB generation2／367a703a…**：Map session源码修复独审后普通完整build339件/5,028,121B，自动preview success并实际手机Map→My→地图返回；当前USB session gEFXaw，最后留Map。正常资料/图层仍不可用，没有触发fault，不认证native销毁/资源/正常UI完成。完整本代身份、四图/输入/检查/保全见[Map整合证据](R20-MAP-FAULT-SESSION-20261024.md#root-整合与普通手机反馈)。以下gen1和V87各段均保留历史，不作当前session资格。
+
+## 当前开发候选 EfkxhB（后续实际结果）
+
+- 首次V87XzN的正式2MiB拒包仍成立。一次facade移位候选仅减46B，已独审拒绝、完整保全并撤回；canonical恢复HEAD63ee13b源码后重编，bundle重新与E9 **339件/5,025,700B**完全一致，见[负向包体结果](R20-CURRENT-PACKAGE-BUDGET-20261024.md)。没有重建/刷新任何冻结代。
+- 复用既有 `LAN-DEBUG-PACKAGE-AUDIT-20261023.md` 已核官方开发选项，只对新feedback副本的 `project.private.config.json` 合并 `setting.bigPackageSizeSupport=true`。真实officialDriver仍执行原autoPreview；公共project.config、AppID、compiler与bundle未改，不是mock receipt。任务脚本 `tmp/r20-start-development-large-preview.mjs`，构建/推送原件见task tmp同日log。该选项只支持开发preview/true-debug，**正式2MiB问题未关闭**。
+- 新feedback `%TEMP%/starward-device-feedback-EfkxhB`，generation1 `generation-000001-u3Qsw8/project`；官方进程exit0，原结构化status success。一次推送后USB实际看见Starward Map，root实看新鲜截图才使用既有bind确认，不要求用户重复批准。
+- 当前device session `%TEMP%/starward-device-feedback-EfkxhB/starward-device-test-zVWpAs`，transport USB、scope development_feedback。runtimeAppIdVerified=false、手机源字节unverified仍保留；实际送达不升级settled-candidate或目标全部通过。
+- 私有预绑定图 `root-usb-20261024/preview-prebind-20261024T060858925Z.png`；绑定后Map `screen-8d6be956-c926-4fc8-ba35-9b132046b652.png` 实看后才点My（normalized0.1/0.127）。My加载图 `screen-c41ec117-a688-4f1c-9d31-6ec579288e49.png`，请求结束图 `screen-ee04d445-ffa3-47b6-9c8a-327f76c2c4b2.png`（06:16:19.407Z，SHA `7b80fdd5d71c5d273466644dcc5a5b5ab4d4ebb1addd69fcfce64a84210a7e77`）均由root实际查看。梯度/单计划卡/回顾和贡献行/地图返回入口可见；最终明确“资料暂不可用／账户资料暂未取得”，**正常My和合法Picker尚未通过**。手机留在My，旧截图不能作下一输入资格。
+- 原shell探测No route to host之后，真实My也未成功，但普通preview不提供当前phone Network/Console，尚无WeChat失败码。范围化邻居读回：Windows对phone为Stale，phone对host为FAILED，先修拓扑。WinRT只读热点Off/clients0、已配置/capability Enabled；当前ICS COM读回与防火墙读取需提升，尚未申请UAC或改网络。既有VPN/TUN保持，未重复点重试、未登录/换号/造账号或接触N05。
+- 必要API8806/PG55441继续由原owner运行。旧失败feedback、canonical备份、负向候选源码和build、当前反馈与截图完整保留。正式预算、正常UI资料、真实H4、Map资源/Sky/OOM等义务继续保留；根下一步归HANDOFF。
+
+以下为初次 V87XzN 的原始失败记录，相关“本代/尚无画面/未bind”只指该初代，不覆盖上述新代。
+
 ## Candidate identity
 
 - canonical 当前源码完整普通 WEAPP 构建：**339 件／5,025,700 B／`e9e540552df10842784eb21bb44e924b989a48f2894321b50af5dc1dd0153de6`**。build-time origin 已验证是完整的当前手机侧物理 LAN API8806；没有 loopback、fixture-mode 或新诊断注入。

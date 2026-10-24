@@ -80,6 +80,10 @@ export function createMapGroundOverlayCoordinator(
   let disposed = false;
   let queuedFile: File | null = null;
   let sameIdUpdateSupported = false;
+  let finishRetirement!: () => void;
+  const retired = new Promise<void>(resolve => { finishRetirement = resolve; });
+  const hasResources = () => slots.some(slot => Boolean(slot.file));
+  const checkRetirement = () => { if (disposed && !hasResources()) finishRetirement(); };
   const context = () => {
     const current = createContext();
     sameIdUpdateSupported = typeof current.updateGroundOverlay === "function";
@@ -100,6 +104,7 @@ export function createMapGroundOverlayCoordinator(
           release(slot.file); release(slot.replacement);
           slot.file = slot.replacement = null; slot.mustRemove = false;
           if (displayed === slot) displayed = null;
+          checkRetirement();
         }
       }, label);
     } catch (error) {
@@ -227,6 +232,7 @@ export function createMapGroundOverlayCoordinator(
   const dispose = () => {
     disposed = true; ++generation;
     release(queuedFile); queuedFile = null;
+    checkRetirement();
     queue = queue.catch(() => undefined).then(async () => {
       for (const slot of slots) try { await remove(slot); } catch { /* Remaining ids are returned; late callbacks still own cleanup. */ }
     });
@@ -247,7 +253,7 @@ export function createMapGroundOverlayCoordinator(
     });
   };
 
-  return { apply, suspend, dispose,
+  return { apply, suspend, dispose, retired, hasResources,
     // This is the actual context used by native commands, not an SDK version
     // guess. Unknown/in-flight ownership cannot authorize a coarse takeover.
     canReplace: () => !disposed && sameIdUpdateSupported && Boolean(displayed?.confirmed)

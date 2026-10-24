@@ -4,6 +4,7 @@ import test from "node:test";
 import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { createNativeMapSessions } from "./native-map-session";
 
 function setup() {
   let source = fs.readFileSync(new URL("./native-map-recovery.ts", import.meta.url), "utf8");
@@ -14,9 +15,12 @@ function setup() {
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText, {
     module, exports: module.exports,
     require: (name: string) => {
+      if (name === "./native-map-session") return { nativeMapSessions: createNativeMapSessions(), NATIVE_MAP_RETIREMENT_MESSAGE: "retirement pending",
+        NATIVE_MAP_RASTER_RETIREMENT_MESSAGE: "raster retirement pending" };
       assert.equal(name, "react", "native recovery has an explicit hook dependency");
       return ({
-      useState(initial: any) { const i = index++; if (!(i in slots)) slots[i] = initial; return [slots[i], (v: any) => { slots[i] = v; }]; },
+      useState(initial: any) { const i = index++; if (!(i in slots)) slots[i] = typeof initial === "function" ? initial() : initial;
+        return [slots[i], (v: any) => { slots[i] = typeof v === "function" ? v(slots[i]) : v; }]; },
       useRef(initial: any) { const i = index++; return slots[i] ??= { current: initial }; },
       useEffect(effect: () => () => void) { if (!cleanup) cleanup = effect(); },
     }); },
@@ -55,6 +59,7 @@ test("retry changes the actual Map key/id, preserves viewport, and ignores old n
   before.onError(); assert.equal(t.render().error, true);
   t.render().retry(); const pending = t.render(), after = nativeElement(pending, events, undefined, boundaries);
   assert.equal(pending.pending, true); assert.notEqual(after.id, before.id); assert.notEqual(after.key, before.key);
+  assert.equal(before.className, "native-map"); assert.equal(after.className, "native-map", "runtime harness observes the same stable host across unique native ids");
   assert.equal(after.latitude, before.latitude); assert.equal(after.longitude, before.longitude); assert.equal(after.scale, before.scale);
   before.onUpdated(); before.onError(); before.onTap(); before.onMarkerTap({}); before.onRegionChange({});
   assert.equal(t.render().pending, true); assert.deepEqual(events, []);
@@ -65,12 +70,18 @@ test("retry changes the actual Map key/id, preserves viewport, and ignores old n
   after.onTap(); assert.deepEqual(events, ["viewport", "tap"]);
 });
 
-test("native failure or missing completion leaves recovery available; stale success cannot erase failure", () => {
+test("a failed successor retains a visible error and cannot create another unknown native Map; stale success cannot erase failure", () => {
   const t = setup(); t.render().onError(); t.render().retry(); const second = t.render();
   second.onError(); second.onUpdated(); assert.equal(t.render().error, true); assert.equal(t.timers.size, 0);
-  t.render().retry(); const id = t.render().mapId; t.render().retry(); assert.equal(t.render().mapId, id, "pending retry is not duplicated");
+  assert.equal(t.render().retry(), false); assert.equal(t.render().mapId, second.mapId);
+  assert.ok(t.render().retirementMessage);
+});
+
+test("a missing successor update ends visible waiting without certifying native retirement or multiplying Maps", () => {
+  const t = setup(); t.render().onError(); t.render().retry(); const id = t.render().mapId;
+  assert.equal(t.render().retry(), false); assert.equal(t.render().mapId, id, "pending retry is not duplicated");
   [...t.timers.values()][0]!(); assert.equal(t.render().error, true); assert.equal(t.render().pending, false);
-  t.render().retry(); assert.notEqual(t.render().mapId, id);
+  assert.equal(t.render().retry(), false); assert.equal(t.render().mapId, id);
 });
 
 test("unmount cancels pending retry and late callbacks cannot revive its state", () => {

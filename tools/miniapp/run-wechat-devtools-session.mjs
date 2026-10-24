@@ -2842,7 +2842,7 @@ const nativeSelectorAliases = new Map([
     "[data-od-id='sky-orientation-back'] .sky-orientation-back",
     ".sky-orientation-back",
   ],
-  ["[data-od-id='default-formal-markers']", "#spot-map"],
+  ["[data-od-id='default-formal-markers']", ".native-map"],
   ["[data-od-id='map-search-summary']", ".map-finder-trigger"],
   ["[data-od-id='map-analysis-time-bar']", ".map-conditions-bar"],
   ["[data-od-id='map-observing-conditions-icon']", ".map-conditions-bar"],
@@ -6030,7 +6030,7 @@ const journeys = [
         waitFor: [
           { selector: "[data-od-id='map-analysis-focus-panel']", minimum: 1 },
           { selector: "[data-od-id='source-lift-map-dock']", minimum: 1 },
-          { selector: "#spot-map", minimum: 1 },
+          { selector: ".native-map", minimum: 1 },
           { selector: "[data-od-id='map-analysis-time-scrubber']", minimum: 1 },
           { selector: "[data-od-id='map-analysis-time-value']", minimum: 1 },
           { selector: "[data-od-id='map-analysis-layer-choice']", minimum: 4 },
@@ -6038,7 +6038,7 @@ const journeys = [
         inspect: [
           { selector: "[data-od-id='map-analysis-close']", minimum: 1 },
           { selector: "[data-od-id='source-lift-map-dock']", minimum: 1 },
-          { selector: "#spot-map", minimum: 1 },
+          { selector: ".native-map", minimum: 1 },
           { selector: "[data-od-id='map-analysis-time-scrubber']", minimum: 1 },
           { selector: "[data-od-id='map-analysis-time-value']", minimum: 1 },
           { selector: "[data-od-id='map-analysis-layer-choice']", minimum: 4 },

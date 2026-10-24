@@ -1,6 +1,6 @@
 # Starward 收口任务索引
 
-**当前续批：** 本聊天已完整恢复 active Goal，三项确认协议/事实刷新修复已由各 owner 实施并独审：[NightReport](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[管理缓存](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)、[原生选择](R20-NATIVE-SELECTION-REFRESH-20261024.md)。用户现允许 USB 自动推送；[当前普通候选](R20-CURRENT-UI-DEVICE-20261024.md)被官方主包2051KB>2048KB拒绝，未送达。唯一当前下一步与服务/候选/未验条件归 [HANDOFF](HANDOFF.md)，不再按下面历史接续段重复三项实现。原完整 Goal/唯一 PLAN及全部未完成义务保留。
+**当前续批：** 完整无预算 active Goal持续实施；NightReport/管理缓存/原生选择已交付63ee13b、精确两项CI成功。[Map故障session首路径](R20-MAP-FAULT-SESSION-20261024.md)又已实现独审/完整普通build/USB自动推送gen2，正常往返可见，实际fault/native销毁/资源仍欠。My/图层数据失败；正式2MiB仍未修，无收益facade候选已保全撤回。只读UAC一次取消未启动，网络恢复等实际可用条件；独立通知评估/Inbox在途。唯一当前状态、下一步/服务与交付身份归[HANDOFF](HANDOFF.md)，下文旧状态均按历史，不重复已完成修复。完整Goal/唯一PLAN/全部未完成义务保留。
 
 **2026-10-24本机main继续入口：** 用户已明确本机以后在 **main** 开发，并把f9798d794d09332be6eac6ef8651ce50865e2d0b及本轮计划/审查交接提交到远端main；codex/remote-main-20260908留给另一台电脑。新对话使用[当前继续提示词](NEXT-CHAT-PROMPT.md)，以包含该入口的main最新提交为接续点。已完成实现从同一[PLAN](PLAN.md)的待办叙述移出；[本轮接力复核](R20-REMOTE-RECONCILIATION-20261024.md)确认NightReport未知结果、管理缓存确认和原生同id选点刷新三项P2，尚未修复。唯一下一步/本机状态归最新[HANDOFF](HANDOFF.md)。下面发送机器及更早批次均为历史，不覆盖当前分支、方案或下一步，也不把源码通过外推设备/完整Goal。
 

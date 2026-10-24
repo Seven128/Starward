@@ -8,6 +8,8 @@ import { pendingProposalContextLocation, samePendingProposalIntent } from "./pri
 import { createMapSkyReturnState } from "./sky-return-state";
 import { createSkyMapLifecycle } from "../../navigation/sky-map-lifecycle";
 import { pageBlackoutReducedMotion } from "../../navigation/page-blackout-transition";
+import { createNativeMapSessions } from "./native-map-session";
+import { createMapGroundOverlayCoordinator, type MapGroundOverlayTarget } from "./map-ground-overlay";
 
 test("route fade keeps unknown startup distinct from an explicit reduced-motion preference", () => {
   assert.equal(pageBlackoutReducedMotion(false, "unknown"), false);
@@ -123,7 +125,7 @@ function actualMapCommands(environment: Record<string, unknown>) {
       mapSkyReturnState: createMapSkyReturnState(), skyMapLifecycle: createSkyMapLifecycle(),
       terrainInstallation: { suspendForExit: () => ({ ready: Promise.resolve(true), isCurrent: () => true, resume() {} }) },
       lightInstallation: { suspendForExit: () => ({ ready: Promise.resolve(true), isCurrent: () => true, resume() {} }) },
-      skyEntryRasterCleanup: { current: null }, nativeMapReload: { current: null }, ...environment,
+      skyEntryRasterCleanup: { current: null }, nativeMapReload: { current: null }, navigationEpoch: { current: 0 }, ...environment,
       useAppStore: { subscribe: () => () => {}, ...(environment.useAppStore as object ?? {}) },
     });
 }
@@ -192,41 +194,65 @@ test("blackout timeout and cancellation forbid late cleanup from navigating or r
   }
 });
 
-test("native reload keeps the old node until both clearances, coalesces repeats and preserves failed recovery", async () => {
-  for (const outcome of ["success", "failed", "hidden"] as const) {
-    const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(), epoch = { current: 0 };
-    let current = true, reloads = 0;
-    const nativeMap = { pending: false, isCurrent: () => current, retry() { reloads++; current = false; } };
-    const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
-      nativeMap, navigationEpoch: epoch });
-    const pending = commands.retryNativeMap(); await commands.retryNativeMap();
-    assert.equal(terrain.tickets.length, 1); assert.equal(light.tickets.length, 1); assert.equal(reloads, 0);
-    terrain.tickets[0]!.finish(outcome !== "failed"); await settle(); assert.equal(reloads, 0);
-    if (outcome === "hidden") epoch.current++;
-    light.tickets[0]!.finish(true); await pending;
-    assert.equal(reloads, outcome === "success" ? 1 : 0);
-    assert.equal(terrain.tickets[0]!.resumed, outcome === "success" ? 0 : 1);
-    if (outcome !== "success") {
-      const retry = commands.retryNativeMap(); assert.equal(terrain.tickets.length, 2);
-      terrain.tickets[1]!.finish(true); light.tickets[1]!.finish(true); await retry; assert.equal(reloads, 1);
-    }
-    h.entry.dispose();
-  }
+test("fault reload replaces a never-callback session without borrowing normal Sky clearance; late cleanup cannot touch its successor", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const sessions = createNativeMapSessions(), old = sessions.create(), pins = new Map<string, number>();
+  const native = new Map<string, Map<number, string>>();
+  let lateUpdate!: () => void;
+  const target = (src: string): MapGroundOverlayTarget => ({ src, opacity: .62, zIndex: 0,
+    bounds: { southwest: { latitude: 22, longitude: 113 }, northeast: { latitude: 23, longitude: 114 } } });
+  const files = { retainPath(path: string) { pins.set(path, (pins.get(path) ?? 0) + 1);
+    return () => { pins.set(path, pins.get(path)! - 1); }; } };
+  const context = (mapId: string, stallUpdate = false) => {
+    const overlays = new Map<number, string>(); native.set(mapId, overlays);
+    return {
+      addGroundOverlay(options: any) { overlays.set(options.id, options.src); options.success(); },
+      updateGroundOverlay(options: any) {
+        const finish = () => { overlays.set(options.id, options.src); options.success(); };
+        if (stallUpdate) lateUpdate = finish; else finish();
+      },
+      removeGroundOverlay(options: any) { overlays.delete(options.id); options.success(); },
+    };
+  };
+  const oldContext = context(old.mapId, true);
+  const coordinator = createMapGroundOverlayCoordinator(120, () => oldContext, () => undefined, files);
+  old.registerRaster(coordinator);
+  await coordinator.apply(target("old-a"));
+  const failedUpdate = coordinator.apply(target("old-b")); await settle();
+  t.mock.timers.tick(10000); await failedUpdate;
+  const h = setup(); let successor = old;
+  const commands = actualMapCommands({ skyEntry: h.entry,
+    terrainInstallation: { suspendForExit() { assert.fail("fault retry cannot wait on the failed native cleanup"); } },
+    nativeMap: { pending: false, isCurrent: old.isCurrent, retirementMessage: "retirement pending", retry() {
+      const next = old.recover(); if (!next) return false; successor = next; return true;
+    } }, notify() { assert.fail("first recovery is admitted"); },
+  });
+  await commands.retryNativeMap(); await commands.retryNativeMap();
+  assert.notEqual(successor.mapId, old.mapId); assert.equal(old.isCurrent(), false);
+  assert.equal(successor.canInstallRasters(), true);
+  assert.deepEqual([...pins.values()], [1, 1], "replacement cannot certify native absence or release either old file");
+  assert.equal(successor.recover(), null, "the first unresolved predecessor blocks a chain of fault replacements");
+  const nextContext = context(successor.mapId);
+  const current = createMapGroundOverlayCoordinator(120, () => nextContext, () => undefined, files);
+  successor.registerRaster(current); await current.apply(target("current"));
+  lateUpdate(); await settle(); await coordinator.retired;
+  assert.deepEqual([...native.get(successor.mapId)!.values()], ["current"]);
+  assert.equal(native.get(old.mapId)!.size, 0);
+  assert.deepEqual([...pins.values()], [0, 0, 1]);
+  assert.equal(successor.recover(), null, "real raster removal does not prove destruction of the failed native Map/GPU");
+  successor.retire(); await current.retired; h.entry.dispose();
 });
 
-test("a Sky entry can supersede pending reload cleanup without the old reload consuming its clearance", async () => {
-  const h = setup(), terrain = pendingRasterExit(), light = pendingRasterExit(); let reloads = 0, routes = 0;
-  const commands = actualMapCommands({ skyEntry: h.entry, terrainInstallation: terrain, lightInstallation: light,
-    nativeMap: { pending: false, isCurrent: () => true, retry() { reloads++; } }, navigationEpoch: { current: 0 },
-    useAppStore: { getState: () => ({}) }, Taro: { redirectTo: async () => { routes++; } },
-    reportRuntimeError() { assert.fail("current Sky departure"); }, notify() { assert.fail("current Sky departure"); },
+test("a blocked fault retry keeps its current Map and gives the existing visible recovery owner a truthful message", async () => {
+  const h = setup(); let retries = 0; const messages: any[] = [];
+  const commands = actualMapCommands({ skyEntry: h.entry,
+    nativeMap: { pending: false, isCurrent: () => true, retirementMessage: "地图暂时无法再次加载，请重启微信后再试。", retry() { retries++; return false; } },
+    notify(message: any) { messages.push(message); },
   });
-  const reload = commands.retryNativeMap();
-  commands.openSkyPage("/sky/detail/index", "sky"); h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
-  terrain.tickets[0]!.finish(true); light.tickets[0]!.finish(true); await reload;
-  assert.equal(reloads, 0); assert.equal(terrain.tickets[1]!.active, true); assert.equal(light.tickets[1]!.active, true);
-  terrain.tickets[1]!.finish(true); light.tickets[1]!.finish(true); await settle();
-  assert.equal(routes, 1); h.entry.dispose();
+  await commands.retryNativeMap(); assert.equal(retries, 1);
+  assert.equal(messages[0]?.placement, "floating");
+  assert.equal(messages[0]?.title, "地图恢复未完成"); assert.equal(messages[0]?.body, "地图暂时无法再次加载，请重启微信后再试。");
+  h.entry.dispose();
 });
 
 test("an already dispatched redirect keeps its cleared node reserved until the actual native result", async () => {

@@ -14,7 +14,11 @@ function harness(supportsUpdates = false) {
   const coordinators: { callback: (result: any) => void; calls: { target: any; intent: string; replacement: string }[]; disposed: boolean; replaceReady: boolean;
     suspensions: ((result: { complete: boolean; remainingIds: number[] }) => void)[] }[] = [];
   let nativeCurrent = true;
-  let nativeMap = { mapId: "map-a", pending: false, isCurrent: () => nativeCurrent };
+  let rastersBlocked = false;
+  const mapHandle = (mapId: string, isCurrent: () => boolean) => ({ mapId, pending: false,
+    get rastersBlocked() { return rastersBlocked; }, rasterRetirementMessage: "native retirement pending",
+    isCurrent, canInstallRasters: () => isCurrent() && !rastersBlocked, registerRaster: (owner: { dispose(): unknown }) => () => { owner.dispose(); } });
+  let nativeMap = mapHandle("map-a", () => nativeCurrent);
   let input: any = { id: 91301, label: "地形", nativeMap, visible: true, enabled: true, unavailable: false, identity: "a", retry: 0,
     runtimeError: null, src: "/local/a.png", bounds: { west: 113, east: 114, south: 22, north: 23 }, data: { source: "a" }, opacity: 1, zIndex: 0,
     reportImageFailure() {}, onFailure() {} };
@@ -51,10 +55,27 @@ function harness(supportsUpdates = false) {
     ack(owner = coordinators.at(-1)!, error: unknown = null, state: any = {}) { const call = owner.calls.at(-1)!;
       owner.replaceReady = !error && Boolean(call.target) && !state.presentationUnknown;
       owner.callback({ target: call.target, error, isCurrent: () => true, ...state }); },
-    remount() { nativeCurrent = false; nativeMap = { mapId: "map-b", pending: false, isCurrent: () => true }; input = { ...input, nativeMap }; },
+    remount() { nativeCurrent = false; nativeMap = mapHandle("map-b", () => true); input = { ...input, nativeMap }; },
+    blockRasters(value: boolean) { rastersBlocked = value; },
     finishSuspension(complete: boolean, owner = coordinators.at(-1)!) { owner.suspensions.shift()!({ complete, remainingIds: complete ? [] : [91301] }); },
     unmount() { nativeCurrent = false; effects.forEach(effect => effect?.cleanup?.()); } };
 }
+
+test("an unresolved predecessor exposes a recoverable layer failure without installing or losing current data", () => {
+  const h = harness(); h.blockRasters(true);
+  let state = h.render();
+  assert.equal(h.coordinators[0]!.calls.at(-1)!.target, null);
+  assert.equal(state.error?.message, "native retirement pending");
+  assert.equal(state.presentedData, null); assert.equal(state.requiresMapRecovery, false);
+  h.set({ identity: "b", src: "/local/b.png", data: { source: "b" } }); state = h.render();
+  assert.equal(state.target.src, "/local/b.png", "independently valid newest data is retained");
+  assert.equal(h.coordinators[0]!.calls.at(-1)!.target, null);
+  h.blockRasters(false); h.render();
+  assert.equal(h.coordinators[0]!.calls.at(-1)!.target.src, "/local/b.png");
+  h.ack(); state = h.render();
+  assert.equal(state.error, null); assert.equal(state.presentedData.source, "b");
+  h.unmount();
+});
 
 test("a cancellable exit blocks effect reinstallations and resumes the newest source after the real clearance", async () => {
   const h = harness(); h.render(); h.ack();

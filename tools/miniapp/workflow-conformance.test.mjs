@@ -648,7 +648,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "getElementsByXpath",
     "async function queryElements(page, selector)",
     "const nativeSelectorAliases = new Map([",
-    `["[data-od-id='default-formal-markers']", "#spot-map"]`,
+    `["[data-od-id='default-formal-markers']", ".native-map"]`,
     `["[data-od-id='display-mode-switcher']", { selector: ".settings-section", index: 0 }]`,
     'key: "candidate-form-ready"',
     'key: "formal-feedback-form-ready"',

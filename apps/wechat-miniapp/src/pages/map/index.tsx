@@ -989,10 +989,11 @@ export default function MapPage() {
   const presentedTerrainData = terrainInstallation.presentedData;
   useEffect(() => {
     if (!pageVisible || (!terrainEnabled && !terrainNativeError) || !mapTerrainFailed) return;
-    notify({ owner: "map-terrain", placement: "floating", tone: "info", title: "地形数据异常",
-      body: presentedTerrainData ? "地形细节更新失败，保留当前覆盖，可在图层中重试。" : "地形暂时无法显示，可在图层中重试。",
+    notify({ owner: "map-terrain", placement: "floating", tone: "info", title: terrainInstallation.retirementPending ? "地形暂不可用" : "地形数据异常",
+      body: terrainInstallation.retirementPending ? nativeMap.rasterRetirementMessage
+        : presentedTerrainData ? "地形细节更新失败，保留当前覆盖，可在图层中重试。" : "地形暂时无法显示，可在图层中重试。",
       dedupeKey: "map-terrain-failed" });
-  }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, presentedTerrainData, notify]);
+  }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, presentedTerrainData, terrainInstallation.retirementPending, notify]);
   const terrainDisclosure = presentedTerrainData ?? (!terrainEnabled ? terrain.data?.data ?? null : null);
   const mapTerrainLoading = pageVisible && terrainEnabled && !nativeMap.pending && !mapRuntimeError
     && (!mapTerrainBounds ? !terrainViewportError : terrain.isPending || terrain.isFetching || terrain.imagePending
@@ -1041,9 +1042,9 @@ export default function MapPage() {
     || (analysisOverlay === "LIGHT" && nativeViewport.error));
   useEffect(() => {
     if (!pageVisible || (analysisOverlay !== "LIGHT" && !lightInstallation.error) || !lightReadFailed) return;
-    notify({ owner: "map-light", placement: "floating", tone: "info", title: "光污染数据异常",
-      body: "年度夜光叠加尚未完成，可在图层中重试或重新加载地图。", dedupeKey: "map-light-failed" });
-  }, [pageVisible, analysisOverlay, lightReadFailed, lightInstallation.error, notify]);
+    notify({ owner: "map-light", placement: "floating", tone: "info", title: lightInstallation.retirementPending ? "光污染图层暂不可用" : "光污染数据异常",
+      body: lightInstallation.retirementPending ? nativeMap.rasterRetirementMessage : "年度夜光叠加尚未完成，可在图层中重试或重新加载地图。", dedupeKey: "map-light-failed" });
+  }, [pageVisible, analysisOverlay, lightReadFailed, lightInstallation.error, lightInstallation.retirementPending, notify]);
   const spotSky = useSkyForecastQuery({
     queryKey: [
       "spot-sky",
@@ -2033,17 +2034,16 @@ export default function MapPage() {
 
   const retryNativeMap = async () => {
     if (!nativeMap.isCurrent() || nativeMap.pending || nativeMapReload.current || skyEntryRasterCleanup.current?.navigationIssued) return;
-    const request = {}, epoch = navigationEpoch.current;
+    const request = {};
     nativeMapReload.current = request;
     skyEntry.cancel();
-    const cleanup = suspendMapRasters();
     try {
-      if (!await cleanup.ready || !cleanup.isCurrent() || !nativeMap.isCurrent() || navigationEpoch.current !== epoch) return;
-      nativeMap.retry();
+      // Fault replacement terminally fences the failed session. It must not
+      // await the normal Sky-exit clearance of that same stalled native node.
+      // The session keeps every unresolved old raster/file under its own id.
+      if (!nativeMap.retry()) notify({ owner: "map-native", placement: "floating", tone: "info",
+        title: "地图恢复未完成", body: nativeMap.retirementMessage, dedupeKey: "map-native-recovery-blocked" });
     } finally {
-      // A successful retry has synchronously retired this Map generation.
-      // A failed/cancelled preflight leaves it usable with its latest target.
-      if (nativeMap.isCurrent()) cleanup.resume();
       if (nativeMapReload.current === request) nativeMapReload.current = null;
     }
   };
@@ -2969,11 +2969,12 @@ export default function MapPage() {
                 <View className="map-layer-sheet__terrain-choice" aria-label="地形叠加选择">
 
                   {terrainEnabled || mapTerrainMissing ? <Text className="map-layer-sheet__terrain-state">
-                    {mapTerrainFailed ? presentedTerrainData ? "细节更新失败，保留当前地形覆盖。" : "地形暂时无法显示。"
+                    {terrainInstallation.retirementPending ? nativeMap.rasterRetirementMessage
+                      : mapTerrainFailed ? presentedTerrainData ? "细节更新失败，保留当前地形覆盖。" : "地形暂时无法显示。"
                       : mapTerrainLoading ? presentedTerrainData?.preview ? "已显示临时地形，细节仍在加载…" : "正在加载地形…"
                         : mapTerrainMissing ? "当前地区暂无地形数据。" : (presentedTerrainData ?? terrain.data?.data)?.coverageLabel}
                   </Text> : null}
-                  {mapTerrainFailed ? <SoftButton label={terrainRequiresMapRecovery ? "重新加载地图" : "重新读取地形"} onClick={() => {
+                  {mapTerrainFailed && !terrainInstallation.retirementPending ? <SoftButton label={terrainRequiresMapRecovery ? "重新加载地图" : "重新读取地形"} onClick={() => {
                     if (terrainRequiresMapRecovery) { void retryNativeMap(); return; }
                     setTerrainNativeRetry(value => value + 1);
                     if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
@@ -3038,11 +3039,11 @@ export default function MapPage() {
                   <View>
                     <StatusPanel
                       state={lightLayerState}
-                      detail={lightLayerState === "STALE"
+                      detail={lightInstallation.retirementPending ? nativeMap.rasterRetirementMessage : lightLayerState === "STALE"
                         ? visibleLayerUnavailable ? "光污染资料更新失败，上次无覆盖结果尚未确认。" : "光污染资料更新失败，暂时保留上次结果。"
                         : "光污染资料暂时无法获取。"}
-                      recoveryLabel={lightInstallation.requiresMapRecovery || nativeViewport.error ? "重新加载地图" : "重新获取"}
-                      onRecover={() => void retryLightLayer()}
+                      recoveryLabel={lightInstallation.retirementPending ? undefined : lightInstallation.requiresMapRecovery || nativeViewport.error ? "重新加载地图" : "重新获取"}
+                      onRecover={lightInstallation.retirementPending ? undefined : () => void retryLightLayer()}
                       live={false}
                     />
                     {lightLayerState === "STALE" && !visibleLayerUnavailable && displayedLightLayer?.source ?

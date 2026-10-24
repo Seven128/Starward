@@ -1,11 +1,15 @@
 import Taro from "@tarojs/taro";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mapRasterFiles } from "@/services/map-raster-files";
+import type { NativeMapRasterOwner } from "./native-map-session";
 import { createMapGroundOverlayCoordinator, mapGroundOverlayKey, type MapGroundOverlayTarget,
   type MapGroundOverlayContext, type MapGroundOverlayResult } from "./map-ground-overlay";
 
 interface Bounds { west: number; south: number; east: number; north: number }
-interface NativeMapHandle { mapId: string; pending: boolean; isCurrent(): boolean }
+interface NativeMapHandle {
+  mapId: string; pending: boolean; rastersBlocked: boolean; rasterRetirementMessage: string;
+  isCurrent(): boolean; canInstallRasters(): boolean; registerRaster(owner: NativeMapRasterOwner): () => void;
+}
 
 /** Keep the rendered source with the actual native installation. A new
  * metadata response or downloaded image cannot advance that source on its own.
@@ -100,13 +104,22 @@ export function useMapRasterInstallation<T>(input: {
   const latest = useRef({ coordinator, target, replacement, pending: nativeMap.pending, runtimeError: input.runtimeError, visible });
   latest.current = { coordinator, target, replacement, pending: nativeMap.pending, runtimeError: input.runtimeError, visible };
   useEffect(() => {
-    if (suspension.current?.coordinator === coordinator) return;
-    void coordinator.apply(nativeMap.pending || input.runtimeError ? null : target, visible ? "display" : "suspend", replacement);
-  }, [coordinator, target, replacement, input.retry, nativeMap.pending, input.runtimeError, visible]);
-  useEffect(() => () => {
-    if (suspension.current?.coordinator === coordinator) suspension.current = null;
-    void coordinator.dispose();
+    const unregister = nativeMap.registerRaster(coordinator);
+    return () => {
+      if (suspension.current?.coordinator === coordinator) suspension.current = null;
+      unregister();
+    };
   }, [coordinator]);
+  useEffect(() => {
+    if (suspension.current?.coordinator === coordinator) return;
+    if (!nativeMap.canInstallRasters()) {
+      void coordinator.apply(null, "suspend");
+      setInstalled(null); setPresented(null); setRequiresMapRecovery(false);
+      if (visible && enabled && target) setError(new Error(nativeMap.rasterRetirementMessage));
+      return;
+    }
+    void coordinator.apply(nativeMap.pending || input.runtimeError ? null : target, visible ? "display" : "suspend", replacement);
+  }, [coordinator, target, replacement, input.retry, nativeMap.pending, nativeMap.rastersBlocked, input.runtimeError, visible]);
   const suspendForExit = () => {
     const request = { coordinator };
     suspension.current = request;
@@ -129,11 +142,12 @@ export function useMapRasterInstallation<T>(input: {
       if (!nativeMap.isCurrent() || current.coordinator !== coordinator) return;
       // React may have received a newer source, visibility or failure while
       // native removal was pending. Resume that intent, never the old capture.
-      void coordinator.apply(current.pending || current.runtimeError ? null : current.target,
+      void coordinator.apply(current.pending || current.runtimeError || !nativeMap.canInstallRasters() ? null : current.target,
         current.visible ? "display" : "suspend", current.replacement);
     } };
   };
   return { error, requiresMapRecovery, target, canPreview, suspendForExit,
+    retirementPending: nativeMap.rastersBlocked && enabled && Boolean(target),
     pending: Boolean(target) && installed !== desiredKey,
     presentedData: presented?.mapId === nativeMap.mapId ? presented.data : null };
 }

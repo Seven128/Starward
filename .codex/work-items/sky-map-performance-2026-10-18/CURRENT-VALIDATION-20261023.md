@@ -2,15 +2,17 @@
 
 ## 2026-10-24 当前继续实施批次
 
+[Map故障session首路径](R20-MAP-FAULT-SESSION-20261024.md)/[新独审](R20-MAP-FAULT-SESSION-REVIEW-20261024.md)已完成限定源码：主体60/60、独立never-add/remove2/2、type，root完整workflow177/177与3消费者15/15，Context结构及冲突读回通过。精确旧63 handler同入口0/1相关失败保留；两个root-cwd alias加载失败各归原log，workspace cwd终态通过，未改断言。当前完整build339件/5,028,121B/SHA367a703a…、webpack10warnings/exit0，EfkxhB gen2开发大包auto_preview成功/实际USB bind，Map→My→地图返回可见；数据仍失败，没有手机fault/native销毁/资源资格。新Map交付CI需按新head实查，不能用下文63成功替代。
+
 NightReport/管理缓存/原生同id事实刷新三项已实施并取得新独审；各自失败、修正和当前范围见 [NightReport](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[管理](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)、[原生](R20-NATIVE-SELECTION-REFRESH-20261024.md)。NightReport真实HTTP/service16/16、API工作区类型+31文件144/144；mobile fast类型+38文件150/150；管理16/16+类型；四个已改structured owner12/12及Context结构/限定diff通过，均保各自范围，不相加冒全仓。原生最后独审31/31与原同坐标反例8/8；NightReport最终协议独审及UTC增量独审复用17份未变源并检查实际非法时区无落库。
 
 root默认start smoke在自有新SQLite/随机loopback证明health、预派发owner资格、非法请求422与private missing404，snapshot/receipt均0，进程已关闭；另有实际非空/partial聚合→HTTP→snapshot/receipt→重启读回、并发与真实rollback、提交丢回复和跨owner/unknown原件保留。旧unknown原归属缺证明仍未知，完整family `passes:false`，生产/设备/真实供应不由上述通过替代。
 
-原始 `1a8147e3` 精确CI实读：Context40059873056 success，Product40059872996 failure，App消费者137pass/2fail为Tonight `__DEV__` 夹具，后续skipped；本机已补平台/storage端口并通过，旧失败不改写，新批精确head结果尚待交付后查询。日志归 `tmp/main-1a8147-product-ci-failed-20261024.log`。
+精确交付 `63ee13b69d87faada00f8f3af495eeccb6d09609` 已推main并远端读回：Context **40065529071 success**、Product **40065529077 success**。原始 `1a8147e3` 精确CI仍为Context40059873056 success、Product40059872996 failure（App消费者137pass/2fail为Tonight `__DEV__`夹具，后续skipped）；新绿不改写旧失败。旧日志归 `tmp/main-1a8147-product-ci-failed-20261024.log`。
 
-[当前普通WEAPP](R20-CURRENT-UI-DEVICE-20261024.md)完整build exit0、339件/5,025,700B，webpack10 warnings；一次官方auto_preview真实code10主包2051KB>2048KB，未送达/未bind。这是当前交付失败，不能被本地字节或旧gen18成功覆盖。包体修复在途，其源变化另验；gen34及全部冻结代未重建。实际My/Picker、H4、连续操作/资源、Sky正常Play及OOM仍未完成。
+[当前普通WEAPP](R20-CURRENT-UI-DEVICE-20261024.md)完整build exit0、339件/5,025,700B，webpack10 warnings；首代V87XzN官方code10主包2051KB>2048KB，未送达/未bind。facade候选实测仅减46B，独审反证旧factory成本定位，源码/patch/完整build保全后撤回，不作为修复。现用既有开发大包private flag的新EfkxhB副本bundle仍E9，官方auto_preview success、实际手机Map后bind，My实际资料失败；这不修正式2MiB预算。gen34及全部冻结代未重建。正常My/Picker、H4、连续操作/资源、Sky正常Play及OOM仍未完成。
 
-[当前schema副本](R20-CURRENT-PHONE-API-20261024.md)经既有backup/restore/migrate仅新库22→26、原库指纹保留，current lock/r6/ready检查通过；不意味着手机/正常账号/真实Cloud可用。当前shell的phone→API probe为No route to host，未证明WeChat行为或网络根因，未改VPN/规则；真实新候选结果归HANDOFF。
+[当前schema副本](R20-CURRENT-PHONE-API-20261024.md)经既有backup/restore/migrate仅新库22→26、原库指纹保留，current lock/r6/ready检查通过；不意味着正常账号/真实Cloud可用。phone→API shell为No route to host；真实My加载结束仍“账户资料暂未取得”，phone邻居FAILED/Windows Stale，首个待修边界为拓扑，尚未确认WeChat失败码或根因。未改VPN/规则；现热点Off、当前ICS读回权限不可用，恢复准备和唯一下一步归HANDOFF。
 
 ## 2026-10-24 main接续交付
 
