@@ -52,7 +52,11 @@ test("real admin page retries lost responses with frozen inputs and retires late
       if (writes.length === 1) throw new TypeError("lost response");
       if (requestMode === "readback-late") deferDashboard = true;
       const data = { receipt: { receiptId: "receipt:one", actorId: "admin:verified", idempotencyKey: new Headers(init.headers).get("idempotency-key"), status: "REPLAYED" } };
-      return requestMode === "cache-failed" ? Response.json({ data, postCommit: { cacheInvalidation: "FAILED" } }) : response(data);
+      if (requestMode === "cache-failed") return Response.json({ data, postCommit: { cacheInvalidation: "FAILED" } });
+      if (requestMode === "cache-recovered") return Response.json({ data, postCommit: { cacheInvalidation: "COMPLETE" } });
+      if (requestMode === "cache-unknown") return Response.json({ data, postCommit: { cacheInvalidation: "UNKNOWN" } });
+      if (requestMode === "cache-malformed") return Response.json({ data, postCommit: { cacheInvalidation: ["COMPLETE"] } });
+      return response(data);
     }
     throw new Error(`Unexpected request ${path}`);
   };
@@ -148,10 +152,24 @@ test("real admin page retries lost responses with frozen inputs and retires late
     assert.ok(button("重试原操作"));
     assert.deepEqual(writes.at(-1), cacheAttempt);
     assert.match(dom.window.document.body.textContent, /先前提交已获服务端回执/u);
+    for (const mode of ["cache-missing", "cache-unknown", "cache-malformed"]) {
+      requestMode = mode;
+      await click("重试原操作");
+      await waitFor(() => button("重试原操作") && !button("重试原操作").disabled);
+      assert.deepEqual(writes.at(-1), cacheAttempt, `${mode} must keep the original input and key`);
+      assert.ok(journal.rows.size > 1, `${mode} must keep the unresolved durable journal`);
+      assert.match(dom.window.document.body.textContent, /变更已提交且管理读回已确认，但公共缓存刷新未完成/u);
+      assert.doesNotMatch(dom.window.document.body.textContent, /回执与服务端读回均匹配本次操作/u);
+    }
+    const writesBeforeCacheRemount = writes.length;
+    await remount();
+    assert.equal(writes.length, writesBeforeCacheRemount, "unqualified responses cannot turn restoration into an automatic retry");
+    assert.match(dom.window.document.body.textContent, /曾有公共缓存刷新失败/u);
     requestMode = "cache-recovered"; await click("重试原操作");
     await waitFor(() => !button("重试原操作"));
     assert.deepEqual(writes.at(-1), cacheAttempt);
     assert.equal(button("重试原操作"), undefined);
+    assert.equal(journal.rows.size, 1, "explicit COMPLETE closes the same operation and keeps only the scope salt");
 
     const beforeStorageFailure = writes.length;
     journal.failNextWrite();

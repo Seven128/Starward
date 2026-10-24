@@ -4,12 +4,12 @@ import type { DisplayMode } from "@starward/ui-system/tokens";
 import { hydratePreferenceRuntime, persistActiveProfile, persistPreferenceProfile, persistShellDestination, persistShellLocation } from "./preferences-runtime";
 import { advanceDecisionContext, createDecisionContext, type DecisionContextInput, type DecisionContextRevision } from "./decision-context";
 import { assertDeviceLocationFix, type DeviceLocationFix } from "../native/permissions/location-fix";
-import type { ShellLocation } from "./shell-location";
+import { resolveShellOrigin, type ShellLocation } from "./shell-location";
 import type { PreferenceProjection } from "@starward/domain/preferences/runtime";
 import { PreferenceProfileRevisionConflict } from "./preference-save-result";
 import type { MapSpotSummary, RouteMode } from "@starward/contracts/map";
 import type { MapSelectionRole } from "../features/map";
-import { assignMapRole, initialMapSelection, selectMapSpot, selectRouteMode, type MapSelectionState } from "../features/map/map-selection-state";
+import { assignMapRole, initialMapSelection, refreshMapSelection, selectMapSpot, selectRouteMode, type MapSelectionRefresh, type MapSelectionState } from "../features/map/map-selection-state";
 
 export type PrimaryDestination = "tonight" | "map" | "trips" | "sky" | "me";
 export type { LocationSource } from "./shell-location";
@@ -36,6 +36,7 @@ interface ShellState extends MapSelectionState {
   activateProfile: (profileId: string) => Promise<void>;
   commitDecisionContext: (input: DecisionContextInput) => void;
   selectSpot: (spot: MapSpotSummary) => void;
+  refreshSelectedSpot: (refresh: MapSelectionRefresh) => void;
   assignRole: (spot: MapSpotSummary, role: MapSelectionRole) => void;
   setRouteMode: (mode: RouteMode) => void;
 }
@@ -202,6 +203,12 @@ export const useShellStore = create<ShellState>()((set, get) => {
     },
     selectSpot: (spot) => set((state) => {
       const selection = selectMapSpot(state, spot);
+      return selection === state ? state : { ...selection, decisionContext: { ...state.decisionContext, revision: state.decisionContext.revision + 1 }, recommendationState: "stale" };
+    }),
+    refreshSelectedSpot: (refresh) => set((state) => {
+      const origin = resolveShellOrigin(state.location);
+      if (origin.latitude !== refresh.center.lat || origin.longitude !== refresh.center.lon) return state;
+      const selection = refreshMapSelection(state, refresh);
       return selection === state ? state : { ...selection, decisionContext: { ...state.decisionContext, revision: state.decisionContext.revision + 1 }, recommendationState: "stale" };
     }),
     assignRole: (spot, role) => set((state) => ({ ...assignMapRole(state, spot, role), decisionContext: { ...state.decisionContext, revision: state.decisionContext.revision + 1 }, recommendationState: "stale" })),

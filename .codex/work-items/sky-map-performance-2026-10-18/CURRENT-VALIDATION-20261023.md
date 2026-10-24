@@ -1,5 +1,17 @@
 # 当前共享验证结果（2026-10-23，续检至2026-10-24）
 
+## 2026-10-24 当前继续实施批次
+
+NightReport/管理缓存/原生同id事实刷新三项已实施并取得新独审；各自失败、修正和当前范围见 [NightReport](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[管理](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)、[原生](R20-NATIVE-SELECTION-REFRESH-20261024.md)。NightReport真实HTTP/service16/16、API工作区类型+31文件144/144；mobile fast类型+38文件150/150；管理16/16+类型；四个已改structured owner12/12及Context结构/限定diff通过，均保各自范围，不相加冒全仓。原生最后独审31/31与原同坐标反例8/8；NightReport最终协议独审及UTC增量独审复用17份未变源并检查实际非法时区无落库。
+
+root默认start smoke在自有新SQLite/随机loopback证明health、预派发owner资格、非法请求422与private missing404，snapshot/receipt均0，进程已关闭；另有实际非空/partial聚合→HTTP→snapshot/receipt→重启读回、并发与真实rollback、提交丢回复和跨owner/unknown原件保留。旧unknown原归属缺证明仍未知，完整family `passes:false`，生产/设备/真实供应不由上述通过替代。
+
+原始 `1a8147e3` 精确CI实读：Context40059873056 success，Product40059872996 failure，App消费者137pass/2fail为Tonight `__DEV__` 夹具，后续skipped；本机已补平台/storage端口并通过，旧失败不改写，新批精确head结果尚待交付后查询。日志归 `tmp/main-1a8147-product-ci-failed-20261024.log`。
+
+[当前普通WEAPP](R20-CURRENT-UI-DEVICE-20261024.md)完整build exit0、339件/5,025,700B，webpack10 warnings；一次官方auto_preview真实code10主包2051KB>2048KB，未送达/未bind。这是当前交付失败，不能被本地字节或旧gen18成功覆盖。包体修复在途，其源变化另验；gen34及全部冻结代未重建。实际My/Picker、H4、连续操作/资源、Sky正常Play及OOM仍未完成。
+
+[当前schema副本](R20-CURRENT-PHONE-API-20261024.md)经既有backup/restore/migrate仅新库22→26、原库指纹保留，current lock/r6/ready检查通过；不意味着手机/正常账号/真实Cloud可用。当前shell的phone→API probe为No route to host，未证明WeChat行为或网络根因，未改VPN/规则；真实新候选结果归HANDOFF。
+
 ## 2026-10-24 main接续交付
 
 用户明确本机以后在main开发，最新已提交成果及本轮方案/审查交接归origin/main；另一电脑专用分支不随本次推送更新。本机已从同一f9798树切到main，未改生产代码或完整Goal/REQUIREMENTS/INHERITED。提交前context:validate通过；10份任务文档454个本地链接无缺失，定向git diff --check通过。原PLAN的剩余责任修订复用前批独立文档审阅，本次仅统一分支和恢复入口。

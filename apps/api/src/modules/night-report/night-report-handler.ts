@@ -15,9 +15,16 @@ export function createNightReportHandler(service: Pick<NightReportService, "crea
     if (!body || typeof body !== "object") return { status: 422, headers: { "cache-control": "no-store" }, body: { code: "night_report_body_required" } };
     if (!requestId || body.requestId !== requestId) return { status: 422, headers: { "cache-control": "no-store" }, body: { code: "night_report_request_id_mismatch" } };
     try {
-      const persisted = runtime && request.actor ? await runtime.service.create(request.actor, body as NightReportRequest) : null;
+      const required = request.headers["x-night-report-storage-required"];
+      const expectedOwner = request.headers["x-night-report-owner"];
+      if (required !== undefined && required !== "local-owner-poc-v1" && required !== "ephemeral") throw new NightReportPersistenceError("night_report_storage_requirement_invalid", 422);
+      if (required === "local-owner-poc-v1") {
+        if (!request.actor || request.actor.scope !== "local-owner-poc" || typeof expectedOwner !== "string" || expectedOwner !== request.actor.id) throw new NightReportPersistenceError("night_report_owner_required", 403);
+        if (!runtime) throw new Error("night_report_storage_unavailable");
+      }
+      const persisted = required !== "ephemeral" && runtime && request.actor ? await runtime.service.create(request.actor, body as NightReportRequest) : null;
       const report = persisted?.report ?? await (service.generate ?? service.create).call(service, body as NightReportRequest);
-      return { status: 200, headers: { "cache-control": "private, no-store", vary: "authorization", etag: `W/\"night-report-${report.id}-${report.revision}\"`, "x-request-id": report.requestId, "x-night-report-storage": persisted ? "local-owner-poc-v1" : "ephemeral", "x-night-report-replayed": String(persisted?.replayed ?? false) }, body: report };
+      return { status: 200, headers: { "cache-control": "private, no-store", vary: "authorization", etag: `W/\"night-report-${report.id}-${report.revision}\"`, "x-request-id": report.requestId, "x-night-report-storage": persisted ? "local-owner-poc-v1" : "ephemeral", ...(persisted ? { "x-night-report-owner": persisted.ownerId } : {}), "x-night-report-replayed": String(persisted?.replayed ?? false) }, body: report };
     } catch (error) {
       const code = error instanceof Error ? error.message : "night_report_unknown_error";
       if (error instanceof NightReportPersistenceError || code === "night_report_idempotency_conflict") return { status: error instanceof NightReportPersistenceError ? error.statusCode : 409, headers: { "cache-control": "private, no-store", "x-request-id": requestId }, body: { code, outcome: "rejected" } };

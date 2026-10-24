@@ -7,6 +7,7 @@ import { productionModules } from "./contracts.mjs";
 import { itineraryDraftPersistenceEvidence } from "./itinerary-probe.mjs";
 import { notificationRuleConfigurationEvidence } from "./notification-rules-probe.mjs";
 import { fieldReportDraftPersistenceEvidence } from "./field-reports-probe.mjs";
+import { nightReportPersistenceEvidence } from "./night-report-probe.mjs";
 
 const moduleCache = new Map();
 let typeScriptImporter;
@@ -220,6 +221,7 @@ async function realBusinessLoopEvidence(root, outcome) {
   if (outcome === "itinerary-and-collaboration") return itineraryDraftPersistenceEvidence(factory);
   if (outcome === "notifications-and-toolbox") return notificationRuleConfigurationEvidence(factory);
   if (outcome === "field-offline-safety") return fieldReportDraftPersistenceEvidence(factory);
+  if (outcome === "tonight-decision") return nightReportPersistenceEvidence(factory, (await load(root, "apps/api/src/modules/night-report/night-report-service.ts")).NightReportService);
 
   const dataDir = await mkdtemp(path.join(tmpdir(), `starward-${outcome}-`));
   const boundaryInvocations = [];

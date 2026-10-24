@@ -14,6 +14,7 @@ import { useMapSelectionStore } from "./map-selection-store";
 import { openNativeMapNavigation } from "../../native/map/native-map-gateway";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { forecastTarget } from "../../state/decision-context";
+import { resolveShellOrigin } from "../../state/shell-location";
 
 const palette = colors.planning;
 const runtimeApiBaseUrl = resolveRuntimeApiBaseUrl();
@@ -82,6 +83,8 @@ export function MapScreen() {
   const context = useDecisionSnapshot();
   const [active, setActive] = useState<ViewKey>("status");
   const selected = useMapSelectionStore((state) => state.selectedSpot) ?? undefined;
+  const routeRevision = useMapSelectionStore((state) => state.routeRevision);
+  const refreshSelectedSpot = useMapSelectionStore((state) => state.refreshSelectedSpot);
   const mode = useMapSelectionStore((state) => state.routeMode);
   const setMode = useMapSelectionStore((state) => state.setRouteMode);
   const [orderReversed, setOrderReversed] = useState(false);
@@ -89,16 +92,28 @@ export function MapScreen() {
   const selectSharedSpot = useMapSelectionStore((state) => state.selectSpot);
   const assignRole = useMapSelectionStore((state) => state.assignRole);
   const { latitude, longitude } = context.origin;
-  const spots = useQuery({ queryKey: ["map-spots", latitude, longitude], queryFn: ({ signal }) => mapClient.spots({ lat: latitude, lon: longitude, radiusMeters: 100_000, limit: 20 }, signal) });
+  const spots = useQuery({ queryKey: ["map-spots", latitude, longitude], queryFn: async ({ signal }) => {
+    // Bind admission before dispatch, rather than sampling a newer choice when
+    // the result arrives. Cached pages never replay a selection transition.
+    const owner = useMapSelectionStore.getState();
+    const origin = resolveShellOrigin(owner.location);
+    const currentOrigin = origin.latitude === latitude && origin.longitude === longitude;
+    const page = await mapClient.spots({ lat: latitude, lon: longitude, radiusMeters: 100_000, limit: 20 }, signal);
+    if (!signal.aborted && currentOrigin) refreshSelectedSpot({
+      page, center: { lat: latitude, lon: longitude }, selectedSpot: owner.selectedSpot, selectionGeneration: owner.selectionGeneration,
+    });
+    return page;
+  } });
   const route = useQuery({
-    queryKey: ["map-route", latitude, longitude, selected?.id, selected?.coordinate, mode], enabled: Boolean(selected),
-    queryFn: ({ signal }) => mapClient.route({ requestId: `map-${selected!.id}-${mode}`, origin: { lat: latitude, lon: longitude, system: "WGS84" }, destination: selected!.coordinate, mode }, signal),
+    queryKey: ["map-route", latitude, longitude, selected?.id, selected?.coordinate, mode, routeRevision], enabled: Boolean(selected),
+    queryFn: ({ signal }) => mapClient.route({ requestId: `map-${selected!.id}-${mode}-${routeRevision}`, origin: { lat: latitude, lon: longitude, system: "WGS84" }, destination: selected!.coordinate, mode }, signal),
   });
   const supportedTarget = forecastTarget(context.target);
   const forecastRequest = supportedTarget ? { latitude: context.observer.latitude, longitude: context.observer.longitude, timezone: context.timezone, nightDate: context.observingNight, target: supportedTarget } : null;
   const forecast = useQuery({ queryKey: ["map-layers", forecastRequest, context.target], enabled: forecastRequest !== null, queryFn: ({ signal }) => forecastClient.get(forecastRequest!, signal) });
-  const strictResults = (spots.data?.items ?? []).filter((spot) => ["parking", "toilet", "wheelchair"].every((facility) => spot.facilities.includes(facility)) && spot.status === "verified");
-  const ordered = [...(spots.data?.items.slice(0, 3) ?? [])];
+  const currentSpots = (spots.data?.items ?? []).map(spot => spot.id === selected?.id ? selected : spot);
+  const strictResults = currentSpots.filter((spot) => ["parking", "toilet", "wheelchair"].every((facility) => spot.facilities.includes(facility)) && spot.status === "verified");
+  const ordered = currentSpots.slice(0, 3);
   if (orderReversed) ordered.reverse();
   const layer = forecast.data?.layers.find((item) => item.id === "lowCloudPct") ?? forecast.data?.layers[0];
 
@@ -128,11 +143,11 @@ export function MapScreen() {
     <DecisionContextRevision />
     <View testID="map-marker-density-surface" accessible focusable accessibilityRole="image" accessibilityLabel="Marker / cluster 同步画布" style={styles.mapCanvas}>
       <Text style={styles.mapCount}>{spots.isLoading ? "正在加载当前范围…" : `当前范围 ${spots.data?.items.length ?? 0} 个候选`}</Text>
-      <View style={styles.markerRow}>{(spots.data?.items.slice(0, 6) ?? []).map((spot, index) => <Pressable key={spot.id} testID={`map-spot-${spot.id}`} accessibilityRole="button" accessibilityLabel={`${spot.name}，${spot.mapState}`} onPress={() => { selectSharedSpot(spot); setActive("selected"); }} style={[styles.marker, selected?.id === spot.id && styles.markerSelected]}><Text style={styles.markerText}>{index + 1}</Text><Text numberOfLines={1} style={styles.markerLabel}>{spot.name}</Text></Pressable>)}</View>
+      <View style={styles.markerRow}>{currentSpots.slice(0, 6).map((spot, index) => <Pressable key={spot.id} testID={`map-spot-${spot.id}`} accessibilityRole="button" accessibilityLabel={`${spot.name}，${spot.mapState}`} onPress={() => { selectSharedSpot(spot); setActive("selected"); }} style={[styles.marker, selected?.id === spot.id && styles.markerSelected]}><Text style={styles.markerText}>{index + 1}</Text><Text numberOfLines={1} style={styles.markerLabel}>{spot.name}</Text></Pressable>)}</View>
       {spots.isError ? <Text style={styles.error}>地点源不可用；保留视口，可重试，不显示幽灵标记。</Text> : null}
     </View>
     <View style={styles.actions}>{actionRows.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={action.stableControlId ? `${action.stableControlId}:${action.accessibilityName}` : action.label} onPress={() => activate(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
-    <ActivePanel active={active} spots={spots.data?.items ?? []} selected={selected} generatedAt={spots.data?.generatedAt} loading={spots.isLoading} strictCount={strictResults.length} layer={layer} ordered={ordered} route={route.data} routeFetching={route.isFetching} mode={mode} navigationError={navigationError} openNavigation={openNavigation} contextLabel={`${context.observer.label} · ${context.observingNight}夜`} moment={context.moment} />
+    <ActivePanel active={active} spots={currentSpots} selected={selected} generatedAt={spots.data?.generatedAt} loading={spots.isLoading} strictCount={strictResults.length} layer={layer} ordered={ordered} route={route.data} routeFetching={route.isFetching} mode={mode} navigationError={navigationError} openNavigation={openNavigation} contextLabel={`${context.observer.label} · ${context.observingNight}夜`} moment={context.moment} />
     <Pressable
       testID="route-open-native-map"
       accessibilityRole="button"

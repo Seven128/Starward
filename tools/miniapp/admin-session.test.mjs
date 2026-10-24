@@ -119,7 +119,10 @@ test("new window owners recover exact encrypted attempts and known cache failure
   assert.ok([...fixture.rows].every(([key, value]) => !/private-test-credential|original-key|original|expectedRevision|actorId/u.test(key + value)), "only opaque scope and encrypted command/receipt are stored");
   const retry = await owner.retry(session);
   assert.equal(retry.wireBody, first.wireBody);
-  await owner.settle(retry, true);
+  await assert.rejects(owner.settle(retry, true), /公共缓存/u);
+  assert.equal(owner.pending(session), retry);
+  const confirmedRetry = await owner.retry(session);
+  await owner.settle(confirmedRetry, true, "COMPLETE");
   assert.equal(owner.pending(session), null);
   owner.close();
 });
@@ -151,6 +154,33 @@ test("two window reservations are atomic and a stale completion cannot clear the
   ownerA.close(); ownerB.close();
 });
 
+test("a cache failure recorded by another window cannot be erased by an unqualified completion", async () => {
+  const fixture = createAdminJournalFixture();
+  const sessionsA = createAdminSessionOwner(), sessionsB = createAdminSessionOwner();
+  const a = authenticate(sessionsA), b = authenticate(sessionsB);
+  const ownerA = commandOwner(sessionsA, () => "shared-key", fixture), ownerB = commandOwner(sessionsB, () => "unused-key", fixture);
+  try {
+    await ownerA.restore(a);
+    const first = await ownerA.begin(a, input());
+    await ownerB.restore(b);
+    const otherRetry = await ownerB.retry(b);
+    const receipt = { actorId: a.actor, idempotencyKey: first.idempotencyKey, status: "REPLAYED" };
+    await ownerB.recordCommitted(otherRetry, receipt, true);
+    await ownerB.settle(otherRetry, false);
+    await ownerA.recordCommitted(first, receipt);
+    assert.equal(ownerA.cacheFailureObserved(first), false, "the original window has not observed the other response");
+    await assert.rejects(ownerA.settle(first, true), /公共缓存/u);
+    assert.ok(fixture.rows.size > 1, "the durable failure must survive the original window's completion");
+    const recovered = await ownerA.retry(a);
+    assert.equal(recovered.wireBody, first.wireBody);
+    assert.equal(ownerA.cacheFailureObserved(recovered), true);
+    await ownerA.recordCommitted(recovered, receipt);
+    await ownerA.settle(recovered, true, "COMPLETE");
+    assert.equal(ownerA.pending(a), null);
+    assert.equal(fixture.rows.size, 1);
+  } finally { ownerA.close(); ownerB.close(); }
+});
+
 test("post-response journal failures retain the original attempt and cannot turn a known commit into a first rejection", async () => {
   const fixture = createAdminJournalFixture();
   const sessions = createAdminSessionOwner(), session = authenticate(sessions);
@@ -162,16 +192,17 @@ test("post-response journal failures retain the original attempt and cannot turn
   await owner.settle(attempt, false);
   assert.equal(owner.knownReceipt(attempt).status, "COMMITTED");
   assert.equal(owner.cacheFailureObserved(attempt), true);
+  await assert.rejects(owner.settle(attempt, true), /公共缓存/u, "memory retains a failure even when its journal write failed");
   const retry = await owner.retry(session);
   assert.equal(owner.knownReceipt(retry).status, "COMMITTED", "a fresh disk read cannot erase the in-memory commit fact");
   assert.equal(retry.wireBody, attempt.wireBody);
   await owner.recordCommitted(retry, { actorId: session.actor, idempotencyKey: retry.idempotencyKey, status: "REPLAYED" }, true);
   fixture.failNextWrite();
-  await assert.rejects(owner.settle(retry, true), /恢复记录不可读写/u);
+  await assert.rejects(owner.settle(retry, true, "COMPLETE"), /恢复记录不可读写/u);
   assert.equal(owner.pending(session), retry);
   const recovered = await owner.retry(session);
   assert.equal(owner.knownReceipt(recovered).status, "REPLAYED");
-  await owner.settle(recovered, true);
+  await owner.settle(recovered, true, "COMPLETE");
   owner.close();
 });
 

@@ -1,13 +1,32 @@
-# 当前交接（2026-10-24，本机转回 main）
+# 当前交接（2026-10-24，本机 main 继续实施）
 
 ## 当前范围与唯一下一步
 
-用户最新要求把当前全部已提交成果及本轮计划/审查交接提交到远端main，本机切回main并以后在main开发；codex/remote-main-20260908留给另一台电脑。本轮收口Git交付和新对话入口，生产代码仍为f9798检查点，三项已核问题尚未修复。get_goal实际paused，无token预算，完整Goal未完成；新对话收到[继续提示词](NEXT-CHAT-PROMPT.md)即承接明确继续实施指令，先核真实Goal状态。
+本聊天按 GOAL-OBJECTIVE 的全部“Goal 正文”创建 active Goal，无 token 预算，用户随后再次明确继续并允许使用 USB 手机自动推送、人类介入尽量后置。全部 R1–R20/H1–H8/A01–A15/N01–N09 保留，产品顺序仍为已采用 UI → 叠层 → Sky。源码基线 main/origin-main `1a8147e3de9b6cd3368f8e10f7abc72edf9180a8`，本批修复交付 SHA 以 Git/精确远端读回为准；另一电脑专用分支不操作。完整 Goal 未完成。
 
-**当前唯一下一步（继续实施时）：收口NightReport持久化与确认协议。** 交接中提出的“owner提交丢回复→权限消失→临时响应误清pending”已由真实Fastify/SQLite/实际mobile client复现。先按PLAN绑定原输入/requestId/权限与持久性资格，保未知尝试；再补实际效果/重启/并发/回滚、guest与owner切换、structured/OpenAPI、独审及相关head检查。管理端已知缓存失败的完成判据、原生Map同id事实刷新是另外两项确认的独立P2，可按责任并行收口。三个问题都未修，不用旧绿检查覆盖。
+**唯一下一步：修复当前普通 WEAPP 官方主包 2051KB > 2048KB 拒包边界，再只对新候选自动推送，核正常 My／合法只读 Picker 与实际 API 结果。** 已有匿名布局/按压/来源/正式点恢复和旧性能证据复用，不重拍已答路径、不重选 My、不重建 gen34。包体责任代理 `close_current_main_package_budget` 正在沿现有 owner 处理，root 独占编译/IDE/手机/服务；它不能 build 冻结代。
 
-[当前复核总证据](R20-REMOTE-RECONCILIATION-20261024.md)关联[管理/API](R20-REMOTE-API-ADMIN-REVIEW-20261024.md)、[原生App](R20-REMOTE-NATIVE-REVIEW-20261024.md)、[Sky/云](R20-REMOTE-SKY-REVIEW-20261024.md)与NightReport实际探针。修复逻辑归唯一[PLAN](PLAN.md)，失败/运行细节归这些证据，后续不要另建方案或重开已解决的代码职责。
+NightReport 持久化及确认协议已收口：[实现](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[最终独审](R20-NIGHT-REPORT-FINAL-REVIEW-20261024.md)、[UTC增量独审](R20-NIGHT-REPORT-TIMEZONE-REVIEW-20261024.md)。派发前保完整输入/key/存储与owner资格；临时响应不清旧pending，原owner恢复以原key对账；确认后刷新新key。旧缺原owner资格的记录始终保unknown，不能以当前owner同key回执反推历史，原归属仍缺证明。正式HTTP/service16/16、structured Night3项，API类型+31文件144/144、mobile fast类型+38文件150/150、四structured owner12/12、默认start smoke与新独审通过；设备、生产鉴权、完整family不据此完成。
 
+管理缓存P2已收口：[实现](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)/[独审](R20-ADMIN-CACHE-CONFIRMATION-REVIEW-20261024.md)，16/16与类型；已知FAILED只有原操作明确COMPLETE才清，缺失/未知/非法、重开及跨窗口保恢复资料。原生Map同id事实刷新已收口：[实现](R20-NATIVE-SELECTION-REFRESH-20261024.md)/[最终语义origin独审](R20-NATIVE-SELECTION-SEMANTIC-ORIGIN-REVIEW-20261024.md)；选择代次与路线意图分离，唯一语义origin owner涵盖默认范围与同坐标metadata更新，marker/summary/observer/route/navigation一致。四次真实审查失败保留，最终独审31/31与原反例8/8、类型通过。实际原生设备/导航仍未验。
+
+## 当前设备、数据与候选
+
+- 用户现授权USB推送，覆盖旧设备后置限制。[只读准备](R20-USB-PUSH-READINESS-20261024.md)与root实际bounded shell确认USB可用，当时Awake/interactive/keyguard=false；官方Skill0.3.14/CLI登录有效。未操作账号、N05、gen26 UNKNOWN或重发R6，保VPN/TUN。
+- [当前数据副本](R20-CURRENT-PHONE-API-20261024.md)：原PG55441已按原data/PID/create-time恢复；原库仍22且业务指纹未变。仅全新任务副本经既有backup/restore和迁移owner至26，当前锁/r6/schema检查通过；API8806监听唯一当前物理host且ready=true。原config不改，新config/stop owner归 `C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/current-phone-api-20261024T043928429Z/`；原PG stop归前置data lane。无worker/reminder/admin扩张，媒体关闭、真实QWeather/Wechat凭据缺，LOCAL_TEST不是生产身份。
+- [本轮设备记录](R20-CURRENT-UI-DEVICE-20261024.md)：canonical新普通构建339件/5,025,700B/SHA `e9e540552df10842784eb21bb44e924b989a48f2894321b50af5dc1dd0153de6`，API完整origin已核；旧canonical339件/5,017,634B/bee4293e…已完整私有保全后才重编。新 feedback `%TEMP%/starward-device-feedback-V87XzN` generation1，官方一次auto_preview的原结构化stdout为code10主包超限，**未送达、未bind、无手机产品画面**。规范化error/unknown与原完整diagnostic一并保留，不重发同一超限包。
+- root ADB shell只读HTTP探测到新host/8806返回 `No route to host`，selected接口Up/路由Alive；未证明WeChat请求失败或防火墙原因，停止重复shell探测。当前shell未提升，防火墙读取权限不可用；没有申请UAC或改规则。下一次先用一个包准入后的真实产品请求判别，不通过新proxy、bridge、reverse或关闭VPN绕过。
+- 精确已提交head CI：Context40059873056 success；Product40059872996 failure，App消费者137pass/2fail（Tonight __DEV__夹具），后续skip。夹具已在本批接真实平台/storage测试边界修复，当前本地通过不改写旧CI；本批精确head CI须实际查询。
+
+| 保留结果责任 | 当前有效证据/候选 | 尚欠结果与后续条件 |
+| --- | --- | --- |
+| 采用 UI | 旧gen13–18有效限定输出复用，新普通包官方拒包 | 先包体准入，再正常账户My/合法Picker/必要真实资料与恢复对照 |
+| 叠层响应与连续交互 | 原父图/细图、共享读取与有限动作证据复用 | 真实Cloud/H4、途中补图/新输入接管、实际覆盖等待仍欠；不重复无位移手势时长扫描 |
+| 叠层资源/Map恢复 | 原pin/正常退出保护保留，R20故障反例成立 | Map session故障重建与永久pending/native退休仍未实施/未验，不靠timeout清pin |
+| Sky响应 | F09/具名帧/资源消费者已实现，R28 gen34冻结未激活 | 完整六字段/最大视野/loaded SAO及当前目标效果仍欠，禁重建冻结代 |
+| Sky内存 | LAN/单份Heap与原有效allocation/阴性证据复用 | 正常Play/Pause/drain/退出、强持有者/资源域和OOM仍未解决；R27同问停止，gen24暂停 |
+
+本节替代更早“当前/下一步”；下面原main接续、f9798与发送机器状态仅按历史时点解释。新检查/失败归各证据与CURRENT-VALIDATION，PLAN未另起方案；完整验收、分享/文件交接、数据/环境、包体/CDN与授权Git交付均保留。
 ## 当前源码与本机准备
 
 - 本机D:/dev/Starward，当前分支 **main**，跟踪origin/main。先前从266df53ea48a65013b9a358cfc2ffeb28c274fcf无冲突ff-only接到 **f9798d794d09332be6eac6ef8651ce50865e2d0b**（11提交、279文件），本次本地main也已快进到该基线再切换。本轮计划/审查/交接提交在main上；具体交付HEAD以包含本文的main最新提交及最终远端读回为准，f9798不再是包含新交接的最终目标。旧E盘工作区属于发送机器的历史状态；无reset/clean/force/stash、新worktree或私有原件覆盖。

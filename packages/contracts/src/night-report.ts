@@ -116,7 +116,7 @@ export function assertNightReportRequest(value: unknown): NightReportRequest {
     if (typeof location.label !== "string") throw new Error("night_report_location_label_invalid");
   }
   if (typeof value.nightDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/u.test(value.nightDate) || !Number.isFinite(Date.parse(`${value.nightDate}T00:00:00Z`)) || new Date(`${value.nightDate}T00:00:00Z`).toISOString().slice(0, 10) !== value.nightDate) throw new Error("night_report_date_invalid");
-  if (typeof value.timezone !== "string" || !value.timezone.includes("/")) throw new Error("night_report_timezone_invalid");
+  if (typeof value.timezone !== "string" || !value.timezone.trim()) throw new Error("night_report_timezone_invalid");
   try { new Intl.DateTimeFormat("en", { timeZone: value.timezone }); } catch { throw new Error("night_report_timezone_invalid"); }
   if (typeof value.profile !== "string" || !["neutral", "beginner", "family", "milky-way", "visual", "camping"].includes(value.profile)) throw new Error("night_report_profile_invalid");
   if (typeof value.target !== "string" || !value.target || value.target.length > 80) throw new Error("night_report_target_invalid");
@@ -143,10 +143,16 @@ export interface NightReportReceipt {
 export interface PersistedNightReport {
   schemaVersion: "starward-night-report-persistence-v1";
   scope: "local-owner-poc";
+  ownerId: string;
   report: NightReport;
   receipt: NightReportReceipt;
   replayed: boolean;
 }
+
+/** Server-derived dispatch qualification; a client may restrict, never grant, authority. */
+export type NightReportSession = { schemaVersion: "starward-night-report-session-v1" } & (
+  { storage: "ephemeral" } | { storage: "local-owner-poc-v1"; ownerId: string }
+);
 
 export function isNightReport(value: unknown): value is NightReport {
   if (!value || typeof value !== "object") return false;

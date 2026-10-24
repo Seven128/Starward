@@ -20,7 +20,7 @@ export interface BoundAdminJournal {
   load(): Promise<JournalEntry | null>;
   reserve(command: JournalCommand): Promise<JournalEntry>;
   committed(entryId: string, receipt: Record<string, unknown>, cacheFailed: boolean): Promise<void>;
-  clear(entryId: string): Promise<boolean>;
+  clear(entryId: string, cacheComplete: boolean): Promise<boolean>;
 }
 export interface AdminCommandJournal {
   bind(session: AdminSession): Promise<BoundAdminJournal>;
@@ -177,10 +177,14 @@ export function createAdminCommandJournal(options: {
             return { value: JSON.stringify({ ...entry, receipt: sealed, cacheFailureObserved: entry.cacheFailureObserved || cacheFailed }), result: undefined };
           });
         },
-        async clear(entryId) {
+        async clear(entryId, cacheComplete) {
           return storage.withRow(scope, existing => {
             if (existing === null) return { result: true };
-            if (storedEntry(existing).entryId !== entryId) return { result: false };
+            const entry = storedEntry(existing);
+            if (entry.entryId !== entryId) return { result: false };
+            // Another window may have recorded the failure after this attempt's
+            // last read. Check its cumulative fact in the same clear transaction.
+            if (entry.cacheFailureObserved && !cacheComplete) throw new Error("公共缓存刷新尚未确认，原操作仍保留；请重试原操作完成核对。");
             return { value: null, result: true };
           });
         },

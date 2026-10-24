@@ -17,11 +17,51 @@
     "/v1/night-reports": {
       "post": {
         "operationId": "createNightReport",
+        "description": "Existing query with trusted server-selected local-owner POC persistence or ephemeral guest output. Caller fields never authorize private access. Qualify before dispatch using /v1/night-report-session; preserve complete original input, requestId and qualification through unknown outcomes. Replays retain original timestamps, expiry, provenance and partial meaning. A confirmed new refresh uses a new requestId. Local POC is not production authentication.",
+        "parameters": [
+          { "name": "x-request-id", "in": "header", "required": true, "description": "Must equal body.requestId; binds every declared input field.", "schema": { "type": "string", "minLength": 1 } },
+          { "name": "x-night-report-storage-required", "in": "header", "required": false, "description": "Restricts fallback, never grants authority. ephemeral forbids persistence even if authority returns; local-owner-poc-v1 requires the qualified owner and available storage. Legacy omission preserves server selection.", "schema": { "type": "string", "enum": ["ephemeral", "local-owner-poc-v1"] } },
+          { "name": "x-night-report-owner", "in": "header", "required": false, "description": "Expected server-derived ownerId for local-owner-poc-v1; mismatch is rejected before effect. Not an authentication credential.", "schema": { "type": "string", "minLength": 1 } }
+        ],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportRequest" } } } },
         "responses": {
-          "200": { "description": "Explainable versioned night report", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReport" } } } },
-          "422": { "description": "Invalid observation context" },
-          "503": { "description": "Critical evidence unavailable" }
+          "200": { "description": "Explainable snapshot. Only an explicit owner qualifier plus matching private receipt/readback confirms a durable attempt.", "headers": { "Cache-Control": { "schema": { "const": "private, no-store" } }, "x-night-report-storage": { "schema": { "enum": ["ephemeral", "local-owner-poc-v1"] } }, "x-night-report-owner": { "description": "Present only on durable owner results.", "schema": { "type": "string" } }, "x-night-report-replayed": { "schema": { "enum": ["true", "false"] } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReport" } } } },
+          "403": { "description": "Required owner absent or changed; no ephemeral fallback confirms the original attempt.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportError" } } } },
+          "409": { "description": "Same owner/requestId with different full input; original effect preserved.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportError" } } } },
+          "422": { "description": "Invalid context, requestId or mode. Parsing rejection on retry cannot prove the original unknown attempt failed.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportError" } } } },
+          "503": { "description": "Unknown result or storage/evidence unavailable; keep original input/requestId/qualification for reconciliation.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportError" } } } }
+        }
+      }
+    },
+    "/v1/night-report-session": {
+      "get": {
+        "operationId": "getNightReportSession",
+        "description": "Uncached pre-dispatch qualification from the same trusted resolver as POST and private GET. Snapshot owner and storage before dispatch. Later ephemeral or unqualified output cannot redefine a durable/unknown attempt. Missing qualification is unknown, never proof of ephemeral confirmation.",
+        "responses": {
+          "200": { "description": "Current server-selected qualification; not a credential.", "headers": { "Cache-Control": { "schema": { "const": "private, no-store" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportSession" } } } },
+          "503": { "description": "Qualification unavailable; preserve any previous attempt." }
+        }
+      }
+    },
+    "/v1/night-reports/{id}": {
+      "get": {
+        "operationId": "getPrivateNightReport",
+        "description": "Trusted local-owner POC private read. Caller actor/role headers never grant access. An immutable snapshot is original evidence, not a new refresh.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }],
+        "responses": {
+          "200": { "description": "Original private snapshot.", "headers": { "Cache-Control": { "schema": { "const": "private, no-store" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportReadback" } } } },
+          "403": { "description": "Trusted owner missing." }, "404": { "description": "Not found for this owner; absence under a different identity does not discard an unknown attempt." }, "503": { "description": "Unknown/unavailable readback; keep pending." }
+        }
+      }
+    },
+    "/v1/night-report-requests/{requestId}": {
+      "get": {
+        "operationId": "getPrivateNightReportRequestResult",
+        "description": "Authoritative snapshot/commit receipt under the original qualified owner/requestId; client also verifies full input. Old pending records without original-owner qualification remain unknown even when the current owner has a matching key/input receipt; independent explicitly ephemeral queries remain available while provable original qualification is unavailable. Guest temporary queries retain old pending records.",
+        "parameters": [{ "name": "requestId", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }],
+        "responses": {
+          "200": { "description": "Original snapshot and atomic commit receipt.", "headers": { "Cache-Control": { "schema": { "const": "private, no-store" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PersistedNightReport" } } } },
+          "403": { "description": "Trusted owner missing." }, "404": { "description": "Not found for the current owner; cannot discard an old unknown attempt." }, "503": { "description": "Unknown/unavailable readback; keep pending." }
         }
       }
     },
@@ -510,21 +550,39 @@
         "required": ["requestId", "location", "timezone", "nightDate", "profile", "target", "route"],
         "properties": {
           "requestId": { "type": "string", "minLength": 1 }, "location": { "$ref": "#/components/schemas/Wgs84Location" }, "timezone": { "type": "string", "minLength": 3 }, "nightDate": { "type": "string", "format": "date" },
-          "profile": { "type": "string", "enum": ["family", "milky-way"] }, "target": { "type": "string", "minLength": 1 },
-          "route": { "type": "object", "required": ["origin", "maxTravelMinutes", "modes"], "properties": { "origin": { "$ref": "#/components/schemas/Wgs84Location" }, "maxTravelMinutes": { "type": "integer", "minimum": 1 }, "modes": { "type": "array", "minItems": 1, "items": { "type": "string", "enum": ["drive", "cycle", "transit", "walk"] } } } }
+          "profile": { "type": "string", "enum": ["neutral", "beginner", "family", "milky-way", "visual", "camping"] }, "target": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "route": { "type": "object", "required": ["origin", "maxTravelMinutes", "modes"], "properties": { "origin": { "$ref": "#/components/schemas/Wgs84Location" }, "maxTravelMinutes": { "type": "number", "exclusiveMinimum": 0 }, "modes": { "type": "array", "minItems": 1, "items": { "type": "string", "enum": ["drive", "cycle", "transit", "walk"] } } } }
         }
       },
+      "NightReportSession": {
+        "oneOf": [
+          { "type": "object", "required": ["schemaVersion", "storage"], "properties": { "schemaVersion": { "const": "starward-night-report-session-v1" }, "storage": { "const": "ephemeral" } } },
+          { "type": "object", "required": ["schemaVersion", "storage", "ownerId"], "properties": { "schemaVersion": { "const": "starward-night-report-session-v1" }, "storage": { "const": "local-owner-poc-v1" }, "ownerId": { "type": "string", "minLength": 1 } } }
+        ]
+      },
+      "NightReportReadback": {
+        "type": "object", "required": ["schemaVersion", "scope", "ownerId", "report"],
+        "properties": { "schemaVersion": { "const": "starward-night-report-persistence-v1" }, "scope": { "const": "local-owner-poc" }, "ownerId": { "type": "string", "minLength": 1 }, "report": { "$ref": "#/components/schemas/NightReport" } }
+      },
+      "PersistedNightReport": {
+        "allOf": [
+          { "$ref": "#/components/schemas/NightReportReadback" },
+          { "type": "object", "required": ["receipt", "replayed"], "properties": { "receipt": { "type": "object", "required": ["requestId", "reportId", "revision", "committedAt"], "properties": { "requestId": { "type": "string", "minLength": 1 }, "reportId": { "type": "string", "minLength": 1 }, "revision": { "type": "integer", "minimum": 1 }, "committedAt": { "type": "string", "format": "date-time" } } }, "replayed": { "type": "boolean" } } }
+        ]
+      },
+      "NightReportError": { "type": "object", "required": ["code"], "properties": { "code": { "type": "string" }, "outcome": { "enum": ["rejected", "unknown"] } } },
       "DataPart": {
         "type": "object", "required": ["state", "source", "sourceVersion", "sourceTime", "confidence"],
         "properties": { "state": { "$ref": "#/components/schemas/DataStatus" }, "source": { "type": "string" }, "sourceVersion": { "type": ["string", "null"] }, "sourceTime": { "type": ["string", "null"], "format": "date-time" }, "confidence": { "type": "number", "minimum": 0, "maximum": 1 }, "warning": { "type": "string" } }
       },
       "NightReport": {
         "type": "object",
-        "required": ["id", "revision", "requestId", "generatedAt", "expiresAt", "status", "context", "decision", "primarySpot", "backupSpots", "targets", "parts", "warnings", "provenance"],
+        "required": ["id", "revision", "requestId", "generatedAt", "expiresAt", "status", "context", "decision", "observationWindow", "primarySpot", "backupSpots", "targets", "conditions", "parts", "warnings", "provenance"],
         "properties": {
           "id": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "requestId": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "expiresAt": { "type": "string", "format": "date-time" },
           "status": { "type": "string", "enum": ["ready", "partial", "insufficient-data", "blocked"] }, "context": { "type": "object" }, "decision": { "type": "object" }, "observationWindow": { "type": ["object", "null"] }, "primarySpot": { "type": ["object", "null"] }, "backupSpots": { "type": "array", "items": { "type": "object" } }, "targets": { "type": "array", "items": { "type": "object" } },
           "parts": { "type": "object", "required": ["weather", "astronomy", "spots", "route"], "properties": { "weather": { "$ref": "#/components/schemas/DataPart" }, "astronomy": { "$ref": "#/components/schemas/DataPart" }, "spots": { "$ref": "#/components/schemas/DataPart" }, "route": { "$ref": "#/components/schemas/DataPart" } } },
+          "conditions": { "type": "object" },
           "warnings": { "type": "array", "items": { "type": "string" } }, "provenance": { "type": "array", "items": { "type": "object", "required": ["source", "version", "generatedAt"] } }
         }
       }

@@ -2768,6 +2768,7 @@ export default function AdminPage() {
     const { input, session: origin, idempotencyKey, wireBody } = attempt;
     let confirmed = false;
     let writeAcknowledged = false;
+    let cacheInvalidation: unknown;
     setMutation({ phase: "submitting", label: input.label });
     setCommandVersion(value => value + 1);
     try {
@@ -2784,7 +2785,8 @@ export default function AdminPage() {
         setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "回执身份或操作标识不匹配，暂不确认结果；保留原操作核对。" });
         return;
       }
-      await commandOwner.recordCommitted(attempt, receipt, asRecord(envelope.postCommit).cacheInvalidation === "FAILED");
+      cacheInvalidation = asRecord(envelope.postCommit).cacheInvalidation;
+      await commandOwner.recordCommitted(attempt, receipt, cacheInvalidation === "FAILED");
       setMutation({ phase: "readback", label: input.label, receipt, requestId: asString(envelope.requestId) });
       const freshResult = await readDashboard(origin);
       sessionOwner.assertCurrent(origin);
@@ -2795,7 +2797,7 @@ export default function AdminPage() {
         setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "已收到回执，当前读回尚未证明预期结果；保留原操作继续核对。" });
         return;
       }
-      if (asRecord(envelope.postCommit).cacheInvalidation === "FAILED") {
+      if (commandOwner.cacheFailureObserved(attempt) && cacheInvalidation !== "COMPLETE") {
         setMutation({ phase: "unverified", label: input.label, receipt, requestId: asString(envelope.requestId), message: "变更已提交且管理读回已确认，但公共缓存刷新未完成。请重试原操作完成刷新；不要另建重复操作。" });
         return;
       }
@@ -2813,7 +2815,7 @@ export default function AdminPage() {
         message: `${knownReceipt ? "先前提交已获服务端回执，尚未完成核对或缓存刷新；本次重试失败不表示此前未提交。" : rejected ? "" : "先前提交结果仍待核对；本次失败不能证明操作未发生。"}${getErrorMessage(error)}`,
         ...(knownReceipt ? { receipt: knownReceipt } : {}), requestId: error instanceof ApiError ? error.requestId : undefined });
     } finally {
-      try { await commandOwner.settle(attempt, confirmed); }
+      try { await commandOwner.settle(attempt, confirmed, cacheInvalidation); }
       catch (error) {
         if (sessionOwner.isCurrent(origin)) setMutation({ phase: "unverified", label: input.label,
           receipt: commandOwner.knownReceipt(attempt), message: `服务端结果不因本机记录写回失败而变成未提交；原操作仍保留。${getErrorMessage(error)}` });

@@ -1,5 +1,7 @@
 # Starward 收口任务索引
 
+**当前续批：** 本聊天已完整恢复 active Goal，三项确认协议/事实刷新修复已由各 owner 实施并独审：[NightReport](R20-NIGHT-REPORT-CONFIRMATION-20261024.md)、[管理缓存](R20-ADMIN-CACHE-CONFIRMATION-20261024.md)、[原生选择](R20-NATIVE-SELECTION-REFRESH-20261024.md)。用户现允许 USB 自动推送；[当前普通候选](R20-CURRENT-UI-DEVICE-20261024.md)被官方主包2051KB>2048KB拒绝，未送达。唯一当前下一步与服务/候选/未验条件归 [HANDOFF](HANDOFF.md)，不再按下面历史接续段重复三项实现。原完整 Goal/唯一 PLAN及全部未完成义务保留。
+
 **2026-10-24本机main继续入口：** 用户已明确本机以后在 **main** 开发，并把f9798d794d09332be6eac6ef8651ce50865e2d0b及本轮计划/审查交接提交到远端main；codex/remote-main-20260908留给另一台电脑。新对话使用[当前继续提示词](NEXT-CHAT-PROMPT.md)，以包含该入口的main最新提交为接续点。已完成实现从同一[PLAN](PLAN.md)的待办叙述移出；[本轮接力复核](R20-REMOTE-RECONCILIATION-20261024.md)确认NightReport未知结果、管理缓存确认和原生同id选点刷新三项P2，尚未修复。唯一下一步/本机状态归最新[HANDOFF](HANDOFF.md)。下面发送机器及更早批次均为历史，不覆盖当前分支、方案或下一步，也不把源码通过外推设备/完整Goal。
 
 2026-10-24发送机器换机记录（历史）：当时完整Goal已paused，提交源码/文档检查点而非宣告完成。[NightReport WIP](R20-NIGHT-REPORT-PERSISTENCE-20261024.md)仅API/mobile类型通过，行为/structured/OpenAPI/独审未完成，身份消失后的未知请求重试边界优先修；准确暂停点见HANDOFF。原本机tmp/数据库/Heap/冻结构建未上传，不把Git当运行资料恢复。

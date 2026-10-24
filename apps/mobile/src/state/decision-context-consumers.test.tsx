@@ -8,13 +8,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ForecastBundle, ForecastQuery, ProfessionalForecastHour } from "@starward/contracts/forecast";
 import { shiftObservingNight } from "@starward/contracts/observing-time";
 import { buildShootingPlan, type ShootingInput } from "@starward/domain/shooting";
+import { NightReportService } from "../../../api/src/modules/night-report/night-report-service";
+import { nightProviders } from "../../../api/src/__tests__/night-report-fixture";
 
 const boundary = vi.hoisted(() => ({
+  pending: new Map<string, string>(),
   push: vi.fn(), persistSkyResolution: vi.fn(),
   hydratePreferenceRuntime: vi.fn(), persistActiveProfile: vi.fn(),
   persistPreferenceProfile: vi.fn(), persistShellDestination: vi.fn(), persistShellLocation: vi.fn(),
   saveLocalShootingVersion: vi.fn(),
 }));
+vi.mock("@react-native-async-storage/async-storage", () => ({ default: {
+  getItem: async (key: string) => boundary.pending.get(key) ?? null,
+  setItem: async (key: string, value: string) => { boundary.pending.set(key, value); },
+  removeItem: async (key: string) => { boundary.pending.delete(key); },
+} }));
+vi.mock("expo-crypto", () => ({ randomUUID: () => crypto.randomUUID() }));
 vi.mock("../state/preferences-runtime", () => boundary);
 vi.mock("../state/sky-runtime", () => boundary);
 vi.mock("../../modules/orientation/expo-orientation-adapter", () => ({ startExpoOrientation: vi.fn() }));
@@ -75,6 +84,8 @@ describe("F07 committed decision consumers", () => {
   let forecastResponses = false;
   let shootingResponses = false;
   let spotResponses = false;
+  let nightResponses = false;
+  let deferredNight: Map<string, (response: Response) => void> | null;
   let deferredForecasts: Map<string, (response: Response) => void> | null;
   const now = "2026-10-23T08:00:00.000Z";
   const bestTime = "2026-10-24T18:45:12.000Z";
@@ -93,13 +104,25 @@ describe("F07 committed decision consumers", () => {
   }
   beforeEach(async () => {
     vi.resetModules(); vi.resetAllMocks();
+    boundary.pending.clear();
     vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date(now));
     vi.stubEnv("EXPO_PUBLIC_API_BASE_URL", "http://f07.invalid");
     requests = []; skyResponses = false; mapResponses = false; forecastResponses = false; shootingResponses = false; spotResponses = false; deferredForecasts = null;
+    nightResponses = false; deferredNight = null;
     boundary.persistSkyResolution.mockResolvedValue(undefined);
     boundary.saveLocalShootingVersion.mockImplementation(async version => [version]);
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(String(input)); requests.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
+      if (url.pathname === "/v1/night-report-session") return new Response(JSON.stringify({ schemaVersion: "starward-night-report-session-v1", storage: "ephemeral" }));
+      if (url.pathname === "/v1/night-reports" && nightResponses) {
+        const request = JSON.parse(String(init?.body));
+        const providers = nightProviders();
+        const find = providers.spots.find;
+        providers.spots.find = async value => { const found = await find(value); return { ...found, candidates: found.candidates.map(spot => ({ ...spot, name: `真实聚合测试地点 ${request.nightDate}` })) }; };
+        const report = await new NightReportService(providers, undefined, () => new Date(now), () => `night-${request.requestId}`).generate(request);
+        const response = new Response(JSON.stringify(report), { headers: { "x-night-report-storage": "ephemeral" } });
+        return deferredNight ? new Promise<Response>(resolve => deferredNight!.set(request.nightDate, resolve)) : response;
+      }
       if (url.pathname === "/v1/forecast/hourly") {
         if (deferredForecasts) return new Promise<Response>((resolve) => deferredForecasts!.set(url.searchParams.get("nightDate")!, resolve));
         if (forecastResponses) return new Response(JSON.stringify(forecastFixture({ ...Object.fromEntries(url.searchParams), latitude: Number(url.searchParams.get("latitude")), longitude: Number(url.searchParams.get("longitude")) } as unknown as ForecastQuery)));
@@ -187,6 +210,34 @@ describe("F07 committed decision consumers", () => {
     await edit("2026-10-27");
     await react.act(async () => testElement("tonight-apply-date").click());
     expect(observed("/v1/night-reports").at(-1)?.body).toMatchObject({ nightDate: "2026-10-27" });
+  });
+
+  it("renders nonempty NightReport content and refreshes with a new request without presenting another night's late result", async () => {
+    nightResponses = true;
+    const { TonightScreen } = await import("../features/tonight/TonightScreen");
+    await render(TonightScreen);
+    await waitFor(() => container.textContent?.includes("真实聚合测试地点 2026-10-23") === true);
+    expect(testElement("tonight-observation-window").textContent).toContain("120 分钟");
+    expect(testElement("tonight-data-provenance").textContent).toContain("synthetic-weather-v1");
+    const before = observed("/v1/night-reports").at(-1)!.body as { requestId: string };
+    await react.act(async () => { await queryClient.invalidateQueries({ queryKey: ["night-report"] }); });
+    await waitFor(() => observed("/v1/night-reports").length === 2);
+    expect((observed("/v1/night-reports").at(-1)!.body as { requestId: string }).requestId).not.toBe(before.requestId);
+    deferredNight = new Map();
+    await react.act(async () => testElement("tonight-date-tomorrow").click());
+    await waitFor(() => deferredNight!.has("2026-10-24"));
+    const late = deferredNight.get("2026-10-24")!;
+    const oldRequest = observed("/v1/night-reports").at(-1)!.body as import("@starward/contracts/night-report").NightReportRequest;
+    const { useShellStore } = await import("./shell-store");
+    deferredNight = null;
+    await react.act(async () => useShellStore.getState().commitDecisionContext({ observingNight: "2026-10-27" }));
+    await waitFor(() => container.textContent?.includes("真实聚合测试地点 2026-10-27") === true);
+    const oldReport = await new NightReportService(nightProviders(), undefined, () => new Date(now), () => "late-old-night").generate(oldRequest);
+    await react.act(async () => late(new Response(JSON.stringify(oldReport), { headers: { "x-night-report-storage": "ephemeral" } })));
+    expect([...boundary.pending.values()].map(value => JSON.parse(value).idempotencyKey)).toEqual([oldRequest.requestId]);
+    expect(container.textContent).toContain("真实聚合测试地点 2026-10-27");
+    expect(container.textContent).not.toContain("真实聚合测试地点 2026-10-23");
+    expect(container.textContent).not.toContain("真实聚合测试地点 2026-10-24");
   });
 
   it("carries Sky's exact selected moment and night into the actual Shooting request and saved version", async () => {

@@ -1,5 +1,7 @@
 # R20 NightReport persistence — paused WIP, 2026-10-24
 
+Current continuation: [confirmation and persistence repair](R20-NIGHT-REPORT-CONFIRMATION-20261024.md) owns the new implementation/checks. The paused status and unchecked items below describe the original frozen WIP; latest execution remains in HANDOFF. Preserve this original before evidence.
+
 This batch is **unfinished, unreviewed and not behavior-verified**. The user asked to commit all work and transfer to another computer while implementation was in progress; the root reports that the existing Goal is paused. This file preserves the exact next work rather than declaring a completed family. The one existing PLAN and all earlier incomplete obligations remain authoritative.
 
 ## Adopted scope and product boundary

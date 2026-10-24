@@ -62,6 +62,13 @@ function normalizeOrigins(origins: string[]): Set<string> {
 
 function registerCoreRoutes(app: FastifyInstance, dependencies: ApiDependencies) {
   const nightReportHandler = createNightReportHandler(dependencies.nightReports, dependencies.nightReportRuntime);
+  app.get("/v1/night-report-session", async (request, reply) => {
+    reply.header("cache-control", "private, no-store").header("vary", "authorization");
+    try {
+      const actor = await dependencies.resolveNightReportActor?.(request) ?? null;
+      return { schemaVersion: "starward-night-report-session-v1", ...(dependencies.nightReportRuntime && actor?.scope === "local-owner-poc" && actor.id.trim() ? { storage: "local-owner-poc-v1", ownerId: actor.id } : { storage: "ephemeral" }) };
+    } catch { return reply.code(503).send({ code: "night_report_session_unavailable", outcome: "unknown" }); }
+  });
   app.post("/v1/night-reports", async (request, reply) => {
     const headers = Object.fromEntries(Object.entries(request.headers).map(([key, value]) => [key, value]));
     const actor = await dependencies.resolveNightReportActor?.(request) ?? null;
@@ -75,7 +82,7 @@ function registerCoreRoutes(app: FastifyInstance, dependencies: ApiDependencies)
       const actor = await dependencies.resolveNightReportActor?.(request) ?? null;
       if (!actor) throw new NightReportPersistenceError("night_report_owner_required", 403);
       if (!dependencies.nightReportRuntime) throw new Error("night_report_storage_unavailable");
-      return reply.send(result ? dependencies.nightReportRuntime.service.result(actor, id) : { schemaVersion: "starward-night-report-persistence-v1", scope: "local-owner-poc", report: dependencies.nightReportRuntime.service.get(actor, id) });
+      return reply.send(result ? dependencies.nightReportRuntime.service.result(actor, id) : { schemaVersion: "starward-night-report-persistence-v1", scope: "local-owner-poc", ownerId: actor.id, report: dependencies.nightReportRuntime.service.get(actor, id) });
     } catch (error) {
       if (error instanceof NightReportPersistenceError) return reply.code(error.statusCode).send({ code: error.code, outcome: "rejected" });
       return reply.code(503).send({ code: "night_report_storage_unavailable", outcome: "unknown" });
@@ -106,7 +113,7 @@ function registerErrorHandling(app: FastifyInstance) {
 export async function buildApi(dependencies: ApiDependencies): Promise<FastifyInstance> {
   const allowedOrigins = normalizeOrigins(dependencies.allowedOrigins);
   const app = Fastify({ logger: dependencies.logger ?? false, bodyLimit: 64 * 1024, requestIdHeader: "x-request-id", genReqId: () => crypto.randomUUID() });
-  await app.register(cors, { credentials: true, exposedHeaders: ["etag", "x-request-id", "x-night-report-storage", "x-night-report-replayed"], origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) callback(null, true); else callback(new Error("origin_not_allowed"), false); } });
+  await app.register(cors, { credentials: true, exposedHeaders: ["etag", "x-request-id", "x-night-report-storage", "x-night-report-owner", "x-night-report-replayed"], origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) callback(null, true); else callback(new Error("origin_not_allowed"), false); } });
   app.get("/health/live", async () => ({ status: "ok", at: (dependencies.now ?? (() => new Date()))().toISOString() }));
   registerFeatureRoutes(app, dependencies);
   registerCoreRoutes(app, dependencies);

@@ -39,15 +39,15 @@ export class SqliteNightReportRepository {
     const row = this.database.prepare("SELECT input_digest, body FROM night_report_receipts WHERE actor_id = ? AND command_key = ?").get(actorId, requestId) as { input_digest: string; body: string } | undefined;
     if (!row) return null;
     if (digest !== undefined && row.input_digest !== digest) throw new NightReportPersistenceError("night_report_idempotency_conflict");
-    return { ...JSON.parse(row.body) as PersistedNightReport, replayed: true };
+    return { ...JSON.parse(row.body) as PersistedNightReport, ownerId: actorId, replayed: true };
   }
   commit(actorId: string, digest: string, request: NightReportRequest, report: NightReport): PersistedNightReport {
     if (!nightReportMatchesRequest(report, request)) throw new Error("night_report_generated_context_mismatch");
     const committed = commitWithReceipt(this.database, { actorId, key: request.requestId, digest, receiptTable: "night_report_receipts", conflict: () => new NightReportPersistenceError("night_report_idempotency_conflict") }, () => {
       this.database.prepare("INSERT INTO night_report_snapshots(id, actor_id, request_id, body) VALUES (?, ?, ?, ?)").run(report.id, actorId, request.requestId, JSON.stringify(report));
-      return { schemaVersion: "starward-night-report-persistence-v1", scope: "local-owner-poc", report, receipt: { requestId: request.requestId, reportId: report.id, revision: report.revision, committedAt: new Date().toISOString() }, replayed: false } satisfies PersistedNightReport;
+      return { schemaVersion: "starward-night-report-persistence-v1", scope: "local-owner-poc", ownerId: actorId, report, receipt: { requestId: request.requestId, reportId: report.id, revision: report.revision, committedAt: new Date().toISOString() }, replayed: false } satisfies PersistedNightReport;
     });
-    return { ...committed.value, replayed: committed.replayed };
+    return { ...committed.value, ownerId: actorId, replayed: committed.replayed };
   }
   close() { if (!this.closed) { this.closed = true; this.database.close(); } }
 }

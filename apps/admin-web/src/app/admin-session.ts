@@ -183,14 +183,19 @@ export function createAdminCommandOwner<T extends AdminCommandInput>(
       await active.binding.committed(attempt.entryId, receipt, cacheFailed);
       sessionOwner.assertCurrent(attempt.session);
     },
-    async settle(attempt: AdminCommandAttempt<T>, confirmed: boolean) {
+    async settle(attempt: AdminCommandAttempt<T>, confirmed: boolean, cacheInvalidation?: unknown) {
       try {
         if (!confirmed) outcomes.get(attempt)!.unresolved = true;
         if (confirmed && sessionOwner.isCurrent(attempt.session) && state?.session === attempt.session && state.pending === attempt) {
-          if (!await state.binding.clear(attempt.entryId)) throw new Error("另一窗口已推进操作记录，请重新连接核对；未删除当前恢复记录。");
+          const cacheComplete = cacheInvalidation === "COMPLETE";
+          if (outcomes.get(attempt)?.cacheFailed && !cacheComplete) throw new Error("公共缓存刷新尚未确认，原操作仍保留；请重试原操作完成核对。");
+          if (!await state.binding.clear(attempt.entryId, cacheComplete)) throw new Error("另一窗口已推进操作记录，请重新连接核对；未删除当前恢复记录。");
           sessionOwner.assertCurrent(attempt.session);
           if (state?.pending === attempt) state.pending = null;
         }
+      } catch (error) {
+        outcomes.get(attempt)!.unresolved = true;
+        throw error;
       } finally { running.delete(attempt); }
     },
     retire() { state = null; running.clear(); preparing.clear(); },
