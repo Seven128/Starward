@@ -1,6 +1,6 @@
 # Starward 收口任务索引
 
-**2026-10-25当前续批：两类性能后置，完整Goal active继续。** 行程历史/引用恢复/阶段精度及Native缺测比较已批修，三份新增量独审无新P1/P2，Root API171/mobile194和类型/Context通过；准备合批Git/精确CI。微信只读Picker普通候选开/取消/返回已实际开发反馈，正常My/API/AppID/全H4等仍欠；旧性能窗口已正常结束/自有项目官方关闭。真实主GFS/SQLite基线有效、IFS坏值拒绝/持续供给未验，不造0或epoch。旧main5767cba3 Product/Context绿、staging可用空间<10GiB失败；不覆盖新head。唯一状态/下一步归[HANDOFF](HANDOFF.md)，全范围/原件/冻结代与OOM未解决义务保留。
+**2026-10-25当前续批：两类性能后置，完整Goal active。** 行程手工阶段、固定host-cache父socket修复及Native底栏已取得限定新独审；真实APK/USB/Android底栏前后结果成立。Native冷启又证快捷偏好投影错误，源码作者在途，原v2/CAS等直接复用；许可交接判别及fresh位置、实际API/完整family仍欠。已完成责任合批Git/精确CI与所有资源只由[HANDOFF](HANDOFF.md)持有，旧绿不覆盖WIP，OOM未解决/原件/冻结代均保留。
 
 [通知评估/私有Inbox实际路径](R20-NOTIFICATION-EVALUATION-20261024.md)已完成本批实现、6项P2修复、API/App新独审；随后[规则原owner绑定](R20-RULE-OWNER-BINDING-20261024.md)又已完成实际判别/修复/新独审，root最终API158/158与mobile157/157及类型。生产/Native/OS/完整family不据此完成，legacy无原资格仍unknown、只准同版配对。最新源码交付/精确CI及网络/手机状态只由HANDOFF持有，不把下文历史freeze/失败/下一步当当前。
 

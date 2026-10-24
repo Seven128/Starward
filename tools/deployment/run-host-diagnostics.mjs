@@ -7,18 +7,20 @@ import { identityScript, runtimeScript, providerScript, imageryScript, sanitizeI
 import { sanitizeImageryReport, imageryProbeSucceeded } from "./imagery-runtime-probe.mjs";
 import { releaseReferenceScript, sanitizeReleaseReferenceReport, releaseReferenceSucceeded } from "./release-reference-diagnostics.mjs";
 import { hostStorageScript, sanitizeHostStorageReport, hostStorageSucceeded } from "./host-storage-diagnostics.mjs";
+import { hostCacheScript, sanitizeHostCacheReport, hostCacheSucceeded } from "./host-cache-diagnostics.mjs";
 import { connectionKeys, parseDeploymentConnection } from "./deployment-connection.mjs";
 
 const preflight = readFileSync(new URL("../../infrastructure/deployment/host-preflight.sh", import.meta.url), "utf8");
 const programs = Object.freeze({ host: preflight, identity: identityScript, runtime: runtimeScript,
-  providers: providerScript, imagery: imageryScript, "release-reference": releaseReferenceScript, "host-storage": hostStorageScript });
-const failureCodes = new Set([...Object.values(programs).join("\n").matchAll(/(?:host_preflight|runtime_diagnostic|release_reference|host_storage)_[a-z0-9_]+/gu)].map(([code]) => code));
+  providers: providerScript, imagery: imageryScript, "release-reference": releaseReferenceScript, "host-storage": hostStorageScript, "host-cache": hostCacheScript });
+const failureCodes = new Set([...Object.values(programs).join("\n").matchAll(/(?:host_preflight|runtime_diagnostic|release_reference|host_storage|host_cache)_[a-z0-9_]+/gu)].map(([code]) => code));
 
 // Only these repository-owned fixed programs may run. Imagery invokes normal
 // product reads (provider/cache/usage side effects); SQL probes remain read-only.
 // Release-reference reads only its fixed deployment metadata chain. No arbitrary
 // command/path, credential export or deployment is accepted.
 // Host-storage returns only fixed filesystem/directory/Docker storage aggregates.
+// Host-cache reads only a qualified local Engine's bounded cache metadata.
 export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir()) {
   const invalid = { status: "failed", code: "diagnostic_configuration_invalid" };
   const mode = env.DIAGNOSTIC_MODE ?? "host";
@@ -50,6 +52,7 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
       return { status: "failed", code: result.status === 65 && failureCodes.has(code) ? code : "diagnostic_ssh_failed" };
     }
     const report = JSON.parse(result.stdout);
+    if (mode === "host-cache") return sanitizeHostCacheReport(report);
     if (mode === "host-storage") return sanitizeHostStorageReport(report);
     if (mode === "release-reference") return sanitizeReleaseReferenceReport(report);
     if (mode === "imagery") return sanitizeImageryReport(report);
@@ -73,6 +76,7 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
 }
 
 export function diagnosticSucceeded(report) {
+  if (report.evidenceScope === "HOST_DOCKER_CACHE_RECORDS_ONLY") return hostCacheSucceeded(report);
   if (report.evidenceScope === "HOST_STORAGE_AGGREGATES_ONLY") return hostStorageSucceeded(report);
   if (report.evidenceScope === "STAGING_RELEASE_REFERENCES_ONLY") return releaseReferenceSucceeded(report);
   if (report.evidenceScope === "STAGING_CONTAINER_IDENTITY_ONLY") return report.status === "observed" && report.runningContainerCount === 1 &&

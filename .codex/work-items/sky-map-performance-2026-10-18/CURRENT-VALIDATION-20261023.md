@@ -1,5 +1,33 @@
 # 当前共享验证结果（2026-10-23，续检至2026-10-24）
 
+## 2026-10-25 快捷编辑独审失败与首次许可判别
+
+R20-NATIVE-QUICK-PREFERENCES-SEMANTICS-REVIEW-20261025与R20-NATIVE-PROFILE-EDITOR-RECOVERY-REVIEW-20261025均FAILED：28pins首尾一致，真实SQL受控旅程证Quick→完整分叉及冲突重试写错B；另有完整条件/未知确认文案P2。第一版19项本地通过不抵消独审失败；APK eb5c3724…未安装，新作者合批修复在途。原unknown零新写、save期间后续修改等有效控制保留，不重写既有v2/CAS平台。
+
+R20-NATIVE-PERMISSION-HANDOFF-DISCRIMINATION-20261025原b4真实组件严格4条为1失败/3通过：正常许可后台/恢复后provider0、write0；已授权/真后台/显式取消控制有效。R20-NATIVE-PERMISSION-VISIBILITY-SIGNAL-20261025已据当前安装源码/官方生命周期提出小生产module；当前未编入已安装APK，没有目标Activity stop资格和fresh定位成功。
+
+## 2026-10-25 新Native底栏/真实冷启偏好与定位资格
+
+新APK input3a91c623…/SHA53960d39…/38,346,811B实编成功（2m38s，24 executed/824 up-to-date），签名/包/Activity/HBC自有API及actual installed SHA通过，-r只替换前一自有包并保数据。Root实际Tonight/My/Prefs与点击/底栏before-after，新源码独审9pins及新图均通过，无新P1/P2；这不关闭完整Native/iOS/业务。
+
+实际Quick行星/0保存r2→一次冷启新PID→经真实My/Prefs仍r2但控件银河/.8，读回失败；canonical是否丢失不从UI推断，受控生产SQL适配重建反例证本路径SQL保持完整而UI错误。新作者修同一完整/快捷草稿与保存职责，在途未资格源码/设备。OS精确/使用时位置授予成立，但许可返回idle交接另判；已授权重试仅一fresh定位长期未返，已明确取消/停止自有App且保r2，不重试不造坐标。见R20-NATIVE-FUNCTIONAL-DEVICE-FEEDBACK-20261025.md。
+
+## 2026-10-25 Native实编/USB首帧与host-cache修复终审
+
+第四次Native构建在短TEMP/短Gradle cache/有证旧CMake元数据保全刷新后成功；input45135b72…不变，APK b0715f39…/38,346,767B，签名/包/Activity/HBC自有API及实际手机base.apk SHA读回通过。首次MainActivity真帧与稍后API不可用反馈已实看；实际发现Native底部导航与Android系统栏重叠，1文件修复在途。不是定位/偏好/Native全体验收；手机私有API仍不具资格，不放宽loopback owner。所有失败/缓存/原件保留。
+
+host-cache父socket修复16pins eedef3d9…，原严格counter修后1/1、生产owner/route28及原HTTP3通过；新独审实际生成程序→生产HTTP adapter→原runner四条通过，安全alias和变化中止/fd/流关闭均有独立效果。无新P1/P2，未连接真实主机、无归属/可删除/磁盘恢复或部署资格；旧失败保留。
+
+## 2026-10-25 手工阶段与原生功能准备
+
+手工阶段编辑freeze1f185853…24项：作者4文件26/26与mobile type通过；新时间独审3条负半小时时差跨夜/半小时DST与旧选择失效、命令独审3条403/换owner/原body-key重建/日期核对失效旅程均通过，无新P1/P2。Root逐件核24原字节并独立复制到Native private owner/itinerary-stage-inputs-1f185853，逐件hash一致。各检查范围分别成立，不相加冒完整family。
+
+Native同授权USB只读证API34/arm64/包未安装；JDK/SDK/NDK/prebuild已完成且源码控制不变。前三次Native构建因Windows长路径及保存旧绝对路径的CMake记录失败，无APK/手机安装；原失败/依赖cache/四组旧CMake配置均已保全。现同45135b72…在短TEMP+短Gradle home/刷新CMake后第四次在途，exec93710。独立API4318仅回环ready200、私有手机业务仍UNQUALIFIED，不放宽原owner；现只准备独立Native本地结果，完整API/生产/family未验。host-cache25项本地检查并不闭合独审P2父socket路径缺口；两文件批修在途，无外部派发。精确证据见各模块报告及HANDOFF，旧b4绿不覆盖WIP。
+
+## 2026-10-25 当前精确交付与CI
+
+49文件已提交并推送 **b4d2654540e203ffa247e31b1cc21db70aeab4e9**，远端精确读回/0:0；精确 Context **40124369682 success**、Product **40124369639 success**。Backend staging **40125579064 failure**，实际原log `host_preflight_disk_below_10_gib`，镜像发布/部署均skip；private root-usb原件`ci-b4d26545-staging-failed.private.log`保留，不称全绿/已部署、不重跑/清远端。下列171/194及三份新增量独审绑定本批源码；真实Native/部署/完整family仍未验。
+
 ## 2026-10-25 当前行程/比较交付检查点
 
 行程历史/完整diff/源revision引用restore及秒ms/DST呈现已批修，并取得API与App两份新独审；same-owner成功观察身份复用其前一修复。Native nullable比较/实际ForecastScreen也已新独审，保真实0/缺测/partial/stale和原主数据/全小时。Root最终API type+37文件171/171、mobile fast type+44文件194/194通过，Context结构/限定diff通过；原严格失败和全部旧source bytes保全。三份新独审均结束、对应24/17pins首尾一致，无新P1/P2；真实Native/旧HTTP缓存与mixed/production/实际IFS和完整family仍未认证。
@@ -9,7 +37,7 @@
 
 2026-10-25用户最新执行优先级：层叠性能、云观星播放性能（含相关内存/OOM）后置，保留未完成义务、既有证据与冻结代，OOM仍未解决。继续其余UI、显示/时刻/权限/数据正确性、业务、持久化、恢复、必要验证和交付；这两类性能采集及其Windows/LAN/Profiler环境不再是当前门槛。当前先收口在途的行程历史/差异/恢复新revision及已证拒权交错，再按同一PLAN继续可执行责任。六字段正确性、取消/显式应用、原生资源身份与安全退休、科学精度和完整星数等要求保留。当前不用处理UAC或重启Codex，必要现场动作以后按实际依赖准备。
 
-get_goal最新active。既有采集/失败/未验范围按原条件保留；新行程模块/同owner旧403批修未最终冻结/独审，真实供给只证主GFS/SQLite基线，IFS未确认/Inbox0，不扩成完整供给/通知/Native验收。
+get_goal最新active。既有采集/失败/未验范围按原条件保留；行程模块/同owner旧403与Native比较已最终冻结/独审并交付b4d26545。真实供给只证主GFS/SQLite基线；新IFS样本严格拒绝非负降水边界，Inbox0，不扩成完整供给/通知/Native验收。
 
 ## 2026-10-24 当前继续实施批次
 

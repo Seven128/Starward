@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path } from "react-native-svg";
 import { minimumTouchTarget, spacing, type as typeToken, type ColorPalette } from "@starward/ui-system/tokens";
 import { type PrimaryDestination, useShellStore } from "../state/shell-store";
@@ -63,7 +64,8 @@ export function PrimaryTabBar({ state, navigation }: PrimaryTabBarProps) {
   const designEvidence = useDesignControlEvidence("primary-tab-bar");
   const designScenario = useDesignScenarioEvidence("primary-tab-bar");
   const { palette } = useStarwardTheme();
-  const styles = createStyles(palette);
+  const { bottom } = useSafeAreaInsets();
+  const styles = createStyles(palette, bottom);
   const setDestination = useShellStore((value) => value.setDestination);
   const [focused, setFocused] = useState<PrimaryDestination | null>(null);
   const activeRoute = state.routes[state.index];
@@ -132,13 +134,13 @@ export function PrimaryTabBar({ state, navigation }: PrimaryTabBarProps) {
   );
 }
 
-function createStyles(palette: ColorPalette) {
+function createStyles(palette: ColorPalette, bottomInset: number) {
   return StyleSheet.create({
     bar: {
-      minHeight: 64,
+      minHeight: 64 + bottomInset,
       paddingHorizontal: 5,
       paddingTop: 4,
-      paddingBottom: spacing.xxs,
+      paddingBottom: spacing.xxs + bottomInset,
       flexDirection: "row",
       alignItems: "stretch",
       borderTopWidth: 1,

@@ -7,6 +7,7 @@ import { diagnoseHost, diagnosticSucceeded } from "./run-host-diagnostics.mjs";
 import { identityScript, runtimeScript } from "./runtime-diagnostics.mjs";
 import { releaseReferenceScript } from "./release-reference-diagnostics.mjs";
 import { hostStorageScript } from "./host-storage-diagnostics.mjs";
+import { hostCacheScript } from "./host-cache-diagnostics.mjs";
 
 const env = {
   SSH_HOST: "host.example.invalid", SSH_PORT: "22", SSH_USER: "operator",
@@ -42,6 +43,46 @@ function storageReport() {
     docker: { ...ok, Images: { ...category }, Containers: { ...category }, LocalVolumes: { ...category }, BuildCache: { ...category } },
     observation: { ...ok } };
 }
+
+function cacheReport() {
+  const ok = { status: "observed", code: null }, hash = "a".repeat(64);
+  return { status: "observed", evidenceScope: "HOST_DOCKER_CACHE_RECORDS_ONLY", snapshot: "NON_ATOMIC", referenceCompleteness: "UNVERIFIED", ownershipQualification: "UNVERIFIED", cleanupAuthorization: "NONE",
+    builder: { scope: "ENGINE_INTEGRATED_CACHE_ONLY", driver: null, activeBuildCount: null, qualification: "UNVERIFIED" },
+    endpoint: { ...ok, socketSha256: hash }, engine: { ...ok, version: "29.5.3", maximumApi: "1.56", minimumApi: "1.44", selectedApi: "1.51" },
+    daemon: { ...ok, identitySha256: hash, storageRootSha256: hash, storageDriver: "overlay2" },
+    storage: { status: "unknown", code: "permission_denied", sameFilesystemAsRelease: null },
+    cache: { ...ok, reportedCount: 1, returnedCount: 1, omittedCount: 0, responseSha256: hash, records: [{ idSha256: hash, type: "regular", inUse: false, shared: true, sizeBytes: 7, createdAt: "2026-10-24T00:00:00.123456789Z", lastUsedAt: null, usageCount: 0, descriptionSha256: null, parentCount: 0, parentsSha256: [] }] }, observation: { ...ok } };
+}
+
+test("host-cache uses the same protected fixed SSH owner and returns only the cache projection", () => {
+  const report = cacheReport(); let directory;
+  const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "host-cache" }, (command, args, options) => {
+    assert.equal(command, "ssh"); directory = dirname(args[1]); assert.equal(options.input, hostCacheScript);
+    assert.equal(options.timeout, 60000); assert.equal(options.maxBuffer, 64 * 1024);
+    assert.ok(args.includes("StrictHostKeyChecking=yes")); assert.ok(args.includes("IdentitiesOnly=yes"));
+    assert.equal(args.at(-1), "sh -s -- '/srv/inbox' '/srv/releases' '/srv/candidates' '/srv/private/base.env'");
+    for (const key of ["SSH_CONNECTION", "SSH_PRIVATE_KEY", "SSH_KNOWN_HOSTS", "REMOTE_BASE_DEPLOY_ENV"]) assert.equal(options.env[key], undefined);
+    return { status: 0, stdout: JSON.stringify({ ...report, privateExtra: env.SSH_PRIVATE_KEY, cache: { ...report.cache, records: report.cache.records.map(item => ({ ...item, rawDescription: env.SSH_PRIVATE_KEY })) } }) };
+  });
+  assert.deepEqual(actual, report); assert.equal(diagnosticSucceeded(actual), true);
+  assert.equal(actual.builder.activeBuildCount, null); assert.equal(actual.cleanupAuthorization, "NONE");
+  assert.equal(existsSync(directory), false);
+});
+
+test("host-cache keeps partial evidence and rejects forged cleanup or arbitrary remote errors", () => {
+  const partial = cacheReport(); partial.cache = { status: "unknown", code: "output_exceeded", reportedCount: null, returnedCount: null, omittedCount: null, responseSha256: null, records: [] };
+  const observed = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "host-cache" }, () => ({ status: 0, stdout: JSON.stringify(partial) }));
+  assert.deepEqual(observed, partial); assert.equal(diagnosticSucceeded(observed), false);
+  const forged = cacheReport(); forged.cleanupAuthorization = "ALLOW";
+  for (const [result, code] of [
+    ...["host_cache_timeout_unavailable", "host_cache_deadline_exceeded", "host_cache_failed"].map(code => [{ status: 65, stderr: `${code}:${env.REMOTE_INBOX}`, stdout: env.SSH_PRIVATE_KEY }, code]),
+    [{ status: 65, stderr: "host_cache_invented:private", stdout: env.SSH_PRIVATE_KEY }, "diagnostic_ssh_failed"],
+    [{ status: 0, stdout: JSON.stringify(forged) }, "diagnostic_execution_failed"],
+  ]) {
+    const actual = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "host-cache" }, () => result);
+    assert.deepEqual(actual, { status: "failed", code }); assert.doesNotMatch(JSON.stringify(actual), /test-private-key|\/srv\//u);
+  }
+});
 
 test("diagnostics sends only the existing preflight with pinned trust and cleans ephemeral credentials", () => {
   let keyPath;

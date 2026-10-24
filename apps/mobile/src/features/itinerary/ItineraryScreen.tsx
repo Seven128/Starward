@@ -11,11 +11,12 @@ import { useShellStore } from "../../state/shell-store";
 import { observerTypeLabels } from "../preferences/observer-labels";
 import { compareItineraryDraftContent, itineraryDraftRestoreInput, snapshotItineraryDraftContentRevision, type ItineraryDraftContentField, type ItineraryDraftContentRevision } from "../../../../../packages/domain/src/itinerary/draft-content";
 import type { ItineraryDraftEditableContent } from "../../../../../packages/domain/src/itinerary/draft";
-import { normalizeUtcMoment } from "../../../../../packages/contracts/src/observing-time";
+import { ManualStageEditor } from "./ManualStageEditor";
+import { manualStageInputs, resolveManualStages, stageComparisonTime, stageNames, type ManualStageInput } from "./manual-stage-edit";
 
 const palette = colors.planning;
 const defaultClient = createItineraryClient({ baseUrl: resolveRuntimeApiBaseUrl() });
-type DraftForm = { title: string; timezone: string; inputs: ItineraryDraftInputs };
+type DraftForm = { title: string; timezone: string; inputs: ItineraryDraftInputs; stages: ManualStageInput[] | null; stagesEdited: boolean; stageDatesReviewed: boolean };
 type ViewKey = "overview" | "candidate" | "route" | "refresh" | "share" | "collaboration" | "timeline";
 const actions: Array<{ key: ViewKey; id: string; label: string }> = [
   { key: "overview", id: "plan-open-overview", label: "总览" },
@@ -47,7 +48,7 @@ function Panel({ active, plan }: { active: ViewKey; plan: ItineraryDraft }) {
     collaboration: ["当前仅个人编辑", "好友邀请、共同编辑与冲突合并尚未接入。"],
   };
   if (active !== "timeline") { const [title, body] = unavailable[active]; return <Evidence testID={`plan-${active}-unavailable`} title={title} body={body} />; }
-  return <Evidence testID="plan-target-event" title="天文窗口尚未计算" body={plan.stages.length ? plan.stages.map(stage => `${stage.kind} ${new Intl.DateTimeFormat("zh-CN", { timeZone: plan.timezone, dateStyle: "short", timeStyle: "short" }).format(new Date(stage.startsAt))}`).join("；") : "尚无阶段。保存草稿不会自动生成出发、月落或银河时段。"} meta={plan.stages.length ? "以上是用户填写的阶段，不是计算所得的天文事实。" : plan.timezone} />;
+  return <Evidence testID="plan-target-event" title={plan.stages.length ? "手工阶段安排" : "天文窗口尚未计算"} body={plan.stages.length ? plan.stages.map(stage => `${stageNames[stage.kind]} ${stageComparisonTime(stage.startsAt, plan.timezone)}—${stageComparisonTime(stage.endsAt, plan.timezone)}`).join("\n") : "尚无阶段。保存草稿不会自动生成出发、月落或银河时段。"} meta={plan.stages.length ? "以上是用户填写的阶段，不是计算所得的天文事实。" : plan.timezone} />;
 }
 function errorText(error: unknown): string {
   if (error instanceof ItineraryRequestError) {
@@ -56,6 +57,8 @@ function errorText(error: unknown): string {
     if (error.code === "itinerary_owner_mismatch") return "请恢复原保存账户后重试，原内容已保留。";
     if (error.code === "itinerary_owner_unconfirmed" || error.code === "itinerary_owner_changed") return "保存账户尚未核对，未提交新内容。请重新读取行程。";
     if (error.code === "itinerary_revision_conflict") return "行程已被更新。请先读取最新版本，再确认要保留的修改。";
+    if (error.code === "itinerary_stages_require_review") return "日期已改变，请核对原阶段后再保存。原编辑仍保留。";
+    if (error.code === "itinerary_invalid_timeline") return "阶段时刻有冲突，请调整起止时间。原编辑仍保留。";
     if (error.code === "itinerary_restore_source_not_found" || error.code === "itinerary_restore_source_incompatible") return "所选历史版本目前不能恢复，当前行程已保留。请重新读取并选择版本。";
     if (error.code === "itinerary_owner_required") return "行程目前仅在本机个人试用服务中可用。";
     if (error.code === "itinerary_request_body_too_large" && error.rejected) return "内容过长，尚未保存。请缩短填写内容后重试。";
@@ -70,15 +73,7 @@ function pendingDescription(command: ItineraryDraftCommand) {
 }
 
 const inputNames: Record<keyof ItineraryDraftInputs, string> = { date: "日期", origin: "出发地", people: "人数", transport: "交通方式", target: "观测目标", userType: "用户类型", latestReturnLocal: "最晚返回", overnight: "过夜安排", collaborative: "编辑方式" };
-const stageNames = { departure: "出发", scouting: "勘察", "blue-hour": "蓝调", observation: "观测", moonless: "无月时段", "target-window": "目标窗口", return: "返回", dawn: "清晨" };
 const localTime = (value: string, timezone: string) => new Intl.DateTimeFormat("zh-CN", { timeZone: timezone, dateStyle: "short", timeStyle: "short" }).format(new Date(value));
-function stageComparisonTime(value: string, timezone: string) {
-  const instant = normalizeUtcMoment(value);
-  if (!instant) return "时刻不可用";
-  // Date's canonical UTC retains the supported milliseconds and disambiguates
-  // folded local hours without requiring newer native Intl precision options.
-  return `${localTime(instant, timezone)}（${instant.replace("T", " ").replace("Z", " UTC")}）`;
-}
 function contentValue(field: ItineraryDraftContentField, value: ItineraryDraftEditableContent, timezone: string) {
   if (field === "title") return value.title;
   if (field === "stages") return value.stages.length ? value.stages.map((stage, index) => `${index + 1}. ${stageNames[stage.kind]}（${stage.id}） ${stageComparisonTime(stage.startsAt, timezone)}—${stageComparisonTime(stage.endsAt, timezone)}`).join("\n") : "尚无阶段";
@@ -164,6 +159,7 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
   const [form, setForm] = useState<DraftForm | null>(null);
   const [formOwnerId, setFormOwnerId] = useState<string | null>(null), [selectedOwnerId, setSelectedOwnerId] = useState<string | null>(null);
   const [editing, setEditing] = useState<ItineraryDraft | null>(null);
+  const [stageError, setStageError] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const authority = useSyncExternalStore(client.subscribeAuthority, client.authority, client.authority);
   const ownerId = authority.status === "ready" ? authority.ownerId : null;
@@ -186,7 +182,7 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
       if (!client.canPublish(plan)) return;
       const current = queryClient.getQueryData<ItineraryDraft>(key);
       queryClient.setQueryData(key, current && current.ownerId === plan.ownerId && current.revision > plan.revision ? current : plan);
-      setSelectedId(plan.id); setSelectedOwnerId(plan.ownerId); setForm(null); setFormOwnerId(null); setEditing(null); setActive("overview");
+      setSelectedId(plan.id); setSelectedOwnerId(plan.ownerId); setForm(null); setFormOwnerId(null); setEditing(null); setStageError(null); setActive("overview");
       setHistoryOpen(false);
       void queryClient.invalidateQueries({ queryKey: ["itinerary-library"] });
       void queryClient.invalidateQueries({ queryKey: ["itinerary-history", plan.ownerId, plan.id] });
@@ -197,18 +193,34 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
   const blocked = authority.status !== "ready" || mutation.isPending || pending.isPending || pending.isError || !!pending.data;
   const begin = (existing?: ItineraryDraft, replaceForm = false) => {
     if (blocked || form && !replaceForm) return;
-    mutation.reset();
+    mutation.reset(); setStageError(null);
     setFormOwnerId(ownerId);
     setEditing(existing ?? null);
-    setForm(existing ? { title: existing.title, timezone: existing.timezone, inputs: { ...existing.inputs } } : {
+    setForm(existing ? { title: existing.title, timezone: existing.timezone, inputs: { ...existing.inputs }, stages: manualStageInputs(existing.stages, existing.timezone), stagesEdited: false, stageDatesReviewed: false } : {
       title: `${context.observingNight} 观星行程`, timezone: context.timezone,
       inputs: { date: context.observingNight, origin: location.source === "unset" ? "" : context.origin, people: 1, transport: "drive", target: context.target, userType: profile?.observerTypes.map(type => observerTypeLabels[type]).filter(Boolean).join("、") ?? "", latestReturnLocal: null, overnight: false, collaborative: false },
+      stages: [], stagesEdited: false, stageDatesReviewed: false,
     });
   };
-  const changeInput = <K extends keyof ItineraryDraftInputs>(key: K, value: ItineraryDraftInputs[K]) => setForm(current => current ? { ...current, inputs: { ...current.inputs, [key]: value } } : current);
+  const changeInput = <K extends keyof ItineraryDraftInputs>(key: K, value: ItineraryDraftInputs[K]) => {
+    if (key === "date") setStageError(null);
+    setForm(current => current ? { ...current, inputs: { ...current.inputs, [key]: value }, ...(key === "date" ? { stageDatesReviewed: false } : {}) } : current);
+  };
+  const changeStages = (stages: ManualStageInput[]) => { setStageError(null); setForm(current => current ? { ...current, stages, stagesEdited: true, stageDatesReviewed: false } : current); };
+  const cancelEdit = () => { setForm(null); setFormOwnerId(null); setEditing(null); setStageError(null); };
+  const stageDateReviewNeeded = !!editing?.stages.length && form?.inputs.date !== editing.inputs.date;
   const save = () => {
     if (!form || blocked || formOwnerId !== ownerId) return;
-    mutation.mutate({ expectedOwnerId: formOwnerId, input: editing ? { command: "patch-draft", itineraryId: editing.id, baseRevision: editing.revision, patch: { title: form.title, inputs: form.inputs } } : { command: "create-draft", input: form } });
+    if (stageDateReviewNeeded && !form.stageDatesReviewed) { setStageError("行程日期已改变，请先核对阶段日期与时刻。原安排不会自动平移。"); return; }
+    let stagePatch: Pick<ItineraryDraftEditableContent, "stages"> | undefined;
+    if (editing && (form.stagesEdited || stageDateReviewNeeded)) {
+      if (!form.stages) { setStageError("原阶段暂不能编辑，请使用兼容版本核对；已存安排保持不变。"); return; }
+      const checked = resolveManualStages(form.stages, form.timezone);
+      if (checked.error !== null) { setStageError(checked.error); return; }
+      stagePatch = { stages: checked.stages };
+    }
+    setStageError(null);
+    mutation.mutate({ expectedOwnerId: formOwnerId, input: editing ? { command: "patch-draft", itineraryId: editing.id, baseRevision: editing.revision, patch: { title: form.title, inputs: form.inputs, ...stagePatch } } : { command: "create-draft", input: { title: form.title, timezone: form.timezone, inputs: form.inputs } } });
   };
   return <SafeAreaView testID="screen-itinerary-and-collaboration" style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -237,7 +249,7 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
           return result.data; }} /> : null}
       {pending.isError ? <Pressable onPress={() => pending.refetch()} style={styles.retry}><Text>待确认保存未能读取，请重试</Text></Pressable> : null}
       {pending.data ? <View testID="itinerary-pending" style={styles.panel}><Text style={styles.evidenceTitle}>上次保存待确认</Text><Text style={styles.evidenceBody}>{ownerId && pending.data.ownerQualification?.ownerId === ownerId ? pendingDescription(pending.data) : "原保存内容已保留，请恢复原账户后重试。"}</Text><Pressable testID="plan-retry-save" disabled={mutation.isPending} onPress={() => mutation.mutate("retry")} style={styles.action}><Text>重试保存</Text></Pressable></View> : null}
-      {form && formOwnerId !== ownerId ? <View><Text style={styles.subtitle}>原账户的编辑内容已保留，恢复后可继续。</Text><Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={() => { setForm(null); setFormOwnerId(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable></View> : null}
+      {form && formOwnerId !== ownerId ? <View><Text style={styles.subtitle}>原账户的编辑内容已保留，恢复后可继续。</Text><Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={cancelEdit} style={styles.action}><Text>取消编辑</Text></Pressable></View> : null}
       {form && formOwnerId === ownerId && authority.status === "ready" ? <View testID="itinerary-creation-form" style={styles.panel}>
         <Input label="行程名称" value={form.title} onChange={title => setForm(current => current && { ...current, title })} disabled={blocked} />
         <Input label="日期 YYYY-MM-DD" value={form.inputs.date} onChange={value => changeInput("date", value)} disabled={blocked} />
@@ -249,8 +261,12 @@ export function ItineraryScreen({ client = defaultClient }: { client?: ReturnTyp
         <Text style={styles.evidenceMeta}>时区 {form.timezone} · 当前仅个人编辑</Text>
         <View style={styles.actions}>{([ ["drive", "驾车"], ["walk", "步行"], ["mixed", "混合交通"] ] as const).map(([value, label]) => <Pressable key={value} disabled={blocked} onPress={() => changeInput("transport", value)} style={styles.action}><Text>{form.inputs.transport === value ? "已选 · " : ""}{label}</Text></Pressable>)}</View>
         <Pressable disabled={blocked} onPress={() => changeInput("overnight", !form.inputs.overnight)} style={styles.action}><Text>{form.inputs.overnight ? "已选过夜" : "不计划过夜"}</Text></Pressable>
+        {editing ? form.stages ? <ManualStageEditor key={`${editing.ownerId}:${editing.id}:${editing.revision}`} values={form.stages} timezone={form.timezone} observingDate={form.inputs.date} disabled={blocked} onChange={changeStages} onError={setStageError} /> : <Text style={styles.subtitle}>原阶段暂不能手工编辑，已存内容保留；名称等基本信息仍可保存。</Text> : <Text style={styles.evidenceMeta}>先保存草稿，再编辑出发、勘察、观测或返回阶段。</Text>}
+        {stageDateReviewNeeded ? <View style={styles.comparison}><Text style={styles.subtitle}>{`行程日期已改为 ${form.inputs.date}，阶段时刻不会自动平移。请核对上方安排。`}</Text><HistoryAction id="plan-confirm-stage-dates" disabled={blocked || form.stages === null} onPress={() => { setStageError(null); setForm(current => current ? { ...current, stageDatesReviewed: true } : current); }}>{form.stageDatesReviewed ? "已核对阶段" : "保留这些时刻"}</HistoryAction></View> : null}
+        {stageError ? <Text testID="plan-stage-error" style={styles.error}>{stageError}</Text> : null}
+        {pending.data ? <Text style={styles.subtitle}>取消编辑不会撤回上次待确认的保存，请继续确认原保存。</Text> : null}
         <Pressable testID="plan-save-draft" disabled={blocked} onPress={save} style={styles.action}><Text style={styles.actionText}>{mutation.isPending ? "正在保存…" : "保存草稿"}</Text></Pressable>
-        <Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={() => { setForm(null); setFormOwnerId(null); setEditing(null); }} style={styles.action}><Text>取消编辑</Text></Pressable>
+        <Pressable testID="plan-cancel-edit" disabled={mutation.isPending} onPress={cancelEdit} style={styles.action}><Text>取消编辑</Text></Pressable>
       </View> : null}
       <View style={styles.actions}>{actions.map(item => <Pressable key={item.key} testID={item.id} onPress={() => setActive(item.key)} style={styles.action}><Text style={styles.actionText}>{item.label}</Text></Pressable>)}</View>
       {plan ? <Panel active={active} plan={plan} /> : null}
