@@ -50,6 +50,24 @@ root第三次运行`npm run check:miniapp:fast` **exit0**，任务日志`tmp/min
 
 Field/四处enum修复/实际OpenAPI随后已独立提交推送`f2b255ae5d0a686b677094cd1e34f8c5b4002c28`，精确远端读回、ahead/behind0/0，排除新在途admin restart。其[Context40005868190](https://github.com/Seven128/Starward/actions/runs/40005868190)**success**；[Product40005906382](https://github.com/Seven128/Starward/actions/runs/40005906382)**success**，终态2026-10-23 19:00:35 UTC，job120593615372全部25步成功，包括实际App/API/admin消费者、后端、非部署WEAPP构建/inspection和隔离infra/OCI。按本run实际终态记录，未借用ab47结果；等前一Product终态后才启动，未触发concurrency取消旧run。各本地scope归[F14证据](R20-FIELD-STATE-20261024.md)，不关闭设备/原生资源/性能，也不覆盖尚未提交的admin journal。
 
+## 管理端交付后的生产依赖审计
+
+管理端journal/实际消费者及文档已提交推送`e468f9d8ef9f2127bdbbf133c9fcc6445e7d36e8`，目标分支精确远端读回、ahead/behind0/0。[Context40046668094](https://github.com/Seven128/Starward/actions/runs/40046668094)**success**；[Product40046664661](https://github.com/Seven128/Starward/actions/runs/40046664661)**failure**（job120729857029，2026-10-24 00:48:10 UTC终态），在step9 `npm audit --omit=dev --workspace @starward/miniapp-api --audit-level=high`失败。此前checkout/资源准备/npm安装/公开数据验证通过；后续release-code、App/API/admin消费者、构建、infra/OCI全skipped，不借f2成功或本机admin检查补填。失败审计段保留于`tmp/ci-e468-audit-step-20261024.log`。
+
+新审计实际报undici高危及fast-uri、Fastify较低级问题。root核对官方一手记录：[undici excessive-content-encoding](https://github.com/advisories/GHSA-xjj6-f33q-929c)、[EventSource状态边界](https://github.com/advisories/GHSA-4qv8-2p9j-2685)、[SRI算法标记](https://github.com/advisories/GHSA-f72v-6w45-q472)、[fast-uri host canonicalization](https://github.com/advisories/GHSA-wjr9-j795-jxcr)、[Fastify header propertyNames](https://github.com/advisories/GHSA-389g-gv7q-r4x8)。这解释当前audit边界，不据advisory假称本产品已遭攻击；也不归因到journal代码。
+
+最小补丁的主lock语义仅六条变化：undici8.10.2→8.12.3、fast-uri3.1.8→3.1.9与4.2.2→4.2.3、Mini API direct与Nest adapter下两份Fastify5.12.5→5.12.7，以及该workspace的direct pin。保原Nest父override形状，独立API的root Fastify5.10.0及其他依赖版本不变；没有major更新、关闭audit、forcefix或改源码协议。undici要求的Node>=22.19未变，root/CI Node24满足。
+
+准备过程保留真实失败：初次lock-only更新使生成的`node_modules/.package-lock.json`声称新版本，实际package.json仍旧；普通install因此假定up-to-date。root仅将该生成缓存文件移到任务tmp留证，再以实际已加载package.json逐路径读回。一次workspace `npm update fastify`又使Nest pin回落5.11.3并引入high，未接受该中间结果；临时global override尝试也未交付。最终恢复原父override，按npm registry的5.12.7确切tarball/integrity/dependency metadata对齐两目标lock条目，归档失效生成缓存后实际安装，未手改vendor源码。首次物理安装已更新目标，但写主lock遇一次UNKNOWN/-4094；日志保留，正常install重试exit0。不是npm ci删除重装，也未操作服务/冻结产物。
+
+最终主lock与全部五个受影响实际安装路径一致；主lock SHA-256 `360037fb4ae0f02597607965e86817a885a0d0ac03ad33d03382c2f0e2135a2a`。之前2039包一致的记录保留原时间/lock边界，本次不将旧整组核验冒称新lock的全文件认证。registry公开依赖按新主lock恢复即可；没有新数据包/私有上传或将代码拉取冒数据库恢复。
+
+root本机结果：最终同一生产audit **exit0/零漏洞**（`tmp/admin-ci-audit-final-verified-20261024.json`）；真实Nest/Fastify auth/operations **7/7**（`admin-audit-http-baseline-20261024.log`），实际admin恢复消费者 **12/12**（`admin-audit-consumers-20261024.log`），JSDOM相关文章DNS/提取/传输 **25/25**（`admin-audit-article-consumers-20261024.log`），均零fail/skip。`npm ci --ignore-scripts --dry-run --no-audit --no-fund` exit0只验证锁准入，先核本机ci.js的`!dryRun`删除分支，未真实清node_modules；不冒完整CI或冷安装通过。第一次差额比较脚本有多余右括号而失败，修正脚本后实际六条差额如上，未影响已完成install。
+
+新只读独审`/root/production_dependency_patch_review_20261024`已完成，无这三文件新增P1/P2；独立audit exit0/零漏洞，四份官方tarball的integrity/metadata及五处实际包全部普通文件逐件一致。其首次检查因`npm ls`的Nest→Fastify INVALID前提而exit1，失败保留；对HEAD/final全部workspace manifest+lock分别用同源Arborist loadVirtual/buildIdealTree只读对照，旧5.12.5和新5.12.7均有同一INVALID，最终ideal tree不回落，因此不把既有npm11.13图诊断当本补丁新增缺陷。真实CI用Node24.21/npm11.19，与本机24.16/npm11.13不同；冷安装/完整pipeline仍以精确新head实际CI为准，不扩大工具矩阵。报告`tmp/production-dependency-patch-review-20261024/review.md` SHA-256 `440400762a7a13b0c826198e343ddf06ba822f11f12dce728c6b6e260039f376`；三文件前后hash一致，reviewer已结束。
+
+本补丁精确Git/CI仍待实际结果；并行legacy命令源码不混入此依赖批次。所有npm install中间日志、原主lock、生成缓存原件及registry metadata保留任务tmp；没有Git reset/clean/force/stash或新worktree。
+
 ## 两个同责任的夹具假设
 
 1. `miniapp-infrastructure.test.ts` 前阶段将三项 PENDING upload 到期，却没有确认其删除。当前生产契约在对象写入回执丢失时仍沿稳定 object key 保留耐久退休意图，后续 formal expiry 必须能再次发现它们。旧断言只期望一项新 key，真实结果是四项，已在新隔离环境复现。

@@ -2,6 +2,8 @@
 
 Scope: the existing admin-web command/session owner and actual React page. This replaces the earlier window-memory limitation in [management validation](R20-ADMIN-AUTH-VALIDATION-20261023.md), without replacing its HTTP/authentication, PostgreSQL, cache or legacy API evidence. No API implementation, live credentials, shared service, DevTools, phone, ADB, frozen build, deployment or Git operation was changed by this subtask.
 
+Root delivery: this implementation, checks, Context and task evidence were committed/pushed as `e468f9d8ef9f2127bdbbf133c9fcc6445e7d36e8` and the target branch read back that exact SHA, ahead/behind0/0. Its Context run40046668094 succeeded; Product40046664661 failed at production dependency audit before code/consumer/build checks, which were skipped. [CI evidence and the subsequent dependency repair](R20-CI-INFRASTRUCTURE-20261024.md#管理端交付后的生产依赖审计) preserve that actual failure; local/independent checks below do not turn it into a successful remote run.
+
 ## Observed failure and implementation
 
 The actual React-page regression first submitted a command whose server effect occurred while its response was lost, unmounted the page, then mounted a fresh page owner against the same origin storage. The original implementation had no “重试原操作” after that remount. `tmp/admin-restart-before-20261024.log` records this one failed case; a refresh did not cancel the effect.

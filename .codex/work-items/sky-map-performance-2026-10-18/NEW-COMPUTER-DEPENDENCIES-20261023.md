@@ -1,5 +1,7 @@
 # 本机依赖与公开数据核验（2026-10-23）
 
+2026-10-24后续生产audit补丁只改变主npm lock的六个条目：undici8.12.3、fast-uri3.1.9/4.2.3、Mini API两份Fastify5.12.7及workspace direct pin；实际五个安装路径版本已逐项读回一致，Node24仍适用。当前主lock SHA-256为`360037fb4ae0f02597607965e86817a885a0d0ac03ad33d03382c2f0e2135a2a`；[失败、安装边界与当前验证](R20-CI-INFRASTRUCTURE-20261024.md#管理端交付后的生产依赖审计)保留原件。下方2039包/旧lock核验是原时间的历史，不冒新lock的全文件校验；旧data/runtime/私有恢复状态不因npm patch变化或Git同步关闭。公开依赖可按新主lock的registry integrity恢复，无新私有数据包/原件上传。
+
 核验时间：2026-10-23 21:55 +08:00。checkout 为 `E:/dev/worktrees/Starward/remote-main-20260908`，HEAD 为 `266df53ea48a65013b9a358cfc2ffeb28c274fcf`。本记录只绑定依赖与文件准备，不证明服务、数据库、设备或产品验收。
 
 ## 锁定依赖与 LFS

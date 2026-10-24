@@ -124,7 +124,7 @@
   },
   "overrides": {
     "@nestjs/platform-fastify": {
-      "fastify": "5.12.5"
+      "fastify": "5.12.7"
     }
   }
 }
