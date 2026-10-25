@@ -1189,7 +1189,8 @@ export default function MapPage() {
   const lightLayerState = lightLayerContentState({
     pending: nightLight.isPending || !nightLayer || lightImage.imagePending || lightInstallation.pending,
     failed: Boolean(nightLight.data?.dataState === "STALE_USABLE" || lightReadFailed),
-    hasData: Boolean(nightLayer || lightInstallation.presentedData),
+    hasData: Boolean(lightInstallation.presentedData
+      || (nightLayer && !nightLayer.failureCode && (!nightRaster || lightUnavailable))),
     unavailable: visibleLayerUnavailable,
   });
   const displayedLayer = visibleLayer === "LIGHT" ? displayedLightLayer : geographicLayer;

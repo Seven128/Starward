@@ -18,6 +18,13 @@ function expression(name: string, memo = false) {
   return ts.transpileModule(`(${selected.getText(ast)});`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 }
 
+function readLightLayerState(state: Record<string, unknown>) {
+  const environment = { ...state };
+  environment.nightRaster = vm.runInNewContext(expression("nightRaster"), environment);
+  environment.lightUnavailable = vm.runInNewContext(expression("lightUnavailable"), environment);
+  return vm.runInNewContext(expression("lightLayerState"), environment);
+}
+
 test("changing layer intent cannot paint retained cloud polygons as the selected annual light layer", () => {
   const polygons = [{ id: "real-cloud-sample", value: 0 }];
   const environment = { scene: { data: { data: { layer: { kind: "CLOUD", polygons } } } },
@@ -36,13 +43,21 @@ test("the light sheet distinguishes installing, displayed, failed retained data 
   const state: any = { nightLight: { isPending: false, isError: false, refreshError: null, data: { dataState: "FRESH" } },
     nightLayer: { state: "FRESH", raster: {} }, lightImage: { imagePending: false }, lightInstallation: { pending: true, presentedData: null },
     lightReadFailed: false, visibleLayerUnavailable: false, lightLayerContentState };
-  const read = () => vm.runInNewContext(expression("lightLayerState"), state);
+  const read = () => readLightLayerState(state);
   assert.equal(read(), "LOADING");
+  state.lightInstallation.pending = false; state.lightReadFailed = true;
+  assert.equal(read(), "ERROR", "metadata without a rendered raster cannot claim a retained result");
+  state.lightReadFailed = false;
   state.lightInstallation = { pending: false, presentedData: { raster: {} } }; assert.equal(read(), "READY");
   state.lightReadFailed = true; assert.equal(read(), "STALE");
   state.lightReadFailed = false; state.visibleLayerUnavailable = true;
   state.nightLayer = { state: "UNAVAILABLE" }; state.lightInstallation.presentedData = null;
   assert.equal(read(), "EMPTY");
+  state.nightLayer = { state: "UNAVAILABLE", raster: { validPixelCount: 0 } };
+  assert.equal(read(), "EMPTY", "a published no-coverage raster needs no native installation");
+  state.nightLayer = { state: "UNAVAILABLE", failureCode: "PROVIDER_UNAVAILABLE" };
+  state.lightReadFailed = true;
+  assert.equal(read(), "ERROR", "a provider failure is not a previously confirmed empty result");
 });
 
 test("static light is displayed while unrelated Scene weather is pending or failed", () => {
@@ -52,7 +67,7 @@ test("static light is displayed while unrelated Scene weather is pending or fail
   const layerState = { ...state, nightLight: { isPending: false, data: { dataState: "FRESH" } },
     lightImage: { imagePending: false }, lightInstallation: { pending: false, presentedData: state.nightLayer },
     lightReadFailed: false, visibleLayerUnavailable: false, lightLayerContentState };
-  assert.equal(vm.runInNewContext(expression("lightLayerState"), layerState), "READY");
+  assert.equal(readLightLayerState(layerState), "READY");
   assert.equal(mapSceneLayerForOverlay("LIGHT"), "NORMAL", "the marker Scene must not compose the same light again");
   assert.equal(mapSceneLayerForOverlay("TOTAL_CLOUD"), "NORMAL", "cloud now has its own read owner too");
 });

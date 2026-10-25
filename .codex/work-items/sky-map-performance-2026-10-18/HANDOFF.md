@@ -6,9 +6,9 @@
 
 ## 唯一下一步
 
-**交付P3天气资格/未来时间两处已实施窄修，核新提交实际CI；随后沿唯一PLAN继续目标验证与普通手机API恢复。** 当前P3共4生产/5测试文件，后台14项、时间相关108项与Root补查3项、两workspace类型检查及两完整构建已通过。实际新源码WEAPP已呈现8404目录对象，绘帧时刻受当前上限约束；原Context仍revision1/13:00Z，HTTP星场与精确目标为PARTIAL且保天气缺测。完整控件/取消应用/正常Play/SAO/手机及视觉仍欠，不能重做既有实现或冒整体验收。见[P3真实入口证据](R20-SKY-INDEPENDENT-ENTRY-20261025.md)。
+**P2真实r6/PNG已核，首次未呈现却冒STALE的窄修已有实际ERROR画面，当前继续P5山体/来源的独立公开消费者。** 先复用已合格Copernicus360/360、20km模型输入，沿正式点的现有周边环境/来源阅读入口核真正图形、方向和返回，不重跑同一主机API或另造数据。P2相关19/19、独审、类型检查和两份完整构建已完成；原生夜光叠加/配准仍未通过，停止同条件刷新/重加图层。见[P2实录](R20-P2-REAL-PUBLICATION-READBACK-20261025.md)。P3的已做实现和8404目录对象/合法帧证据直接复用，完整控件/取消应用/正常Play/SAO/手机及视觉仍欠，见[P3实录](R20-SKY-INDEPENDENT-ENTRY-20261025.md)。
 
-当前唯一隔离项目是 `dist/weapp-check-sky-4086cb4f36b44324`，完整源码指纹2d68、339件/5,037,218B。原s4关闭后使用s5；Pixel9对照与popup结束、原iPhone机型已恢复，s5精确关闭后同路径重新打开，现为Map中档读回。官方窗口ID可能复用，不继承旧page/input许可。当前源码API在8807及独立PG副本上ready；实际路径/进程出生/监听/源SHA归private entry owner的`sky-current-api-selection.private.json`。原服务/原库未改，Root独占全部实际运行。
+当前唯一隔离项目是 `dist/weapp-check-sky-4086cb4f36b44324`，完整源码指纹5e414539、339件/5,037,246B。原s4关闭后使用s5；Pixel9对照与popup已结束，原iPhone机型保留。s5精确关闭前核最新同步，重开仍为s5；针对源码/产物与运行结果不一致，单次限定cleanCompileCache后刷新，实际层叠已显示ERROR而非旧STALE，没有清账号/业务storage/session。当前停在Map层叠。官方窗口ID可能复用，不继承旧page/input许可。当前源码API在8807及独立PG副本上ready；路径/进程出生/监听/后端源SHA归private entry owner的`sky-current-api-selection.private.json`。原服务/原库未改，Root独占全部实际运行。
 
 Map只读原生读回已完成：同一page稳定，布局/getScale/getRegion之后，在selected-projection的toScreenLocation限定读取内未收回；不能声称持续不支持、4km已验或资源释放，不猜改相机/新fallback。旧`.cmd`多行传参及Node路径别名失败属于读回准备，均不作产品反例；有效结果归private run的`map-focus-native-summary.private.json`。
 
@@ -27,7 +27,7 @@ Map只读原生读回已完成：同一page稳定，布局/getScale/getRegion之
 
 本机只在main。接手基线为1bef1a09819b563fe44d6437a200210ff30606f7，本轮新交付HEAD/CI必须实时读Git/GitHub，不抄旧hash冒最新。当前完整证据及实际回执归[本轮入口恢复](R20-WEAPP-ENTRY-RECOVERY-20261025.md)。
 
-本批当前canonical为339件/5,037,238B，SHA `413a55fb88e640372c2ac2774642d828bb4fc4ba1355f757752e20e49d44a485`，源main2,025,876B；隔离包2d68的20B差异来自API origin，两个地址owner及包体预算均实核。原普通手机 **4VEyDu/gen1 pCvBDO** 仍是旧58dc，339件/5,036,803B，其官方main2,095,524B/总5,056,009B和Map原图保留，不能冒当前P3源码。feedback=`%TEMP%/starward-device-feedback-4VEyDu`，session=`starward-device-test-GDWVeL`，后续应经原owner准备新源码候选再做必要推送/新capture。运行AppID、手机源字节独立证明、正常业务API、完整UI/功能验收仍欠。
+本批当前canonical为339件/5,037,266B，SHA `0acc0719b1629f6772822d6c8896d35ddd9a6754171aa01a61d375e02e6d7f91`，主包2,025,904B；隔离包5e414539的20B差异来自API origin，两个地址owner及包体预算均实核。本批只有Map JS改变；前413a/2d68已完整复制保全。此前普通候选 **szzwZq/gen1 o1ut5N** 仍保413a，已有qr_ready但没有deviceSession/手机可见确认，现不冒0acc新源码候选。待手机API条件成立，再沿同feedback owner同步当前源码，不为等待期间反复生成过期QR。手机实际仍保留旧 **4VEyDu/gen1 pCvBDO** 58dc，其官方main2,095,524B/总5,056,009B和Map原图保留；旧`starward-device-test-GDWVeL`不能转作新源码输入许可。运行AppID、手机源字节独立证明、正常业务API、完整UI/功能验收仍欠。
 
 Sky采用HTML已由现有官方Stitch CLI只读恢复，SHA仍4c6cfc…；当前官方PNG仅377×512的E态及入场序列，原件归private entry/adopted-sky-5385664345158066168。实际桌面Sky图仍不呈菜单/meta，普通DOM几何与z序不足以定产品合成正确，官方截图源码也未证明工具故障；停止换参数或猜样式，保持可见性未通过。裸Z时间格式疑点已被原始JSON反查推翻，未加normalizer或新测试。
 
@@ -41,8 +41,8 @@ Sky采用HTML已由现有官方Stitch CLI只读恢复，SHA仍4c6cfc…；当前
 
 ## CI与部署边界
 
-已交付HEAD为`2f32ccaf76c9f123e2ab1dcb46f2e76bb5d8d7a2`，origin/main为0/0；该提交只包含PG旧断言窄修及回执。其Context40160622664与完整Product40160622692成功，全部产品步骤实际执行，含既有消费者、backend/WEAPP构建、候选检查、隔离基础设施和OCI；watcher69561已exit0。内部有Mini API74、WEAPP1及resource preparation1个既有skip。现在P3增量仍dirty/未提交，旧CI不覆盖它；不得称当前全绿或完整产品验收。
+当前HEAD为`34011408d17ac0033ca4e29df474ef1ea9584b0d`，已推送且origin/main为0/0；15件显式写集只含本批9源码/测试及6任务证据，原有App/资产/旧dirty回执未夹带。Context40171854578与完整Product40171854619成功，所有产品步骤均实际执行，含既有消费者、backend/WEAPP构建、候选检查、隔离基础设施和OCI；watcher10475已exit0。API995pass/74skip、WEAPP2822pass/1skip，另resource preparation有1个既有skip；不能称零skip或完整产品验收。
 
 前一头2a5056e8的完整手动Product40159295033通过release code、既有消费者、backend与WEAPP构建/检查，在真实PG管理命令因旧“缺revision=409”断言失败，OCI skipped。当前测试已按400合同补HTTP分类及PG持久状态/receipt/idempotency/outbox无效果，真正409和无key旧成功保留，随机独立库6/6、0skip后精确清理；worker类型检查通过。见[管理输入补证](R20-ADMIN-INPUT-HTTP-20261025.md#后续真实pg合同检查)。第一次Search旧fixture失败和两头的cancel/skipped等完整历史归入口恢复证据，不把失败冒通过。两次测试跟进均不改变58dc手机候选。
 
-该新head实际staging40161606084：qualify成功，publish-and-deploy在Check staging host before image publication失败，明确`host_preflight_disk_below_10_gib`；镜像发布和promotion均skipped，未部署。与旧staging40141832516的容量边界一致；host-cache40140796151没有合格可删集合或容量恢复。不prune、不盲重试部署。最终状态回执已在本地更新，不为CI状态再造一次docs-only提交。必要小程序结果与后置性能未完，Goal保持active，不标complete。
+该head实际staging40172587365：qualify成功，publish-and-deploy在Check staging host before image publication失败，明确`host_preflight_disk_below_10_gib`；镜像发布和promotion均skipped，未部署。旧2f的40161606084及更早40141832516也在同容量边界失败；host-cache40140796151没有合格可删集合或容量恢复。不prune、不盲重试部署。最终状态回执已在本地更新，不为CI状态另造docs-only提交。必要小程序结果与后置性能未完，Goal保持active，不标complete。
