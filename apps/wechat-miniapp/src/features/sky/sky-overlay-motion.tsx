@@ -1,60 +1,22 @@
 import { View } from "@tarojs/components";
 import { SharedButton as Button } from "@/components/shared-button-press";
-import Taro from "@tarojs/taro";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useOverlayPresence, type OverlayPhase } from "@/hooks/use-overlay-presence";
 import { skyRetainedLayerStyle } from "./sky-retained-layer";
 import "./sky-overlay-motion.scss";
 
 const FADE_MS = 180;
-type Phase = "preparing" | "opening" | "open" | "closing" | "closed";
 export interface SkyOverlayMotionState {
   readonly present: boolean;
   readonly active: boolean;
-  readonly phase: Phase;
+  readonly phase: OverlayPhase;
   readonly style: CSSProperties;
 }
 
 /** Presentation lifetime only; selection, queries and Back keep their owners.
  * Reopening a still-mounted surface reverses its live CSS transition. */
 export function useSkyOverlayMotion(open: boolean, enabled: boolean, reducedMotion: boolean, prepared = true): SkyOverlayMotionState {
-  const [present, setPresent] = useState(open && enabled);
-  const [phase, setPhase] = useState<Phase>("opening");
-  const generation = useRef(0);
-  useEffect(() => {
-    const expected = ++generation.current;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    if (enabled && open && !prepared) {
-      // A time ruler can install and observe its real native position while
-      // transparent and unscaled. Other disclosures keep the default path.
-      setPresent(true);
-      setPhase("preparing");
-    } else if (!enabled || reducedMotion) {
-      setPresent(enabled && open);
-      setPhase(enabled && open ? "open" : "closed");
-    } else if (open) {
-      setPresent(true);
-      if (present && phase !== "opening" && phase !== "preparing") setPhase("open");
-      else {
-        setPhase("opening");
-        Taro.nextTick(() => {
-          if (generation.current !== expected) return;
-          timer = setTimeout(() => {
-            if (generation.current === expected) setPhase("open");
-          }, 16);
-        });
-      }
-    } else if (present) {
-      setPhase("closing");
-      timer = setTimeout(() => {
-        if (generation.current !== expected) return;
-        setPresent(false);
-        setPhase("closed");
-      }, FADE_MS);
-    }
-    return () => { generation.current++; if (timer !== undefined) clearTimeout(timer); };
-  }, [open, enabled, reducedMotion, prepared]);
-  return { present: enabled && (present || open), active: enabled && open,
-    phase: !enabled ? "closed" : !open ? "closing" : phase,
+  return { ...useOverlayPresence(open, enabled, reducedMotion, FADE_MS, prepared),
     style: { "--sky-overlay-motion-ms": `${reducedMotion ? 0 : FADE_MS}ms` } as CSSProperties };
 }
 

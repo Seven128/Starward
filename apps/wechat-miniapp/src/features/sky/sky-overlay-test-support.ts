@@ -7,13 +7,14 @@ import { localParts } from "@starward/miniapp-contracts";
 import { createSkyTimeRepeat, skyCivilInstant, skyTimeInputAllowed, stepSkyCivilTime } from "./sky-time-input";
 
 export function harness(component = "useSkyOverlayMotion") {
-  const source = readFileSync(new URL(component === "SkyTimeControls" ? "./sky-time-controls.tsx" : component === "SkyBrowseControl" ? "./sky-menu.tsx" : "./sky-overlay-motion.tsx", import.meta.url), "utf8")
+  const presence = readFileSync(new URL("../../hooks/use-overlay-presence.ts", import.meta.url), "utf8");
+  const source = (presence + "\n" + readFileSync(new URL(component === "SkyTimeControls" ? "./sky-time-controls.tsx" : component === "SkyBrowseControl" ? "./sky-menu.tsx" : component === "MapLayerPresentation" ? "../../pages/map/map-layer-presentation.tsx" : "./sky-overlay-motion.tsx", import.meta.url), "utf8"))
     .replace(/^import .*;\r?$/gm, "").replace(/^export /gm, "");
   const slots: any[] = [], ticks: (() => void)[] = [], effects: (() => void)[] = [];
   const timers = new Map<number, { at: number; callback: () => void }>();
   let cursor = 0, clock = 0, serial = 0, dirty = false, args: any[] = [];
   let hidden: (() => void) | undefined;
-  const names = component === "SkyTimeControls" ? "SkyTimeControls" : component === "SkyBrowseControl" ? "SkyBrowseControl" : "useSkyOverlayMotion,useSkyOverlayLayoutReady,SkyOverlayMotion,SkyDisclosureSurface";
+  const names = component === "SkyTimeControls" ? "SkyTimeControls" : component === "SkyBrowseControl" ? "SkyBrowseControl" : component === "MapLayerPresentation" ? "MapLayerPresentation" : "useSkyOverlayMotion,useSkyOverlayLayoutReady,SkyOverlayMotion,SkyDisclosureSurface";
   const memo = (create: () => any, deps: any[]) => {
     const index = cursor++, previous = slots[index];
     if (!previous || deps.some((value, i) => value !== previous.deps[i])) slots[index] = { deps, value: create() };

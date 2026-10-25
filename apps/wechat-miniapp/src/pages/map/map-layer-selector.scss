@@ -1,3 +1,12 @@
+.map-layer-layer {
+  transform: translateY(100%);
+  transition: transform var(--map-layer-motion-ms, 240ms) cubic-bezier(.2, .7, .2, 1);
+}
+.map-layer-layer--open { transform: translateY(0); }
+.map-layer-layer--opening { transition: none; }
+.map-layer-motion-shield { position: absolute; inset: 0; z-index: 1; }
+.reduced-motion .map-layer-layer { transform: none; transition: none; }
+
 .map-layer-sheet__header { flex: 0 0 auto; min-width: 0; padding: 0 16Px; }
 .map-layer-sheet__heading { display: flex; align-items: center; justify-content: space-between; gap: 12Px; min-height: 46Px; }
 .map-layer-sheet__heading > .type-label { flex: 1; min-width: 0; font-size: 17Px; font-weight: 600; }

@@ -14,6 +14,8 @@ This on-demand subdomain node normatively continues shared manipulation, accessi
 
 Map/My 的有效前台由既有 `navigation/primary-navigation-controller` 与 `primary-page-navigation` 共同持有：普通Map入口保留同一物理Page/Map节点，以独立全屏My表面左入左出；`pages/my/index`保留原生直达包装，两者复用唯一My正文，原生子页和来源仍实际push/back，不新增全站路由历史。`page-presentation`只提供前台资格、逻辑activation及辅助Back登记，业务状态/查询仍归原owner。切换主目的地退休旧意图；原生子页或已知系统选图的hide/show保留同一activation，前台权限与保留身份分别判断。Map的现有hide清理、My时钟/查询、账户操作、导航及通知消费该边界；My完全左出后才恢复Map交互。My编辑/照片/登录向当前唯一`NativeBackBoundary`登记，一次Back先关当前任务；Map-host不另挂第二个PageContainer。此为实现责任，方向、原生地图合成、物理Back及系统返回仍需目标WEAPP验收。
 
+`hooks/use-overlay-presence`统一持有Map层叠与Sky叠层的视觉存续、退出退休和旧回调失效；业务选择、查询、Back与资源资格仍由各自owner立即更新。Map的`MapLayerPresentation`保留最后可见内容完成采用的下入/下出，退出内容不接受输入；隐藏立即退休，重开接管现有位移。Sky保留原`useSkyOverlayMotion`适配、准备分支、时长及材质，不因共享视觉存续改变时间或渲染语义。具体采用动效值仍归当前资源与DESIGN；实现责任不代表完整目标验收。
+
 ## 当前尺寸设计修订
 
 2026-09-22 用户确认观星点大档样板的舒适尺度，授权扩展现有页面并补入当前商业化来源披露。2026-10-10 已按用户要求核对最新 Stitch 总览；[整组可编辑源与审阅入口](https://stitch.google.com/projects/7144519510537620825)的当前 DAY 完整页面源已由各页 ADOPTED.md 声明采用范围，非 DAY、共享材质和动效的未采用候选仍沿原 owner。共享尺寸覆盖地图/点位、搜索、My/Settings、计划/事件、天空、创建/反馈；共享来源呈现遵从下文 SourceAttribution / Provenance 责任，各消费者保留自己的数据及状态。三档抽屉、章节出现与滚动规则、当前 B 批图标不变。Stitch保留各画板的视觉参照与[完整多文件交互源](../wechat-miniapp.md#stitch-design-authority)，检查时仅临时下载；不把静态重复画面或资源采用视为原生共享组件已实现、页面已验收。

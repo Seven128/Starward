@@ -6,6 +6,7 @@ import { useMapCloudPresentation } from "@/hooks/use-map-cloud-presentation";
 import { useMapNightLight } from "@/hooks/use-map-night-light";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
+import { MapLayerPresentation } from "./map-layer-presentation";
 import { projectMapLayerLegend } from "./map-layer-legend";
 import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS, type SpotEditorPhase } from "./spot-editor-presentation";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
@@ -2924,11 +2925,7 @@ export default function MapPage() {
             </View>
           ) : null}
 
-          {bottomPresentation === "layer-sheet" ? (
-            <View
-              className="map-layer-layer"
-              onClick={(event) => event.stopPropagation()}
-            >
+          <MapLayerPresentation open={bottomPresentation === "layer-sheet"} enabled={pageVisible} reducedMotion={reducedMotion}>
               <MapLayerSheet cloud={visibleLayer === "TOTAL_CLOUD"} revision={String(coverageExpanded)} header={<>
                 <View className="map-layer-sheet__heading">
                   <Text className="map-layer-sheet__title type-label">层叠</Text>
@@ -3083,8 +3080,7 @@ export default function MapPage() {
                   </View>
                 </> : null}
               </MapLayerSheet>
-            </View>
-          ) : null}
+          </MapLayerPresentation>
         </View>
       </View>
       <View className="sr-live" role="status" aria-live="polite">
