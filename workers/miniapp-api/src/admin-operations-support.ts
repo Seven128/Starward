@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { BadRequestException } from "@nestjs/common";
 import type {
   AdminOperation,
   ContributionUploadId,
@@ -11,15 +12,21 @@ import {
 import type { MiniappService } from "./miniapp-service.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
 
+/** Authenticate first, then admit the JSON object before reading any fields. */
+export function assertAdminObjectBody(body: unknown): asserts body is Record<string, unknown> {
+  if (body === null || typeof body !== "object" || Array.isArray(body))
+    throw new BadRequestException("admin_body_invalid");
+}
+
 export function requiredText(value: unknown, field: string, maximum: number) {
   if (typeof value !== "string" || !value.trim() || value.length > maximum)
-    throw new Error(`admin_${field}_invalid`);
+    throw new BadRequestException(`admin_${field}_invalid`);
   return value.trim();
 }
 
-export function requiredRevision(value: unknown, field: string) {
+export function requiredRevision(value: unknown, field = "revision") {
   if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
-    throw new Error(`admin_${field}_invalid`);
+    throw new BadRequestException(`admin_${field}_invalid`);
   return value;
 }
 

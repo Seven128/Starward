@@ -16,7 +16,7 @@
 
 | 项 | 已有结果/归属 | 新计划去向 |
 | --- | --- | --- |
-| F01 管理身份/operation | [服务器principal/角色绑定、HTTP/PG与独审](R20-ADMIN-AUTH-VALIDATION-20261023.md)已有实现 | 原修复移历史；P4保实际配置/客户端配套/部署与输入结构判别 |
+| F01 管理身份/operation | [服务器principal/角色绑定、HTTP/PG与独审](R20-ADMIN-AUTH-VALIDATION-20261023.md)已有实现；本轮最小输入结构/分类HTTP判别及窄修亦完成 | 已完成责任复用；P4只保实际配置/客户端配套/部署等剩余闭环 |
 | F02 头像提交后误删 | [写入意图、未知提交保护与持久清理](R20-MEDIA-LIFECYCLE-20261023.md)已实施 | 原补偿不重做；P4保迁移、真实存储失败/恢复效果 |
 | F03 outbox恢复 | [缺失句柄/unknown/dispatch代次与Redis恢复](R20-OUTBOX-RECOVERY-20261023.md)已有实际隔离证据 | 原实现移历史；P4保真实环境/长期恢复资格 |
 | F04 微信Map重载死结 | [故障session源码/独审](R20-MAP-FAULT-SESSION-REVIEW-20261024.md)已成立 | P2保目标失败→替换→恢复、迟到隔离和实际native退休；未验不改成通过 |
@@ -40,7 +40,7 @@
 | 媒体提交/持久清理/队列对账 | 已实现部分不再列开发；P4保迁移023–026、真实对象存储/恢复与版本配套 |
 | Sky具名frame/资源消费者 | 44位置参数收敛、accepted/资源接线已实现；P3保目标正确性，D2保性能/OOM |
 | 保留已有有效架构 | latest-demand、共享租约、pin/generation、唯一writer、accepted、账户ACTIVE锁和提醒UNKNOWN作为约束，不重造通用框架 |
-| 管理DTO | 旧计划未明确列出完整body形状/错误语义准入；新增P4的最小判别，详下 |
+| 管理DTO | 最小body结构/错误分类HTTP判别、已证缺陷窄修和独审已完成，复用本轮证据；实际环境仍归P4，不外推完整嵌套schema审计 |
 | 纯contracts的Node存储 | 当前遗留位于packages/contracts/src/runtime/durable-business-runtime.ts，所查调用者为apps/api与domain/offline；未发现小程序/worker/其契约及天文/坐标消费者进入该路径。保App历史债，不新增全仓迁移；未来只有真实小程序依赖证据才扩大 |
 | Taroify/图标 | 保当前未采用和现有Taro/Starward组件。仅有icons依赖不证明不能使用SemanticIcon；外部自定义图标线索也不证明本机适配。已澄清architecture口径，只有实际能力缺口才作目标/包体/键盘/取消/手势/许可比较 |
 | Stellarium引擎/WASM/GPU | 属条件候选，保平台可行性、AGPL等许可/维护/等价性要求；不作为当前安装或替换任务，不承诺解决未定位OOM |
@@ -48,6 +48,8 @@
 | buffers/拾取/回调/Query/来源缓存 | 原R20条件保留在D：有实际成本或寿命缺口才选；原报告固定次数/容量/时长不采用为门槛，不能凭共同存活/finalizer或PSS判断根因 |
 
 ## 本轮补充的实际遗漏与口径修正
+
+续办更新：管理输入线索已由真实 Nest/Fastify HTTP 证实并窄修，见[HTTP判别](R20-ADMIN-INPUT-HTTP-20261025.md)和[独审](R20-ADMIN-INPUT-REVIEW-20261025.md)。四类代表入口的非对象/缺失 body 现返回400 INVALID_INPUT/nonretryable，共享 text/revision 校验保正确分类；认证、真实409/503与客户端恢复语义保留。最小判别不再是活跃待办，真实PG、凭据、存储和部署义务仍在P4。下列初核说明保留其当时的证据边界。
 
 1. **管理输入结构是待判别线索，尚非已证漏洞。** 原报告第7章R6包含admin DTO。当前四管理controller有requireText/revision等字段检查，但直接解引用TypeScript标注的Body，所查main没有global ValidationPipe；null/非对象可能落入兜底500/PROVIDER_UNAVAILABLE/retryable。P4要求一条真实Nest/Fastify入口判别、一个合法控制与零业务写读回；已有拦截有效即结束，成立才窄修，不新增全仓DTO平台。
 2. **清除重复开发措辞。** 管理缓存确认、Map静态adapter、EOG原件/Drive/receiver和主包预算已有后续证据，原PLAN中remaining/prepare/get之类开发待办已撤下，只保真实环境/目标验收。

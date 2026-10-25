@@ -103,6 +103,90 @@ test("HTTP management routes authenticate credentials and never let the actor he
   }
 });
 
+test("HTTP management object bodies reject invalid shapes before business effects", async () => {
+  const before = process.env.MINIAPP_ADMIN_CREDENTIALS;
+  process.env.MINIAPP_ADMIN_CREDENTIALS = credentials;
+  const writes: unknown[] = [];
+  const spot = { spotId: "spot:test", name: "Original" };
+  let businessFailure: string | null = null;
+  const repository = Object.create(PostgresMiniappRepository.prototype) as PostgresMiniappRepository;
+  repository.adminPatchSpot = async (input) => {
+    if (businessFailure !== null) throw new Error(businessFailure);
+    writes.push(input);
+    if (input.patch.name !== undefined) spot.name = input.patch.name;
+    return { spot: { ...spot } } as never;
+  };
+  repository.adminListSpots = async () => [{ ...spot }] as never;
+  const unexpectedWrite = async (input: unknown) => { writes.push(input); throw new Error("unexpected_business_effect"); };
+  repository.adminRequestContributionChanges = unexpectedWrite;
+  repository.adminAssessPublication = unexpectedWrite;
+  const service = { repository, cache: { deleteByPrefix: async () => undefined }, eventCatalog: {
+    store: { upsertSourceConfig: unexpectedWrite },
+  } };
+  class TestModule {}
+  Module({ controllers, providers: [{ provide: MiniappService, useValue: service }] })(TestModule);
+  const adapter = new FastifyAdapter({ logger: false });
+  const app = await NestFactory.create(TestModule, adapter, { logger: false });
+  app.useGlobalFilters(new ApiExceptionFilter());
+  try {
+    await app.init();
+    const http = adapter.getInstance();
+    await http.ready();
+    const headers = { "x-admin-token": "owner-credential", "content-type": "application/json", "idempotency-key": "body-shape-test" };
+    const routes = [
+      { method: "PATCH" as const, url: "/v2/admin/spots/spot:test" },
+      { method: "POST" as const, url: "/v2/admin/moderation/cases/case:test/request-changes" },
+      { method: "POST" as const, url: "/v2/admin/spots/spot:test/publication-assessments" },
+      { method: "POST" as const, url: "/v2/admin/event-catalog/sources/source:test" },
+    ];
+    const invalidResponses: unknown[] = [];
+    for (const route of routes) {
+      for (const payload of ["null", "[]", "true", "1", '"text"']) {
+        const result = await http.inject({ ...route, headers, payload });
+        if (result.statusCode !== 400 || result.json().code !== "INVALID_INPUT" || result.json().retryable !== false)
+          invalidResponses.push({ ...route, payload, status: result.statusCode, code: result.json().code, retryable: result.json().retryable });
+      }
+      const missing = await http.inject({ ...route, headers: { "x-admin-token": "owner-credential" } });
+      if (missing.statusCode !== 400 || missing.json().code !== "INVALID_INPUT" || missing.json().retryable !== false)
+        invalidResponses.push({ ...route, payload: "absent", status: missing.statusCode, code: missing.json().code, retryable: missing.json().retryable });
+      const unauthenticated = await http.inject({ ...route, headers: { "content-type": "application/json" }, payload: "null" });
+      assert.equal(unauthenticated.statusCode, 403, "body admission must not bypass the authentication boundary");
+    }
+    for (const request of [
+      { method: "PATCH" as const, url: "/v2/admin/spots/spot:test", payload: { reason: "verified edit", expectedRevision: "invalid" } },
+      { method: "POST" as const, url: "/v2/admin/event-catalog/sources/source:test", payload: { endpoint: null } },
+    ]) {
+      const result = await http.inject({ ...request, headers });
+      if (result.statusCode !== 400 || result.json().code !== "INVALID_INPUT" || result.json().retryable !== false)
+        invalidResponses.push({ ...request, status: result.statusCode, code: result.json().code, retryable: result.json().retryable });
+    }
+    assert.equal(writes.length, 0);
+    const readback = () => http.inject({ url: "/v2/admin/spots", headers });
+    assert.equal((await readback()).json().data[0].name, "Original");
+    const saved = await http.inject({ method: "PATCH", url: "/v2/admin/spots/spot:test", headers: { "x-admin-token": "owner-credential" }, payload: { reason: "verified edit", name: "Saved" } });
+    assert.equal(saved.statusCode, 200);
+    assert.equal(writes.length, 1);
+    assert.equal((await readback()).json().data[0].name, "Saved");
+    for (const [failure, status, code] of [
+      ["admin_spot_revision_conflict", 409, "CONFLICT"],
+      ["provider_unavailable", 503, "PROVIDER_UNAVAILABLE"],
+    ] as const) {
+      businessFailure = failure;
+      const failed = await http.inject({ method: "PATCH", url: "/v2/admin/spots/spot:test", headers: { "x-admin-token": "owner-credential" }, payload: { reason: "valid retry", name: "Unchanged" } });
+      assert.equal(failed.statusCode, status);
+      assert.equal(failed.json().code, code);
+      assert.equal(failed.json().retryable, true);
+    }
+    assert.equal(writes.length, 1);
+    assert.equal((await readback()).json().data[0].name, "Saved");
+    assert.deepEqual(invalidResponses, [], "invalid bodies must be structured, nonretryable input failures");
+  } finally {
+    await app.close();
+    if (before === undefined) delete process.env.MINIAPP_ADMIN_CREDENTIALS;
+    else process.env.MINIAPP_ADMIN_CREDENTIALS = before;
+  }
+});
+
 test("a committed command keeps its receipt after Redis denial and retries cache work with the same key", async () => {
   const before = process.env.MINIAPP_ADMIN_CREDENTIALS;
   process.env.MINIAPP_ADMIN_CREDENTIALS = credentials;

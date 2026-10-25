@@ -327,10 +327,19 @@ export class AdbDevice {
     const tetheringPage = action === "open-tethering-settings" ? values[0] ?? "more" : undefined;
     if (action === "open-tethering-settings" && !Object.hasOwn(tetheringTargets, tetheringPage)) fail("tethering_settings_page_invalid");
     const ownedWifiNavigation = action === "open-tethering-settings" && tetheringPage === "wifi" && permissionScope === "tethering-settings";
-    // This scope only returns from the observed native picker, never selects
-    // or inspects another place through an unverified native input boundary.
-    if (permissionScope === "location-picker" && action !== "back") fail("location_picker_return_only");
-    if (permissionScope !== "none" && !["tap", "back"].includes(action) && !ownedWifiNavigation) fail("permission_input_invalid");
+    const pickerConfirmation = action === "confirm-location-picker";
+    if (pickerConfirmation) {
+      if (permissionScope !== "location-picker") fail("location_picker_scope_required");
+      // The observed Done button contains this conservative portrait header
+      // region. The operator must review the current button and selected place;
+      // this does not admit the map, results, search field or generic taps.
+      const [x, y] = values;
+      if (values.length !== 2 || !Number.isFinite(x) || !Number.isFinite(y) ||
+        x < .85 || x > .92 || y < .058 || y > .078 || capture.size.width >= capture.size.height)
+        fail("location_picker_confirm_target_invalid");
+    }
+    if (permissionScope === "location-picker" && action !== "back" && !pickerConfirmation) fail("location_picker_return_only");
+    if (permissionScope !== "none" && !["tap", "back"].includes(action) && !ownedWifiNavigation && !pickerConfirmation) fail("permission_input_invalid");
     const activity = await this.foreground({ permissionScope });
     if (activity !== capture.activity) fail("foreground_changed");
     // screencap dimensions follow current rotation, unlike wm size's natural orientation.
@@ -346,7 +355,7 @@ export class AdbDevice {
       return;
     }
     let args;
-    if (action === "tap" || action === "swipe") args = screenGestureArguments(action, values, current.size);
+    if (action === "tap" || action === "swipe" || pickerConfirmation) args = screenGestureArguments(pickerConfirmation ? "tap" : action, values, current.size);
     else if (action === "text") {
       // Android's remote shell joins arguments. Admit bounded public queries only;
       // reject shell syntax and literal %s before encoding spaces for input text.

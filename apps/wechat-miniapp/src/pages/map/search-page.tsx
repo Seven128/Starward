@@ -336,19 +336,6 @@ export function MapSearchSurface() {
             : scene.data?.dataState === "PARTIAL" || placeSearch.data?.dataState === "PARTIAL"
               ? "PARTIAL"
               : "READY";
-  useEffect(() => {
-    if (!pageVisible) return;
-    const requestError = contextQuery.error ?? contextQuery.refreshError ??
-      (queryUnconfirmed ? null : scene.error ?? scene.refreshError ?? placeSearch.error ?? placeSearch.refreshError);
-    const staleFallback = contextQuery.data?.dataState === "STALE_USABLE" ||
-      (!queryUnconfirmed && (scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE"));
-    if ((!requestError && !staleFallback) || (requestError && isPermissionError(requestError))) return;
-    notify({ owner: "search", placement: "floating", tone: "info",
-      title: "搜索数据异常", body: "地点与观星点结果暂时无法更新，可在页面中重试。",
-      dedupeKey: "search-resource-failed" });
-  }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible, queryUnconfirmed,
-    placeSearch.data?.dataState, placeSearch.error, placeSearch.refreshError, scene.data?.dataState,
-    scene.error, scene.refreshError]);
   const retrySearchResources = (forceScene = false) => {
     const retryPage = Taro.getCurrentPages().at(-1), retryVersion = selectionVersion.current;
     const retryState = useAppStore.getState();

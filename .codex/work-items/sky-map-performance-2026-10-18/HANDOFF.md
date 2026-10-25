@@ -1,43 +1,38 @@
-# 当前交接：仅微信小程序（2026-10-25）
+# 当前交接：仅微信小程序（2026-10-25续办）
 
-## 用户最终决定与执行状态
+## 当前目标与范围
 
-当前及未来一段时间只做微信小程序。App已实现部分、未提交源码和中断增量全部保留，不再继续修复/扩展/验收；不卸载、不回滚、不清理以“纠偏”。已完成工作移出唯一PLAN，保留在[审查实施核对](REVIEW-IMPLEMENTATION-AUDIT-20261025.md)和原证据中。层叠性能、云观星播放/调时性能及相关内存/OOM继续后置，OOM未解决。
+本线程已先get_goal确认无目标，再以GOAL-OBJECTIVE完整“小程序Goal正文”建立无预算active目标。唯一PLAN继续使用，当前及未来只做微信小程序及其真实BFF/管理/共享依赖。旧含App目标未恢复；App/专属API、APK、工具链和全部dirty/私有/中断成果保留不继续。两类性能及相关内存/OOM继续后置，OOM未解决；gen34不重建，gen24 scene-memo暂停，R27同问题停止。
 
-本聊天旧Goal实读 **paused**，其工具正文仍含App，不能作为新目标。此次只整理范围和交接；新对话收到[NEXT](NEXT-CHAT-PROMPT.md)明确继续指令后，按新[Goal正文](GOAL-OBJECTIVE.md)创建/续用范围一致的无预算目标。不要把旧Goal标complete来消除文本冲突；本次交接完成不等于产品完成。
+## 唯一下一步
 
-**唯一下一步：恢复微信小程序正常功能核对入口。** 先核main源码/普通WEAPP候选、现有官方会话、USB目标和小程序实际API通路，切回微信而非继续App。首个阻塞仍在时只恢复该边界；不可自动完成的人类动作后置，转PLAN P4的管理body结构/错误分类有界HTTP判别等独立小程序工作。入口可用后按P1/P2/P3核采用UI、真实内容、选点/返回与时刻正确性。当前不恢复性能Profiler，不用App替代小程序。
+**恢复当前普通小程序手机→业务API通路，再补正常账户/My、成功Context选点与真实功能旅程。** 手机已可用并回普通微信，不能再从旧“最后是App”快照转做App。首个失败边界是手机到当前host/8806 TCP timeout，本机ready=200。最小防火墙Apply/Restore已准备和独审；Root单次Start-Process RunAs启动失败，没有管理员进程、apply-attempt或执行receipt，之后真实COM全7条Node规则仍与前快照一致。勿反复弹提权或重放Apply；待可交互桌面系统授权可完成时，由Root核当前脚本/快照/进程/网络/attempt后执行一次，再查规则与同手机HTTP。
 
-## 源码与保全
+该系统条件尚未具备时，独立工作只取PLAN当前剩余小程序责任，沿[P4实际环境核对](R20-P4-ENVIRONMENT-NEXT-20261025.md)准备实际用户媒体目标/资格，或在已有合格管理凭据下只读核session。最小body判别已经完成，不再重做；worker/replay会产生实际工作，不能当只读探针。缺真实身份/存储/供应条件不以LOCAL_TEST或App替代。
 
-- 工作目录D:/dev/Starward，分支main；另一电脑分支codex/remote-main-20260908不切换。范围整理前最新代码批次为 **3d23e3fad29e2e217fbf5195f14e58f22c17507f**，当时origin/main一致。本次文档交付/实际最新HEAD另见[交接验证](HANDOFF-VALIDATION-20261025.md)，新对话仍须实读。
-- 285件已材料化LFS资产M、私有原件、task-notes/外部zip、冻结构建和所有未提交成果保留；不reset/clean/force/stash，不建worktree，不拿远端覆盖本地。不能为获得干净状态删除或提交无关成果。
-- App保留范围包括已提交的App/独立API工作、近期未提交的共享偏好修复、permission-handoff模块，以及中断的新建预设wrapper/相关编辑。中断代码不保证可构建，不补做它的测试/修复；新聊天不要再派这些App任务。
-- 文档改写前原字节和17项App源码保全指纹在 `tmp/miniapp-handoff-20261025/preservation-manifest.json`；原文档在同目录original。App生成工程/模块build、D:/swt和D:/StarwardTools工具链留存，不能夹带暂存。历史报告原位保留；旧“当前/active/下一步”仅属当时，不能覆盖本交接。
+## 本轮已完成并复用
 
-## 当前微信候选与手机
+- 管理输入：四controller共24个body路由在认证/operation之后准入对象，非法body与已证标量字段现为400 INVALID_INPUT/nonretryable；真实409/503和客户端未知提交/缓存恢复保留。[HTTP证据](R20-ADMIN-INPUT-HTTP-20261025.md)、[独审](R20-ADMIN-INPUT-REVIEW-20261025.md)。worker16/16、客户端16/16和worker typecheck通过。真实PG/部署/完整schema仍不外推。
+- 手机：沿原普通HGyEOG成功回到微信Map/Search/系统选点器；新增仅供当前已审阅右上“完成”的窄输入入口，92/92及独审通过。实际确认返回Search，但API失败、原查询保留，未取得新Context提交；[手机证据](R19-PICKER-CONFIRM-PHONE-20261025.md)。
+- Search：只删除重复“搜索数据异常”floating effect，保本页错误/过期/重试及具体操作失败含义。67项相关检查、类型检查、普通编译、[源码独审](R19-SEARCH-FAILURE-FEEDBACK-REVIEW-20261025.md)通过。Root曾误读修前图并做高度试验；[独审](R19-SEARCH-SCROLL-REVIEW-20261025.md)指出修前错误卡本就可见，Root核SHA后更正、SCSS恢复HEAD，没有高度/布局改动交付。
+- 当前小程序API任务库只读实查有26条migration登记，023–026均在；未重迁移、未读账户业务行。当前POSTGRES/LOCAL_TEST/media DISABLED，不能当真实云媒体闭环。现代码尚无用户媒体云对象存储adapter，Map静态OSS/ESA的采用不供应此能力；先核真正目标/权益，再沿原owner补provider边界，不造新通用平台。
 
-- 最近有效普通WEAPP：HGyEOG/gen1 AKYc0l，**339件/5,037,760B，SHA ef6eeee2bb44ef2af5c3ddde69961faa2650a7ce9c27ff6392a6ff39fd9c3cd1**；main2,025,876B。官方普通auto_preview成功，shared/private大包flag均false。该主包问题已关闭，不重做瘦身。源码/环境变更后重新资格当前普通候选，不能靠旧hash冒当前。
-- 关联旧USB session：`%TEMP%/starward-device-feedback-HGyEOG/starward-device-test-G2HMxB`。旧截图/输入许可已过期；每次输入必须重新核目标、前台与新鲜单次画面。真实运行AppID/手机源字节的独立确认、正常业务API/完整UI验收仍欠。
-- 已有小程序反馈只证明部分Map/My往返，以及[微信系统选点器打开/Back取消/查询保留/返回Map](R19-PICKER-READONLY-20261025.md)。成功选点提交、真实wx定位与精度、正常账户/My/H4和完整采用稿仍未验完。
-- 最后一次手机操作是**独立Android App d4a6c9da…**内偏好页/r2。它是apps/mobile的运行结果，不是小程序或设计稿；其APK、定位授权、偏好数据和检查不得作微信证据。保留即可，新对话先按微信官方流程进入小程序，不继续App。
-- 官方Skill上次为0.3.14；新对话读取现行skill并核实际环境。Root已在核微信15源pin/普通canonical同步后，官方关闭自有RTtHkV源码及debug窗口，当时只余项目列表。旧IDE副本a2012e72…的SDK补入WXSS/开发大包条件与普通ef6分开，不删除文件凑指纹或反写源码。
+## 当前源码、候选和手机
 
-## 服务、网络与未完成条件
+本机只在main。接手基线为1bef1a09819b563fe44d6437a200210ff30606f7，本轮新交付HEAD/CI必须实时读Git/GitHub，不抄旧hash冒最新。当前完整证据及实际回执归[本轮入口恢复](R20-WEAPP-ENTRY-RECOVERY-20261025.md)。
 
-- 小程序API最近owner：`C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/network-topology-recovery-20261024/current-phone-api-hotspot-20261024T142546688Z/`。现用origin/目标/进程/条件恢复读同父目录 `selected-origin.hotspot.private.json`，不要抄旧IP。
-- 原PG55441/原库22保留；只有任务副本迁至26。小程序API8806本机曾ready，**手机HTTP未通过**：已有Public Node Block覆盖8806，旧Allow作用域不匹配；真实WeChat/QWeather凭据和正式身份资格仍有缺口。LOCAL_TEST不是生产身份。
-- 本次只读盘点仍见8806/PID19920、55441/PID18504监听；4318/PID21248是另一个App专用loopback API，保留但不用作小程序后端。PID/端口只是该次读数，操作前重新核exe/启动时间/owner，不全局kill或重启共享服务。
-- 手机已有热点、PC已保存连接和Fixed成本profile及条件恢复原件仍保留；VPN/TUN和另一热点客户端不动。当前shell实读未提升；需要系统修改时按现行Windows规则检查真实token和最小操作，不假称已有管理员权限。
-- 旧防火墙材料只是准备/只读结果；没有合格Apply/Restore入口，DevTools LAN端口/完整规则条件未齐。不可重放旧ICS/规则脚本、关防火墙或绕VPN。普通API连通与后置性能运输分别处理。
+最终普通候选 **4VEyDu/gen1 pCvBDO**，339件/5,036,803B，SHA `58dc304a2eca653a97b4725c887c06033704509d53be5f6f0522f096025d1f80`；源main2,025,876B。canonical和prepared指纹相同，最终官方auto_preview成功，官方main2,095,524B/总5,056,009B；Root重新实看手机已回Map。现用feedback=`%TEMP%/starward-device-feedback-4VEyDu`，session=`starward-device-test-GDWVeL`。下一输入必须新capture/实看；运行AppID、手机源字节独立证明、正常业务API、完整UI/功能验收仍欠。
 
-## CI、部署与证据停止边界
+本轮s2 canonical与s3旧prepared均官方精确关闭。旧OsLbPN由DevTools增加25B My WXSS注释而变指纹，旧session被guard拒绝；没有删文件凑hash或改写该原件，最终普通候选不再用SDK打开。9563后台listener仍属DevTools utility，未全局kill。官方历史导入列表仍4项，未知/冻结入口未擅删，退休缺口保留。HGyEOG、全部冻结代、本轮试验/SDK原件和私有图像录像均保留；任务图像归既有private device-resume/miniapp-entry-20261025，未上传。
 
-- 3d23代码批次：Product **40140729126 success**、Context **40140729111 success**；staging **40141832516 failure**，实际 `host_preflight_disk_below_10_gib`，镜像发布/部署skip。新文档提交的检查另记，不能把docs轻量成功当新产品/部署验收。
-- host-cache **40140796151 success**已经回答一次有限记录观察：123条、返回64/省略59，storage permission_denied，归属/完整引用/builder未资格。没有合格可删集合、清理或容量恢复；不重跑同条件观察、不prune、不盲重试部署。见[真实记录](R20-HOST-CACHE-TARGET-OBSERVATION-20261025.md)。
-- gen34禁止prepare/build/refresh；gen24 scene-memo暂停，R27同问题停止，gen26 UNKNOWN与全部原件保留。两类性能及Windows/Profiler环境不再是当前首步；必要时按已有方法和新条件恢复，不重复失败采集。
-- 新确认的审查遗漏仅为P4管理输入结构的**待判别源码线索**；没有本轮HTTP复现，不写成已证漏洞。Node contracts旧存储未发现小程序消费者，退出本Goal；Taroify维持未采用，只澄清条件口径。
+## 服务、保全和外部缺口
 
-## 新对话读取顺序
+小程序现用origin/目标/owner继续从 `C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/network-topology-recovery-20261024/selected-origin.hotspot.private.json` 实读，不抄旧IP/PID。同父 `miniapp-api-firewall-20261025/` 持有已独审的私有脚本/快照及单次失败启动记录；实际运行前查新状态。原PG55441/原库22保留，只有任务副本已迁至26。现有App loopback API保留不用；不全局停服务、改网络/VPN/TUN、账户/N05或R6提醒，不重发已送达消息，不reset/clean/force/stash/新worktree/切另一电脑分支。
 
-INDEX → GOAL-OBJECTIVE → REQUIREMENTS/INHERITED → 唯一PLAN → 本HANDOFF → HANDOFF-VALIDATION → REVIEW-IMPLEMENTATION-AUDIT。然后按当前责任读取最新skill、global/相关Context和采用源。原CURRENT-VALIDATION、R20核验/独审和其它历史记录按需查证，不把所有历史文件全文当新待办，不默认读App的docs/source-plan.md。
+285件LFS材料化资产、全部App dirty/未提交、外部zip、task-notes及旧锁保全继续保留，不夹带提交。旧HANDOFF-VALIDATION和Native环境文件原有dirty回执未覆盖。旧交接提到的tmp保全manifest本轮所列路径不可读，未据此清理或声称重新核完其17项hash；原成果保留，不补App开发/验收。
+
+## CI与部署边界
+
+接手head的Product40150406033是docs轻量成功，16个产品步骤skipped；Context40150406055成功；Backend40150435741仅qualify，publish-and-deploy skipped。3d23的staging40141832516仍在host_preflight_disk_below_10_gib失败；host-cache40140796151只有一次有限观察，无可删集合/容量恢复。不prune、不盲重试部署。
+
+本轮实际新head的CI/执行和跳过按GitHub读回，结果归入口恢复证据；本地或docs成功不称全绿/已部署。必要小程序结果与后置性能未完，Goal保持active，不标complete。

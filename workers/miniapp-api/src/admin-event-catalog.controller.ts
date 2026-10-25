@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Headers, Inject, Param, Post, Query } from "@nestjs/common";
 import type { AstronomicalEventCatalogPackage, EventCatalogSourceConfig, EventCatalogActiveIdentity, EventCatalogCandidateState } from "./astronomical-event-catalog-owner.ts";
 import { EVENT_CATALOG_SCHEMA_VERSION, eventCatalogDigest, isRetiredBuiltInCatalog, diffAstronomicalEventCatalog, sameCatalogContent } from "./astronomical-event-catalog-owner.ts";
-import { adminOperationsContext, requiredText } from "./admin-operations-support.ts";
+import { adminOperationsContext, assertAdminObjectBody, requiredText } from "./admin-operations-support.ts";
 import { envelope } from "./admin.controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import { extractEventArticle, retrieveEventArticle, decodeEventArticleHtml, EVENT_ARTICLE_HTML_BYTES } from "./event-article-extraction.ts";
@@ -49,6 +49,7 @@ export class AdminEventCatalogController {
   @Post("sources/:sourceId")
   async configureSource(@Param("sourceId") rawSourceId: string, @Body() body: Partial<EventCatalogSourceConfig> & { createOnly?: boolean }, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const context = adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_SOURCE_MANAGE");
+    assertAdminObjectBody(body);
     const endpoint = body.endpoint === null ? null : requiredText(body.endpoint, "event_source_endpoint", 1_000);
     if (endpoint && !endpoint.startsWith("https://")) throw new Error("event_catalog_source_url_invalid");
     const config: EventCatalogSourceConfig = {
@@ -70,12 +71,14 @@ export class AdminEventCatalogController {
   @Post("imports")
   async importPackage(@Body() body: { sourceId?: string; package?: AstronomicalEventCatalogPackage; articleRightsConfirmation?: EventArticleRightsConfirmation }, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const context = adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_IMPORT");
+    assertAdminObjectBody(body);
     return envelope(await this.service.eventCatalog.importCandidate({ sourceId: sourceId(requiredText(body.sourceId, "event_source_id", 128)), package: body.package, actorId: context.actorId, ...(body.articleRightsConfirmation ? { articleRightsConfirmation: body.articleRightsConfirmation } : {}) }));
   }
 
   @Post("article-previews")
   async articlePreview(@Body() body: { url?: string; html?: string; htmlBase64?: string }, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_IMPORT");
+    assertAdminObjectBody(body);
     const url = requiredText(body.url, "event_article_url", 2000);
     if (body.htmlBase64 !== undefined) {
       if (body.html !== undefined) throw new Error("event_article_html_invalid");
@@ -88,12 +91,14 @@ export class AdminEventCatalogController {
   @Post("article-imports")
   async articleImport(@Body() body: EventArticleImport, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const context = adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_IMPORT");
+    assertAdminObjectBody(body);
     return envelope(await importEventArticle(this.service.eventCatalog, body, context.actorId));
   }
 
   @Post("candidates/:candidateId/review")
   async review(@Param("candidateId") rawCandidateId: string, @Body() body: { decision?: "APPROVE" | "REJECT"; reason?: string; expectedState?: EventCatalogCandidateState; expectedActive?: EventCatalogActiveIdentity }, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const context = adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_REVIEW");
+    assertAdminObjectBody(body);
     if (body.decision !== "APPROVE" && body.decision !== "REJECT") throw new Error("event_catalog_review_decision_invalid");
     return envelope(await this.service.eventCatalog.reviewCandidate({ candidateId: candidateId(rawCandidateId), decision: body.decision, actorId: context.actorId, reason: requiredText(body.reason, "event_review_reason", 500), ...(body.expectedState !== undefined ? { expectedState: body.expectedState } : {}), ...(body.expectedActive !== undefined ? { expectedActive: body.expectedActive } : {}) }));
   }
@@ -101,12 +106,14 @@ export class AdminEventCatalogController {
   @Post("candidates/:candidateId/publish")
   async publish(@Param("candidateId") rawCandidateId: string, @Body() body: { reason?: string; expectedActive?: EventCatalogActiveIdentity }, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const context = adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_PUBLISH");
+    assertAdminObjectBody(body);
     return envelope(await this.service.eventCatalog.publishCandidate({ candidateId: candidateId(rawCandidateId), actorId: context.actorId, reason: requiredText(body.reason, "event_publication_reason", 500), ...(body.expectedActive !== undefined ? { expectedActive: body.expectedActive } : {}) }));
   }
 
   @Post("rollback/:catalogVersion")
   async rollback(@Param("catalogVersion") rawVersion: string, @Body() body: { reason?: string; expectedActive?: EventCatalogActiveIdentity }, @Headers("x-admin-token") token?: string, @Headers("x-admin-actor") actor?: string) {
     const context = adminOperationsContext(this.service, token, actor, "EVENT_CATALOG_ROLLBACK");
+    assertAdminObjectBody(body);
     const catalogVersion = decodeURIComponent(rawVersion);
     if (!/^[a-zA-Z0-9][a-zA-Z0-9.+_-]{2,159}$/u.test(catalogVersion)) throw new Error("event_catalog_version_invalid");
     return envelope(await this.service.eventCatalog.rollback({ catalogVersion, actorId: context.actorId, reason: requiredText(body.reason, "event_rollback_reason", 500), ...(body.expectedActive !== undefined ? { expectedActive: body.expectedActive } : {}) }));

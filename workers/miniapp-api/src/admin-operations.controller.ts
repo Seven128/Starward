@@ -9,6 +9,7 @@ import {
 } from "@nestjs/common";
 import {
   adminOperationsContext,
+  assertAdminObjectBody,
   optionalClaims,
   requiredIdempotency,
   requiredRevision,
@@ -74,6 +75,7 @@ export class AdminOperationsController {
       actor,
       "CASE_REVIEW",
     );
+    assertAdminObjectBody(body);
     const result = await context.repository.adminRequestContributionChanges({
       caseId: decodeURIComponent(caseId),
       reason: requiredText(body.reason, "moderation_reason", 500),
@@ -120,6 +122,7 @@ export class AdminOperationsController {
       actor,
       "MEDIA_REVIEW",
     );
+    assertAdminObjectBody(body);
     if (body.decision !== "ACCEPTED" && body.decision !== "REJECTED")
       throw new Error("admin_media_decision_invalid");
     const result = await context.repository.adminReviewContributionMedia({
@@ -147,6 +150,7 @@ export class AdminOperationsController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     adminOperationsContext(this.service, token, actor, "MEDIA_REVIEW");
+    assertAdminObjectBody(body);
     if (body.decision !== "ACCEPT" && body.decision !== "REJECT")
       throw new Error("admin_media_decision_invalid");
     return this.reviewMedia(
@@ -181,6 +185,7 @@ export class AdminOperationsController {
       actor,
       "MERGE_PREVIEW",
     );
+    assertAdminObjectBody(body);
     const result = await context.repository.adminCreateMergePreview({
       caseId: decodeURIComponent(caseId),
       spotId: requiredSpotId(body.spotId ?? ""),

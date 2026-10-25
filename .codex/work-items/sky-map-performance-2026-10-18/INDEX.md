@@ -12,6 +12,8 @@
 6. [REVIEW-IMPLEMENTATION-AUDIT](REVIEW-IMPLEMENTATION-AUDIT-20261025.md)：Web GPT Pro全仓审查F01–F15/三重构/条件建议的去向，已完成历史与新增小程序判别。
 7. [NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)：给新对话的明确继续指令，不能单凭旧“active/next”启动App。
 
+本线程实际续办、最终普通候选和校正后的验证边界见[普通微信入口恢复](R20-WEAPP-ENTRY-RECOVERY-20261025.md)；该证据不构成第二份计划，当前状态/唯一下一步仍只归HANDOFF。最小管理输入判别已完成，沿HTTP/独审证据复用。
+
 ## 按责任查证据，不重新执行已完成项
 
 | 责任 | 证据入口 |

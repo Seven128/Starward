@@ -19,7 +19,13 @@ import {
   authenticateAdmin,
   adminOperations,
 } from "./admin-auth.ts";
-import { adminOperationsContext } from "./admin-operations-support.ts";
+import {
+  adminOperationsContext,
+  assertAdminObjectBody,
+  requiredIdempotency as requireIdempotency,
+  requiredRevision as requireRevision,
+  requiredText as requireText,
+} from "./admin-operations-support.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import {
   type AdminContributionEvidenceClaim,
@@ -43,22 +49,6 @@ const SPOT_COMMAND_CONTRACTS = {
   "spot.candidate.create": { version: 1, method: "POST", path: "/v2/admin/spots/candidate-commands" },
   "spot.patch": { version: 1, method: "PATCH", path: "/v2/admin/spots/:spotId/commands" },
 } as const;
-
-function requireText(value: unknown, field: string, maximum: number) {
-  if (typeof value !== "string" || !value.trim() || value.length > maximum)
-    throw new Error(`admin_${field}_invalid`);
-  return value.trim();
-}
-
-function requireRevision(value: unknown, field = "revision") {
-  if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
-    throw new Error(`admin_${field}_invalid`);
-  return value;
-}
-
-function requireIdempotency(value: string | undefined) {
-  return requireText(value, "idempotency_key", 200);
-}
 
 export function envelope<T>(data: T) {
   const generatedAt = new Date().toISOString();
@@ -152,6 +142,7 @@ export class AdminController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "SPOT_CREATE");
+    assertAdminObjectBody(body);
     const name = requireText(body.name, "name", 120);
     const region = requireText(body.region, "region", 120);
     const address = requireText(body.address, "address", 500);
@@ -247,6 +238,7 @@ export class AdminController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "SPOT_EDIT");
+    assertAdminObjectBody(body);
     const command = idempotencyKey === undefined ? undefined : {
       idempotencyKey: requireIdempotency(idempotencyKey),
       expectedSpotRevision: requireRevision(body.expectedRevision),
@@ -431,6 +423,7 @@ export class AdminController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "PUBLISH");
+    assertAdminObjectBody(body);
     const result = await context.repository.adminChangeSpotLifecycle({
       spotId: decodeURIComponent(spotId) as SpotId,
       action: "PUBLISH",
@@ -460,6 +453,7 @@ export class AdminController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "SUSPEND");
+    assertAdminObjectBody(body);
     const result = await context.repository.adminChangeSpotLifecycle({
       spotId: decodeURIComponent(spotId) as SpotId,
       action: "SUSPEND",
@@ -523,6 +517,7 @@ export class AdminController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "CASE_REVIEW");
+    assertAdminObjectBody(body);
     if (!caseId) throw new Error("moderation_case_not_found");
     if (
       body.resolution !== "APPROVED" &&
@@ -574,6 +569,7 @@ export class AdminController {
     @Headers("x-admin-actor") actor?: string,
   ) {
     const context = this.#context(token, actor, "MERGE_COMMIT");
+    assertAdminObjectBody(body);
     if (!caseId) throw new Error("moderation_case_not_found");
     if (!body.spotId?.startsWith("spot:"))
       throw new Error("formal_spot_not_found");

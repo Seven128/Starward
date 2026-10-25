@@ -357,7 +357,7 @@ test("observed native location picker requires explicit scope and its AppBrand r
   assert.throws(() => verifyFocusedWindow(`mCurrentFocus=Window{abc u0 ${activity}}`, locationPickerActivity), /focus_required/u);
 });
 
-test("native location picker fresh capture permits only one Back, never selection or text", async (t) => {
+test("native location picker generic input permits only one Back, never selection or text", async (t) => {
   const state = await session(t);
   const { driver, calls } = adbDriver({ locationPicker: true });
   const output = [];
@@ -382,6 +382,72 @@ test("native location picker fresh capture permits only one Back, never selectio
   assert.ok(calls.some(args => args.join(" ").endsWith("input keyevent KEYCODE_BACK")));
   await assert.rejects(main(["back", "--session", state.directory], context), /capture_required/u);
   assert.ok(!JSON.stringify(output).includes("private-serial"));
+});
+
+const confirmPicker = (directory, x = ".885", y = ".068") => ["confirm-location-picker", "--session", directory,
+  "--x", x, "--y", y, "--confirm", "selected_location_reviewed"];
+
+test("location picker confirmation requires explicit review and consumes one scoped header tap", async (t) => {
+  const args = confirmPicker("unused");
+  assert.throws(() => parseArguments(args.slice(0, -2)), /argument_missing/u);
+  assert.throws(() => parseArguments([...args.slice(0, -1), "unreviewed"]), /location_picker_review_required/u);
+  assert.equal(parseArguments([...args, "--transport", "wireless"]).options.transport, "wireless");
+  const state = await session(t), { driver, calls } = adbDriver({ locationPicker: true }), output = [];
+  const context = { adb: driver, emit: value => output.push(value) };
+  await main(["capture-location-picker", "--session", state.directory], context);
+  await main(confirmPicker(state.directory), context);
+  assert.equal(output.at(-1).actionSent, "confirm-location-picker");
+  assert.deepEqual(calls.filter(args => args.includes("input")).map(args => args.slice(2)), [["shell", "input", "tap", "955", "163"]]);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  await assert.rejects(main(confirmPicker(state.directory), context), /capture_required/u);
+  assert.equal(calls.filter(args => args.includes("input")).length, 1);
+  assert.ok(!JSON.stringify(output).includes("private-serial"));
+});
+
+test("location picker confirmation rejects other scopes and targets without dispatch", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver(), context = { adb: driver, emit: () => {} };
+  await main(["capture", "--session", state.directory], context);
+  await assert.rejects(main(confirmPicker(state.directory), context), /location_picker_scope_required/u);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.ok(!calls.some(args => args.includes("input")));
+  const picker = adbDriver({ locationPicker: true }), pickerContext = { adb: picker.driver, emit: () => {} };
+  for (const [x, y] of [[".5", ".068"], [".885", ".5"], ["NaN", ".068"], [".885", "Infinity"]]) {
+    await main(["capture-location-picker", "--session", state.directory], pickerContext);
+    await assert.rejects(main(confirmPicker(state.directory, x, y), pickerContext), /location_picker_confirm_target_invalid/u);
+    assert.equal((await loadSession(state.directory)).capture, null);
+  }
+  assert.ok(!picker.calls.some(args => args.includes("input")));
+});
+
+test("location picker confirmation keeps display and foreground rechecks", async (t) => {
+  const state = await session(t), picker = adbDriver({ locationPicker: true });
+  await main(["capture-location-picker", "--session", state.directory], { adb: picker.driver, emit: () => {} });
+  const changed = adbDriver({ locationPicker: true, changed: true });
+  await assert.rejects(main(confirmPicker(state.directory), { adb: changed.driver, emit: () => {} }), /display_changed/u);
+  assert.ok(!changed.calls.some(args => args.includes("input")));
+  assert.equal((await loadSession(state.directory)).capture, null);
+  await main(["capture-location-picker", "--session", state.directory], { adb: picker.driver, emit: () => {} });
+  const unrelated = adbDriver();
+  await assert.rejects(main(confirmPicker(state.directory), { adb: unrelated.driver, emit: () => {} }), /location_picker_foreground_required/u);
+  assert.ok(!unrelated.calls.some(args => args.includes("input")));
+});
+
+test("location picker confirmation checks screenshot freshness again immediately before dispatch", async (t) => {
+  const state = await session(t), { driver, calls } = adbDriver({ locationPicker: true });
+  let now = 1_800_000_000_000, expireInPreflight = false;
+  t.mock.method(Date, "now", () => now);
+  const original = driver.command.bind(driver);
+  driver.command = async (args, options) => {
+    const value = await original(args, options);
+    if (expireInPreflight && args.join(" ") === "exec-out screencap -p") now += 60_001;
+    return value;
+  };
+  const context = { adb: driver, emit: () => {} };
+  await main(["capture-location-picker", "--session", state.directory], context);
+  expireInPreflight = true;
+  await assert.rejects(main(confirmPicker(state.directory), context), /recent_capture_required/u);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.ok(!calls.some(args => args.includes("input")));
 });
 
 const openTethering = sessionDirectory => ["open-tethering-settings", "--session", sessionDirectory, "--confirm", "authorized_network_setup"];

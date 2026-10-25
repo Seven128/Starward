@@ -9,6 +9,7 @@ import {
 } from "@nestjs/common";
 import {
   adminOperationsContext,
+  assertAdminObjectBody,
   requiredIdempotency,
   requiredRevision,
   requiredSpotId,
@@ -52,6 +53,7 @@ export class AdminPublicationController {
       actor,
       "PUBLICATION_ASSESS",
     );
+    assertAdminObjectBody(body);
     const expected = body.expectedSpotRevision ?? body.expectedRevision;
     const result = await context.repository.adminAssessPublication({
       spotId: requiredSpotId(spotId),
@@ -100,6 +102,7 @@ export class AdminPublicationController {
       actor,
       action,
     );
+    assertAdminObjectBody(body);
     const result = await context.repository.adminChangeSpotLifecycle({
       spotId: requiredSpotId(spotId),
       action,
@@ -167,6 +170,7 @@ export class AdminPublicationController {
       actor,
       "REPLACE",
     );
+    assertAdminObjectBody(body);
     const successor = normalizeSuccessor(body.successorSpotId);
     const result = await context.repository.adminPreviewReplacement({
       spotId: requiredSpotId(spotId),
@@ -193,6 +197,7 @@ export class AdminPublicationController {
       actor,
       "REPLACE",
     );
+    assertAdminObjectBody(body);
     const result = await context.repository.adminCommitReplacement({
       spotId: requiredSpotId(spotId),
       successorSpotId: normalizeSuccessor(body.successorSpotId),

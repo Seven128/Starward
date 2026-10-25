@@ -2,6 +2,8 @@
 
 The server derives the audit actor and allowed operations from the presented credential. `x-admin-token` remains the transport field for existing clients. `x-admin-actor` is optional and, when present, must exactly match the authenticated principal; it never selects roles. `GET /v2/admin/session` returns only that principal's actor, roles and allowed operations. It returns neither credentials nor their hashes.
 
+Management routes that accept a body require a non-null JSON object. After authentication and operation authorization, the shared admission in `admin-operations-support.ts` rejects absent, scalar and array bodies before field access or business calls. Its text/revision validators return structured HTTP 400 `INVALID_INPUT`, with `retryable: false`; field names such as `provider` or `revision` cannot turn invalid input into a supplier outage or concurrency conflict. Existing domain validators, actual repository conflicts, provider failures and unknown prior-command recovery retain their own meaning. This object admission is not a replacement for each operation's nested data validation.
+
 Configure distinct credentials with `MINIAPP_ADMIN_CREDENTIALS`, a JSON array:
 
 ```json
