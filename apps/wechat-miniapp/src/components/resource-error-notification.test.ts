@@ -97,7 +97,7 @@ test("independent data pages notify only while visible and keep error recovery",
   }
 });
 
-test("successful cache fallbacks still emit the shared floating data warning", () => {
+test("pages that own floating feedback still warn for successful cache fallbacks", () => {
   const cases = [
     { path: "../spot/data-source/index.tsx", marker: "data-source-failed",
       bindings: ["enabled", "airEnvelope", "airFailed", "overviewFailed"], context: {
@@ -112,11 +112,6 @@ test("successful cache fallbacks still emit the shared floating data warning", (
       guides: { isError: false, refreshError: null, data: { dataState: "STALE_USABLE" } },
       overview: { isError: false, refreshError: null, data: { dataState: "FRESH" } },
       site: { isError: false, refreshError: null, data: { dataState: "FRESH" } }, articleId: "article:1" } },
-    { path: "../pages/map/search-page.tsx", marker: "search-resource-failed", context: {
-      queryUnconfirmed: false,
-      contextQuery: { error: null, refreshError: null, data: { dataState: "STALE_USABLE" } },
-      scene: { error: null, refreshError: null, data: { dataState: "FRESH" } },
-      placeSearch: { error: null, refreshError: null, data: { dataState: "FRESH" } }, isPermissionError: () => false } },
     { path: "../content/spot-feedback/index.tsx", marker: "formal-feedback-resource-failed", context: {
       query: { isError: false, refreshError: null, data: { dataState: "STALE_USABLE" } },
       history: { isError: false, refreshError: null, data: { dataState: "FRESH" } },
@@ -128,6 +123,42 @@ test("successful cache fallbacks still emit the shared floating data warning", (
     assert.equal(notices.length, 1, item.path);
     assert.equal(notices[0].placement, "floating", item.path);
     assert.equal(notices[0].tone, "info", item.path);
+  }
+});
+
+test("Search resource fallbacks and failures do not add a floating notification to local recovery", () => {
+  const source = ts.createSourceFile("search.tsx", readFileSync(new URL("../pages/map/search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const component = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "MapSearchSurface");
+  assert.ok(component?.body);
+  const callbacks: ts.Expression[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "useEffect") {
+      assert.ok(node.arguments[0], "each mounted Search effect has a callback");
+      callbacks.push(node.arguments[0]);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(component.body);
+  assert.ok(callbacks.length, "exercise the real mounted Search effects");
+  const code = ts.transpileModule(callbacks.map(callback => `(${callback.getText(source)})();`).join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const context = { contextId: "context:search", revision: 1, contextFingerprint: "same" };
+  for (const owner of ["contextQuery", "scene", "placeSearch"] as const) for (const mechanism of ["cached-success", "refresh-failure", "cold-failure"] as const) {
+    const fresh = () => ({ error: null as unknown, refreshError: null as unknown, data: { dataState: "FRESH", data: context } as { dataState: string; data: typeof context } | undefined });
+    const resources = { contextQuery: fresh(), scene: fresh(), placeSearch: fresh() };
+    if (mechanism === "cached-success") resources[owner].data!.dataState = "STALE_USABLE";
+    else if (mechanism === "refresh-failure") resources[owner].refreshError = new Error("network unavailable");
+    else { resources[owner].error = new Error("network unavailable"); resources[owner].data = undefined; }
+    const notices: unknown[] = [];
+    vm.runInNewContext(code, {
+      ...resources, pageVisible: true, queryUnconfirmed: false, finderQuery: "深圳", mapResetVersion: 0,
+      observationContext: context, selectedSpotId: null, selectionVersion: { current: 0 },
+      useAppStore: { getState: () => ({ observationContext: context, mapResetVersion: 0, selectedSpotId: null }) },
+      spotSelectionAllowsContextRestore: () => true, canApplyContextRestore: () => true,
+      setObservationContext: () => assert.fail("unchanged Context must stay committed"),
+      setTimeout: () => 0, clearTimeout: () => {}, setDebouncedQuery: () => {},
+      isPermissionError: () => false, notify: (notice: unknown) => notices.push(notice),
+    });
+    assert.deepEqual(notices, [], `${owner}/${mechanism}: local feedback must not be duplicated by a mounted effect`);
   }
 });
 

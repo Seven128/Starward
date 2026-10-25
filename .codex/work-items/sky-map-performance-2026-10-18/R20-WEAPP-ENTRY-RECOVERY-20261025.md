@@ -50,6 +50,8 @@ Root从现用小程序API owner选择配置，通过精确数据库名匹配后�
 
 Root核真实非提升token及审阅SHA后，仅调用一次PowerShell7 `Start-Process -Verb RunAs`。实际结果为launch_failed，未产生管理员进程、apply-attempt或执行receipt；之后再次经已审阅的Snapshot/Equivalent对真实COM读取，全部7条Node规则仍匹配修改前快照，没有新自有规则。没有重复提权或重放Apply；需要可交互桌面的系统授权后才能进入真实执行/读回。准备本身不等于连通、权限资格或部署完成。
 
+本轮还通过同版官方cloudbase-operator的`cloud_env_list`只读核当前小程序配置，返回服务端`ret=1000 / system error`，没有取得环境列表。环境数量是不可用，不是0；没有推定未开通或缺权限，也没有选择环境、开通服务或进行云写入。实际用户媒体目标和权益仍未建立。
+
 ## Unverified
 
 正常账号/My真实资料、手机业务API、正式微信身份/运行AppID及手机源字节的独立证明仍欠。系统选点成功后的Context提交、定位精度/权限、真实H4、完整UI/生命周期、Map资源退休、Sky及全部既有剩余结果不因这次入口恢复关闭。两类性能与内存/OOM继续后置，OOM未解决。
@@ -65,3 +67,13 @@ Root核真实非提升token及审阅SHA后，仅调用一次PowerShell7 `Start-P
 设备、官方窗口和共享服务由Root独占。HGyEOG及本轮各普通候选/SDK差异/已撤回高度试验原件保留，最终只续用4VEyDu。私有画面/录像和meta已归档到既有private device-resume/miniapp-entry-20261025，未上传；未改账号/N05、未重发R6。s2 canonical和s3旧prepared均由官方精确关闭，关闭前后核source/产物及唯一SDK注释差异；9563后台listener仍由原DevTools utility持有，未全局kill。历史导入列表4项仍有退休缺口，未擅删未知/冻结入口。没有防火墙/VPN写、原服务重启、私有原件或冻结构建清理。
 
 提交流程另外发现01:32:48Z创建的旧零字节index.lock。核出生/长度/末写、排除原始Git owner并独占打开后，在同D盘task tmp保全原字节；未杀Git/LFS进程，未删除锁或改索引内容。读回源锁已不存在、保全SHA/长度不变。
+
+## 本轮代码交付与CI
+
+第一批已在main提交并推送`33b9317b2e4b31b1b27246157339f8011b3981cc`，30份显式写集，origin/main实读一致、0/0、暂存区为空；没有App源码、媒体资产、生成产物或私有原件。原有App tracked/untracked和旧dirty回执仍保留。交付后只读批量核资产目录2077个tracked文件，其中2017个LFS文件均为实际材料化字节且大小/SHA与锁定pointer一致，无缺失/残留pointer；本轮没有提交或丢弃这些资产。
+
+该head Context40156515772成功；Product40156515752在Check release code失败，后续消费者、backend/WEAPP/基础设施与OCI步骤跳过。该阶段Mini API为994 pass/74 skip/0 fail（1068），Mini Program为2817 pass/1 fail/1 skip（2819）；唯一失败是`resource-error-notification.test.ts`仍要求Search存在已取消的`search-resource-failed`浮层effect。它与当前本页反馈合同冲突，须迁移测试并保本页正值/恢复约束，不能恢复重复产品通知或删除门禁。Backend40157286835的qualify与publish-and-deploy均skipped，没有新部署或容量恢复。
+
+后续测试修复及新head的实际执行/跳过据真实结果续记；第一次失败保留为失败，不能由本地检查或docs成功冒全绿。
+
+唯一旧断言已按当前合同迁移，见[CI测试合同修复](R19-SEARCH-CI-CONTRACT-20261025.md)：保其它页面浮层正值，Search改为实际挂载effects不重复通知及本页STALE/真实重试/保查询的正值约束。受影响四文件28/28、Mini Program类型检查通过，新独审无must-fix；没有恢复产品effect、改样式或削弱现有消费者门禁。临时反查因Windows预载入口错误未形成有效证据，没有计入通过结果。该测试增量不改变当前58dc普通候选，不再重建或重复设备旅程。新head将使用既有全量CI入口补足前次未执行的消费者检查，实际结果后记。

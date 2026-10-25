@@ -36,3 +36,5 @@
 接手head的Product40150406033是docs轻量成功，16个产品步骤skipped；Context40150406055成功；Backend40150435741仅qualify，publish-and-deploy skipped。3d23的staging40141832516仍在host_preflight_disk_below_10_gib失败；host-cache40140796151只有一次有限观察，无可删集合/容量恢复。不prune、不盲重试部署。
 
 本轮实际新head的CI/执行和跳过按GitHub读回，结果归入口恢复证据；本地或docs成功不称全绿/已部署。必要小程序结果与后置性能未完，Goal保持active，不标complete。
+
+第一批33b9317b的实际CI：Context40156515772 success；Product40156515752 failure，唯一原因是旧资源通知fixture强制Search保留已取消浮层effect，后续消费者/构建/OCI等跳过；Backend40157286835整项skipped。该测试合同已窄修，受影响28项/TSC及新独审通过，产品字节保持58dc。测试修复交付后须核新head的全量现有消费者检查；不把失败头或仅按test diff跳过的兼容步骤冒通过，不重复部署失败条件。
