@@ -1,6 +1,7 @@
 export interface SkyObservationTimeState {
   binding: string;
   committedAt: string;
+  restoreAt: string;
   at: string;
   mode: "FIXED" | "PREVIEW" | "PLAYING" | "PAUSED";
   reachedEnd: boolean;
@@ -30,11 +31,15 @@ export function skyPresentedTimeCurrent(requestedAt: string, paintedAt: string |
  * committed Context. Elapsed time comes from the caller's scheduling clock;
  * zoom, camera, ephemeris and network effects do not live in this owner. */
 export function createSkyObservationTime(options: { latestInstant?: () => number } = {}) {
-  let state: SkyObservationTimeState = { binding: "", committedAt: "", at: "", mode: "FIXED", reachedEnd: false, runStartAt: null,
+  let state: SkyObservationTimeState = { binding: "", committedAt: "", restoreAt: "", at: "", mode: "FIXED", reachedEnd: false, runStartAt: null,
     playRequested: false, editing: [], editingGeneration: 0 };
   let coverage: SkyTimeCoverage | null = null;
   let anchor: { elapsedAt: number; instant: number; latestElapsed: number } | null = null;
   const latest = () => options.latestInstant?.() ?? Infinity;
+  const bounded = (at: string) => {
+    const limit = latest();
+    return Number.isFinite(limit) && Date.parse(at) > limit ? new Date(limit).toISOString() : at;
+  };
   const covered = (at: string) => Boolean(coverage && canonical(at) &&
     Date.parse(at) >= Date.parse(coverage.startAt) && Date.parse(at) <= Math.min(Date.parse(coverage.endAt), latest()));
   const publish = (change: Partial<SkyObservationTimeState>) => { state = { ...state, ...change }; return state; };
@@ -45,13 +50,20 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
     ? publish({ ...(state.mode === "PLAYING" ? { mode: "PAUSED" as const } : {}), runStartAt: null, playRequested: false }) : state; };
   return {
     snapshot: () => state,
+    latestInstant: latest,
+    // Before the binding effect runs, the page must use this same boundary.
+    // Once bound, entry/cancel retain one instant while the real Context may
+    // still describe a future Map/plan time.
+    restoreInstant: (binding: string, committedAt: string) => bounded(
+      binding === state.binding && committedAt === state.committedAt ? state.restoreAt : committedAt),
     bind(binding: string, committedAt: string, nextCoverage: SkyTimeCoverage | null) {
       if (!binding || !canonical(committedAt)) throw new TypeError("sky_time_binding_invalid");
       coverage = nextCoverage && canonical(nextCoverage.startAt) && canonical(nextCoverage.endAt) &&
         Date.parse(nextCoverage.endAt) > Date.parse(nextCoverage.startAt) ? nextCoverage : null;
       if (binding !== state.binding || committedAt !== state.committedAt) {
         anchor = null;
-        return publish({ binding, committedAt, at: committedAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false, ...retiredEditing() });
+        const restoreAt = bounded(committedAt);
+        return publish({ binding, committedAt, restoreAt, at: restoreAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false, ...retiredEditing() });
       }
       // Geometry supply can lag a newer cross-window preview or be withdrawn.
       // It controls playback eligibility, never the user's pending time intent.
@@ -65,7 +77,7 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
       if (!Number.isFinite(limit) && limit !== Infinity) return state;
       if (Date.parse(at) > limit) at = new Date(limit).toISOString();
       anchor = null;
-      return publish({ at, mode: at === state.committedAt ? "FIXED" : "PREVIEW", reachedEnd: false, runStartAt: null, playRequested: false });
+      return publish({ at, mode: at === state.restoreAt ? "FIXED" : "PREVIEW", reachedEnd: false, runStartAt: null, playRequested: false });
     },
     /** Ruler settlement and held civil fields share this intent. Keeping the
      * two sources distinct prevents one control's cleanup from settling the
@@ -104,6 +116,6 @@ export function createSkyObservationTime(options: { latestInstant?: () => number
     },
     pause,
     hide(elapsedAt: number) { this.tick(elapsedAt); pause(); return state.editing.length ? publish(retiredEditing()) : state; },
-    cancel() { anchor = null; return publish({ at: state.committedAt, mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false, ...retiredEditing() }); },
+    cancel() { anchor = null; return publish({ at: bounded(state.restoreAt), mode: "FIXED", reachedEnd: false, runStartAt: null, playRequested: false, ...retiredEditing() }); },
   };
 }

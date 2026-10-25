@@ -81,3 +81,19 @@ Root核真实非提升token及审阅SHA后，仅调用一次PowerShell7 `Start-P
 `2a5056e8ff46d016d62db7400970bb11231b92e5`已提交/推送并与origin/main一致。自动Product40159045817因同分支并发策略被后发完整手动Product40159295033取消；Context40159045850成功，Backend40159375809跳过。手动完整CI已实际通过release code、既有消费者兼容、backend release构建、WEAPP release owner测试及CI bundle构建/检查；在isolated infrastructure的真实PG管理命令测试中失败，OCI和部分post步骤skipped。不能把该头称全绿。
 
 此次唯一失败为旧PG测试把缺失revision仍断言409。Root按[管理输入owner](R20-ADMIN-INPUT-HTTP-20261025.md#后续真实pg合同检查)窄修该既有场景，补400/INVALID_INPUT/nonretryable及实际PG状态/receipt/idempotency/outbox无效果，真正409及旧无key成功不变。随机独立PG库实跑6/6、0skip后精确清理；没有写原业务库或重跑媒体平台。产品字节仍为58dc，不重建/重推手机。下一测试提交按现有affected-checks自动覆盖全部消费者与产品门禁，实际新head状态后记；没有盲重试旧部署或改变容量条件。
+
+PG合同修复已提交/推送`2f32ccaf76c9f123e2ab1dcb46f2e76bb5d8d7a2`，4件显式写集，origin/main实读0/0、暂存为空。worker类型检查exit0。当前Context40160622664与自动完整Product40160622692均成功；watcher69561已exit0。该头实际release code为contract89/89、Mini API994pass/74skip/0fail、Mini Program2820pass/1skip/0fail；resource preparation另有1个既有skip。所有产品步骤均实际执行并通过，含既有消费者16/16、backend release、WEAPP release owner46+9、CI bundle及built candidate6、真实隔离基础设施和OCI构建，不把内部skip隐去，也不外推完整产品验收。完整log与run snapshot归entry私有owner。
+
+该头随后真实staging40161606084：qualify成功，publish-and-deploy在Check staging host before image publication失败，返回`host_preflight_disk_below_10_gib`；Build and publish the immutable release image与Promote exact image to staging均skipped。没有镜像发布、promotion或容量恢复，不prune/重复派发部署。旧2a头因取消/完整手动失败产生的Backend40159375809和40160230453均skipped。
+
+在2f交付结束时，私有手机候选元数据同步该sourceRevision，但保productionInputsUnchangedFrom=33b9317b和58dc，当时无新打包或手机操作。该头最终CI/部署状态在本地回执更新，没有为状态另造docs-only提交；Goal保持active。后续当前工作沿HANDOFF及下述P3实录继续，不转App。
+
+本次commit前又发现03:51:18Z的零字节index.lock。无活动git.exe、独占打开成功并二次核身份，原字节同D盘保全为`tmp/git-index-stale-miniapp-20261025T040506980Z.lock`，SHA空文件值读回一致；没有删锁、改索引内容或kill114个既有LFS进程。回执归`lock-preservation-4.private.json`。
+
+## 后续P3独立推进
+
+手机Windows条件尚不可得时，Root恢复了当前源码桌面WEAPP及正式点匿名Sky入口，实证天气整体UNAVAILABLE误撤销48帧有效天文，另核未来Map Context可越过Sky初始/取消上限。两处已沿原投影/时间owner窄修；4生产/5测试文件，后台14项、时间相关108项及Root补查3项、两workspace类型检查和两个完整构建通过。真实当前源码隔离API/PG副本上，Context仍revision1/13Z，Sky与精确目标200/PARTIAL，天气缺测及预警不可用保留；WEAPP已呈现8404目录对象和合法当前帧。完整范围、反例、独审及私有输入身份归[P3实录](R20-SKY-INDEPENDENT-ENTRY-20261025.md)。
+
+新canonical为413a、339件/5,037,238B、main2,025,876B；旧手机58dc原件与运行证据保留，不冒本批新源码。桌面控件像素/合成未判明，popup只有2×2无效图，取消/应用/正常Play/SAO及完整手机旅程仍未验；未猜改布局或恢复性能/OOM工作。用户再次明确不在电脑前，系统确认继续后置。原API/原库、N05/R6、VPN和冻结代均未改。
+
+Map原生只读核对在同page稳定条件下，布局/scale/region之后的selected-projection未在限定读期内收回；没有取得完整投影/4km/居中结果，未据此改相机或认定原生资源已退休。此前`.cmd`多行JS传参及Node别名解析的准备错误不作产品反例。当前批次的Git/CI在完成实际交付后续记，2f旧绿不覆盖此增量。

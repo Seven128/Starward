@@ -2091,8 +2091,9 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     const time = observationTime.snapshot();
     return skyInteractionCurrent() && time.binding === timeBinding && time.committedAt === committedAt;
   };
+  const restoredAt = observationTime.restoreInstant(timeBinding, committedAt);
   const requestedAt = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt
-    ? timeIntent.at : committedAt;
+    ? timeIntent.at : restoredAt;
   const timePlaying = timeIntent.binding === timeBinding && timeIntent.mode === "PLAYING";
   const timePlayRequested = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt && timeIntent.playRequested;
   const previewGeometry = useSkyTimeGeometry(rawReportData, requestedAt,
@@ -2118,9 +2119,9 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     presentedSkyFrame.timePresentationScope === timePresentationScope &&
     presentedSkyFrame.data?.context === rawReportData?.context &&
     presentedSkyFrame.timePresentation?.row.at === presentedSkyFrame.frameAt ? presentedSkyFrame.timePresentation : null;
-  const timePresentation = useMemo(() => selectSkyTimePresentation(rawReportData, requestedAt, committedAt,
-    requestedTimePresentation, acceptedTimePresentation),
-    [rawReportData, requestedAt, committedAt, requestedTimePresentation, acceptedTimePresentation]);
+  const timePresentation = useMemo(() => selectSkyTimePresentation(rawReportData, requestedAt, restoredAt,
+    requestedTimePresentation, acceptedTimePresentation, observationTime.latestInstant()),
+    [rawReportData, requestedAt, restoredAt, requestedTimePresentation, acceptedTimePresentation, observationTime]);
   const timeGeometryReady = requestedTimePresentation?.row.at === requestedAt;
   const timeRows = useMemo(() => skyTimeRulerRows(rawReportData, timeModel), [rawReportData, timeModel]);
   const registrationAt = skyPresentationTimeModel(rawReportData)?.startAt ?? rawReportData?.observationFrames?.[0]?.at ?? committedAt;

@@ -142,7 +142,7 @@ test("weather expiry, official-alert validity and failures retry without expirin
     h.advance(ASTRONOMY_CACHE_POLICY.partialWeatherTtlMs + 1);
     h.transformWeather(() => { throw new Error("injected failure"); });
     const unavailable = await h.astronomy.compute(context);
-    assert.equal(unavailable.dataState, "UNAVAILABLE");
+    assert.equal(unavailable.dataState, "PARTIAL");
     assert.equal(unavailable.data.skyScene.state, "AVAILABLE", "weather does not fabricate missing geometry");
     h.transformWeather((weather) => weather);
     const recovered = await h.astronomy.compute(context);
@@ -150,6 +150,39 @@ test("weather expiry, official-alert validity and failures retry without expirin
     assert.notEqual(recovered.dataState, "UNAVAILABLE");
     assert.equal(h.counts().positions, projected);
   } finally { await h.service.onModuleDestroy(); }
+});
+
+test("unavailable or expired weather preserves independent Sky and exact targets without restoring travel advice", async () => {
+  for (const state of ["UNAVAILABLE", "EXPIRED"] as const) {
+    const h = await setup();
+    try {
+      h.transformWeather(weather => ({ ...weather, state, value: null, warningState: "UNAVAILABLE", alerts: [],
+        source: { ...weather.source, state }, sources: weather.sources.map(source => ({ ...source, state })) }));
+      const context = h.contexts[0]!;
+      const decision = await h.astronomy.computeDecision(context);
+      assert.equal(decision.dataState, state, "the original decision still reports weather loss or expiry");
+      const report = await h.astronomy.compute(context);
+      assert.equal(report.dataState, "PARTIAL");
+      assert.equal(report.data.skyScene.state, "AVAILABLE");
+      assert.ok(report.data.skyScene.frames.length > 0);
+      assert.ok(report.data.skyScene.frames.every(frame => frame.state === "AVAILABLE"));
+      assert.ok(report.data.hourly.every(row => row.cloudPercent === null && row.precipitationMm === null));
+      assert.equal(report.data.weatherEvidence.warningState, "UNAVAILABLE");
+      assert.deepEqual(report.data.decision, decision.data.decision);
+      assert.notEqual(report.data.decision.recommendation, "RECOMMENDED");
+      const instant = await h.astronomy.computeTargetInstant(context, context.selectedAtUtc);
+      assert.equal(instant.dataState, "PARTIAL");
+      assert.equal(instant.data.at, context.selectedAtUtc);
+      assert.ok(instant.data.targets.length > 0);
+      const stableTargets = (targets: typeof instant.data.targets) => targets.map(({ source, ...target }) => {
+        assert.ok(typeof source.retrievedAt === "string");
+        assert.ok(Number.isFinite(Date.parse(source.retrievedAt)));
+        return { ...target, source: { ...source, retrievedAt: "request-owned" } };
+      });
+      assert.deepEqual(stableTargets(instant.data.targets),
+        stableTargets(report.data.targetFrames!.find(frame => frame.at === context.selectedAtUtc)!.targets));
+    } finally { await h.service.onModuleDestroy(); }
+  }
 });
 
 test("sky carries the warning feed deadline even with no alerts or forecast coverage", async () => {

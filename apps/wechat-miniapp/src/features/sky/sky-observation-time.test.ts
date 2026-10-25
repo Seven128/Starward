@@ -115,6 +115,28 @@ test("preserving an unsupplied preview does not permit future time or playback b
   assert.equal(time.snapshot().mode, "PAUSED");
 });
 
+test("a future Map Context keeps its identity while Sky enters and cancels to one legal instant", () => {
+  let now = Date.parse("2026-09-29T13:15:00.000Z");
+  const enteredAt = new Date(now).toISOString();
+  const time = createSkyObservationTime({ latestInstant: () => now });
+  const contextAt = "2026-09-29T14:00:00.000Z";
+  const coverage = { startAt: start, endAt: "2026-09-29T15:00:00.000Z" };
+  const entered = time.bind("future-context", contextAt, coverage);
+  assert.equal(entered.at, enteredAt, "the initial Sky intent cannot inherit a future planning time");
+  assert.equal(entered.committedAt, contextAt, "Sky must not rewrite the public Context identity");
+  now += 5_000;
+  time.preview(start);
+  time.bind("future-context", contextAt, null);
+  assert.equal(time.cancel().at, enteredAt, "cancel restores entry, not a newly sampled now or the future Context");
+  assert.equal(time.snapshot().committedAt, contextAt);
+  const replacement = time.bind("replacement-context", contextAt, coverage);
+  assert.equal(replacement.at, new Date(now).toISOString(), "a new Context owns a new legal entry instant");
+  time.preview(start);
+  assert.equal(time.cancel().at, replacement.at);
+  assert.equal(time.bind("past-context", start, coverage).at, start);
+  assert.equal(time.cancel().at, start, "past Context behavior is unchanged");
+});
+
 test("interactive paint accepts only its own run and never a future or preceding frame", () => {
   const requested = "2026-09-29T13:00:02.000Z";
   const painted = "2026-09-29T13:00:01.700Z";

@@ -40,4 +40,4 @@ Root只迁移`admin-spot-commands-postgres.test.ts`这一既有场景：断言40
 
 Root从现用API私有owner核准本机PG目标后创建随机独立库，仅在该库运行该文件，**6/6 pass、0 skipped**；包括实际HTTP、并发事务、cache失败、rollback、重启和真实CLI消费者。完成后已精确drop该自有库，没有写原业务库、改共享服务或队列。私有log和创建/清理receipt归本轮entry owner的`pg-admin-input-contract.private.*`。这补足该窄输入在真实PG的零效果证据，不扩展为正式身份、云媒体或整个P4完成。
 
-首个完整CI的基础设施失败及OCI skipped保留为事实；此测试修复的新提交须核真实CI结果，不能用6项本地通过冒全量通过。
+首个完整CI的基础设施失败及OCI skipped保留为事实。该窄修已交付`2f32ccaf76c9f123e2ab1dcb46f2e76bb5d8d7a2`；其Product40160622692和Context40160622664成功，全部产品步骤实际执行，真实隔离基础设施与OCI均通过。随后staging40161606084因`host_preflight_disk_below_10_gib`在镜像发布前失败，发布/promotion跳过。这补足当前提交的CI证据，仍不等于已部署或P4真实正式环境完成。

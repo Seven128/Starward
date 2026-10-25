@@ -39,6 +39,7 @@
 | Map实例/故障/资源职责 | 源码基础复用，P2保尚缺目标效果；不能timeout清pin或把remount冒物理释放 |
 | 媒体提交/持久清理/队列对账 | 已实现部分不再列开发；P4保迁移023–026、真实对象存储/恢复与版本配套 |
 | Sky具名frame/资源消费者 | 44位置参数收敛、accepted/资源接线已实现；P3保目标正确性，D2保性能/OOM |
+| Sky实际入口的独立天文与初始时间 | [本轮两处窄修与运行证据](R20-SKY-INDEPENDENT-ENTRY-20261025.md)：天气失效不再撤销有效天文，未来Map Context沿合法Sky恢复基准；源检查、构建及实际帧/HTTP已取得 | 复用此实现；控件可见性、取消/应用、正常Play、实际SAO及手机仍归P3，不冒完整验收 |
 | 保留已有有效架构 | latest-demand、共享租约、pin/generation、唯一writer、accepted、账户ACTIVE锁和提醒UNKNOWN作为约束，不重造通用框架 |
 | 管理DTO | 最小body结构/错误分类HTTP判别、已证缺陷窄修和独审已完成，复用本轮证据；实际环境仍归P4，不外推完整嵌套schema审计 |
 | 纯contracts的Node存储 | 当前遗留位于packages/contracts/src/runtime/durable-business-runtime.ts，所查调用者为apps/api与domain/offline；未发现小程序/worker/其契约及天文/坐标消费者进入该路径。保App历史债，不新增全仓迁移；未来只有真实小程序依赖证据才扩大 |

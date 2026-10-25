@@ -257,6 +257,14 @@ function stateFor(
   return "FRESH";
 }
 
+/** Decision availability includes weather and travel advice. A validated
+ * celestial projection remains usable when only that weather is unavailable
+ * or expired; its rows, warnings and decision keep their original meaning. */
+function skyProjectionState(decisionState: DataState, complete = true): DataState {
+  return decisionState === "UNAVAILABLE" || decisionState === "EXPIRED" ||
+    (decisionState === "FRESH" && !complete) ? "PARTIAL" : decisionState;
+}
+
 export class AstronomyService implements AstronomyApplicationPort {
   private readonly skyCatalog: SkyCatalogProvider;
   private readonly revisedSkyCatalog = createBsc5pSkyCatalogProvider("bsc5p-bright-stars.v3");
@@ -419,7 +427,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     const result = envelope({ spotId: detail && proposalId ? proposalId : context.location.kind === "FORMAL_SPOT"
       ? context.location.spotId : "", contextId: context.contextId,
       contextRevision: context.revision, contextFingerprint: context.contextFingerprint,
-      at, targets }, computation.report.dataState,
+      at, targets }, skyProjectionState(computation.report.dataState),
       structuredClone(computation.report.sources), [...computation.report.warnings,
         ...(proposalId ? [PROPOSAL_SKY_WARNING] : [])]);
     return { ...result, validAt: at, contextRevision: context.revision };
@@ -576,7 +584,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       precachedHours: 0,
       offlineReady: false, // Static publication presence is a client cache fact, not implied by report availability.
     }, context);
-    return envelope(data, report.dataState === "FRESH" && (skyScene.state === "UNAVAILABLE" || !timeModel) ? "PARTIAL" : report.dataState,
+    return envelope(data, skyProjectionState(report.dataState, skyScene.state === "AVAILABLE" && Boolean(timeModel)),
       sources, [...report.warnings, ...(skyScene.state === "UNAVAILABLE" ? [
         "真实星场目录或场景当前不可用；不会使用图片、随机星点、代表性坐标或采样装饰替代。",
       ] : []), ...(!timeModel ? ["连续时间几何暂不可用；仍可使用报告中明确提供的观测时刻。"] : [])]);

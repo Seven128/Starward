@@ -441,9 +441,10 @@ test("client opts short preview into both the HTTP request and admission identit
 // This covers their shared time meaning, not React, native pixels or latency.
 function createPageTimePresentation() {
   const slots: { deps: readonly unknown[]; value: unknown }[] = [];
+  const observationTime = createSkyObservationTime();
   return (input: Record<string, unknown>) => {
     let cursor = 0;
-    return pageTimePresentation(input, (make, deps) => {
+    return pageTimePresentation({ observationTime, ...input }, (make, deps) => {
       const index = cursor++, old = slots[index];
       if (!old || deps.some((value, i) => value !== old.deps[i])) slots[index] = { deps, value: make() };
       return slots[index]!.value;
@@ -465,7 +466,7 @@ function pageTimePresentation(input: Record<string, unknown>, useMemo: (make: ()
     timeBinding: "current", skyInteractionRevision: 1, canvasNodeRevision: 1,
     canvasGenerationRef: { current: 1 }, timePlaying: false, timeIntent: { runStartAt: null },
     previewGeometry: { failed: false }, ...input });
-  const names = ["timePresentationScope", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation", "timeGeometryReady",
+  const names = ["restoredAt", "timePresentationScope", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation", "timeGeometryReady",
     "geometryReport", "renderTimePresentation", "reportData", "row", "timePreviewStatus"];
   vm.runInContext(compile(names.filter(name => declarations.has(name)).map(name =>
     `const ${declarations.get(name)!.getText(source)};`).join("\n")), context);

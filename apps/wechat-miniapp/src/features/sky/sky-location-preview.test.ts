@@ -91,7 +91,7 @@ test("locating and tracking preserve the preview owner while restoring the expan
 });
 
 test("cross-midnight preview and cancel use the same report frame and local calendar date", () => {
-  const names = ["committedAt", "committedRow", "committedIndex", "activeIndex", "row",
+  const names = ["committedAt", "timeBinding", "restoredAt", "committedRow", "committedIndex", "activeIndex", "row",
     "isPreviewing", "presentedAt", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation", "timeRows"];
   const declarations = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
     statement.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
@@ -103,7 +103,8 @@ test("cross-midnight preview and cancel use the same report frame and local cale
   const afterMidnight = "2026-09-24T16:30:00Z";
   const selected = (previewIndex: number | null) => vm.runInNewContext(selection, {
     contextComplete: true,
-    activeContext: { selectedAtUtc: beforeMidnight }, routeContext: { selectedAt: beforeMidnight, timezone: "Asia/Shanghai" },
+    activeContext: { contextId: "ctx:preview", revision: 1, contextFingerprint: "fp:preview", selectedAtUtc: beforeMidnight },
+    routeContext: { selectedAt: beforeMidnight, timezone: "Asia/Shanghai" }, observationTime: createSkyObservationTime(),
     rawReportData: { hourly: [{ at: beforeMidnight }, { at: afterMidnight }] },
     requestedAt: previewIndex === null ? beforeMidnight : afterMidnight,
     timeModel: null, timeGeometrySources: undefined,
@@ -113,4 +114,39 @@ test("cross-midnight preview and cancel use the same report frame and local cale
   }) as { rowAt: string; selectedCivilDate: string; isPreviewing: boolean; activeIndex: number };
   assert.deepEqual({ ...selected(1) }, { rowAt: afterMidnight, selectedCivilDate: "2026-09-25", isPreviewing: true, activeIndex: 1 });
   assert.deepEqual({ ...selected(null) }, { rowAt: beforeMidnight, selectedCivilDate: "2026-09-24", isPreviewing: false, activeIndex: 0 });
+});
+
+test("Sky presentation cannot recover a future requested, accepted or fallback frame", () => {
+  const pastAt = "2026-09-24T13:00:00.000Z";
+  const initialAt = "2026-09-24T13:15:00.000Z";
+  const futureAt = "2026-09-24T14:00:00.000Z";
+  // This selection-only fixture exercises exact rows, not the geometry model.
+  const report = { hourly: [{ at: pastAt }, { at: initialAt }, { at: futureAt }] } as unknown as Parameters<typeof presentSkyTime>[0];
+  const initial = presentSkyTime(report, initialAt)!, past = presentSkyTime(report, pastAt)!, future = presentSkyTime(report, futureAt)!;
+  const limit = Date.parse(initialAt);
+  assert.equal(selectSkyTimePresentation(report, futureAt, initialAt, future, null, limit)?.row.at, initialAt);
+  assert.equal(selectSkyTimePresentation(report, pastAt, initialAt, null, future, limit)?.row.at, initialAt);
+  assert.equal(selectSkyTimePresentation(report, pastAt, futureAt, null, null, limit), null);
+  assert.equal(selectSkyTimePresentation(undefined, pastAt, initialAt, null, null, limit), null);
+  assert.strictEqual(selectSkyTimePresentation(report, initialAt, pastAt, null, past, limit), past,
+    "a legal earlier completed frame remains usable while its later request prepares");
+  assert.strictEqual(selectSkyTimePresentation(report, initialAt, pastAt, initial, past, limit), initial);
+
+  const names = ["committedAt", "timeBinding", "restoredAt", "requestedAt", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation"];
+  const declarations = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
+    statement.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
+  assert.equal(declarations.length, names.length);
+  const selection = ts.transpileModule(declarations.map(statement => statement.getText(source)).join("\n") +
+    "\n({ requestedAt, restoredAt, renderedAt: timePresentation?.row.at });",
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const observationTime = createSkyObservationTime({ latestInstant: () => limit });
+  const activeContext = { contextId: "ctx:future", revision: 1, contextFingerprint: "fp:future", selectedAtUtc: futureAt };
+  const firstRender = vm.runInNewContext(selection, {
+    activeContext, routeContext: { selectedAt: futureAt }, observationTime, timeIntent: {},
+    rawReportData: report, timeModel: null, timeGeometrySources: undefined,
+    presentSkyTime, selectSkyTimePresentation, useMemo: (compute: () => unknown) => compute(), pageVisible: false,
+  });
+  assert.deepEqual({ ...firstRender }, { requestedAt: initialAt, restoredAt: initialAt, renderedAt: initialAt });
+  assert.equal(observationTime.snapshot().binding, "", "the page is protected before its binding effect runs");
+  assert.equal(activeContext.selectedAtUtc, futureAt);
 });

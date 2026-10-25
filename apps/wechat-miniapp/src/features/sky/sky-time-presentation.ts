@@ -83,13 +83,15 @@ export interface SkyTimePresentation {
 
 /** The page supplies only its current lifecycle-accepted input. Reusing that
  * one input keeps resource demand and drawing on the same valid instant while
- * another window loads; cancellation always chooses the committed instant.
- * Native generation, mode and visibility remain the page's acceptance scope. */
-export function selectSkyTimePresentation(report: SkyReport | undefined, requestedAt: string, committedAt: string,
-  requested: SkyTimePresentation | null, accepted: SkyTimePresentation | null): SkyTimePresentation | null {
-  if (requested) return requested;
-  if (requestedAt !== committedAt && accepted?.source === report) return accepted;
-  return presentSkyTime(report, committedAt);
+ * another window loads; cancellation chooses the time owner's legal entry
+ * instant, which may precede a future Map Context. Native generation, mode
+ * and visibility remain the page's acceptance scope. */
+export function selectSkyTimePresentation(report: SkyReport | undefined, requestedAt: string, restoreAt: string,
+  requested: SkyTimePresentation | null, accepted: SkyTimePresentation | null, latestInstant = Infinity): SkyTimePresentation | null {
+  const allowed = (at: string) => Number.isFinite(Date.parse(at)) && Date.parse(at) <= latestInstant;
+  if (requested && allowed(requested.row.at)) return requested;
+  if (requestedAt !== restoreAt && accepted && accepted.source === report && allowed(accepted.row.at)) return accepted;
+  return allowed(restoreAt) ? presentSkyTime(report, restoreAt) : null;
 }
 
 /** A transient, single-instant render input. Never write it into Query,
