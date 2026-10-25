@@ -1,18 +1,21 @@
-# Starward 本机 main 接续提示词（2026-10-25）
+# 新对话接续提示词：仅微信小程序
 
-将下文发给本机的新对话。本轮已按明确继续指令创建/续用完整active Goal，尚未完成；工具真实状态须重新读取，不能把旧聊天状态或本提示词摘要代替完整Goal正文。最新交付和在途源码归HANDOFF；包含本文件的main最新提交是接续点，旧f9798不是回退目标。
+将分隔线后的文字发给本机新对话。旧聊天Goal仍paused；这份新指令只授权下述小程序范围，不恢复旧App任务。
 
 ---
 
-请接手 D:/dev/Starward，恢复并继续实施完整 Goal。这是明确继续指令，不是只阅读、总结或再写一套计划。允许按责任开新agent，完成即结束，不复用旧agent；必要人类动作尽量后置。
+请接手 D:/dev/Starward，开始实施微信小程序的剩余Goal。这是明确继续指令，不是只读总结或再写一套方案。
 
-1. **先 get_goal，再核当前 checkout。** 本机已按用户最新指令转回 **main**，跟踪origin/main，后续在main开发。codex/remote-main-20260908是另一台电脑专用分支，不要再切过去。先核HEAD、分支和dirty成果，必要时fetch origin main并安全快进；保留全部本地成果、Harness、冻结构建、私有原件和任务缓存，不reset/clean/force/stash，不另建worktree，不用远端覆盖本地。原f9798接力代码已包含在main交付中，不重做迁移或重复拉旧分支。
-2. **完整恢复目标与唯一方案。** 从本目录INDEX.md进入，完整读取GOAL-OBJECTIVE.md、REQUIREMENTS.md、INHERITED-REQUIREMENTS.md、PLAN.md、最新HANDOFF.md、CURRENT-VALIDATION-20261023.md、REVIEW-RECONCILIATION-20261023.md、R20-REMOTE-RECONCILIATION-20261024.md及其三份独审、R20-NIGHT-REPORT-PERSISTENCE-20261024.md。无Goal时，用GOAL-OBJECTIVE.md中“Goal 正文”全部创建，不设token预算；已有同目标则续用并承接最新要求，不缩目标、不冒称状态自动跨聊天继承。保留全部R1–R20/H1–H8/A01–A15/N01–N09及未撤销义务。旧提示中的分支、当前、下一步和待办不能覆盖最新HANDOFF。
-3. **读取现行规则与相关owner。** 读取适用AGENTS、project_context/global.md、manifest默认Context，以及相关架构、Source Plan和验证owner。开发/性能任务完整读取最新.codex/skills/starward-miniapp-development/SKILL.md及references/performance-investigation.md；UI工作读取DESIGN.md、.codex/skills/uiux_design/SKILL.md与.codex/work-items/map-ui-design-2026-10-22/HANDOFF.md。实际恢复DevTools/设备工作时再加载对应官方与项目skill，复用已有有效会话和证据。
-4. **复用已交付的三项修复，不重复实施。** NightReport已完成真实HTTP/SQLite/消费者/structured/OpenAPI、owner资格及未知结果协议和最终独审；管理缓存明确COMPLETE规则、原生同id事实刷新及语义origin/选择代次也已修复独审。交付main63ee13b的精确两项CI成功，证据见HANDOFF。旧缺原owner资格的pending仍unknown，生产身份/设备/完整family仍欠；不可把旧P2复现当当前源码状态，也不能用本地检查关闭这些结果。
-5. **唯一第一实施责任从最新HANDOFF继续。** 用户2026-10-25明确后置层叠/云观星播放性能（含相关内存/OOM），其余完整Goal继续。行程历史/引用恢复/阶段精度、同owner观察身份及Native nullable比较/ForecastScreen已完成批修和新增量独审，直接复用；当前精确Git/CI与下个可执行责任只读HANDOFF。微信普通同gen Picker开/Back取消/返回是开发反馈，正式AppID/业务/Native等未验不冒完成。不先恢复性能Windows/LAN/Profiler或请求UAC/重启，不重写旧方案/重做原反例，不与任何实读到的在途作者并发。
-6. **已完成实现直接复用。** 认证/命令主干、媒体023–026及队列/锁序、偏好v2/真实Web CAS、F07/F09/F10、Sky具名帧/资源消费者、既有草稿/规则定义、消费者CI、EOG获取/镜像/接收和原读回已有证据。后续Map fault session首源码路径、qualified forecast→私有Inbox和规则原owner资格也已实现/独审，不重新从零实施；当前源码/交付以HANDOFF和Git实读。旧无原资格pending仍unknown，默认固定POC不冒caller改号；API/client同版约束、production/多版本/Native/OS和完整family未由局部通过关闭。真实Map fault/native退休、采用UI/H4/连续手势与正常Play/OOM等剩余结果全部保留；条件建议先满足PLAN的判别条件，不照搬外部审查结论。
-7. **当前已授权USB自动推送，必要人类动作尽量后置。** 用户最新说明手机可用、人在电脑外；旧“设备由另一对话占用”已被本轮授权覆盖。接续先核现有feedback/USB/服务owner，root独占设备/构建/IDE，代理只做委托源码或只读准备，不接管其他聊天或无归属服务。复用官方0.3.14及项目设备skill、新鲜截图/单次输入边界；UAC/信任/解锁等仅在实际不可自动完成时给最小系统动作。旧IP/PID/端口不是当前证明，保VPN/TUN、原账号/N05、gen26 UNKNOWN和已送达R6，不重种或重发。
-8. **最新优先级与冻结边界继续有效。** 采用UI及其它功能/显示/时刻/权限/恢复继续；两类性能保持未完并后置，不当当前门槛。My唯一采用，保Stitch3995519477980461148及完整依赖，不重选/重生成未改区域。gen34禁止prepare/build/refresh，R27同问停止、gen24 scene-memo暂停；OOM未解决，不减星/降精度/任意节流。既有LAN/Heap资格及原件复用，恢复后置工作时再按实际条件处理，不删其它义务。
-9. **准备依赖与核对证据要相称。** 现lock的npm ci及公共runtime/assets材料化已完成；只有实际缺失或新锁变化才补。按current.lock.json及既有LFS/Drive/私有owner恢复必要输入；原PG22保持，仅本轮新任务副本迁到26，API/stop归各自私有owner。Git不是私有资料恢复，也不授权上传原件。63ee13b精确CI成功不覆盖后续源码或目标设备/性能；新交付仍按实际head查询，不假称全部产品验收通过。
-10. **沿同一方案持续实施到实际结果。** 进度、下一步和失败写短HANDOFF及证据；仅在责任、依赖或决定性事实改变时更新PLAN，不把它写成执行日志。保留已完成证据、全部未完成义务和失败。独立工作继续推进，必要人类动作准备好后给最小清单；完整必需项未完成，不得标Goal complete。
+先get_goal，再完整读取：
+`.codex/work-items/sky-map-performance-2026-10-18/NEXT-CHAT-PROMPT.md`
+按INDEX依次读GOAL-OBJECTIVE、REQUIREMENTS、INHERITED-REQUIREMENTS、唯一PLAN、最新HANDOFF、HANDOFF-VALIDATION-20261025及REVIEW-IMPLEMENTATION-AUDIT-20261025。无Goal时，用GOAL-OBJECTIVE中“Goal 正文”全文创建，不设token预算；已有范围一致的目标才续用。若旧工具目标仍含App，不把它冒充同目标或标complete来替换；本新对话应以最新小程序正文建立目标，旧范围不得执行。
+
+1. **当前及未来一段时间只做微信小程序。** 入口apps/wechat-miniapp，其真实BFF、管理后台和共享依赖按调用关系维护。保留apps/mobile、App专属apps/api、既有APK/工具链和未提交/中断成果，不继续App定位、偏好/预设、行程、夜报/Inbox或App验收。微信原生Map、系统选点器、USB真机不是App开发；App截图/测试不证明小程序结果。
+2. **只用这份唯一PLAN的剩余工作。** 已完成实现、EOG/Drive/receiver、主包收口及有效证据直接复用，不从历史报告再抄成待办。原Web GPT Pro审查已经按F01–F15筛选；补充的是管理body结构/错误分类的有界HTTP判别，尚不是已证缺陷。条件选型不是必做换库，App专属contracts迁移不进入本Goal。
+3. **层叠与云观星播放/调时性能、相关内存/OOM继续后置。** 先做小程序普通运行、采用UI和功能/权限/数据/恢复/交付。正确性、完整星数/精度、取消/显式应用和资源安全仍保留。gen34不prepare/build/refresh，gen24 scene-memo暂停、R27同问题停止；OOM未解决，不先恢复Profiler或重复失败采集。
+4. **严格保已采用UI。** 读取最新小程序Screen Contract、DESIGN小程序profile、本轮map-ui-design-2026-10-22/HANDOFF及Stitch当前采用源和完整依赖。只改已确认局部，未涉及内容/配色/图标/材质/布局/主题原样。不重选稿、重生成未改区域或拿App Source Plan代替小程序合同。
+5. **从HANDOFF唯一下一步行动。** 先核普通WEAPP源码/候选、官方会话、USB目标及小程序真实API通路，回到微信小程序。旧手机最后运行的是独立App，不能继续那条线。若现有网络/权限/供应条件仍阻塞，定位首个失败边界并保恢复条件，做独立的小程序DTO判别等工作；不重复同条件失败、不改VPN/TUN、不用App替代。
+6. **读取现行规则与工具技能。** 先AGENTS、project_context/global及相关Context；小程序工作用最新starward-miniapp-development及匹配官方wechatide技能，UI/真机按对应项目skill。只有恢复后置性能时才按最新performance-investigation选择必要观测。复用有效会话，当前IP/PID/截图必须实读，普通API连通与性能Profiler分开。
+7. **本机只在main开发。** 核实际HEAD/origin/dirty成果，不切codex/remote-main-20260908。保全部本地/私有/未提交/App中断成果、N05草稿、Harness、r6与冻结代；不reset/clean/force/stash，不另建worktree，不用远端覆盖本地，不重发R6提醒，不擅自上传原件。
+8. 已授权USB推送/调试，必要人类动作尽量后置；可开按责任的新agent，完成即结束，不复用旧agent。Root独占设备、IDE、构建、Git及共享服务。只读或可恢复准备自行完成；确有不可自动的系统/账号动作时先备好具体对象，仅提出必要动作。
+9. 对当前改动做相称检查与必要独审，实际效果和失败如实记录。保持现有兼容检查，不因停App删除门禁，也不把App残余失败自动变成App任务。新提交CI/跳过/部署按实际head核对，不称全绿或已上线。状态写短HANDOFF，证据归原owner；完整小程序必需项未完不标Goal complete。

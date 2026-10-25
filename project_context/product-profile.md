@@ -1,9 +1,18 @@
 # Starward Product And Release Profile
 
+## Current development scope
+
+2026-10-25用户明确当前及未来一段时间只开发微信小程序。已有Native App、App专属独立API、APK/工具链和未提交/中断成果原样保留；保留不等于继续完善、补齐或验收，也不把中断代码称为已完成。
+
+- 当前实施对象是apps/wechat-miniapp及其真实使用的workers/miniapp-api、管理后台和共享依赖。共享目录名或全仓审查发现本身不能扩大任务；先确认实际小程序消费者。
+- 小程序的原生Map/微信系统页/Android或iOS微信真机能力，与独立React Native/Expo App分开。App屏幕、权限、存储、测试和设备资格不能作小程序结果。
+- 下文及既有Source/Screen/设计文档中的原生App目标、预算和Android/iOS验收要求仅为保留历史，在当前阶段不生成待办。小程序使用自己的Screen Contract与已采用Stitch范围，不默认读取docs/source-plan.md作为小程序方案。
+- 未来若明确恢复App开发，再按新授权核实际源码和未完状态。当前不删除其源码/依赖/资料，也不为停App削弱小程序或必要共享检查；本次小程序共享改动导致的直接兼容回归在原共享owner处理，不扩展App业务。
+
 ## Project Goal
 
-- Build Starward as the repository for 《今晚去观星》, a mobile-first stargazing trip decision product.
-- For the native App, help a user move from “is tonight worth going?” to a safe, practical plan: where to go, when to leave, the best observing window, what may be visible, how to arrive, and how to observe or photograph on site.
+- Current delivery is the WeChat Mini Program for 《今晚去观星》: trustworthy observing/place/travel facts and user-owned plans, under the current development scope above.
+- Retained native App intent (inactive): help a user move from “is tonight worth going?” to a safe, practical plan: where to go, when to leave, the best observing window, what may be visible, how to arrive, and how to observe or photograph on site.
 
 ## Non-goals / Boundaries
 
@@ -87,7 +96,7 @@ Mini Program acceptance asks whether users can find the relevant trustworthy fac
 - Provider selection during the current trial must already account for a viable public-release and commercial path, including operator eligibility, actual product/API rights, fixed licence fees, usage and hosting costs, payment/renewal, target-network operation and migration cost. Personal trial quotas alone cannot establish suitability. Public availability and monetization require separate assessment under the provider's terms; absence of user charges does not establish non-commercial use. Use the early-commercialization target above rather than extrapolating the trial ceilings. Resolve material licensing, cost or capability gaps before treating a provider as the long-term choice; preserve accepted product capabilities when comparing replacements. This requirement does not authorize purchases or public release.
 - Preserve every capability required by the current accepted Source in the one current implementation. Proposal labels such as MVP/V1/V2/V3 are provenance and precedence history only: they do not create parallel product paths, and superseded behavior is removed from its existing owner. Capabilities without commercial, legal, store, expert, representative-device, or field evidence stay experimental, unknown, pending, disabled, or truthfully degraded.
 - Keep one active representation of each responsibility. Migrate useful production assets and checks off obsolete prototype inputs before retiring them; an old checker alone does not justify retaining a display package. Git history provides recovery. Confirmed product and design decisions remain in their current owners; ordinary UI changes do not require prototype or handoff synchronization.
-- Current native runtime acceptance requires Android. iOS implementation remains in full delivery scope, including the generated native project, shared behavior, platform adapters, interaction/accessibility differences, and build configuration, but provisioning macOS/Xcode/iOS Simulator and executing iOS build/runtime checks are deferred for this profile. iOS must remain explicitly runtime-unverified/deferred and cannot inherit a usable or passed claim from Android, Web, static structure, or historical evidence.
+- Retained native runtime profile (inactive under the current development scope) requires Android when App work is explicitly resumed. iOS implementation remains in full delivery scope, including the generated native project, shared behavior, platform adapters, interaction/accessibility differences, and build configuration, but provisioning macOS/Xcode/iOS Simulator and executing iOS build/runtime checks are deferred for this profile. iOS must remain explicitly runtime-unverified/deferred and cannot inherit a usable or passed claim from Android, Web, static structure, or historical evidence.
 - Contracts, legal/store approval, expert sign-off, representative outdoor/device validation, and site-operation verification are future production-release gates. User spot/media/field-report uploads remain product behavior and are not release-evidence uploads.
 
 ## UX / Screen Brief

@@ -2,7 +2,9 @@
 
 用户已于2026-10-13明确本项目不做无障碍功能。当前开发不新增/扩展无障碍功能，不安排屏幕阅读器/原生无障碍树专项联调或验收；普通文字可读性、完整边界和正常触控/键盘交互仍按产品合同处理。已有无关属性与历史成果不因此全仓清理，旧未验也不改写为通过；历史文件中的相关开发/验收条款由这项最新范围覆盖。重新开展须有后续明确用户要求。
 
-Starward owns 《今晚去观星》. The native App leads from a trip conclusion to an executable plan and supporting evidence. The independent Mini Program helps users choose places, arrange travel and observe through trustworthy place, weather, astronomy, arrival and safety facts; users decide whether to go. It does not present a combined departure recommendation. Both products keep uncertainty and restrictions explicit.
+2026-10-25用户明确：**当前及未来一段时间只开发微信小程序。** 已有原生App、App专属API、工具链以及未提交/中断成果保留，不继续其开发、补测试或设备验收。当前小程序入口为apps/wechat-miniapp；其BFF、管理后台和真实共享依赖按调用关系维护。微信原生Map、系统选点器和手机真机不代表开发独立App；App截图/权限/测试不能替代小程序结果。旧全仓审计、Goal或App Source Plan中的任务不能扩大此范围；详细边界见[当前开发范围](product-profile.md#current-development-scope)。
+
+Starward owns 《今晚去观星》. Current delivery is the WeChat Mini Program: trustworthy place, weather, astronomy, arrival and safety facts support users choosing places, arranging travel and observing; users decide whether to go. It does not present a combined departure recommendation. Existing native App material is retained as inactive product history, with its distinct meaning and design preserved.
 
 - There is one current implementation per product responsibility. Native App, WeChat Mini Program and owner operations have distinct surfaces; do not infer one product's behavior or visual values from another.
 - The Mini Program has Map and My as its primary destinations. Its sky route belongs to a selected formal spot or the current account’s submitted pending proposal, as defined by the Map Screen Contract. Read the owning Screen Contract before changing those flows.

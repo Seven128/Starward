@@ -1,5 +1,25 @@
 # 当前共享验证结果（2026-10-23，续检至2026-10-24）
 
+> 2026-10-25范围更新：本文件保留历史事实，旧active/下一步/App事项不是当前指令。用户已要求当前及未来一段时间只做微信小程序，App成果保留不继续；已完成移出待办，两类性能后置。当前唯一入口为[INDEX](INDEX.md)、[PLAN](PLAN.md)和[NEXT](NEXT-CHAT-PROMPT.md)，最新状态见[HANDOFF](HANDOFF.md)。
+
+## 2026-10-25 当前d4真机偏好回归与新建身份P2
+
+b7fbf6c5…新独审12/12、28pins首尾一致；Root mobile type+47文件232/232。430b1d7a…/d4a6c9da…38,354,591B实际Release 2m40s/签名/包/HBC/USB installed SHA通过，保原539数据。新包首次冷启动原r2行星/不步行正确；只改本轮临时银河→同一完整视图选银河→Android Back仍银河，再唯一冷启新PID/clearDatafalse后回r2行星/不步行。7张关键图hash/元数据已Root核，输入前后实看；没有保存或新建/定位，不冒NativeSQL/服务器零写或全部UI。见R20-NATIVE-PREFERENCES-DEVICE-RECHECK-20261025.md。
+
+独立真实新建入口严格1失败：新名称/距离写回A，数量1→1、r4→r5，原A被改而非新id。此前静态线索现在成立，归F06新建task identity最小修复/独审，不影响上述只读回归，也不能据此前局部通过扩大创建写入。Full Modal白色状态栏字与既有技术投影仍为普通可读性例外，首次许可/normal-Home/freshGPS/API/完整family未验。
+
+## 2026-10-25 跨视图未知确认新P2与Native端口实编
+
+R20-NATIVE-PROFILE-EDITOR-REPAIRS-FINAL-REVIEW-20261025为FAILED：原9机制通过，合法带首尾空白字段的Quick未知保存转完整确认新增1严格失败。SQL零新写/A r6/B当前仍成立，但原attempt被resolver规范化替换、原确认未成功；当前新作者沿原editor/attempt修复，不把局部零写冒协议恢复。
+
+79项联合冻结ffb90a36…/inputd11a2712…实际Release编译3m36s，884tasks/84executed/800uptodate；7fcc4218…38,354,379B签名/包/实际HBC检查通过。新Activity module真实compileReleaseKotlin/自动链接成立，独审26pins+4机制通过；未接许可消费者/未取得module目标快照/normal-Home/freshGPS。新包因偏好P2未安装，原539/r2保留，Nativeprovider不重试。一次旧自有UID logcat只读为11个Main事件、含原正常许可pause/resume；未资格完整窗口/stop对照，不关闭P2或代替新APK目标实验。
+
+## 2026-10-25 3d23已交付与首次host-cache实读
+
+36文件/10源码write已推3d23e3fad29e2e217fbf5195f14e58f22c17507f并远端0/0；手工阶段24pins、底栏9pins、host-cache16pins最终源码一致及限定独审复用；Context结构/限定staged diff通过。Quick四P2修复与Activity新module均未纳入该提交、未安装新APK。精确Context40140729111/Product40140729126均success；staging40141832516 failure，实际新head原log为host_preflight_disk_below_10_gib，发布/部署skip。原log SHA2c646a2e…私有保留，未借b4绿、未重试。
+
+host-cache40140796151 success，实际Engine29.7.2/API1.51/固定fd路径完成，123条returned64/omitted59；storage permission_denied，所有权/引用/builder未知，无合格删除集、清理、容量恢复或部署重试。完整日志/JSON私有保留，见R20-HOST-CACHE-TARGET-OBSERVATION-20261025.md。该观察问题已回答，不重复同条件采集。
+
 ## 2026-10-25 快捷编辑独审失败与首次许可判别
 
 R20-NATIVE-QUICK-PREFERENCES-SEMANTICS-REVIEW-20261025与R20-NATIVE-PROFILE-EDITOR-RECOVERY-REVIEW-20261025均FAILED：28pins首尾一致，真实SQL受控旅程证Quick→完整分叉及冲突重试写错B；另有完整条件/未知确认文案P2。第一版19项本地通过不抵消独审失败；APK eb5c3724…未安装，新作者合批修复在途。原unknown零新写、save期间后续修改等有效控制保留，不重写既有v2/CAS平台。
@@ -24,7 +44,7 @@ host-cache父socket修复16pins eedef3d9…，原严格counter修后1/1、生产
 
 Native同授权USB只读证API34/arm64/包未安装；JDK/SDK/NDK/prebuild已完成且源码控制不变。前三次Native构建因Windows长路径及保存旧绝对路径的CMake记录失败，无APK/手机安装；原失败/依赖cache/四组旧CMake配置均已保全。现同45135b72…在短TEMP+短Gradle home/刷新CMake后第四次在途，exec93710。独立API4318仅回环ready200、私有手机业务仍UNQUALIFIED，不放宽原owner；现只准备独立Native本地结果，完整API/生产/family未验。host-cache25项本地检查并不闭合独审P2父socket路径缺口；两文件批修在途，无外部派发。精确证据见各模块报告及HANDOFF，旧b4绿不覆盖WIP。
 
-## 2026-10-25 当前精确交付与CI
+## 2026-10-25 前次b4精确交付与CI
 
 49文件已提交并推送 **b4d2654540e203ffa247e31b1cc21db70aeab4e9**，远端精确读回/0:0；精确 Context **40124369682 success**、Product **40124369639 success**。Backend staging **40125579064 failure**，实际原log `host_preflight_disk_below_10_gib`，镜像发布/部署均skip；private root-usb原件`ci-b4d26545-staging-failed.private.log`保留，不称全绿/已部署、不重跑/清远端。下列171/194及三份新增量独审绑定本批源码；真实Native/部署/完整family仍未验。
 

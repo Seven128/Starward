@@ -1,5 +1,7 @@
 # 外部审查核验与方案采纳依据
 
+> 2026-10-25范围更新：本文件保留历史事实，旧active/下一步/App事项不是当前指令。用户已要求当前及未来一段时间只做微信小程序，App成果保留不继续；已完成移出待办，两类性能后置。当前唯一入口为[INDEX](INDEX.md)、[PLAN](PLAN.md)和[NEXT](NEXT-CHAT-PROMPT.md)，最新状态见[HANDOFF](HANDOFF.md)。
+
 2026-10-23。本文持有审查证据、采纳理由和限制；唯一实施方案仍是 [PLAN 的 R20](PLAN.md#verified-review-findings-and-responsibility-refactors-r20)，当前执行许可只见 [HANDOFF](HANDOFF.md)。用户已明确批准把已验证问题与三组重构纳入原方案，同时要求先完善方案、暂不改代码。本文不把外部意见或局部验证升级为产品修复。
 
 ## 输入与本机范围

@@ -1,5 +1,7 @@
 # 新电脑接手提示词
 
+> 2026-10-25范围更新：本文件保留历史事实，旧active/下一步/App事项不是当前指令。用户已要求当前及未来一段时间只做微信小程序，App成果保留不继续；已完成移出待办，两类性能后置。当前唯一入口为[INDEX](INDEX.md)、[PLAN](PLAN.md)和[NEXT](NEXT-CHAT-PROMPT.md)，最新状态见[HANDOFF](HANDOFF.md)。
+
 2026-10-24 再次换机的最新入口为 [20261024 接力提示词](NEW-COMPUTER-PROMPT-20261024.md)。本文保留上次接力要求；当前代码、NightReport WIP、暂停与CI状态以新提示及最新HANDOFF为准。
 
 把下文整段发给新电脑的 Codex。仓库是 https://github.com/Seven128/Starward ，目标分支是 `codex/remote-main-20260908`；本文件所在的接力提交及其后同分支最新提交为拉取目标。不要只拉 main。
