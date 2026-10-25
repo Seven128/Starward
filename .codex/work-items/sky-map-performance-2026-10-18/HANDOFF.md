@@ -38,3 +38,5 @@
 本轮实际新head的CI/执行和跳过按GitHub读回，结果归入口恢复证据；本地或docs成功不称全绿/已部署。必要小程序结果与后置性能未完，Goal保持active，不标complete。
 
 第一批33b9317b的实际CI：Context40156515772 success；Product40156515752 failure，唯一原因是旧资源通知fixture强制Search保留已取消浮层effect，后续消费者/构建/OCI等跳过；Backend40157286835整项skipped。该测试合同已窄修，受影响28项/TSC及新独审通过，产品字节保持58dc。测试修复交付后须核新head的全量现有消费者检查；不把失败头或仅按test diff跳过的兼容步骤冒通过，不重复部署失败条件。
+
+Search测试修复头2a5056e8：Context40159045850成功；自动Product40159045817被完整手动40159295033取消；Backend40159375809跳过。完整手动CI已通过release code、消费者、backend与WEAPP构建/检查，在真实PG管理命令测试因旧“缺revision=409”断言失败，OCI skipped。该旧断言现按既有400合同窄修，并补PG持久状态/receipt/idempotency/outbox无效果；真实冲突409和无key旧成功保留，随机独立PG库6/6、0skip后精确清理。见[管理输入补证](R20-ADMIN-INPUT-HTTP-20261025.md#后续真实pg合同检查)。下一新提交由现有自动完整门禁核验，不能把当前失败或本地6项当全绿；两次测试跟进均不改变58dc手机候选。

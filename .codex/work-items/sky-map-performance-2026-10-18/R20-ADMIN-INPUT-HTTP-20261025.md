@@ -31,3 +31,13 @@
 | `npm run typecheck --workspace @starward/miniapp-api` | **exit 0** | 当前 worker 全量 noEmit 类型检查；不是发布构建 |
 
 零写与 GET 读回来自受控 repository 端口；不冒数据库持久化/真实管理凭据/生产或部署结果。现用环境、迁移023–026、真实对象存储与长期恢复仍由 PLAN P4 的原责任持有。独立审查由 Root 安排，未在本记录中冒充完成。
+
+## 后续真实PG合同检查
+
+`2a5056e8` 的完整Product CI `40159295033`已通过release code、既有消费者兼容、backend构建及WEAPP构建/检查；在isolated infrastructure阶段运行真实PG管理命令时，唯一失败是旧测试仍要求缺失`expectedRevision`为409（实际400）。该输入在进入repository前由既有`requiredRevision`拒绝，当前ADMIN-AUTH要求400；不是已持久版本冲突。独立只读审阅确认该分类及其余409保留理由，无其它must-fix；未运行数据库或冒充最终diff逐字审阅。
+
+Root只迁移`admin-spot-commands-postgres.test.ts`这一既有场景：断言400/INVALID_INPUT/nonretryable、完整spotState前后相同，且该随机key没有operation_receipts、idempotency_records或outbox记录；无key旧接口成功和真正同key/旧revision/并发409全部保留。没有生产、样式或设备字节变化。
+
+Root从现用API私有owner核准本机PG目标后创建随机独立库，仅在该库运行该文件，**6/6 pass、0 skipped**；包括实际HTTP、并发事务、cache失败、rollback、重启和真实CLI消费者。完成后已精确drop该自有库，没有写原业务库、改共享服务或队列。私有log和创建/清理receipt归本轮entry owner的`pg-admin-input-contract.private.*`。这补足该窄输入在真实PG的零效果证据，不扩展为正式身份、云媒体或整个P4完成。
+
+首个完整CI的基础设施失败及OCI skipped保留为事实；此测试修复的新提交须核真实CI结果，不能用6项本地通过冒全量通过。

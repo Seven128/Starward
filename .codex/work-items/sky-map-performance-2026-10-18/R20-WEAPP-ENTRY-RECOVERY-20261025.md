@@ -77,3 +77,7 @@ Root核真实非提升token及审阅SHA后，仅调用一次PowerShell7 `Start-P
 后续测试修复及新head的实际执行/跳过据真实结果续记；第一次失败保留为失败，不能由本地检查或docs成功冒全绿。
 
 唯一旧断言已按当前合同迁移，见[CI测试合同修复](R19-SEARCH-CI-CONTRACT-20261025.md)：保其它页面浮层正值，Search改为实际挂载effects不重复通知及本页STALE/真实重试/保查询的正值约束。受影响四文件28/28、Mini Program类型检查通过，新独审无must-fix；没有恢复产品effect、改样式或削弱现有消费者门禁。临时反查因Windows预载入口错误未形成有效证据，没有计入通过结果。该测试增量不改变当前58dc普通候选，不再重建或重复设备旅程。新head将使用既有全量CI入口补足前次未执行的消费者检查，实际结果后记。
+
+`2a5056e8ff46d016d62db7400970bb11231b92e5`已提交/推送并与origin/main一致。自动Product40159045817因同分支并发策略被后发完整手动Product40159295033取消；Context40159045850成功，Backend40159375809跳过。手动完整CI已实际通过release code、既有消费者兼容、backend release构建、WEAPP release owner测试及CI bundle构建/检查；在isolated infrastructure的真实PG管理命令测试中失败，OCI和部分post步骤skipped。不能把该头称全绿。
+
+此次唯一失败为旧PG测试把缺失revision仍断言409。Root按[管理输入owner](R20-ADMIN-INPUT-HTTP-20261025.md#后续真实pg合同检查)窄修该既有场景，补400/INVALID_INPUT/nonretryable及实际PG状态/receipt/idempotency/outbox无效果，真正409及旧无key成功不变。随机独立PG库实跑6/6、0skip后精确清理；没有写原业务库或重跑媒体平台。产品字节仍为58dc，不重建/重推手机。下一测试提交按现有affected-checks自动覆盖全部消费者与产品门禁，实际新head状态后记；没有盲重试旧部署或改变容量条件。

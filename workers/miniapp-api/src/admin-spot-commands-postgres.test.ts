@@ -120,8 +120,16 @@ test("new command entries require key and revision while unkeyed legacy clients 
   const spotId = legacy.json().data.detail.spot.spotId;
   const patch = { name: "Legacy shape remains", reason: payload.reason };
   assert.equal((await submit("PATCH", `spots/${encodeURIComponent(spotId)}/commands`, { ...patch, expectedRevision: 1 })).statusCode, 400);
-  assert.equal((await submit("PATCH", `spots/${encodeURIComponent(spotId)}`, patch, `missing-revision-${randomUUID()}`)).statusCode, 409);
-  assert.equal((await spotState(spotId)).version, 1);
+  const beforeMissingRevision = await spotState(spotId);
+  const missingRevisionKey = `missing-revision-${randomUUID()}`;
+  const missingRevision = await submit("PATCH", `spots/${encodeURIComponent(spotId)}`, patch, missingRevisionKey);
+  assert.equal(missingRevision.statusCode, 400, "an absent revision is invalid input, not a persisted revision conflict");
+  assert.equal(missingRevision.json().code, "INVALID_INPUT");
+  assert.equal(missingRevision.json().retryable, false);
+  assert.deepEqual(await spotState(spotId), beforeMissingRevision);
+  for (const table of ["operation_receipts", "idempotency_records"])
+    assert.equal((await repository.pool.query(`SELECT 1 FROM ${table} WHERE scope_id=$1 AND idempotency_key=$2`, [actorId, missingRevisionKey])).rowCount, 0);
+  assert.equal((await repository.pool.query("SELECT 1 FROM outbox_events WHERE idempotency_key=$1", [`${actorId}:${missingRevisionKey}`])).rowCount, 0);
   const oldPatch = await submit("PATCH", `spots/${encodeURIComponent(spotId)}`, patch);
   assert.equal(oldPatch.statusCode, 200);
   assert.equal(oldPatch.json().data.spot.name, patch.name);
