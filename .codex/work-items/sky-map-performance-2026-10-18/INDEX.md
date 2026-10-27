@@ -11,7 +11,7 @@
 5. [HANDOFF-VALIDATION](HANDOFF-VALIDATION-20261025.md)：范围整理及本轮采集交接的独审、检查与Git边界；旧后置条款已标历史。
 6. [REVIEW-IMPLEMENTATION-AUDIT](REVIEW-IMPLEMENTATION-AUDIT-20261025.md)：Web GPT Pro全仓审查F01–F15/三重构/条件建议的去向，已完成历史与新增小程序判别。
 7. [NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)：给新对话的明确继续指令，不能单凭旧“active/next”启动App。
-8. [换机说明](CROSS-MACHINE-HANDOFF-20261027.md)、[交接包身份](HANDOFF-TRANSFER-20261027.json)：本次Git/数据/私有恢复边界及可直接使用的接续提示词；包未上传时明确LOCAL_ONLY。
+8. [换机说明](CROSS-MACHINE-HANDOFF-20261027.md)、[交接包身份](HANDOFF-TRANSFER-20261027.json)：本次Git/数据/私有恢复边界及可直接使用的接续提示词；19/19性能分片、私有恢复包和独立密钥已上传、远端校验及重组通过。源机开发Goal继续暂停，接收机恢复和产品验收仍未完成。
 
 本线程实际续办、最终普通候选和校正后的验证边界见[普通微信入口恢复](R20-WEAPP-ENTRY-RECOVERY-20261025.md)；该证据不构成第二份计划，当前状态/唯一下一步仍只归HANDOFF。最小管理输入判别已完成，沿HTTP/独审证据复用。
 

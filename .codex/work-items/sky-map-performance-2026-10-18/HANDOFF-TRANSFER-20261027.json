@@ -8,7 +8,7 @@
     "members": 4101,
     "uncompressedBytes": 768246967,
     "memberReadbackVerified": true,
-    "location": "GOOGLE_DRIVE_PARTIAL_SOURCE_PRESERVED"
+    "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED"
   },
   "privateRecovery": {
     "file": "Starward-private-recovery-20261027.zip",
@@ -19,7 +19,7 @@
     "memberReadbackVerified": true,
     "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED"
   },
-  "uploaded": false,
+  "uploaded": true,
   "sourceFilesPreserved": true,
   "globalEogSourcesRepackaged": false,
   "publicRuntimeOwner": "data-pipelines/runtime-data/current.lock.json",
@@ -27,10 +27,11 @@
   "phoneStorageIncluded": false,
   "sourceMachineArchiveRoot": "D:/dev/Starward-data/verification/sky-map-20261018/cross-machine-handoff-20261027",
   "notes": [
-    "User requested immediate stop and later resume; code development can continue from Git while raw-evidence transfer is incomplete",
-    "Private recovery is uploaded and byte-verified, but its separate key remains only on the source machine",
-    "Global EOG originals reuse existing verified mirrors; do not repackage or regenerate r6",
-    "Product CI contains an App WIP failure; OOM and the full Goal remain unresolved"
+    "Both private archives were reconstructed from downloaded encrypted parts and matched their original ZIP SHA256 values",
+    "The key is uploaded and byte-verified in the separate existing private recovery-key folder; key bytes are never stored in Git",
+    "Global EOG originals reuse existing verified mirrors; no repackage or r6 regeneration",
+    "Phone Storage is not included; receiver database restore and product acceptance remain unverified",
+    "Source development Goal remains paused; OOM and the full product Goal remain unresolved"
   ],
   "schemaVersion": "starward-cross-computer-handoff-v1",
   "codeCheckpoint": "d7f808836ce11c1917a864b417487131069e09ee",
@@ -40,7 +41,7 @@
   "assemblyOwner": ".codex/work-items/data-handoff-20261018/restore.mjs",
   "restoreAdapter": ".codex/work-items/sky-map-performance-2026-10-18/scripts/restore-cross-machine-handoff.mjs",
   "keyFileName": "Starward-performance-handoff-20261027.key",
-  "keyDelivery": "LOCAL_ONLY; upload to existing private key folder when the source machine is resumed",
+  "keyDelivery": "Separate existing private recovery-key folder; exact key receipt remains outside Git",
   "packages": [
     {
       "role": "evidence",
@@ -192,7 +193,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-009.enc",
             "bytes": 16777333,
             "sha256": "99bd1b49f53211ce5dd47ddc4413ec6a8cbd6aff4cc4043e3c4aed227551f394",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1I6QidJ9vjw-3NioFT5YR-_X14FUwuZo3",
+            "driveUrl": "https://drive.google.com/file/d/1I6QidJ9vjw-3NioFT5YR-_X14FUwuZo3/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:54:35.542Z"
           }
         },
         {
@@ -203,7 +210,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-010.enc",
             "bytes": 16777333,
             "sha256": "3e3055ecc7e3d4285aef5c92fe08c696ef9d1a64a114bead5098ffab47ce2b6e",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1Jqijt53-iyFrMi6x67bMV1UwExhU5OYu",
+            "driveUrl": "https://drive.google.com/file/d/1Jqijt53-iyFrMi6x67bMV1UwExhU5OYu/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:55:14.556Z"
           }
         },
         {
@@ -214,7 +227,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-011.enc",
             "bytes": 16777333,
             "sha256": "79af6befdcd4b1e5b2c2fe1b66f70e7b3541c41e590657d1e573507cf9e9f14f",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1rXwIgJRIINLORWXmhk-joZEGOUzYXRuN",
+            "driveUrl": "https://drive.google.com/file/d/1rXwIgJRIINLORWXmhk-joZEGOUzYXRuN/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:55:48.339Z"
           }
         },
         {
@@ -225,7 +244,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-012.enc",
             "bytes": 16777333,
             "sha256": "06850f975533535a3c4d6c89f7300d0cf93b75b4d850b00c70b5416a490f0c3f",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1KKam44xNbRDocZBvUakY8SYUQRg680Jf",
+            "driveUrl": "https://drive.google.com/file/d/1KKam44xNbRDocZBvUakY8SYUQRg680Jf/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:56:38.443Z"
           }
         },
         {
@@ -236,7 +261,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-013.enc",
             "bytes": 16777333,
             "sha256": "1bcba23ddd818fcaf378e497a66066c3ad87801df5afe2c4ee6765a49b7bef29",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1xwDQDrrM35bbqT8zTrH8dr0-o7Th_efu",
+            "driveUrl": "https://drive.google.com/file/d/1xwDQDrrM35bbqT8zTrH8dr0-o7Th_efu/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:57:24.398Z"
           }
         },
         {
@@ -247,7 +278,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-014.enc",
             "bytes": 16777333,
             "sha256": "5d4d323be61d6782fffddd8be7b488a2dadfa50310eeee95da48b57e390ea9f1",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1uZrzH8HzaIYQjRf5gRI0TkvmFu-VNIDu",
+            "driveUrl": "https://drive.google.com/file/d/1uZrzH8HzaIYQjRf5gRI0TkvmFu-VNIDu/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:58:09.692Z"
           }
         },
         {
@@ -258,7 +295,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-015.enc",
             "bytes": 16777333,
             "sha256": "8e4021592b1fc452b2c4915d6a897fa24e97a615341f5c340c734408d18d82fd",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "14cHMSuNhyTnO65pm1y4p0MAcHgzp90MJ",
+            "driveUrl": "https://drive.google.com/file/d/14cHMSuNhyTnO65pm1y4p0MAcHgzp90MJ/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:59:14.985Z"
           }
         },
         {
@@ -269,7 +312,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-016.enc",
             "bytes": 16777333,
             "sha256": "c270f68d19ce370df253f8a5906570f9fac67d3fc37d441b0095fe4e86e67e66",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1O66d1yxPRsIfrNEzQz2losXIdQvaoAqV",
+            "driveUrl": "https://drive.google.com/file/d/1O66d1yxPRsIfrNEzQz2losXIdQvaoAqV/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T12:59:54.850Z"
           }
         },
         {
@@ -280,7 +329,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-017.enc",
             "bytes": 16777333,
             "sha256": "a82e3bfa51ae1204409dc7fba2848d81fc3d21a4eee0ca239caf48a428444558",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1hPZIdDQoGERXGWowdCdBdM-2kZtjBzgH",
+            "driveUrl": "https://drive.google.com/file/d/1hPZIdDQoGERXGWowdCdBdM-2kZtjBzgH/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T13:00:38.961Z"
           }
         },
         {
@@ -291,7 +346,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-018.enc",
             "bytes": 16777333,
             "sha256": "f880b8c2dda821b2bb0ff45031d075121d794d26c95939391fe6cc8a2ea1c145",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "1AtNIWnJmUmi1po81uDa2tu0TnhJiDOcH",
+            "driveUrl": "https://drive.google.com/file/d/1AtNIWnJmUmi1po81uDa2tu0TnhJiDOcH/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T13:01:24.232Z"
           }
         },
         {
@@ -302,7 +363,13 @@
             "path": "Starward-performance-evidence-20261027.zip.segment-019.enc",
             "bytes": 12075760,
             "sha256": "df06513c03ccd37e96685cd926da174cfb79cdc4766abbd5fc9a500910f1621d",
-            "location": "LOCAL_ONLY"
+            "location": "GOOGLE_DRIVE_PRIVATE_VERIFIED",
+            "driveFileId": "14EL66Lj70MJM6AENp-s5VBhmRKw5QI1s",
+            "driveUrl": "https://drive.google.com/file/d/14EL66Lj70MJM6AENp-s5VBhmRKw5QI1s/view?usp=drivesdk",
+            "parentFolderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+            "ownerOnlyPermissionsVerified": true,
+            "remoteReadbackVerified": true,
+            "remoteReadbackAt": "2026-10-27T13:02:09.119Z"
           }
         }
       ]
@@ -334,11 +401,16 @@
     }
   ],
   "transportPartBytes": 16777216,
-  "transferStatus": "PAUSED_BY_USER_PARTIAL",
-  "pausedAt": "2026-10-27T05:52:08.794Z",
-  "verifiedEvidenceParts": 8,
+  "transferStatus": "COMPLETE_PRIVATE_READBACK_VERIFIED",
+  "verifiedEvidenceParts": 19,
   "totalEvidenceParts": 19,
-  "keyUploaded": false,
-  "possibleInFlightFile": "Starward-performance-evidence-20261027.zip.segment-009.enc",
-  "resumePolicy": "Check exact next file name in the existing Drive folder before retrying: an interrupted upload may finish. Reuse local encrypted files and key; do not repackage."
+  "keyUploaded": true,
+  "resumePolicy": "Check exact next file name in the existing Drive folder before retrying: an interrupted upload may finish. Reuse local encrypted files and key; do not repackage.",
+  "keyRemoteReadbackVerified": true,
+  "completedAt": "2026-10-27T13:03:05.769Z",
+  "allRemoteReadbacksVerified": true,
+  "remoteArchiveRoundtripVerified": true,
+  "remoteArchiveRoundtripVerifiedAt": "2026-10-27T13:03:05.769Z",
+  "receiverDatabaseRestoreVerified": false,
+  "sourceDevelopmentGoalStatus": "paused"
 }

@@ -1,6 +1,6 @@
 # 当前交接：候选19与换机检查点
 
-用户最新要求：代码推送后立即停传并暂停本机Goal，另一台先开发，晚点回源机续传。完整目标归[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)，唯一计划归[PLAN](PLAN.md)；Goal未完成，状态以get_goal实读为准。仅微信小程序及实际依赖；App WIP随本次检查点保全，不恢复App开发或冒其验收。
+用户最新要求仅续传上次私有资料；现已传完并校验，源机开发Goal继续暂停，另一台接续开发。完整目标归[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)，唯一计划归[PLAN](PLAN.md)；Goal未完成，状态以get_goal实读为准。仅微信小程序及实际依赖；App WIP随本次检查点保全，不恢复App开发或冒其验收。
 
 换机先读[CROSS-MACHINE-HANDOFF](CROSS-MACHINE-HANDOFF-20261027.md)与[交接包身份](HANDOFF-TRANSFER-20261027.json)。代码/文档在Git，性能原件和私有恢复另包；本机路径/PID/IP/截图授权不是接收机事实。
 
@@ -27,6 +27,6 @@
 
 检查点`d7f80883`真实CI：Context40455721990成功；Product40455722021的小程序发布代码检查成功，随后原生App消费者阶段失败。`apps/mobile/src/shell/shell-startup.integration.test.tsx`为7fail/其余App228pass，Expo crypto导入链报`ReferenceError: __DEV__ is not defined`；这是保全的App WIP对应测试缺口，未在本次小程序交接中恢复App开发。失败之后的后台构建、WEAPP包检查、隔离基础设施及OCI构建均skipped；staging40456535666整体skipped，未部署。更早staging40200094757为磁盘容量检查失败、发布/promotion skipped；新文档提交即使轻量CI通过也不补齐上述产品证据。
 
-`Starward-performance-evidence-20261027.zip`约314MB，4101成员逐项hash读回；`Starward-private-recovery-20261027.zip`约693KB，含任务库dump和私有配置，归档可列举但接收机恢复未执行。用户要求立即停传、另一台先开发，源机晚点续传。当前性能证据 8/19 分片已上传并逐份读回；私有恢复包已读回，密钥尚未上传。完整证据包暂不能从远端恢复。源机原ZIP、加密分片、密钥及续传清单均保留；续传前先查下一文件是否已完成在途上传，不能重复上传已核验部分。 精确身份见HANDOFF-TRANSFER。全球EOG原件复用现有锁定备份，未重打包。手机本地Storage/草稿不在数据库dump内；保原手机、N05、R6和gen34，不清缓存、不重发、不重建冻结基线。
+`Starward-performance-evidence-20261027.zip`约314MB，4101成员逐项hash读回；`Starward-private-recovery-20261027.zip`约693KB，含任务库dump和私有配置。19/19性能分片、私有恢复包和独立密钥均已上传并校验远端字节、私有权限；用下载件解密重组出的两份ZIP与原件SHA256一致。完整索引及恢复命令见CROSS-MACHINE-HANDOFF和HANDOFF-TRANSFER；源机ZIP、分片与密钥保留，接收机数据库恢复未执行。全球EOG原件复用现有锁定备份，未重打包。手机本地Storage/草稿不在数据库dump内；保原手机、N05、R6和gen34，不清缓存、不重发、不重建冻结基线。
 
 主要证据在交接包`performance-repair-20261026/user-feedback-20261027/`的repair/review/phone目录；提交前夹具证据在`checkpoint-tests/`。迁移时按包内manifest校验，旧绝对路径只作定位。此前完整HANDOFF原件仍保存在源机私有检查点目录。不要把归档、提交或本交接完成标成整个Goal完成。
