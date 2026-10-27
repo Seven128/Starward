@@ -32,6 +32,17 @@ test("actual compiler output exposes all five pure binding roles with minified m
   assert.ok(Object.values((await s.verify(same)).roles).every(Boolean));
 });
 
+test('subpackage address selection and shared credential policy are both evaluated from their pinned chunks', async t => {
+  const f = await fixture(t, { splitOwners: true }), result = await f.verify();
+  assert.equal(result.pins.length, 3);assert.notEqual(result.ownerId, result.previewOwnerId);
+  assert.ok(Object.values(result.roles).every(Boolean));
+  const common = path.join(f.root, 'common.js');
+  await writeFile(common, await readFile(common, 'utf8') + `\nconst modules = wx.webpackJsonp[0][1];
+    const id = Object.keys(modules).find(id => modules[id].toString().includes("sky_public_resource_preview_url_invalid"));
+    modules["duplicate-preview"] = modules[id];`);
+  await assert.rejects(f.verify(), /compiled_sky_owner_unavailable/u);
+});
+
 test("unused correct domain strings cannot approve an actually stale resource binding; bounded mutation proves the old escape", async t => {
   const f = await fixture(t, { skyResourceOrigin: "https://stale.sky-resource-ci.invalid" });
   await writeFile(path.join(f.root, "unused-domain.txt"), JSON.stringify(binding));

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { NIGHT_LIGHT_FIXED_SCALE, nightLightFixedLegend } from "@starward/miniapp-contracts";
+import { NIGHT_LIGHT_CONTRAST_DISPLAY, NIGHT_LIGHT_FIXED_SCALE, nightLightDisplayLegend, nightLightFixedLegend } from "@starward/miniapp-contracts";
 import { projectMapLayerLegend, type MapLayerLegendData } from "./map-layer-legend";
 
 function fixedLayer(): MapLayerLegendData {
@@ -17,6 +17,17 @@ test("compact annual legend retains all five physical ranges and colours with on
   assert.deepEqual(result.items.map(item => item.text), ["很低 · 0–0.5", "较低 · >0.5–2", "中等 · >2–10", "较高 · >10–40", "很高 · >40"]);
   assert.deepEqual(result.items.map(item => item.color), layer.legend.map(item => item.color));
   assert.deepEqual(layer, before, "display grouping must not change canonical scientific values");
+});
+
+test("confirmed contrast display uses its own colours without changing fixed scientific ranges", () => {
+  const layer = fixedLayer();
+  layer.raster!.styleVersion = NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion;
+  layer.legend = nightLightDisplayLegend(NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion);
+  const result = projectMapLayerLegend(layer, "DAY");
+  assert.equal(result.heading, "年度夜光 · nW/cm²/sr");
+  assert.deepEqual(result.items.map(item => item.text), projectMapLayerLegend(fixedLayer(), "DAY").items.map(item => item.text));
+  assert.deepEqual(result.items.map(item => item.color), layer.legend.map(item => item.color));
+  assert.notDeepEqual(result.items.map(item => item.color), nightLightFixedLegend().map(item => item.color));
 });
 
 test("unknown scale or changed content retains full labels and units without pretending to be the fixed five bands", () => {

@@ -8,11 +8,11 @@ import { skyResourceOriginTestOwner } from './sky-resource-origin-test-support';
 import {MINIAPP_API_BASE_PATH,galacticImageManifestPath} from '@starward/miniapp-contracts';
 import {assertGalacticImageManifest} from './galactic-image-publication';
 import {sourceCompositionTestScope} from '../sky/sources/source-recovery-test-support';
+import {skyPageTimeTestBindings} from '../features/sky/sky-optical-page-test-support';
 import type * as sourceDocuments from '../features/sky/sky-source-documents';
 import type * as sceneResources from '../features/sky/sky-scene-resources';
 import type * as nativeImages from '../features/sky/sky-artwork-loader';
 import type * as sceneFrame from '../features/sky/sky-scene-frame';
-import type * as observationTime from '../features/sky/sky-observation-time';
 import type {ResolvedSkyReport} from '../features/sky/sky-stellar-scene';
 import type {SourceDocument} from '../utils/source-document';
 
@@ -99,8 +99,8 @@ test('the actual Sky source entry renders and copies the painted optical or infr
     const {liveSkySceneResources}=scope.module<typeof sceneResources>('features/sky/sky-scene-resources.ts');
     const {registerSkyNativeImageLifetime,skyNativeImageIsCurrent}=scope.module<typeof nativeImages>('features/sky/sky-artwork-loader.ts');
     const {createSkySceneFrameIdentity}=scope.module<typeof sceneFrame>('features/sky/sky-scene-frame.ts');
-    const {skyPresentedTimeCurrent}=scope.module<typeof observationTime>('features/sky/sky-observation-time.ts');
     const at='2026-09-22T13:00:00.000Z';
+    const time=skyPageTimeTestBindings(at);
     // Controlled accepted metadata is not GPU evidence. The actual page reader
     // and its shared live projection must observe the same native lifetime.
     const data={context:{contextId:'source-test',contextRevision:1,contextFingerprint:'source-test:1'}} as unknown as ResolvedSkyReport;
@@ -108,19 +108,20 @@ test('the actual Sky source entry renders and copies the painted optical or infr
       view:{heading:null,pose:null,manualBasis:null,mode:'NIGHT',verticalFovDeg:45},
       canvas:{generation:1,width:390,height:844}});
     const painted={current:null as (sceneResources.SkyCompletedSceneResources&{
-      identity:sceneFrame.SkySceneFrameIdentity;nativeCanvasGeneration:number;
+      identity:sceneFrame.SkySceneFrameIdentity;nativeCanvasGeneration:number;timeGeneration:number;
     })|null};
     const opened:Array<{route:string;document:SourceDocument}>=[];
     const open=vm.runInNewContext(expression,{...documents,SOURCE_READING_ROUTE,
-      liveSkySceneResources,skyPresentedTimeCurrent,presentedSkyFrameRef:painted,
-      observationTime:{snapshot:()=>({at,mode:'FIXED'})},skyTimeIntentCurrent:()=>true,
+      liveSkySceneResources,...time,presentedSkyFrameRef:painted,
+      observationTime:{snapshot:()=>time.timeIntent},skyTimeIntentCurrent:()=>true,
       orientationData:data,rawReportData:data,nativeCanvasMounted:true,canvasError:null,
       paintedSkyObjectsRef:{current:{identity}},canvasGenerationRef:{current:1},mode:'NIGHT',
       openSkySources:(route:string,document:SourceDocument)=>{opened.push({route,document});},
     }) as (publication:typeof optical)=>void;
     for(const publication of [optical,infrared]){
       const image={},retire=registerSkyNativeImageLifetime(image,()=>true);retirements.push(retire);
-      painted.current={identity,nativeCanvasGeneration:1,sdssOptical:null,preparedRegions:[],deepSkyImage:null,
+      painted.current={identity,nativeCanvasGeneration:1,timeGeneration:time.timeIntent.presentationGeneration,
+        sdssOptical:null,preparedRegions:[],deepSkyImage:null,
         galacticImage:{publication,image},opticalHips:[],bodyImages:[],landscape:null};
       open(publication);
       assert.equal(opened.at(-1)?.route,SOURCE_READING_ROUTE);

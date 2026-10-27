@@ -15,6 +15,9 @@ const source=ts.createSourceFile('use-sky-stellar-supplement.ts',
 const declaration=source.statements.find(node=>ts.isFunctionDeclaration(node)&&
   node.name?.text==='useSkyStellarSupplement') as ts.FunctionDeclaration;
 assert.ok(declaration);
+const indexBinding=source.statements.find(node=>ts.isVariableStatement(node)&&
+  node.declarationList.declarations.some(value=>value.name.getText(source)==='getSaoIndex'))!;
+assert.ok(indexBinding);
 const page=ts.createSourceFile('spot-sky-page.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),
   ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
 const calls:ts.CallExpression[]=[];
@@ -48,7 +51,8 @@ function fixture(){
     EMPTY:{tiles:[],loading:false,failed:false},createSkyStellarTileLoader,reportRuntimeError,
     useResourceQuery:()=>({data:current?{data:current,sources:[],dataState:'FRESH'}:undefined,
       isFetching:false,isError:false,refetch:()=>{indexRetries++;}}),
-    saoCatalogClient:{getTile:(owner:SaoIndexPublication,id:string,signal:AbortSignal)=>new Promise(resolve=>{
+    saoCatalogClient:{getIndex:()=>assert.fail('the controlled Query supplies index state'),
+      getTile:(owner:SaoIndexPublication,id:string,signal:AbortSignal)=>new Promise(resolve=>{
       requests.push({publication:owner,id,signal,finish(dataState='FRESH'){
         const data:SaoTilePublication={publicationHash:owner.publicationHash,
           tile:JSON.parse(readFileSync(new URL(`${id}.json`,assets),'utf8'))};
@@ -79,7 +83,7 @@ function fixture(){
       slots[index]={deps};effects.push(()=>{previous?.cleanup?.();slots[index].cleanup=effect();});
     },
   };
-  const hook=vm.runInNewContext(ts.transpileModule(`${declaration.getText(source).replace(/^export /u,'')}\nuseSkyStellarSupplement`,
+  const hook=vm.runInNewContext(ts.transpileModule(`${indexBinding.getText(source)}\n${declaration.getText(source).replace(/^export /u,'')}\nuseSkyStellarSupplement`,
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,bindings);
   let scene={publication:{},observer:{}};
   const view={basis:{},width:390,height:844,verticalFovDeg:9.1,center:{x:195,y:422}};

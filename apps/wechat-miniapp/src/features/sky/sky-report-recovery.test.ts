@@ -6,18 +6,19 @@ import ts from 'typescript';
 import {createSkyContextSession} from './sky-context-session';
 import {createSkyObservationTime} from './sky-observation-time';
 import type {ObservationContext} from '@starward/miniapp-contracts';
+import {skyFailureTestEpisodes} from './sky-failure-test-support';
 
 const source=ts.createSourceFile('spot-sky-page.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),
   ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
 const page=source.statements.find(node=>ts.isFunctionDeclaration(node)&&node.name?.text==='SpotSkyPage') as ts.FunctionDeclaration;
 const names=['skyInteractionRevision','skyPageVisibleCurrent','skyInteractionCurrent','skyTimeIntentCurrent','skyDisplayCurrent',
-  'recoverSkyResource','reportRecoveryRef','canRetryReport','retryReport','retrySkyData'];
+  'recoverSkyResource','reportRecoveryRef','canRetryReport','retryReport','retrySkyData','retryStellarSupplement'];
 const statements=page.body!.statements.filter(node=>ts.isVariableStatement(node)&&
   node.declarationList.declarations.some(declaration=>names.includes(declaration.name.getText(source)))||
   ts.isExpressionStatement(node)&&/^reportRecoveryRef\.current\s*=/.test(node.expression.getText(source)));
 const code=ts.transpileModule('(()=>{const {pageVisible,contextComplete,activeContext,contextSession,autoRestoreAttemptedRef,report,stellarReference,stellarCatalog,useRef,useCallback,'+
-  'viewportActiveRef,viewportMountedRef,timeSaving,orientationController,observationTime,timeBinding,committedAt,useAppStore,mode,canvasLifecycle,browsingDrawRef}=bindings;'+
-  statements.map(node=>node.getText(source)).join('\n')+'\nreturn {retrySkyData,retryReport};})()',
+  'viewportActiveRef,viewportMountedRef,timeSaving,orientationController,observationTime,timeBinding,committedAt,useAppStore,mode,canvasLifecycle,browsingDrawRef,failureEpisodes,stellarSupplement}=bindings;'+
+  statements.map(node=>node.getText(source)).join('\n')+'\nreturn {retrySkyData,retryReport,retryStellarSupplement};})()',
   {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
 function fixture(){
   const context={contextId:'ctx:a' as ObservationContext['contextId'],contextFingerprint:'a:1',revision:1};
@@ -28,12 +29,13 @@ function fixture(){
   const autoRestoreAttemptedRef={current:true},shared={current:null as unknown};
   let reports=0,stars=0;
   const sandbox={pageVisible:true,contextComplete:true,activeContext:context,contextSession,autoRestoreAttemptedRef,
+    failureEpisodes:skyFailureTestEpisodes(),stellarSupplement:{retry:()=>{}},
     viewportActiveRef:{current:true},viewportMountedRef:{current:true},timeSaving:false,observationTime,timeBinding,committedAt,
     orientationController:{snapshot:()=>({alignment:{mode:'auto'}})},mode:'NIGHT',useAppStore:{getState:()=>({...state,mode:'NIGHT'})},
     canvasLifecycle:{resize:()=>{}},browsingDrawRef:{current:()=>{}},
     report:{refetch:()=>reports++},stellarReference:{},stellarCatalog:{refetch:()=>stars++},
     useRef:(value:unknown)=>{shared.current??=value;return shared;},useCallback:(callback:unknown)=>callback};
-  const render=()=>vm.runInNewContext(code,{bindings:sandbox}) as {retrySkyData():void;retryReport():boolean;retrySkyRendering():void};
+  const render=()=>vm.runInNewContext(code,{bindings:sandbox}) as {retrySkyData():void;retryReport():boolean;retrySkyRendering():void;retryStellarSupplement():void};
   return {sandbox,contextSession,autoRestoreAttemptedRef,render,counts:()=>[reports,stars],
     changeSelection(field:'selectedSpotId'|'mapResetVersion'|'spotOpenRequestVersion'){
       state={...state,[field]:field==='selectedSpotId'?'spot:b':1};
@@ -72,17 +74,18 @@ test('actual report consumers dispatch only after the common Context recovery ga
   }
   visit(page);assert.equal(callbacks.length,5,'all selected-object, weather and status callbacks');
   for(const expression of callbacks){
-    const h=fixture();let supplements=0,resets=0,draws=0;
+    const h=fixture();let supplements=0,resets=0,draws=0;h.sandbox.stellarSupplement.retry=()=>{supplements++;};
     h.sandbox.canvasLifecycle.resize=()=>{resets++;};h.sandbox.browsingDrawRef.current=()=>{draws++;};
     const compile=()=>{const recovery=h.render();return vm.runInNewContext(ts.transpileModule('('+expression.getText(source)+');',
       {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{retryReport:recovery.retryReport,
-      stellarSupplement:{retry:()=>supplements++},retrySkyRendering:recovery.retrySkyRendering}) as ()=>void;};
+      stellarSupplement:h.sandbox.stellarSupplement,retryStellarSupplement:recovery.retryStellarSupplement,
+      retrySkyRendering:recovery.retrySkyRendering}) as ()=>void;};
     const action=compile();
     h.contextSession.hide();action();assert.deepEqual([...h.counts(),supplements,resets,draws],[0,0,0,0,0]);
     h.contextSession.show();action();assert.deepEqual([...h.counts(),supplements,resets,draws],[0,0,0,0,0],
       'a callback from before hide must not recover the returned surface');
     compile()();assert.equal(h.counts()[0],1,'a real current click must reach report refetch');
-    if(expression.getText(source).includes('stellarSupplement'))assert.equal(supplements,1);
+    if(/stellarSupplement|retryStellarSupplement/.test(expression.getText(source)))assert.equal(supplements,1);
     if(expression.getText(source).includes('retrySkyRendering'))assert.deepEqual([resets,draws],[1,1]);
   }
 });

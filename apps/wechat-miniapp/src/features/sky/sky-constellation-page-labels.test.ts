@@ -6,10 +6,9 @@ import vm from "node:vm";
 import ts from "typescript";
 import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
-import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { projectSkyConstellationNames } from "./sky-label-presentation";
 import {createSkyNameLayouts} from "./sky-name-layout";
-import {skyPagePaintCommit} from "./sky-optical-page-test-support";
+import {skyPagePaintCommit, skyPageTimeTestBindings} from "./sky-optical-page-test-support";
 
 // Run the page's actual overlay selection against a pending native frame.
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -53,9 +52,9 @@ function labels(presentedSkyFrame: object | null, painted: SkyPickSnapshot = ope
     labels: [{ iau: "Ori", nameZh: "猎户座", nameEn: "Orion", direction: basis.forward }] } : presented?.constellations;
   return vm.runInNewContext(selection, {
     orientationData: reportData, reportData, rawReportData:reportData, row: { at }, mode: "OBSERVATION", canvasError: null,
-    skyPresentedTimeCurrent, timePlaying:false, timeIntent:{runStartAt:null},
+    ...skyPageTimeTestBindings(at),
     currentViewBasis: basis, constellationFrame,
-    presentedSkyFrame: presentedSkyFrame?{...presentedSkyFrame,constellations:figures,landscape:painted.view?.landscape??null}:null,
+    presentedSkyFrame: presentedSkyFrame?{timeGeneration:0,...presentedSkyFrame,constellations:figures,landscape:painted.view?.landscape??null}:null,
     presentedFov: 45, presentedCenter: { x: 195, y: 422 },
     canvasSize: { width: 390, height: 844 }, constellationsEnabled: true,
     viewportInsets:{top:0,bottom:0},

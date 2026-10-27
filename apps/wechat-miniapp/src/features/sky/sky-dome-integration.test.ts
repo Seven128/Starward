@@ -306,7 +306,7 @@ async function calibrationEntry(initialFov:number) {
   const commands=()=>vm.runInNewContext(commandCode,{...sandbox,orientation:{...orientation,snapshot:orientationController.snapshot()}});
   completion.current=commands().accept;
   const paint=acceptedPagePaint(sandbox);
-  const frame=()=>({data,frameAt:at,mode:'NIGHT',orientationRevision:orientationController.snapshot().presentationRevision,
+  const frame=()=>({data,frameAt:at,timeGeneration:observationTime.snapshot().presentationGeneration,mode:'NIGHT',orientationRevision:orientationController.snapshot().presentationRevision,
     nativeImageGeneration:1,pose:orientationController.snapshot().pose,sceneReady:true});
   const draw=()=>{completion.current=commands().accept;paint({},frame(),{width:390,height:844});};
   draw();

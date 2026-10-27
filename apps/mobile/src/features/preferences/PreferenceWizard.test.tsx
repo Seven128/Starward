@@ -82,7 +82,7 @@ describe("preference draft save recovery", () => {
     expect(onClose).not.toHaveBeenCalled();
     const candidate = onSave.mock.calls[0][0];
     expect(candidate).toMatchObject({ id: initial.id, revision: 2, createdAt: initial.createdAt });
-    await react.act(async () => button("保存并设为当前预设").click());
+    await react.act(async () => button("确认上次保存").click());
     expect(onSave.mock.calls[1][0]).toBe(candidate);
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -95,7 +95,7 @@ describe("preference draft save recovery", () => {
     await react.act(async () => button("保存并设为当前预设").click());
     const original = onSave.mock.calls[0][0];
     await react.act(async () => button("行星").click());
-    await react.act(async () => button("保存并设为当前预设").click());
+    await react.act(async () => button("保存新的修改").click());
     const changed = onSave.mock.calls[1][0];
     expect(changed).not.toBe(original);
     expect(changed.targets).toEqual(["planets"]);
@@ -140,7 +140,7 @@ describe("preference draft save recovery", () => {
 
     faults.unavailable = false;
     await react.act(async () => button("行星").click());
-    await react.act(async () => button("保存并设为当前预设").click());
+    await react.act(async () => button("保存新的修改").click());
     expect(container.textContent).toContain("此预设已有新版本。草稿已保留");
     expect(useShellStore.getState().profiles[0]).toMatchObject({ revision: 2, targets: [] });
     expect(button("✓ 行星")).toBeDefined();

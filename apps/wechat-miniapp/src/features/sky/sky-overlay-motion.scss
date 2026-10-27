@@ -1,7 +1,6 @@
-.sky-overlay-motion { position: absolute; inset: 0; pointer-events: none; }
-.sky-overlay-motion--search { z-index: 9; }
-.sky-overlay-motion--object { z-index: 30; }
-.sky-overlay-motion--layers, .sky-overlay-motion--time { z-index: 11; }
+// Every disclosure stays above scene notices and controls, using the existing
+// object-dialog layer. Closing it reveals the unchanged status and recovery UI.
+.sky-overlay-motion { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
 .sky-overlay-motion__surface {
   pointer-events: auto;
   transform-origin: center center;

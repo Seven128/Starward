@@ -27,7 +27,12 @@ test("shared readers cancel independently and a native pin protects the old file
   const unpin = h.owner.retainPath("/owned/a"); second.release();
   const replacement = h.owner.acquire(descriptor("b")); const rejected = replacement.promise.catch(error => error);
   await settle(); h.jobs[1]!.resolve({ path: "/owned/b", bytes: 4 });
-  assert.match((await rejected).message, /budget_busy/); await settle();
+  const blocked = await rejected;
+  assert.match(blocked.message, /budget_busy/);
+  assert.deepEqual(blocked.budget, { entries: 2, readyBytes: 4, activeDownloads: 1, queued: 0,
+    nativePins: 1, failedRemovals: 0, activeReaders: 1, physicalFiles: 1 },
+    'the terminal snapshot describes the actual owner before discarding the incoming file');
+  await settle();
   assert.deepEqual(h.removed, ["/owned/b"]); assert.equal(h.owner.snapshot().readyBytes, 4);
   unpin(); await settle();
   const next = h.owner.acquire(descriptor("c")); await settle(); h.jobs[2]!.resolve({ path: "/owned/c", bytes: 4 });

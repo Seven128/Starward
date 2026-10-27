@@ -21,6 +21,17 @@ export function reportRuntimeError(kind: RuntimeErrorKind, code: string, error?:
   const status = context.status;
   if (typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599)
     detail.http = status;
+  if (code === 'raster_image_budget_busy') {
+    // One terminal resource-admission sample, never paths, keys or a graph.
+    // This distinguishes pinned/read files from failed deletion and bytes.
+    for (const field of ['entries', 'readyBytes', 'activeDownloads', 'queued', 'nativePins',
+      'failedRemovals', 'activeReaders', 'physicalFiles'] as const) {
+      try {
+        const value = (error as { budget?: Record<string, unknown> } | null)?.budget?.[field];
+        if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) detail[field] = value;
+      } catch { /* Untrusted native getters cannot break failure recovery. */ }
+    }
+  }
   const causes = [error];
   try { causes.push((error as { cause?: unknown } | null)?.cause); } catch { /* Host getter. */ }
   for (const source of causes) for (const field of ["errno", "errCode"] as const) {

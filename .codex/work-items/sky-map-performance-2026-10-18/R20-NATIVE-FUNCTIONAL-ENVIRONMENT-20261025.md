@@ -34,3 +34,9 @@ Root实看 `native-functional-ui/screen-4313d677-5cc1-43da-81f5-cec35e65185b.png
 `C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/native-toolchain-20261025-192414098/`
 
 只读设备回执没有把 Windows ready或旧微信普通推送当 Native API可达。Native独立 API、实际定位许可／精度、App持久／重启／导航／视觉、生产及完整 family尚未验；当前微信普通 Map和原 N05／R6等资料未改。手工阶段的本地消费者结果也不能代替这些目标结果。最新已提交 `b4d26545` 的 Product／Context成功，staging仍因磁盘门槛失败且发布／部署skip，不能外推本轮 WIP或已部署。
+
+## 共享偏好首轮修复与Activity模块追加实编
+
+Root在两个作者均冻结后联合核79项，manifest ffb90a367da0d233f4e5c23a717eb43b397fa4df49c91cb4d826f21976017a0d；在新独审只读期间构建，源码未变。input d11a2712e8e676f6fa9d700d0a76a8e03bd45b2d81833b4924dd5bc199c9417b，实际Release 3m36s成功，884tasks/84executed/800uptodate；包含新starward-permission-handoff的compileReleaseKotlin及自动链接。APK SHA7fcc42188c8d572d1ec70e600d1dd554d26ab0158d4c3884c8649c5132af7882，38,354,379B，实际aapt包/Activity、同证书签名、HBC自有API和input核对通过，generated Gradle已恢复。准备脚本第一次因null LASTEXITCODE提前返回，先核无phase/dispatch后才真正启动一次，原记录保全，没有重复build/安装。
+
+编译期间新偏好独审发现同一Quick未知保存跨完整视图后被resolver规范化换身份，故本APK不安装，作为未安装阴性候选保留；不是手机当前包。Activity26pins限定新独审4机制通过，但该端口尚未被实际permission消费者调用，无module实际快照/normal-Home/freshGPS资格。手机继续53960d39/r2/App停止/前台精确许可保留。Root一次只读旧自有UID事件取回11条Main日志，包含原正常许可pause/resume；没有据此声明完整保留窗口、有效stop负例或P2关闭。全部旧APK/cache/源原字节保留，新的跨视图确认修复沿原editor/attempt在途。

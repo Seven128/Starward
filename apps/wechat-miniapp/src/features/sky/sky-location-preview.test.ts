@@ -4,9 +4,8 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { civilDateForInstant } from "../../components/observation-date.ts";
-import { exactSkyTimeFrame } from "./sky-time-frame.ts";
 import { createSkyObjectSelection } from "./sky-object-selection.ts";
-import { presentSkyTime, selectSkyTimePresentation, skyTimeRulerRows } from "./sky-time-presentation.ts";
+import { presentSkyTime, selectSkyTimePresentation } from "./sky-time-presentation.ts";
 import { createSkyObjectTracking } from "./sky-object-tracking";
 import { createSkyObservationTime } from "./sky-observation-time";
 import { createSkyContextSession } from "./sky-context-session";
@@ -14,6 +13,7 @@ import { skyObjectPositionIsCurrent } from "./sky-object-location";
 import { createSkyViewBasis } from "./sky-view-projection";
 import { createSkyBrowsingCamera } from "./sky-browsing-camera";
 import type { ContextVersion } from "../../services/observation-context-version";
+import { skyPageTimePresentationTestBindings, skyPageTimePresentationTestCode } from "./sky-optical-page-test-support";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -91,27 +91,24 @@ test("locating and tracking preserve the preview owner while restoring the expan
 });
 
 test("cross-midnight preview and cancel use the same report frame and local calendar date", () => {
-  const names = ["committedAt", "timeBinding", "restoredAt", "committedRow", "committedIndex", "activeIndex", "row",
-    "isPreviewing", "presentedAt", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation", "timeRows"];
-  const declarations = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
-    statement.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
-  assert.equal(declarations.length, names.length);
-  const selection = ts.transpileModule(declarations.map(statement => statement.getText(source)).join("\n") +
+  const selection = ts.transpileModule(skyPageTimePresentationTestCode(source,
+    ["committedRow", "committedIndex", "activeIndex", "row", "isPreviewing", "presentedAt"]) +
     "\n({ rowAt: row?.at, selectedCivilDate: civilDateForInstant(presentedAt, routeContext.timezone), isPreviewing, activeIndex });",
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-  const beforeMidnight = "2026-09-24T15:30:00Z";
-  const afterMidnight = "2026-09-24T16:30:00Z";
-  const selected = (previewIndex: number | null) => vm.runInNewContext(selection, {
-    contextComplete: true,
-    activeContext: { contextId: "ctx:preview", revision: 1, contextFingerprint: "fp:preview", selectedAtUtc: beforeMidnight },
-    routeContext: { selectedAt: beforeMidnight, timezone: "Asia/Shanghai" }, observationTime: createSkyObservationTime(),
-    rawReportData: { hourly: [{ at: beforeMidnight }, { at: afterMidnight }] },
-    requestedAt: previewIndex === null ? beforeMidnight : afterMidnight,
-    timeModel: null, timeGeometrySources: undefined,
-    presentSkyTime, selectSkyTimePresentation, skyTimeRulerRows, useMemo: (compute: () => unknown) => compute(),
-    pageVisible: false,
-    previewIndex, exactSkyTimeFrame, civilDateForInstant,
-  }) as { rowAt: string; selectedCivilDate: string; isPreviewing: boolean; activeIndex: number };
+  const beforeMidnight = "2026-09-24T15:30:00.000Z";
+  const afterMidnight = "2026-09-24T16:30:00.000Z";
+  const observationTime = createSkyObservationTime();
+  observationTime.bind("ctx:preview:1:fp:preview", beforeMidnight, null);
+  const selected = (previewIndex: number | null) => {
+    if (previewIndex !== null) observationTime.preview(afterMidnight);
+    else observationTime.cancel();
+    return vm.runInNewContext(selection, skyPageTimePresentationTestBindings({
+      contextComplete: true,
+      activeContext: { contextId: "ctx:preview", revision: 1, contextFingerprint: "fp:preview", selectedAtUtc: beforeMidnight },
+      routeContext: { selectedAt: beforeMidnight, timezone: "Asia/Shanghai" }, observationTime,
+      rawReportData: { hourly: [{ at: beforeMidnight }, { at: afterMidnight }] }, civilDateForInstant,
+    })) as { rowAt: string; selectedCivilDate: string; isPreviewing: boolean; activeIndex: number };
+  };
   assert.deepEqual({ ...selected(1) }, { rowAt: afterMidnight, selectedCivilDate: "2026-09-25", isPreviewing: true, activeIndex: 1 });
   assert.deepEqual({ ...selected(null) }, { rowAt: beforeMidnight, selectedCivilDate: "2026-09-24", isPreviewing: false, activeIndex: 0 });
 });
@@ -132,20 +129,15 @@ test("Sky presentation cannot recover a future requested, accepted or fallback f
     "a legal earlier completed frame remains usable while its later request prepares");
   assert.strictEqual(selectSkyTimePresentation(report, initialAt, pastAt, initial, past, limit), initial);
 
-  const names = ["committedAt", "timeBinding", "restoredAt", "requestedAt", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation"];
-  const declarations = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
-    statement.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
-  assert.equal(declarations.length, names.length);
-  const selection = ts.transpileModule(declarations.map(statement => statement.getText(source)).join("\n") +
+  const selection = ts.transpileModule(skyPageTimePresentationTestCode(source) +
     "\n({ requestedAt, restoredAt, renderedAt: timePresentation?.row.at });",
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const observationTime = createSkyObservationTime({ latestInstant: () => limit });
   const activeContext = { contextId: "ctx:future", revision: 1, contextFingerprint: "fp:future", selectedAtUtc: futureAt };
-  const firstRender = vm.runInNewContext(selection, {
+  const firstRender = vm.runInNewContext(selection, skyPageTimePresentationTestBindings({
     activeContext, routeContext: { selectedAt: futureAt }, observationTime, timeIntent: {},
     rawReportData: report, timeModel: null, timeGeometrySources: undefined,
-    presentSkyTime, selectSkyTimePresentation, useMemo: (compute: () => unknown) => compute(), pageVisible: false,
-  });
+  }));
   assert.deepEqual({ ...firstRender }, { requestedAt: initialAt, restoredAt: initialAt, renderedAt: initialAt });
   assert.equal(observationTime.snapshot().binding, "", "the page is protected before its binding effect runs");
   assert.equal(activeContext.selectedAtUtc, futureAt);

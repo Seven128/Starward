@@ -8,6 +8,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
+import { withSkyPublicImageOwner } from './sky-public-image-runtime-test-support';
 import * as contracts from "@starward/miniapp-contracts";
 import { createSkyPublicImageCache } from "./sky-public-image-cache";
 import { skyNativeArrayBuffer } from "./sky-native-array-buffer";
@@ -61,7 +62,7 @@ const runtimeSource = readFileSync(new URL("./sky-public-image-runtime.ts", impo
 const workspace = fileURLToPath(new URL("../../../../", import.meta.url));
 const sourcePaths = ["apps/wechat-miniapp/src/services/sdss-science-optical-resource.test.ts",
   "apps/wechat-miniapp/src/services/sdss-science-optical-resource.ts", "apps/wechat-miniapp/src/services/sky-public-image-runtime.ts",
-  "apps/wechat-miniapp/src/services/sky-public-image-cache.ts", "apps/wechat-miniapp/src/services/sky-image-bytes.ts",
+  "apps/wechat-miniapp/src/services/sky-public-image-cache.ts", "apps/wechat-miniapp/src/services/sky-public-image-owner.ts", "apps/wechat-miniapp/src/services/sky-image-bytes.ts",
   "apps/wechat-miniapp/src/services/bare-sky-resource.ts", "apps/wechat-miniapp/src/services/sdss-optical-client.ts",
   "packages/miniapp-contracts/src/sdss-science-optical-publication.ts", "packages/miniapp-contracts/src/sdss-optical-publication.ts",
   "packages/miniapp-contracts/src/index.ts", "workers/miniapp-api/src/test-fixtures/sdss-science-publication.ts"];
@@ -98,8 +99,8 @@ const compile = (file: string, bindings: Record<string, unknown>, source?: strin
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS,
   } }).outputText, { exports, ArrayBuffer, Uint8Array, DataView, Object, JSON, Error, setTimeout, clearTimeout, ...globals,
     __MINIAPP_API_BASE__: base,
-    require(name: string) { if (name === "./sky-resource-origin" || name === "./sky-image-diagnostics") return skyResourceOriginTestOwner(base);
-      assert(name in bindings, `Unbound import ${name}`); return bindings[name]; } });
+    require: withSkyPublicImageOwner((name: string) => { if (name === "./sky-resource-origin" || name === "./sky-image-diagnostics") return skyResourceOriginTestOwner(base);
+      assert(name in bindings, `Unbound import ${name}`); return bindings[name]; }, {Error, ...globals}) });
   return exports;
 };
 
@@ -154,7 +155,7 @@ function world(imageBytes = pngs) {
     "./sky-public-image-cache": { createSkyPublicImageCache(deps: Parameters<typeof createSkyPublicImageCache>[0]) {
       const cache = createSkyPublicImageCache({ ...deps, cleanupWaitMs: 10 }); caches.push(cache); return cache;
     } },
-  }, runtimeSource + "\nexport const readPendingMetadataListenersForTest = () => pendingDemands.size;", { AbortController: ControlledController });
+  }, runtimeSource + "\nexport const readPendingMetadataListenersForTest = () => require('./sky-public-image-owner').readPendingMetadataListenersForTest();", { AbortController: ControlledController });
   const bare = compile("./bare-sky-resource.ts", { "@tarojs/taro": { default: Taro }, "@starward/miniapp-contracts": contracts }, undefined, { AbortController: ControlledController });
   const client = compile("./sdss-optical-client.ts", { "@starward/miniapp-contracts": contracts, "./bare-sky-resource": bare,
     "./sdss-optical-publication": contracts }, undefined, { AbortController: ControlledController });

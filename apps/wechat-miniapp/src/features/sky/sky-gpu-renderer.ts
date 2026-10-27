@@ -4,6 +4,7 @@ import type { SkyRenderSurface } from "./sky-render-surface";
 import { skyArtworkViewParameters, type SkyArtworkView, type SkyArtworkRegistration } from "./sky-artwork-registration";
 import { skyArtworkRasterBounds } from "./sky-artwork-raster-bounds";
 import { createSkyGpuTextures } from "./sky-gpu-textures";
+import { SkyVertexStaging } from "./sky-vertex-staging";
 import { reportRuntimeError } from "../../services/runtime-error";
 import { createSkyGpuArtworkContributions, type SkyArtworkContributionPolicy } from "./sky-gpu-artwork-contributions";
 import { skyGalacticImageWindow } from "./sky-galactic-image-window";
@@ -452,7 +453,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
   const contributions = createSkyGpuArtworkContributions(gl,options.artworkContributions);
   let width = 0, height = 0;
   let kind: "points" | "lines" | null = null;
-  const vertices: number[] = [];
+  const vertices = new SkyVertexStaging();
   let quad: readonly number[] = [], quadWidth = 0, quadHeight = 0;
   let uploadedQuads = new WeakMap<BufferInfo, readonly number[]>();
   // Camera and image uniforms change per pass; this rectangle changes only
@@ -485,7 +486,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
   };
   const assertAvailable = () => {
     if (disposed) throw new Error("sky_gpu_disposed");
-    if (gl.isContextLost()) { contributions.invalidate(); throw new Error("sky_gpu_context_lost"); }
+    if (gl.isContextLost()) { vertices.release(); kind = null; contributions.invalidate(); throw new Error("sky_gpu_context_lost"); }
   };
   // These optional passes can consume GL state and recover locally before the
   // Canvas owner sees it. Preserve the numeric cause at that existing check.
@@ -501,6 +502,8 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
   const dispose = () => {
     if (disposed) return;
     disposed = true;
+    // CPU storage must retire even if a native cleanup call throws below.
+    vertices.release(); kind = null;
     contributions.dispose();
     textures.dispose();
     // A bound program's deletion is deferred until another program is used.
@@ -511,7 +514,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
     if (programs.some(program => program.program === currentProgram)) gl.useProgram(null);
     for (const buffer of buffers) gl.deleteBuffer(buffer);
     for (const program of programs) gl.deleteProgram(program.program);
-    buffers.length = programs.length = vertices.length = 0;
+    buffers.length = programs.length = 0;
     quad = []; uploadedQuads = new WeakMap();
     colors.clear();
   };
@@ -569,7 +572,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
     let bodyTextureProgram: ProgramInfo | null = null, bodyTextureUnavailable = false;
     let sunProgram: ProgramInfo | null = null, sunBuffer: BufferInfo | null = null, sunUnavailable = false;
     const maxAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS) as number;
-    const submit = (program: ProgramInfo, buffer: BufferInfo, data: readonly number[], stride: number, primitive: number,
+    const submit = (program: ProgramInfo, buffer: BufferInfo, data: readonly number[] | Float32Array, stride: number, primitive: number,
       uniforms: Record<string, unknown> = {}, preservesArtworkComponents = false) => {
       if (!data.length) return;
       try {
@@ -581,7 +584,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
         const reusableQuad = data === quad;
         if (!reusableQuad || uploadedQuads.get(buffer) !== data) {
           uploadedQuads.delete(buffer);
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
+          gl.bufferData(gl.ARRAY_BUFFER, data instanceof Float32Array ? data : new Float32Array(data), gl.DYNAMIC_DRAW);
           if (reusableQuad) {
             // A WebGL allocation can fail without throwing. Never retain a
             // successful-upload claim from that failure or a prior GL error.
@@ -610,13 +613,14 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
           if (!preservesArtworkComponents) contributions.afterDraw(() => drawBufferInfo(gl,buffer,primitive));
         }
       } catch (error) {
+        vertices.release(); kind = null;
         reportRuntimeError("render", "sky_gpu_draw_failed", error);
         throw error;
       }
     };
     const flush = () => {
-      if (kind === "points") submit(points, pointBuffer, vertices, 9, gl.POINTS);
-      if (kind === "lines") submit(lines, lineBuffer, vertices, 6, gl.TRIANGLES);
+      if (kind === "points") submit(points, pointBuffer, vertices.view(), 9, gl.POINTS);
+      if (kind === "lines") submit(lines, lineBuffer, vertices.view(), 6, gl.TRIANGLES);
       vertices.length = 0; kind = null;
     };
     const use = (next: typeof kind) => { if (kind !== next) flush(); kind = next; };
@@ -752,7 +756,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
         // The deferred observation presentation retains its existing point
         // transfer; normal-display tuning must never whiten its red centres.
         pointDisplayTuning = observationMode ? 0 : 1;
-        vertices.length = 0; kind = null;
+        vertices.beginFrame(); kind = null;
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.SCISSOR_TEST);
         gl.colorMask(true, true, true, true);
@@ -1298,54 +1302,67 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
           if (length <= 0) continue;
           const dx = -(y2-y1) / length * 0.5, dy = (x2-x1) / length * 0.5;
           // Same two triangles and vertex order, without per-segment arrays.
-          vertices.push(x1+dx,y1+dy,r,g,b,opacity, x1-dx,y1-dy,r,g,b,opacity, x2+dx,y2+dy,r,g,b,opacity,
-            x2+dx,y2+dy,r,g,b,opacity, x1-dx,y1-dy,r,g,b,opacity, x2-dx,y2-dy,r,g,b,opacity);
+          const data = vertices.reserve(36); let offset = vertices.length;
+          data[offset++] = x1+dx; data[offset++] = y1+dy; data[offset++] = r; data[offset++] = g; data[offset++] = b; data[offset++] = opacity;
+          data[offset++] = x1-dx; data[offset++] = y1-dy; data[offset++] = r; data[offset++] = g; data[offset++] = b; data[offset++] = opacity;
+          data[offset++] = x2+dx; data[offset++] = y2+dy; data[offset++] = r; data[offset++] = g; data[offset++] = b; data[offset++] = opacity;
+          data[offset++] = x2+dx; data[offset++] = y2+dy; data[offset++] = r; data[offset++] = g; data[offset++] = b; data[offset++] = opacity;
+          data[offset++] = x1-dx; data[offset++] = y1-dy; data[offset++] = r; data[offset++] = g; data[offset++] = b; data[offset++] = opacity;
+          data[offset++] = x2-dx; data[offset++] = y2-dy; data[offset++] = r; data[offset++] = g; data[offset++] = b; data[offset++] = opacity;
+          vertices.length = offset;
         }
       },
       disc(x, y, radius, hex, opacity, strokeWidth = 0, profile = "disc") {
         use("points");
         const rgb = color(hex);
-        vertices.push(x, y, radius, strokeWidth, profile === "star" ? 1 : 0, rgb[0]!, rgb[1]!, rgb[2]!, opacity);
+        const data = vertices.reserve(9); let offset = vertices.length;
+        data[offset++] = x; data[offset++] = y; data[offset++] = radius; data[offset++] = strokeWidth;
+        data[offset++] = profile === "star" ? 1 : 0;
+        data[offset++] = rgb[0]!; data[offset++] = rgb[1]!; data[offset++] = rgb[2]!; data[offset++] = opacity;
+        vertices.length = offset;
       },
       finish() {
-        assertAvailable(); flush();
-        const navigationHeight = options.nativeNavigationHeightPx;
-        if (typeof navigationHeight === "number" && Number.isFinite(navigationHeight) &&
-          navigationHeight > 0 && height > 0) {
-          // Native custom-navigation chrome can be composited above a bright
-          // sky without an opaque WXML background. Retain its dark interface
-          // surface after every celestial/landscape layer, using the same
-          // measured logical inset and actual framebuffer scale. No texture,
-          // shader, second camera or recurring platform measurement is needed.
-          const rows = Math.ceil(Math.min(navigationHeight, height) * gl.drawingBufferHeight / height);
-          gl.enable(gl.SCISSOR_TEST);
-          try {
-            gl.scissor(0, gl.drawingBufferHeight - rows, gl.drawingBufferWidth, rows);
-            gl.clearColor(backgroundRgb[0]!, backgroundRgb[1]!, backgroundRgb[2]!, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            if (contributions.hasPending()) {
-              const error = gl.getError();
-              if (error !== gl.NO_ERROR) {
-                contributions.invalidate();
-                throw new Error(`sky_gpu_draw_failed:${error}`);
+        try {
+          assertAvailable(); flush();
+          const navigationHeight = options.nativeNavigationHeightPx;
+          if (typeof navigationHeight === "number" && Number.isFinite(navigationHeight) &&
+            navigationHeight > 0 && height > 0) {
+            // Native custom-navigation chrome can be composited above a bright
+            // sky without an opaque WXML background. Retain its dark interface
+            // surface after every celestial/landscape layer, using the same
+            // measured logical inset and actual framebuffer scale. No texture,
+            // shader, second camera or recurring platform measurement is needed.
+            const rows = Math.ceil(Math.min(navigationHeight, height) * gl.drawingBufferHeight / height);
+            gl.enable(gl.SCISSOR_TEST);
+            try {
+              gl.scissor(0, gl.drawingBufferHeight - rows, gl.drawingBufferWidth, rows);
+              gl.clearColor(backgroundRgb[0]!, backgroundRgb[1]!, backgroundRgb[2]!, 1);
+              gl.clear(gl.COLOR_BUFFER_BIT);
+              if (contributions.hasPending()) {
+                const error = gl.getError();
+                if (error !== gl.NO_ERROR) {
+                  contributions.invalidate();
+                  throw new Error(`sky_gpu_draw_failed:${error}`);
+                }
+                contributions.clearPhoto();
               }
-              contributions.clearPhoto();
+            } finally {
+              gl.disable(gl.SCISSOR_TEST);
             }
-          } finally {
-            gl.disable(gl.SCISSOR_TEST);
           }
-        }
-        textures.finish();
-        // Submission is not physical presentation evidence. Detect native GL
-        // failures before the page publishes a usable picking snapshot.
-        const error = gl.getError();
-        if (error !== gl.NO_ERROR) {
-          contributions.invalidate();
-          throw new Error(`sky_gpu_draw_failed:${error}`);
-        }
-        assertAvailable();
-        contributions.finish();
-        assertAvailable();
+          textures.finish();
+          // Submission is not physical presentation evidence. Detect native GL
+          // failures before the page publishes a usable picking snapshot.
+          const error = gl.getError();
+          if (error !== gl.NO_ERROR) {
+            contributions.invalidate();
+            throw new Error(`sky_gpu_draw_failed:${error}`);
+          }
+          assertAvailable();
+          contributions.finish();
+          assertAvailable();
+          vertices.finishFrame();
+        } catch (error) { vertices.release(); kind = null; throw error; }
       },
       dispose,
     };

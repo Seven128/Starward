@@ -8,7 +8,7 @@ import { constellationLineSegments, drawSkyConstellations } from "./sky-constell
 import { createSkyViewBasis, projectSkyDirection, unprojectSkyPoint, type SkyVector } from "./sky-view-projection.ts";
 import { registerSkyArtwork, skyArtworkViewParameters } from "./sky-artwork-registration.ts";
 import { skyArtworkViewBounds } from "./sky-artwork-visibility.ts";
-import { clipSkyLineToViewport } from "./sky-line-clip.ts";
+import { clipSkyLineToViewport, clipSkyLineCoordinatesToViewport } from "./sky-line-clip.ts";
 import type { ConstellationArtwork } from "@starward/miniapp-contracts";
 import type { SkyRenderSurface } from "./sky-render-surface.ts";
 import { drawSkyScene } from "./sky-scene-render";
@@ -17,6 +17,17 @@ import type { ResolvedSkyReport } from "./sky-stellar-scene";
 const ray=(az:number,alt:number):SkyVector=>{
   const a=az*Math.PI/180,b=alt*Math.PI/180;return [Math.cos(b)*Math.sin(a),Math.cos(b)*Math.cos(a),Math.sin(b)];
 };
+test("viewport clipping retains crossings, exact edges and zero-length visibility", () => {
+  const cases = [
+    { a: [-1, 3], b: [11, 3], expected: [0, 3, 10, 3] },
+    { a: [5, -5], b: [5, 15], expected: [5, 0, 5, 10] },
+    { a: [-1, -1], b: [11, 11], expected: [0, 0, 10, 10] },
+    { a: [0, -1], b: [0, 11], expected: [0, 0, 0, 10] },
+    { a: [5, 5], b: [5, 5], expected: [5, 5, 5, 5] },
+    { a: [-1, -1], b: [-1, 11], expected: null },
+  ] as const;
+  for (const { a, b, expected } of cases) assert.deepEqual(clipSkyLineToViewport(a, b, 10, 10), expected);
+});
 test("portrait identification field renders the figure and real lines rather than an empty enabled layer",()=>{
   // Reference: Altair-centred 390.4 x 844 portrait, minimum FOV 40.6 degrees
   // (84.633 degrees vertically). This is an identification field, not a dome.
@@ -49,7 +60,7 @@ test("offscreen constellation arcs avoid fine clipping while a crossing with off
     .map(statement=>statement.getText(source).replace(/^export /,"")).join("\n");
   let clips=0;
   const context=vm.createContext({skyArtworkViewParameters,skyArtworkViewBounds,
-    clipSkyLineToViewport(...args:Parameters<typeof clipSkyLineToViewport>){clips++;return clipSkyLineToViewport(...args);}});
+    clipSkyLineCoordinatesToViewport(...args:Parameters<typeof clipSkyLineCoordinatesToViewport>){clips++;return clipSkyLineCoordinatesToViewport(...args);}});
   vm.runInContext(ts.transpileModule(declarations,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);
   const run=context.constellationLineSegments as typeof constellationLineSegments;
   const view={basis:createSkyViewBasis(0,120,0)!,verticalFovDeg:.05,center:{x:170,y:240}};

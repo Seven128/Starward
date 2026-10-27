@@ -149,6 +149,7 @@ test("native Map failure preserves the downloaded terrain image for its ordinary
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, {
     setError: (error: unknown) => { nativeError = error; },
+    reportRuntimeError() {}, rasterImageDiagnostic: () => ({ code: "raster_image_read_failed" }),
     setRequiresMapRecovery() {}, setInstalled() {}, setPresented() {}, candidates: { current: new Map() }, mapGroundOverlayKey,
     Taro: { getImageInfo: async () => {
       if (delayImageRead) return new Promise((_resolve, reject) => { lateImageFailure = reject; });

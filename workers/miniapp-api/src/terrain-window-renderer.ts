@@ -21,8 +21,8 @@ export async function renderTerrainWindow(input: TerrainRenderRequest, parentSig
   const resolutions: number[] = [];
   // Two readers advance as each cell finishes, even if an earlier cell is
   // slower. Cached cells between new cells must not serialize their I/O.
-  // Results are consumed in geographic order; the existing at-most-3x3 window
-  // bounds the ready results, and the service owns the two-source global limit.
+  // Results are consumed in geographic order; the fixed window bounds the
+  // ready results, and the service owns the two-source global limit.
   const readCell = async (index: number) => {
     const x = window.x + index % window.columns, y = window.y + Math.floor(index / window.columns);
     const request = terrainFixedRequest({ grid: window.grid, zoom: window.zoom, x, y, span: 1, tilePixels: 256 });
@@ -32,18 +32,35 @@ export async function renderTerrainWindow(input: TerrainRenderRequest, parentSig
   };
   const count = window.columns * window.rows;
   const pending = new Map<number, ReturnType<typeof readCell>>();
-  let next = 0;
+  // Required normal-window corners warm separated source edges before the
+  // centre. This changes neither the cell set nor the two-reader admission;
+  // larger legacy windows keep their geographic order and cache locality.
+  const order = window.columns <= 3 && window.rows <= 3
+    ? [...new Set([0, count - 1, window.columns - 1, (window.rows - 1) * window.columns,
+      ...Array.from({ length: count }, (_, index) => index)])]
+    : Array.from({ length: count }, (_, index) => index);
+  let next = 0, started: (() => void) | undefined;
+  const notifyStarted = () => { const notify = started; started = undefined; notify?.(); };
   const startNext = () => {
     if (next >= count || signal.aborted) return;
-    const index = next++;
+    const index = order[next++]!;
     pending.set(index, readCell(index).then(result => { startNext(); return result; }));
+    notifyStarted();
   };
+  signal.addEventListener("abort", notifyStarted, { once: true });
   try {
   startNext(); startNext();
   for (let row = 0; row < window.rows; row++) for (let column = 0; column < window.columns; column++) {
     signal.throwIfAborted();
     const x = window.x + column, y = window.y + row;
     const index = row * window.columns + column;
+    while (!pending.has(index)) {
+      signal.throwIfAborted();
+      await new Promise<void>(resolve => {
+        started = resolve;
+        if (signal.aborted || pending.has(index)) notifyStarted();
+      });
+    }
     const { result, failure, supported } = await pending.get(index)!;
     pending.delete(index); signal.throwIfAborted();
     cells.push({ x, y, publicationId: result?.publication.publicationId ?? null, file: result?.publication.image.file ?? null });
@@ -103,5 +120,7 @@ export async function renderTerrainWindow(input: TerrainRenderRequest, parentSig
     // A failed composition must retire its look-ahead consumer too. Other
     // windows sharing that cell keep their own reader and are not cancelled.
     lifetime.abort(new Error("terrain_window_finished"));
+    signal.removeEventListener("abort", notifyStarted);
+    notifyStarted();
   }
 }

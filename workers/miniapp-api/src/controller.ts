@@ -1,5 +1,5 @@
 import type { AccountAvatarSaveRequest, AccountNicknameSaveRequest } from "@starward/miniapp-contracts";
-import { isBodyImageKind, isDeepSkyCatalogVersion, isDeepSkyObjectReference, MINIAPP_API_OPERATIONS, type BodyImageKind } from "@starward/miniapp-contracts";
+import { isBodyImageKind, isDeepSkyCatalogVersion, isDeepSkyObjectReference, isNightLightDisplayStyle, MINIAPP_API_OPERATIONS, type BodyImageKind } from "@starward/miniapp-contracts";
 import {
   Body,
   BadRequestException,
@@ -316,6 +316,7 @@ export class MiniappController {
     @Query("zoom") zoom?: string,
     @Query("viewportBounds") viewportBounds?: string,
     @Res({ passthrough: true }) reply?: FastifyReply,
+    @Query("displayStyle") displayStyle?: string,
   ) {
     const viewport = parseViewport({
       ...(centerLat === undefined ? {} : { centerLat }),
@@ -324,8 +325,10 @@ export class MiniappController {
       ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
     });
     if (!viewport?.bounds) throw new BadRequestException("map_viewport_required");
+    if (displayStyle !== undefined && !isNightLightDisplayStyle(displayStyle)) throw new BadRequestException("nightlight_display_style_invalid");
     return withTerrainRead(reply, signal => this.service.getMapNightLight({
       viewport: { ...viewport, bounds: viewport.bounds! },
+      ...(displayStyle === undefined ? {} : { displayStyle }),
     }, signal));
   }
 

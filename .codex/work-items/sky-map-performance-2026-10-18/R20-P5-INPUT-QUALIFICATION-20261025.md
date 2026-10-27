@@ -16,10 +16,10 @@
 
 仓库已采用owner-IP试用，不是新平台。其Context限定为staging/local-test/IP开发profile，需要当前私有descriptor、exact release身份与run-random header，资格仍非正式生产/平台资格；不能替正式管理/账号验收。本轮只读了现有release skill及operator-preview owner，没有执行remote check、部署、证书或其他远端操作；尚未取得可供本次检查的当前private descriptor/manifest，不能推断远端不存在或已宕机。
 
-## 当前普通手机入口需先具体化
+## 普通手机入口：后续成对准备已完成
 
-当前新源码服务8807仍是127.0.0.1绑定；listener PID与CIM出生瞬间匹配私有owner，Get-Process精确StartTime比CIM多4个tick，不是PID复用。它当前只供应隔离IDE。普通canonical/旧防火墙packet仍指8806，原8806旧源码服务和原数据一直保留，不能把打开旧8806当作新源码手机API已就绪。
+本文件初次核对时，新源码8807仅绑定loopback，普通canonical/旧防火墙packet仍指保留的8806；该观察是当时事实，不能继续作为下一步准备指令。后续已沿原启动/数据owner完成8808物理LAN API、同原手机任务库/session secret、普通完整WEAPP及gen3绑定；旧8806/8807、原库和内存Context均保留。当前版本、CIM/网络/私有packet和仍欠的管理员Read条件只由[当前手机API](R20-PHONE-CURRENT-API-20261025.md)与[HANDOFF](HANDOFF.md)持有，不重放旧PID/端口或重复成对准备。
 
-接续应先沿现有启动/数据owner核安全的LAN绑定与状态保全，再把当前普通WEAPP、API和最小防火墙对象成对准备。不得盲重启原8806或已在用的8807，也不得沿旧PID/端口packet重放提权。CIM身份证据、现用字段摘要与公开候选清单均留既有private run；人类UAC/账号/真实材料仍后置，当前不问用户重复授权。
+owner-IP的`deployment:preview --operation check`会创建lock/receipt并经readiness解析短期Context、读取真实provider/缓存/usage，不能把它当纯只读替代；当前也没有本次可用的private descriptor/exact release/header。真正只读的release-reference已有固定链观察，未变条件不重跑，不以新LOCAL_TEST或另一个数据库替换现用手机身份。
 
 原件：p5-public-scene-network.private.log、p5-current-public-spot-ids.private.json、p5-public-media-qualification.private.json、p5-public-material-candidates.private.json。含坐标/headers的原始网络只在私有owner内，未上传或打印。

@@ -3,6 +3,7 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import type {SaoIndexPublication,SaoTilePublication} from '@starward/miniapp-contracts';
 import {createSkyStellarTileLoader,type SkyStellarTileState} from './sky-stellar-tile-loader';
+import {MiniappRequestCancelled} from '../../services/request-lifecycle';
 
 const location=new URL('../../../../../workers/miniapp-api/assets/sao/',import.meta.url);
 const publication:SaoIndexPublication={publicationHash:JSON.parse(readFileSync(new URL('publication.json',location),'utf8')).publicationHash,
@@ -11,6 +12,67 @@ const ids=publication.index.tiles.slice(0,8).map(t=>t.id);
 function tile(id:string):SaoTilePublication{return {publicationHash:publication.publicationHash,
   tile:JSON.parse(readFileSync(new URL(`${id}.json`,location),'utf8'))};}
 const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
+
+for(const cancellation of [()=>new MiniappRequestCancelled('superseded'),()=>Error('sky_public_json_cancelled')]){
+  test(`a still-wanted ${cancellation().message} rebinds once without reporting failure`,async()=>{
+    let calls=0;const states:SkyStellarTileState[]=[];
+    const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
+      if(++calls===1)throw cancellation();
+      return {data:tile(id),dataState:'FRESH'};
+    }});
+    try{
+      owner.update([ids[0]!]);await tick();
+      assert.equal(calls,2);assert.equal(states.some(s=>s.failed),false);
+      assert.equal(states.at(-1)!.loading,false);assert.equal(states.at(-1)!.tiles.length,1);
+    }finally{owner.dispose();}
+  });
+}
+
+test('repeated semantic cancellation stops, preserves independent stars and resumes only on explicit retry',async()=>{
+  let interrupted=true,calls=0;const states:SkyStellarTileState[]=[];
+  const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
+    if(id===ids[1]){calls++;if(interrupted)throw new MiniappRequestCancelled('superseded');}
+    return {data:tile(id),dataState:'FRESH'};
+  }});
+  try{
+    owner.update(ids.slice(0,2));await tick();
+    assert.equal(calls,2);assert.equal(states.some(s=>s.failed),false);
+    assert.equal(states.at(-1)!.interrupted,true);assert.equal(states.at(-1)!.loading,false);
+    assert.deepEqual(states.at(-1)!.tiles.map(t=>t.tile.tileId),[ids[0]]);
+    owner.update(ids.slice(0,2));owner.pause();owner.resume();await tick();
+    assert.equal(calls,2,'same view and visibility must not reset the retry allowance');
+    interrupted=false;owner.retry();await tick();
+    assert.equal(calls,3);assert.equal(states.at(-1)!.interrupted,false);
+    assert.equal(states.at(-1)!.tiles.length,2);
+  }finally{owner.dispose();}
+});
+
+test('a retired publication never pumps or retries the retired capability',async()=>{
+  let calls=0;const states:SkyStellarTileState[]=[];
+  const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async()=>{
+    calls++;throw Error('sao_publication_invalid:retired_index');
+  }});
+  try{
+    owner.update([ids[0]!]);await tick();
+    assert.equal(states.at(-1)!.failed,false);assert.equal(states.at(-1)!.interrupted,true);
+    assert.equal(states.at(-1)!.loading,false);assert.equal(calls,1);
+    owner.retry();owner.update([ids[1]!]);owner.pause();owner.resume();await tick();
+    assert.equal(calls,1,'the hook must recover by obtaining a new index delivery');
+  }finally{owner.dispose();}
+});
+
+test('a cancelled stale refresh rebinds without losing its loaded tile or refreshing obligation',async()=>{
+  let calls=0;const states:SkyStellarTileState[]=[];
+  const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
+    calls++;if(calls===2)throw new MiniappRequestCancelled('superseded');
+    return {data:tile(id),dataState:calls===1?'STALE_USABLE':'FRESH'};
+  }});
+  try{
+    owner.update([ids[0]!]);await tick();owner.retry();await tick();
+    assert.equal(calls,3);assert.equal(states.at(-1)!.failed,false);
+    assert.equal(states.at(-1)!.loading,false);assert(states.slice(1).every(s=>s.tiles.length===1));
+  }finally{owner.dispose();}
+});
 
 test('pause retains only the bounded ready view, cancels pending work and resumes without reloading ready tiles',async()=>{
   const requests:{id:string;signal:AbortSignal;finish():void}[]=[],states:SkyStellarTileState[]=[];

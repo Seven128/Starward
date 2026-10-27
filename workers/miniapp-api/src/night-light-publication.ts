@@ -160,12 +160,16 @@ export async function readFixedNightLightProof(directory: string, dataset: Fixed
   return proof;
 }
 
-export async function readFixedNightLightImage(directory: string, proof: FixedNightLightRaster, signal?: AbortSignal) {
+export async function readFixedNightLightImagePixels(directory: string, proof: FixedNightLightRaster, signal?: AbortSignal) {
   fail(filePattern.test(proof.image.file), "nightlight_asset_file_invalid");
   const bytes = await pinnedFile(path.join(directory, proof.image.file), proof.image, 16 * 1024 * 1024, signal);
   const image = PNG.sync.read(bytes, { checkCRC: true });
   fail(image.width === proof.image.width && image.height === proof.image.height, "nightlight_image_dimensions_invalid");
-  return bytes;
+  return { bytes, pixels: image };
+}
+
+export async function readFixedNightLightImage(directory: string, proof: FixedNightLightRaster, signal?: AbortSignal) {
+  return (await readFixedNightLightImagePixels(directory, proof, signal)).bytes;
 }
 
 /** Read the actual released numeric pixel, rather than decoding a colour band.

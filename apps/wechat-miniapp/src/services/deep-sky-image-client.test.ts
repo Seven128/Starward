@@ -7,17 +7,18 @@ import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import * as contracts from "@starward/miniapp-contracts";
 import {skyNativeArrayBuffer} from "./sky-native-array-buffer";
 import { publishedDeepSkyDiscovery } from "../features/sky/deep-sky-image-test-support.ts";
+import { withSkyPublicImageOwner } from './sky-public-image-runtime-test-support';
 
 function module(file: string, bindings: Record<string, unknown>) {
   const exports: any = {};
   vm.runInNewContext(ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText, { exports, Error, Promise, AbortController, __MINIAPP_API_BASE__: "https://approved.fixture.invalid",
-    __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "controlled-test-token", require(name: string) {
+    __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "controlled-test-token", require: withSkyPublicImageOwner((name: string) => {
       if(name==='./sky-resource-origin'||name==='./sky-image-diagnostics')return skyResourceOriginTestOwner("https://approved.fixture.invalid", "", "controlled-test-token");
       if(name==='@starward/miniapp-contracts')return contracts;
       if(name==='./sky-native-array-buffer')return {skyNativeArrayBuffer};
-      assert(name in bindings, name); return bindings[name]; } });
+      assert(name in bindings, name); return bindings[name]; }, {Error, Promise, AbortController}) });
   return exports;
 }
 

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { SkyVertexStaging } from "./sky-vertex-staging";
 
 // Execute the real submit boundary with controlled native GL/TWGL ports.
 // Uploaded bytes and repeated draw semantics are evidence here, not GPU pixels.
@@ -10,63 +11,89 @@ function fixture(source = fs.readFileSync(new URL("./sky-gpu-renderer.ts", impor
   const file = ts.createSourceFile("renderer.ts", source, ts.ScriptTarget.Latest, true);
   const renderer = file.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "createSkyGpuRenderer") as ts.FunctionDeclaration;
   const declarations = new Set<string>();
-  let submit = "", hasQuad = false;
+  let submit = "", flush = "", use = "", assertAvailable = "", dispose = "", hasQuad = false;
+  const methods = new Map<string, string>();
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node)) {
       const name = node.name.getText(file);
-      if (["quad", "uploadedQuads", "screenQuad"].includes(name) && node.parent.parent.parent === renderer.body) {
+      if (["quad", "uploadedQuads", "screenQuad", "vertices"].includes(name) && node.parent.parent.parent === renderer.body) {
         declarations.add(node.parent.parent.getText(file));
         if (name === "screenQuad") hasQuad = true;
       }
       if (name === "submit") submit = node.getText(file);
+      if (name === "flush") flush = node.getText(file);
+      if (name === "use") use = node.getText(file);
+      if (name === "assertAvailable") assertAvailable = node.getText(file);
+      if (name === "dispose") dispose = node.getText(file);
     }
+    if (ts.isMethodDeclaration(node) && ["begin", "segments", "disc", "finish"].includes(node.name.getText(file)))
+      methods.set(node.name.getText(file), node.getText(file));
     ts.forEachChild(node, visit);
   };
   visit(file);
   assert(submit);
   const storage = new Map<object, number[]>(), errors: unknown[][] = [];
-  const uploads: number[][] = [], draws: { bytes: number[]; uniforms: unknown }[] = [];
-  let bound: object | null = null, uniforms: unknown, disabled = 0;
-  const control = { error: 0, uploadError: 0, throwUpload: false, pending: false, replays: 0, invalidated: 0 };
+  const uploads: number[][] = [], uploadViews: Float32Array[] = [];
+  const draws: { bytes: number[]; uniforms: unknown; count: number; primitive: number }[] = [];
+  const buffers: object[] = [];
+  let bound: object | null = null, uniforms: unknown, disabled = 0, currentProgram: unknown = null;
+  const control = { error: 0, uploadError: 0, throwUpload: false, pending: false, replays: 0, invalidated: 0, lost: false, disposeError: false };
   const gl = {
-    ARRAY_BUFFER: 1, DYNAMIC_DRAW: 2, POINTS: 3, TRIANGLES: 4, NO_ERROR: 0,
+    ARRAY_BUFFER: 1, DYNAMIC_DRAW: 2, POINTS: 3, TRIANGLES: 4, NO_ERROR: 0, CURRENT_PROGRAM: 5,
     disableVertexAttribArray() { disabled++; },
     bindBuffer(_target: number, buffer: object) { bound = buffer; },
     bufferData(_target: number, values: Float32Array) {
       if (control.throwUpload) throw Error("controlled_upload_exception");
       if (control.uploadError) { control.error = control.uploadError; control.uploadError = 0; return; }
       const bytes = Array.from(values);
-      storage.set(bound!, bytes); uploads.push(bytes);
+      storage.set(bound!, bytes); uploads.push(bytes); uploadViews.push(values);
     },
-    useProgram() {},
+    useProgram(value: unknown) { currentProgram = value; },
+    getParameter() { return currentProgram; },
+    isContextLost() { return control.lost; },
+    viewport() {}, disable() {}, colorMask() {}, enable() {}, blendEquation() {}, blendFuncSeparate() {}, clearColor() {}, clear() {},
+    deleteBuffer(buffer: object) { storage.delete(buffer); }, deleteProgram() {},
     getError() { const error = control.error; control.error = 0; return error; },
   };
   const program = { program: {} };
+  const buffer = () => {
+    const native = {}; buffers.push(native);
+    return { numElements: 0, attribs: { a_position: { buffer: native } } };
+  };
   const code = ts.transpileModule(`
-    let width=390,height=844;
+    let width=390,height=844,kind=null,disposed=false,activeSolarLight=null,pointDisplayTuning=1,backgroundRgb=[0,0,0];
+    const pointBuffer=makeBuffer(),lineBuffer=makeBuffer(),points=program,lines=program;
+    const colors=new Map(),programs=[program];
     ${[...declarations].join("\n")}
     ${hasQuad ? "" : "const screenQuad=()=>[0,0,width,0,0,height,0,height,width,0,width,height];"}
     const ${submit};
+    const ${flush}; const ${use}; const ${assertAvailable}; const ${dispose};
     ({resize(w,h){width=w;height=h;},
       quad(buffer,uniforms={}){submit(program,buffer,screenQuad(),2,gl.TRIANGLES,uniforms);},
-      dynamic(buffer,values){submit(program,buffer,values,2,gl.TRIANGLES);}});
+      dynamic(buffer,values){submit(program,buffer,values,2,gl.TRIANGLES);},
+      retainedBytes(){return typeof vertices.view==='function'?vertices.view().buffer.byteLength:null;},
+      flush, dispose, ${[...methods.values()].join(",")}});
   `, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const port = vm.runInNewContext(code, {
-    Float32Array, gl, program, maxAttributes: 16, pixelRatio: 3, maxPointSize: 128, pointDisplayTuning: 1,
+    Float32Array, SkyVertexStaging, gl, program, buffers, makeBuffer: buffer, maxAttributes: 16, pixelRatio: 3, maxPointSize: 128,
+    options: {}, color: (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255),
+    textures: { begin() {}, finish() {}, dispose() {} },
     groupDrawing: false,
     contributions: {
-      hasPending: () => control.pending, invalidate() { control.invalidated++; },
+      hasPending: () => control.pending, invalidate() { control.invalidated++; }, begin() {}, finish() {},
+      dispose() { if (control.disposeError) throw Error("controlled_dispose_failure"); },
       afterDraw(callback: () => void) { control.replays++; callback(); },
     },
     setBuffersAndAttributes(_gl: unknown, _program: unknown, buffer: { attribs: { a_position: { buffer: object } } }) {
       bound = buffer.attribs.a_position.buffer;
     },
     setUniforms(_program: unknown, value: unknown) { uniforms = value; },
-    drawBufferInfo() { draws.push({ bytes: storage.get(bound!)!, uniforms }); },
+    drawBufferInfo(_gl: unknown, buffer: { numElements: number }, primitive: number) {
+      draws.push({ bytes: storage.get(bound!)!, uniforms, count: buffer.numElements, primitive });
+    },
     reportRuntimeError(...args: unknown[]) { errors.push(args); },
   });
-  const buffer = () => ({ numElements: 0, attribs: { a_position: { buffer: {} } } });
-  return { port, buffer, control, uploads, draws, errors, disabled: () => disabled };
+  return { port, buffer, control, uploads, uploadViews, draws, errors, disabled: () => disabled };
 }
 const rectangle = (w: number, h: number) => [0, 0, w, 0, 0, h, 0, h, w, 0, w, h];
 
@@ -116,4 +143,71 @@ test("reused rectangle still participates in pending contribution replay and its
   h.control.error = 1282;
   assert.throws(() => h.port.quad(buffer), /sky_gpu_draw_failed:1282/);
   assert.equal(h.control.replays, 1); assert.equal(h.errors.length, 1);
+});
+
+const batch = (h: ReturnType<typeof fixture>, points: number, lines: number) => {
+  h.port.begin(390, 844, "#000000", []);
+  for (let i = 0; i < points; i++) h.port.disc(i + .125, i / 3, 2.25, "#ff8040", .75, .5, "star");
+  h.port.segments(Array.from({ length: lines }, (_, i) => [i + .25, 2.5, i + 4.25, 2.5]), "#4080ff", .375);
+  h.port.finish();
+};
+
+test("point and line submissions preserve float attributes, counts and order while warm frames reuse CPU storage", () => {
+  const h = fixture(); batch(h, 200, 60);
+  assert.deepEqual(h.draws.map(draw => [draw.primitive, draw.count]), [[3, 200], [4, 360]]);
+  const f32 = (values: number[]) => Array.from(new Float32Array(values));
+  assert.deepEqual(h.draws[0]!.bytes, f32(Array.from({ length: 200 }, (_, i) =>
+    [i + .125, i / 3, 2.25, .5, 1, 1, 128 / 255, 64 / 255, .75]).flat()));
+  assert.deepEqual(h.draws[1]!.bytes, f32(Array.from({ length: 60 }, (_, i) => [
+    [i + .25, 3], [i + .25, 2], [i + 4.25, 3],
+    [i + 4.25, 3], [i + .25, 2], [i + 4.25, 2],
+  ].flatMap(([x, y]) => [x!, y!, 64 / 255, 128 / 255, 1, .375])).flat()));
+  const first = h.draws.map(draw => draw.bytes.slice()), backing = h.uploadViews[1]!.buffer;
+  batch(h, 200, 60);
+  assert.deepEqual(h.draws.slice(2).map(draw => draw.bytes), first);
+  assert.deepEqual(h.draws.slice(0, 2).map(draw => draw.bytes), first, "later CPU writes cannot mutate already submitted draws");
+  assert.equal(h.uploadViews[2]!.buffer, backing); assert.equal(h.uploadViews[3]!.buffer, backing);
+  assert(h.port.retainedBytes() < Math.max(200 * 9, 60 * 36) * 4 * 2);
+  batch(h, 3, 1);
+  assert.deepEqual(h.draws.slice(-2).map(draw => [draw.count, draw.bytes.length]), [[3, 27], [6, 36]]);
+  assert(h.port.retainedBytes() < 36 * 4 * 2, "a narrow frame releases a previous wide-view capacity");
+  batch(h, 0, 0);
+  assert.equal(h.port.retainedBytes(), 0); assert.equal(h.draws.length, 6, "empty batches do not submit stale vertices");
+  batch(h, 200, 60);
+  assert.deepEqual(h.draws.slice(-2).map(draw => draw.bytes), first);
+});
+
+test("dynamic upload errors, context loss and dispose release current CPU staging", () => {
+  for (const failure of ["throw", "gl", "lost", "dispose"] as const) {
+    const h = fixture(); batch(h, 100, 30);
+    h.port.begin(390, 844, "#000000", []);
+    h.port.disc(1, 2, 3, "#ffffff", 1);
+    assert(h.port.retainedBytes() > 0);
+    if (failure === "throw") h.control.throwUpload = true;
+    else if (failure === "gl") h.control.uploadError = 1285;
+    else if (failure === "lost") h.control.lost = true;
+    else h.port.dispose();
+    assert.throws(() => h.port.finish(), /controlled_upload_exception|sky_gpu_draw_failed:1285|sky_gpu_context_lost|sky_gpu_disposed/);
+    assert.equal(h.port.retainedBytes(), 0);
+    h.port.dispose();
+  }
+  const next = fixture(); assert.equal(next.port.retainedBytes(), 0); batch(next, 1, 0);
+  assert.equal(next.draws[0]!.count, 1);
+  next.control.disposeError = true;
+  assert.throws(() => next.port.dispose(), /controlled_dispose_failure/);
+  assert.equal(next.port.retainedBytes(), 0, "native cleanup failure cannot retain CPU staging on a retired renderer");
+});
+
+test("dynamic reuse keeps immediate contribution replay and intervening quad uploads independent", () => {
+  const h = fixture(), image = h.buffer(); batch(h, 2, 1);
+  h.control.pending = true;
+  h.port.begin(390, 844, "#000000", []);
+  h.port.disc(1, 2, 3, "#ffffff", .5); h.port.flush(); h.port.quad(image);
+  h.port.segments([[0, 0, 4, 0]], "#ffffff", .25); h.port.finish();
+  assert.equal(h.control.replays, 3);
+  const draws = h.draws.slice(2);
+  assert.equal(draws.length, 6);
+  for (let i = 0; i < draws.length; i += 2) assert.deepEqual(draws[i]!.bytes, draws[i + 1]!.bytes);
+  assert.deepEqual(draws[2]!.bytes, rectangle(390, 844));
+  assert.deepEqual(draws.map(draw => draw.count), [1, 1, 6, 6, 6, 6]);
 });

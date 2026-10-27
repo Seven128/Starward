@@ -15,7 +15,7 @@ import { MapPanelPresentation, MapPanelChrome, type MapPanelPresentationHandle }
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelDragHeight, panelDragOriginHeight, panelSpringFrames } from "./panel-spring";
 import { elasticVelocityFactor } from "@/components/elastic-motion";
-import { markerGroups, markerItems } from "./map-markers";
+import { createMapMarkerPresentation } from "./map-markers";
 import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
 import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
@@ -96,7 +96,7 @@ import "./index.scss";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { requestOneShotLocation } from "@/services/one-shot-location";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
-import { userMapRegionEnd, userMapRegionStarted, mapRegionEnded } from "./map-region-event";
+import { userMapRegionEnd, userMapRegionStarted, userMapRegionEnded, mapRegionEnded } from "./map-region-event";
 import { MapTimeRuler } from "./time-ruler";
 import { MapTemporalFeedback, type MapTemporalFailure } from "./map-temporal-feedback";
 import { ObservationDateControl } from "@/components/observation-date-control";
@@ -122,11 +122,12 @@ import {
   mapSceneLayerForOverlay,
 } from "./map-layer-selection";
 import { useMapSpotFocus, type MeasuredSpotFocusFrame } from "./use-map-spot-focus";
-import { spotNeighborhoodCamera } from "./map-camera";
+import { spotNeighborhoodCamera, readNativeMapScale, NATIVE_MAP_CAMERA_READ_TIMEOUT_MS } from "./map-camera";
 import { mapRasterFiles } from "@/services/map-raster-files";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { createSkyEntryTransition, SKY_ENTRY_FADE_MS } from "./sky-entry-transition";
 import { reportRuntimeError } from "@/services/runtime-error";
+import { createResourceFailureEpisode } from "@/services/resource-failure-episode";
 import { skyMapLifecycle } from "@/navigation/sky-map-lifecycle";
 import { mapSkyReturnState, type MapPanelReturnPosition } from "./sky-return-state";
 
@@ -275,6 +276,10 @@ export default function MapPage() {
   const login = useWechatLogin({ nativeBack: false });
   const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
   const nativeMap = useNativeMapRecovery();
+  const terrainFailureEpisode = useRef(createResourceFailureEpisode()).current;
+  const lightFailureEpisode = useRef(createResourceFailureEpisode()).current;
+  // Camera changes retry the current layer, not a new notification owner.
+  const rasterFailureScope = `${accountOwnerId}:${mapResetVersion}:${nativeMap.mapId}`;
   const currentNativeMapRef = useRef(nativeMap);
   currentNativeMapRef.current = nativeMap;
   const mapRuntimeError = nativeMap.error;
@@ -334,19 +339,39 @@ export default function MapPage() {
   } | null>(null);
   const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapPointIntent = useRef(0);
+  const mapSceneRegionIntent = useRef<{ intent: number; gesture: boolean } | null>(null);
+  const [mapSceneRegionScope, setMapSceneRegionScope] = useState<{
+    intent: number; owner: string | null; resetVersion: number; mapId: string;
+  } | null>(null);
+  const beginMapSceneRegion = (intent: number, gesture = false) => {
+    if (mapSceneRegionIntent.current?.intent === intent && mapSceneRegionIntent.current.gesture === gesture) return;
+    mapSceneRegionIntent.current = { intent, gesture };
+    setMapSceneRegionScope({ intent, owner: currentDraftUserId(),
+      resetVersion: useAppStore.getState().mapResetVersion, mapId: nativeMap.mapId });
+  };
+  const finishMapSceneRegion = (intent: number | null) => {
+    if (intent === null || mapSceneRegionIntent.current?.intent !== intent) return;
+    mapSceneRegionIntent.current = null; setMapSceneRegionScope(null);
+  };
+  const mapRegionScaleRead = useRef<{ controller: AbortController; isCurrent(): boolean } | null>(null);
   const failedMapRegion = useRef<{
     center: { latitude: number; longitude: number };
     intent: number;
     owner: string | null;
     resetVersion: number;
+    needsScaleRead?: true;
   } | null>(null);
   const invalidateMapPointIntent = (preserveFailure = false) => {
+    finishMapSceneRegion(mapSceneRegionIntent.current?.intent ?? null);
     if (regionTimer.current) clearTimeout(regionTimer.current);
     regionTimer.current = null;
     setSpotContextAttempt(attempt => attempt?.pending
       ? { ...attempt, pending: false, error: new Error("观测条件更新已中断，请重试。") }
       : attempt);
     const intent = ++mapPointIntent.current;
+    const reading = mapRegionScaleRead.current;
+    mapRegionScaleRead.current = null;
+    reading?.controller.abort();
     if (failedMapRegion.current) {
       if (preserveFailure && failedMapRegion.current.owner === currentDraftUserId() &&
         failedMapRegion.current.resetVersion === useAppStore.getState().mapResetVersion)
@@ -546,9 +571,10 @@ export default function MapPage() {
     position: MapPanelReturnPosition | null;
   } | null>(null);
 
-  const foregroundLife = useRef({ visible: false, show: () => {}, hide: () => {} });
+  const foregroundLife = useRef({ visible: false, lease: {}, show: () => {}, hide: () => {} });
   foregroundLife.current.show = () => { skyEntry.show(); setPageVisible(true); };
   foregroundLife.current.hide = () => {
+    foregroundLife.current.lease = {};
     skyEntry.hide();
     spotMapFocus.cancel();
     cancelLocation();
@@ -702,6 +728,11 @@ export default function MapPage() {
     notify,
   ]);
 
+  // Scene joins the existing gesture/250ms Context transaction. The camera
+  // and independent image layers remain immediate; no second debounce runs.
+  const mapSceneRegionPending = Boolean(mapSceneRegionScope &&
+    mapSceneRegionScope.intent === mapPointIntent.current && mapSceneRegionScope.owner === currentDraftUserId() &&
+    mapSceneRegionScope.resetVersion === mapResetVersion && mapSceneRegionScope.mapId === nativeMap.mapId);
   const scene = useMapForecastQuery({
     queryKey: [
       "map-scene",
@@ -714,7 +745,6 @@ export default function MapPage() {
       Number(viewport.center.latitude.toFixed(4)),
       Number(viewport.center.longitude.toFixed(4)),
       viewport.zoom,
-      nativeViewport.bounds,
       preferences.defaultPlace,
       preferences.experience,
       preferences.maxDriveMinutes,
@@ -731,7 +761,7 @@ export default function MapPage() {
         activeContext!.contextId,
         committedFilters,
         debouncedFinderQuery,
-        { ...viewport, ...(nativeViewport.bounds ? { bounds: nativeViewport.bounds } : {}) },
+        viewport,
         {
           defaultPlace: preferences.defaultPlace,
           experience: preferences.experience,
@@ -745,7 +775,7 @@ export default function MapPage() {
         signal,
       );
     },
-    enabled: pageVisible && Boolean(activeContext) && (mapSceneLayerForOverlay(analysisOverlay) === "NORMAL" || Boolean(nativeViewport.bounds || nativeViewport.error)),
+    enabled: pageVisible && Boolean(activeContext) && !mapSceneRegionPending,
     staleTime: value => value?.data.layer.failureCode ? 0 : 60_000,
   });
 
@@ -782,6 +812,8 @@ export default function MapPage() {
   useEffect(
     () => () => {
       mapPointIntent.current += 1;
+      mapSceneRegionIntent.current = null;
+      mapRegionScaleRead.current?.controller.abort(); mapRegionScaleRead.current = null;
       if (regionTimer.current) clearTimeout(regionTimer.current);
       if (panelCloseTimer.current) clearTimeout(panelCloseTimer.current);
     },
@@ -790,6 +822,12 @@ export default function MapPage() {
   useEffect(() => {
     invalidateMapPointIntent(true);
   }, [nativeMap.mapId]);
+  useEffect(() => {
+    const reading = mapRegionScaleRead.current;
+    if (reading && !reading.isCurrent()) {
+      mapRegionScaleRead.current = null; reading.controller.abort();
+    }
+  }, [accountOwnerId, mapResetVersion, nativeMap.mapId, selectedSpotId]);
 
   const spots = scene.data?.data.spots ?? [];
   const contributionHistory = useContributionHistory(pageVisible);
@@ -883,15 +921,23 @@ export default function MapPage() {
       ),
     [projectedAt, scene.data?.data.evaluations, scene.data?.data.timeFrames],
   );
-  const groupedMarkers = useMemo(
-    () => markerGroups(spots, viewport.zoom),
-    [spots, viewport.zoom],
-  );
+  const formalMarkerOwner = useRef<ReturnType<typeof createMapMarkerPresentation> | null>(null);
+  if (!formalMarkerOwner.current) formalMarkerOwner.current = createMapMarkerPresentation();
+  const formalMarkerPresentation = formalMarkerOwner.current.present({
+    scope: JSON.stringify([accountOwnerId, mapResetVersion, committedFilters, debouncedFinderQuery,
+      preferences.defaultPlace, preferences.experience, preferences.maxDriveMinutes, preferences.requiredFacilities,
+      preferences.equipment, preferences.capturePreference, timeReference?.localDate, timeReference?.timezone,
+      Date.parse(timeReference?.selectedAtUtc ?? ""), timeReference?.eventInstanceId, timeReference?.targetProfile]),
+    spots: scene.data?.data.spots,
+    denied: isPermissionError(scene.error ?? scene.refreshError) || isPermissionError(bootstrapContext.error ?? bootstrapContext.refreshError),
+    zoom: viewport.zoom, selectedSpotId, mode, largeText: preferences.largeText,
+  });
+  const groupedMarkers = formalMarkerPresentation.groups;
   const markerList = useMemo(() => [
-    ...markerItems(groupedMarkers, selectedSpotId, mode, preferences.largeText),
+    ...formalMarkerPresentation.markers,
     ...privateContributionMarkerItems(privateMarkers, 100_000, mode, preferences.largeText),
     ...(bottomPresentation === "spot-editor" && candidateMarker ? [candidateMarker] : []),
-  ], [bottomPresentation, candidateMarker, groupedMarkers, mode, preferences.largeText, privateMarkers, selectedSpotId]);
+  ], [bottomPresentation, candidateMarker, formalMarkerPresentation.markers, mode, preferences.largeText, privateMarkers]);
   const geographicLayer = analysisOverlay === "LIGHT" ? nightLayer : analysisOverlay === "TOTAL_CLOUD" ? cloudPresentation?.layer : scene.data?.data.layer;
   const projectedPolygonSource = useMemo(
     () =>
@@ -988,17 +1034,25 @@ export default function MapPage() {
   const mapTerrainFailed = mapTerrainAvailability === "ERROR" || Boolean(terrain.imageError || terrainNativeError || terrainViewportError);
   const terrainRequiresMapRecovery = terrainInstallation.requiresMapRecovery || Boolean(terrainViewportError);
   const presentedTerrainData = terrainInstallation.presentedData;
+  const mapTerrainLoading = pageVisible && terrainEnabled && !nativeMap.pending && !mapRuntimeError
+    && (!mapTerrainBounds ? !terrainViewportError : terrain.isPending || terrain.isFetching || terrain.imagePending
+      || (!mapTerrainMissing && !mapTerrainFailed && terrainInstallation.pending));
+  const terrainFailureHealthy = Boolean(mapTerrainBounds && terrain.data && !mapTerrainFailed && !mapRuntimeError
+    && terrainInstallation.settled && (mapTerrainMissing ? !presentedTerrainData
+      : presentedTerrainData === terrain.data.data && !presentedTerrainData.preview));
   useEffect(() => {
-    if (!pageVisible || (!terrainEnabled && !terrainNativeError) || !mapTerrainFailed) return;
+    if (!terrainFailureEpisode.observe({ scope: rasterFailureScope,
+      active: pageVisible && (terrainEnabled || Boolean(terrainNativeError)), pending: nativeMap.pending || mapTerrainLoading,
+      failed: mapTerrainFailed, healthy: terrainFailureHealthy })) return;
+    if (terrain.data?.data.failureCode === "TERRAIN_READ_FAILED")
+      reportRuntimeError("request", "map_terrain_metadata_failed", undefined, { stage: "metadata", resource: "terrain" });
     notify({ owner: "map-terrain", placement: "floating", tone: "info", title: terrainInstallation.retirementPending ? "地形暂不可用" : "地形数据异常",
       body: terrainInstallation.retirementPending ? nativeMap.rasterRetirementMessage
         : presentedTerrainData ? "地形细节更新失败，保留当前覆盖，可在图层中重试。" : "地形暂时无法显示，可在图层中重试。",
       dedupeKey: "map-terrain-failed" });
-  }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, presentedTerrainData, terrainInstallation.retirementPending, notify]);
+  }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, presentedTerrainData, terrainInstallation.retirementPending,
+    rasterFailureScope, nativeMap.pending, mapTerrainLoading, terrainFailureHealthy, terrain.data?.data.failureCode, notify]);
   const terrainDisclosure = presentedTerrainData ?? (!terrainEnabled ? terrain.data?.data ?? null : null);
-  const mapTerrainLoading = pageVisible && terrainEnabled && !nativeMap.pending && !mapRuntimeError
-    && (!mapTerrainBounds ? !terrainViewportError : terrain.isPending || terrain.isFetching || terrain.imagePending
-      || (!mapTerrainMissing && !mapTerrainFailed && terrainInstallation.pending));
   const nightRaster = nightLayer?.raster ?? null;
   const [lightNativeRetry, setLightNativeRetry] = useState(0);
   const lightImage = useRasterImage(nightRaster ? { key: `${nightRaster.publicationId}:${nightRaster.imageUrl}`,
@@ -1041,11 +1095,21 @@ export default function MapPage() {
   const displayedLightLayer = lightInstallation.presentedData ?? (!nightRaster ? nightLayer : null);
   const lightReadFailed = Boolean(nightLight.isError || nightLight.refreshError || nightLayer?.failureCode || lightImage.imageError || lightInstallation.error
     || (analysisOverlay === "LIGHT" && nativeViewport.error));
+  const lightFailurePending = Boolean(nativeMap.pending || nightLight.isFetching || lightImage.imagePending
+    || (!lightReadFailed && (!nativeViewport.bounds || nightLight.isPending || lightInstallation.pending)));
+  const lightFailureHealthy = Boolean(nativeViewport.bounds && nightLayer && !lightReadFailed && !mapRuntimeError
+    && lightInstallation.settled && (lightUnavailable ? !lightInstallation.presentedData
+      : nightRaster ? lightInstallation.presentedData === nightLayer : nightLayer.polygons.length > 0));
   useEffect(() => {
-    if (!pageVisible || (analysisOverlay !== "LIGHT" && !lightInstallation.error) || !lightReadFailed) return;
+    if (!lightFailureEpisode.observe({ scope: rasterFailureScope,
+      active: pageVisible && (analysisOverlay === "LIGHT" || Boolean(lightInstallation.error)), pending: lightFailurePending,
+      failed: lightReadFailed, healthy: lightFailureHealthy })) return;
+    if (nightLayer?.failureCode === "LIGHT_READ_FAILED")
+      reportRuntimeError("request", "map_night_light_metadata_failed", undefined, { stage: "metadata", resource: "night_light" });
     notify({ owner: "map-light", placement: "floating", tone: "info", title: lightInstallation.retirementPending ? "光污染图层暂不可用" : "光污染数据异常",
       body: lightInstallation.retirementPending ? nativeMap.rasterRetirementMessage : "年度夜光叠加尚未完成，可在图层中重试或重新加载地图。", dedupeKey: "map-light-failed" });
-  }, [pageVisible, analysisOverlay, lightReadFailed, lightInstallation.error, lightInstallation.retirementPending, notify]);
+  }, [pageVisible, analysisOverlay, lightReadFailed, lightInstallation.error, lightInstallation.retirementPending,
+    rasterFailureScope, lightFailurePending, lightFailureHealthy, nightLayer?.failureCode, notify]);
   const spotSky = useSkyForecastQuery({
     queryKey: [
       "spot-sky",
@@ -1197,8 +1261,9 @@ export default function MapPage() {
   const displayedLayer = visibleLayer === "LIGHT" ? displayedLightLayer : geographicLayer;
   const layerLegend = projectMapLayerLegend(displayedLayer, mode);
   const layerSources = uniqueSourceRecords([
+    ...(activeContext?.timezoneSource ? [activeContext.timezoneSource] : []),
     ...(visibleLayer === "LIGHT" ? displayedLightLayer?.source ? [displayedLightLayer.source] : [] : cloudPresentation?.sources ?? []),
-    ...(terrainEnabled && terrainDisclosure?.source ? [terrainDisclosure.source] : []),
+    ...((terrainEnabled || presentedTerrainData) && terrainDisclosure?.source ? [terrainDisclosure.source] : []),
   ]);
   const hasGeographicLayer = layerPolygons.length > 0 || (analysisOverlay === "LIGHT" && Boolean(lightInstallation.presentedData?.raster));
   // Availability is transient; real failures keep recovery with their owner.
@@ -1323,38 +1388,41 @@ export default function MapPage() {
       useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner &&
       useAppStore.getState().selectedSpotId === selection;
     if (!isCurrent()) return null;
-    const point = gcj02ToWgs84({
-      lat: center.latitude,
-      lon: center.longitude,
-      system: "GCJ-02",
-    });
-    const response = await resolveObservationContext({
-      location: {
-        kind: "MAP_POINT",
-        displayName:
-          displayName ??
-          (source === "USER_LOCATION" ? "本次授权位置" : "当前地图中心"),
-        wgs84: {
-          system: "WGS84",
-          latitude: point.lat,
-          longitude: point.lon,
+    beginMapSceneRegion(intent);
+    try {
+      const point = gcj02ToWgs84({
+        lat: center.latitude,
+        lon: center.longitude,
+        system: "GCJ-02",
+      });
+      const response = await resolveObservationContext({
+        location: {
+          kind: "MAP_POINT",
+          displayName:
+            displayName ??
+            (source === "USER_LOCATION" ? "本次授权位置" : "当前地图中心"),
+          wgs84: {
+            system: "WGS84",
+            latitude: point.lat,
+            longitude: point.lon,
+          },
+          source,
+          timezoneHint: currentTimezoneHint(),
         },
-        source,
-        timezoneHint: currentTimezoneHint(),
-      },
-      localDate: timeReference?.localDate ?? localDateForNow(),
-      selectedAt: timeReference?.selectedAtUtc ?? null,
-      eventInstanceId: timeReference?.eventInstanceId ?? null,
-      targetProfile: timeReference?.targetProfile ?? "DAILY",
-    }).catch((error: unknown) => {
-      if (!isCurrent() || isMiniappRequestCancelled(error)) return null;
-      throw error;
-    });
-    if (!response || !isCurrent()) return null;
-    setObservationContext(response.data);
-    dismissMapRegionFailure();
-    leaveSelectedLocationForMapPoint();
-    return response.data;
+        localDate: timeReference?.localDate ?? localDateForNow(),
+        selectedAt: timeReference?.selectedAtUtc ?? null,
+        eventInstanceId: timeReference?.eventInstanceId ?? null,
+        targetProfile: timeReference?.targetProfile ?? "DAILY",
+      }).catch((error: unknown) => {
+        if (!isCurrent() || isMiniappRequestCancelled(error)) return null;
+        throw error;
+      });
+      if (!response || !isCurrent()) return null;
+      setObservationContext(response.data);
+      dismissMapRegionFailure();
+      leaveSelectedLocationForMapPoint();
+      return response.data;
+    } finally { finishMapSceneRegion(intent); }
   };
 
   const confirmEditorLeave = async () => {
@@ -1861,47 +1929,97 @@ export default function MapPage() {
     });
   };
 
+  const readMapRegionScale = async (center: { latitude: number; longitude: number }, intent: number): Promise<number | null> => {
+    mapRegionScaleRead.current?.controller.abort();
+    const controller = new AbortController(), resetVersion = useAppStore.getState().mapResetVersion;
+    const owner = currentDraftUserId(), selection = useAppStore.getState().selectedSpotId;
+    const visibility = foregroundLife.current.lease;
+    const reading = { controller, isCurrent: (): boolean => mapRegionScaleRead.current === reading
+      && intent === mapPointIntent.current && nativeMap.isCurrent() && foregroundLife.current.visible
+      && foregroundLife.current.lease === visibility && useAppStore.getState().mapResetVersion === resetVersion
+      && useAppStore.getState().selectedSpotId === selection && currentDraftUserId() === owner };
+    mapRegionScaleRead.current = reading;
+    if (!reading.isCurrent()) { mapRegionScaleRead.current = null; return null; }
+    const timeout = new Error("map_native_scale_timeout");
+    const timer = setTimeout(() => controller.abort(timeout), NATIVE_MAP_CAMERA_READ_TIMEOUT_MS);
+    try {
+      const scale = await readNativeMapScale(Taro.createMapContext(nativeMap.mapId), controller.signal);
+      return reading.isCurrent() ? scale : null;
+    } catch (cause) {
+      if (!reading.isCurrent()) return null;
+      failedMapRegion.current = { center, intent, owner, resetVersion, needsScaleRead: true };
+      const failure = new Error("地图视野未能确认，请重试。", { cause });
+      reportRuntimeError("native", cause === timeout ? "map_viewport_scale_timeout" : "map_viewport_scale_failed",
+        failure, { stage: "scale", resource: "map_viewport" });
+      notify({ owner: "map", placement: "inline", tone: "warning", title: "地图视野未确认",
+        body: "视野读取失败，观测条件尚未更新。", dismissible: true,
+        action: { label: "重试此位置" }, dedupeKey: "map-context-region-failed" });
+      setAnnouncement("地图视野未确认，请重试。");
+      return null;
+    } finally {
+      clearTimeout(timer);
+      if (mapRegionScaleRead.current === reading) mapRegionScaleRead.current = null;
+    }
+  };
+
   const onRegionChange = (
     event: BaseEventOrig<MapProps.onRegionEventDetail>,
   ) => {
-    if (userMapRegionStarted(event)) spotMapFocus.cancel();
+    if (userMapRegionStarted(event)) {
+      spotMapFocus.cancel();
+      // New native input owns the camera before its final centre/scale arrives.
+      // The previous gesture's conditions must not publish during this gap.
+      // Until a new camera settles, cancellation still preserves known recovery.
+      beginMapSceneRegion(invalidateMapPointIntent(true), true);
+    }
     const region = userMapRegionEnd(event);
-    if (!region) { if (mapRegionEnded(event)) readTerrainViewport(true); return; }
+    if (!region) {
+      if (mapRegionEnded(event)) readTerrainViewport(true);
+      if (mapSceneRegionIntent.current?.gesture && userMapRegionEnded(event))
+        finishMapSceneRegion(mapSceneRegionIntent.current.intent);
+      return;
+    }
     const intent = invalidateMapPointIntent();
+    beginMapSceneRegion(intent);
     const resetVersion = useAppStore.getState().mapResetVersion;
     const selection = useAppStore.getState().selectedSpotId;
     const owner = currentDraftUserId();
     const isCurrentRegion = () => intent === mapPointIntent.current && nativeMap.isCurrent() &&
       useAppStore.getState().mapResetVersion === resetVersion &&
       useAppStore.getState().selectedSpotId === selection && currentDraftUserId() === owner;
-    // The native gesture has already settled. Publish its camera now so a
-    // selection during the conditions debounce keeps that actual finer view.
-    setViewport({
-      center: region.center,
-      ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
-      loadedViewport: "viewport:" + String(Date.now()),
-    });
-    regionTimer.current = setTimeout(() => {
+    const publishCamera = (zoom: number) => {
       if (!isCurrentRegion()) return;
-      void resolveMapPoint(region.center, "MAP_VIEWPORT", undefined, intent).catch(
-        (error) => {
-          if (!isCurrentRegion()) return;
-          failedMapRegion.current = { center: region.center, intent, owner, resetVersion };
-          notify({
-            owner: "map",
-            placement: "inline",
-            tone: "warning",
-            title: "地图条件未更新",
-            body:
-              errorMessage(error) +
-              "。当前显示的是上次观测条件，请刷新后再判断。",
-            dismissible: true,
-            action: { label: "重试此位置" },
-            dedupeKey: "map-context-region-failed",
-          });
-        },
-      );
-    }, 250);
+      // Publish only a complete native camera. Keeping a missing scale's old
+      // store value would incorrectly declare that earlier view as settled.
+      setViewport({ center: region.center, zoom, loadedViewport: "viewport:" + String(Date.now()) });
+      regionTimer.current = setTimeout(() => {
+        regionTimer.current = null;
+        if (!isCurrentRegion()) return;
+        void resolveMapPoint(region.center, "MAP_VIEWPORT", undefined, intent).catch(
+          (error) => {
+            if (!isCurrentRegion()) return;
+            failedMapRegion.current = { center: region.center, intent, owner, resetVersion };
+            notify({
+              owner: "map",
+              placement: "inline",
+              tone: "warning",
+              title: "地图条件未更新",
+              body:
+                errorMessage(error) +
+                "。当前显示的是上次观测条件，请刷新后再判断。",
+              dismissible: true,
+              action: { label: "重试此位置" },
+              dedupeKey: "map-context-region-failed",
+            });
+          },
+        );
+      }, 250);
+    };
+    if (region.zoom !== undefined) publishCamera(region.zoom);
+    else void readMapRegionScale(region.center, intent).then(zoom => {
+      if (zoom !== null) publishCamera(zoom);
+      else finishMapSceneRegion(intent);
+    });
   };
 
   const cancelLocation = () => {
@@ -1975,6 +2093,7 @@ export default function MapPage() {
 
   const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域");
+    if (analysisOverlay === "LIGHT" && nativeViewport.bounds && rasterRetryCurrent("LIGHT")) lightFailureEpisode.retry();
     const lightRefresh = analysisOverlay === "LIGHT" && nativeViewport.bounds
       ? nightLight.refetch({ cancelRefetch: false }).catch(() => undefined) : null;
     try {
@@ -1990,6 +2109,17 @@ export default function MapPage() {
       }
       if (failedRegion?.intent === mapPointIntent.current) {
         const intent = invalidateMapPointIntent(true);
+        if (failedRegion.needsScaleRead) {
+          const selection = useAppStore.getState().selectedSpotId, visibility = foregroundLife.current.lease;
+          const zoom = await readMapRegionScale(failedRegion.center, intent);
+          if (zoom === null || intent !== mapPointIntent.current || !nativeMap.isCurrent()
+            || !foregroundLife.current.visible || foregroundLife.current.lease !== visibility
+            || useAppStore.getState().selectedSpotId !== selection || failedRegion.owner !== currentDraftUserId()
+            || failedRegion.resetVersion !== useAppStore.getState().mapResetVersion) return;
+          setViewport({ center: failedRegion.center, zoom, loadedViewport: "viewport:" + String(Date.now()) });
+          failedRegion = { center: failedRegion.center, intent, owner: failedRegion.owner, resetVersion: failedRegion.resetVersion };
+          failedMapRegion.current = failedRegion;
+        }
         const retry = resolveMapPoint(failedRegion.center, "MAP_VIEWPORT", undefined, intent);
         try {
           if (await retry) setAnnouncement("地图观测位置已恢复，正在更新当前地点的资料。");
@@ -2051,10 +2181,42 @@ export default function MapPage() {
   };
 
   const retryLightLayer = async () => {
+    if (!rasterRetryCurrent("LIGHT")) return;
     if (lightInstallation.requiresMapRecovery || nativeViewport.error) { await retryNativeMap(); return; }
+    lightFailureEpisode.retry();
     lightImage.retryImage();
     setLightNativeRetry(value => value + 1);
     await nightLight.refetch();
+  };
+
+  // Context effects also retire navigation work after render. Bind this
+  // render's ticket after those effects, without reviving a hidden/replaced
+  // render or requiring an unrelated future render to enable recovery.
+  const rasterRetryTicket = useMemo(() => ({ epoch: navigationEpoch.current, visibility: foregroundLife.current.lease }),
+    [navigationEpoch.current, foregroundLife.current.lease, accountOwnerId, mapResetVersion, nativeMap.mapId, pageVisible,
+      selectedSpotId, activeContext?.contextId, activeContext?.contextFingerprint, activeContext?.revision]);
+  const currentRasterRetryTicket = useRef(rasterRetryTicket);
+  currentRasterRetryTicket.current = rasterRetryTicket;
+  useEffect(() => {
+    if (currentRasterRetryTicket.current === rasterRetryTicket && foregroundLife.current.lease === rasterRetryTicket.visibility)
+      rasterRetryTicket.epoch = navigationEpoch.current;
+  }, [rasterRetryTicket]);
+  const rasterRetryCurrent = (layer: "LIGHT" | "TERRAIN") => {
+    const current = useAppStore.getState();
+    return currentRasterRetryTicket.current === rasterRetryTicket
+      && foregroundLife.current.lease === rasterRetryTicket.visibility
+      && navigationEpoch.current === rasterRetryTicket.epoch && foregroundLife.current.visible
+      && nativeMap.isCurrent() && !currentNativeMapRef.current.pending
+      && current.accountOwnerId === accountOwnerId && current.mapResetVersion === mapResetVersion
+      && (layer === "LIGHT" ? current.analysisOverlay === "LIGHT" : current.terrainEnabled);
+  };
+  const retryTerrainLayer = () => {
+    if (!rasterRetryCurrent("TERRAIN")) return;
+    if (terrainRequiresMapRecovery) { void retryNativeMap(); return; }
+    terrainFailureEpisode.retry();
+    setTerrainNativeRetry(value => value + 1);
+    if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
+    else terrain.retryImage();
   };
 
   const commitMapTime = async (nextTime: string | undefined) => {
@@ -2720,8 +2882,7 @@ export default function MapPage() {
 
           <View className="map-source-attributions">
             {activeContext?.timezoneSource && sourceAttributions([activeContext.timezoneSource]).length > 0 && bottomPresentation === "none" ?
-              <View className="map-source-attribution"><SourceAttribution presentation="credit" sources={[activeContext.timezoneSource]} />
-                <SourceEntry id="map-timezone-source" label="时区来源" sources={[activeContext.timezoneSource]} /></View> : null}
+              <View className="map-source-attribution"><SourceAttribution presentation="credit" sources={[activeContext.timezoneSource]} /></View> : null}
             {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && sourceAttributions(cloudPresentation?.sources ?? []).length > 0 && bottomPresentation !== "layer-sheet" ?
               <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution presentation="credit" sources={cloudPresentation?.sources ?? []} /></View> : null}
             {(lightInstallation.presentedData?.raster || (analysisOverlay === "LIGHT" && layerPolygons.length > 0)) && bottomPresentation !== "layer-sheet" && displayedLightLayer?.source && sourceAttributions([displayedLightLayer.source]).length > 0 ?
@@ -2729,13 +2890,9 @@ export default function MapPage() {
             {presentedTerrainData?.source && bottomPresentation === "none" ?
               <View className="map-source-attribution map-source-attribution--terrain">
                 <Text className="type-caption">{presentedTerrainData.preview ? "临时地形" : "地形"} · {presentedTerrainData.source.provider}</Text>
-                <SourceEntry id="map-terrain-source" label="地形来源与许可" sources={[presentedTerrainData.source]}
-                  sections={[{ kind: "text", paragraphs: [
-                    `${presentedTerrainData.preview ? "当前临时显示的地形" : "当前显示的地形"} · 数据版本：${presentedTerrainData.datasetVersion}`,
-                    ...(presentedTerrainData.preview ? [presentedTerrainData.coverageLabel] : []),
-                  ] }]} /></View> : null}
+              </View> : null}
           </View>
-          <View className={`map-feedback-column${locationBusy || pageState === "LOADING" || nativeMap.pending || mapTerrainLoading ? " map-feedback-column--loading" : locationCandidate || mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
+          <View className={`map-feedback-column${locationBusy || (pageState === "LOADING" && !formalMarkerPresentation.hasConfirmed) || nativeMap.pending || mapTerrainLoading ? " map-feedback-column--loading" : locationCandidate || mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
             <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap(), "map-location-request": () => void locateMap() }} />
             {locationBusy ? <StatusPanel state="LOADING" detail="正在获取本次位置" recoveryLabel="取消" onRecover={cancelLocation} /> : null}
             {locationCandidate && locationCandidateCurrent(locationCandidate) ? <SoftButton label="移动到本次位置" onClick={() => void moveToLocation()} /> : null}
@@ -2750,6 +2907,7 @@ export default function MapPage() {
               onRecover={() => void refreshMap()}
             /> : null}
             {pageState !== "EMPTY" &&
+            !(pageState === "LOADING" && formalMarkerPresentation.hasConfirmed) &&
             !(pageState === "LOADING" && mapTerrainLoading) &&
             !(pageState === "LOADING" && bottomPresentation === "spot-panel" && bootstrapReplacementBlocked && visibleSpotContextAttempt) &&
             pageState !== "READY" &&
@@ -2930,8 +3088,8 @@ export default function MapPage() {
                 <View className="map-layer-sheet__heading">
                   <Text className="map-layer-sheet__title type-label">层叠</Text>
                   {layerTerrainToggle}
-                  <SourceEntry id="map-layer-sources" label="当前层叠来源" sources={layerSources}
-                    sections={terrainEnabled && terrainDisclosure ? [{ kind: "text", paragraphs: [
+                  <SourceEntry id="map-layer-sources" label="地图来源与许可" sources={layerSources}
+                    sections={(terrainEnabled || presentedTerrainData) && terrainDisclosure ? [{ kind: "text", paragraphs: [
                       `${terrainDisclosure.preview ? "当前临时显示的地形" : presentedTerrainData ? "当前显示的地形" : "地形资料"} · 数据版本：${terrainDisclosure.datasetVersion}`,
                       ...(terrainDisclosure.preview ? [terrainDisclosure.coverageLabel] : []),
                     ] }] : []} />
@@ -2972,12 +3130,7 @@ export default function MapPage() {
                       : mapTerrainLoading ? presentedTerrainData?.preview ? "已显示临时地形，细节仍在加载…" : "正在加载地形…"
                         : mapTerrainMissing ? "当前地区暂无地形数据。" : (presentedTerrainData ?? terrain.data?.data)?.coverageLabel}
                   </Text> : null}
-                  {mapTerrainFailed && !terrainInstallation.retirementPending ? <SoftButton label={terrainRequiresMapRecovery ? "重新加载地图" : "重新读取地形"} onClick={() => {
-                    if (terrainRequiresMapRecovery) { void retryNativeMap(); return; }
-                    setTerrainNativeRetry(value => value + 1);
-                    if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
-                    else terrain.retryImage();
-                  }}>{terrainRequiresMapRecovery ? "重新加载地图" : "重试"}</SoftButton> : null}
+                  {mapTerrainFailed && !terrainInstallation.retirementPending ? <SoftButton label={terrainRequiresMapRecovery ? "重新加载地图" : "重新读取地形"} onClick={retryTerrainLayer}>{terrainRequiresMapRecovery ? "重新加载地图" : "重试"}</SoftButton> : null}
                 </View>
                 {visibleLayer === "TOTAL_CLOUD" ? (
                   <>

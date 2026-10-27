@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createStellarMotion, stellarDirectionAt, rotateStellarDirection } from "./stellar-vectors.ts";
+import { createStellarMotion, stellarDirectionAt, rotateStellarDirection, projectStellarMotionDirection } from "./stellar-vectors.ts";
 import { bsc5pHorizontalFrame, loadBsc5pBrightStarCatalog, positionBsc5pCatalog } from "./bsc5p-catalog.ts";
 import { EquatorFromVector, Horizon, Observer, RotateVector, Rotation_EQJ_EQD, Spherical, VectorFromSphere } from "./astronomy-engine-runtime.ts";
 
@@ -34,6 +34,10 @@ test("all current catalog stars preserve the previous EQD/Horizon path across ep
     assert.equal(positions.length, catalog.rows.length);
     for (let i = 0; i < catalog.rows.length; i++) {
       const row = catalog.rows[i]!, actual = positions[i]!;
+      const motion = createStellarMotion(row);
+      assert.deepEqual(projectStellarMotionDirection(motion, frame.julianYears, frame.equatorialToEnu),
+        rotateStellarDirection(stellarDirectionAt(motion, frame.julianYears), frame.equatorialToEnu),
+        'scalar intermediate keeps every component bit-exact, including signed zero');
       // Retain the former scalar proper-motion + EQD/Horizon path as an
       // equivalence oracle. Astropy accuracy references remain in bsc5p-catalog.test.
       const years = (at.getTime() - Date.UTC(2000, 0, 1, 12)) / (365.25 * 86400000);
@@ -51,4 +55,13 @@ test("all current catalog stars preserve the previous EQD/Horizon path across ep
       assert.equal(actual.visible, old.altitude > 0, row.sourceId);
     }
   }
+});
+
+test('direct projection retains invalid epoch/direction checks and returns independently owned rays',()=>{
+  const matrix=[1,0,0,0,1,0,0,0,1] as const;
+  const motion=createStellarMotion({raDeg:0,decDeg:0,pmRaCosDecArcsecYr:0,pmDecArcsecYr:0});
+  assert.throws(()=>projectStellarMotionDirection(motion,Infinity,matrix),/stellar_epoch_delta_invalid/);
+  assert.throws(()=>projectStellarMotionDirection([0,0,0,0,0,0],0,matrix),/stellar_direction_invalid/);
+  const first=projectStellarMotionDirection(motion,0,matrix),second=projectStellarMotionDirection(motion,0,matrix);
+  assert.notStrictEqual(first,second);assert.deepEqual(first,second);
 });

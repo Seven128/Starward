@@ -12,6 +12,7 @@ import { attachSkyCatalog } from "./sky-stellar-scene";
 import { confirmedObservationContextEdit, type ConfirmedObservationContextReply } from "../../services/observation-context-recovery";
 import { skyForecastPresentation } from "../../services/forecast-presentation";
 import { skyTimeTestFixture } from "./sky-time-test-support";
+import { skyPageTimePresentationTestBindings, skyPageTimePresentationTestCode } from "./sky-optical-page-test-support";
 
 function fixture() {
   const { prior, source } = skyTimeTestFixture();
@@ -130,32 +131,28 @@ test("a confirmed cross-date apply retains the admitted model and its actual sou
 test("actual page keeps its native Canvas and resource eligibility during the admitted query gap", () => {
   const f = fixture(); assert(f.owner.stage(f.from, f.response, f.source, f.spotId, f.target.selectedAtUtc));
   const file = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const page = file.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
-  const declarations = new Map<string, ts.VariableDeclaration>();
-  for (const statement of page.body!.statements) if (ts.isVariableStatement(statement))
-    for (const declaration of statement.declarationList.declarations) declarations.set(declaration.name.getText(file), declaration);
   const names = ["carriedReport", "report", "data", "contextMatches", "rawReportData", "skyResourcesActive", "timeModel", "timeBinding", "committedAt",
     "restoredAt", "requestedAt", "timeGeometrySources", "requestedTimePresentation", "acceptedTimePresentation", "timePresentation", "timeGeometryReady", "timePlaying", "fineTargetBinding", "geometryReport", "reportData", "row", "nativeCanvasMounted"];
-  const code = ts.transpileModule(names.map(name => { const declaration = declarations.get(name); assert(declaration); return `const ${declaration.getText(file)};`; }).join("\n") +
+  const code = ts.transpileModule(skyPageTimePresentationTestCode(file, names) +
     "\n({report,rawReportData,skyResourcesActive,nativeCanvasMounted,fineTargetBinding,row});", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const reportQuery = { data: undefined, isPending: true, isFetching: true, isError: false };
-  const result = vm.runInNewContext(code, { timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
+  const result = vm.runInNewContext(code, skyPageTimePresentationTestBindings({ timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
     resourcePageVisible: true, contextComplete: true, contextSession: { ownsContext: () => true }, reportQuery, rejectedReportError: null,
     skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, selectSkyTimePresentation, useMemo: (fn: () => unknown) => fn(), timeIntent: {}, observationTime: createSkyObservationTime(),
     pageVisible: true, mode: "NIGHT", canvasError: null, presentedSkyFrame: null,
     previewGeometry: { model: skyPresentationTimeModel(f.source.data) },
     fineTargetData: null, timeScrubbing: false, stellarCatalog: {}, attachSkyCatalog,
-    manualBasis: { forward: [0, Math.SQRT1_2, Math.SQRT1_2] }, devicePose: null, orientation: { presented: { current: null } } });
+    manualBasis: { forward: [0, Math.SQRT1_2, Math.SQRT1_2] }, devicePose: null, orientation: { presented: { current: null } } }));
   assert.equal(result.skyResourcesActive, true); assert.equal(result.nativeCanvasMounted, true);
   assert.equal(result.row.at, f.target.selectedAtUtc); assert.equal(result.fineTargetBinding, null);
   assert.strictEqual(result.rawReportData.context, f.source.data.context); assert.equal(reportQuery.data, undefined, "no fake reply enters Query");
   f.owner.clear();
-  const revoked = vm.runInNewContext(code, { timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
+  const revoked = vm.runInNewContext(code, skyPageTimePresentationTestBindings({ timeCommitContinuity: f.owner, activeContext: f.target, routeContext: { spotId: f.spotId },
     resourcePageVisible: true, contextComplete: true, contextSession: { ownsContext: () => true }, reportQuery, rejectedReportError: null,
     skyReportMatchesContext, skyPresentationTimeModel, presentSkyTime, selectSkyTimePresentation, useMemo: (fn: () => unknown) => fn(), timeIntent: {}, observationTime: createSkyObservationTime(),
     pageVisible: true, mode: "NIGHT", canvasError: null, presentedSkyFrame: null,
     previewGeometry: { model: null },
     fineTargetData: null, timeScrubbing: false, stellarCatalog: {}, attachSkyCatalog,
-    manualBasis: {}, devicePose: null, orientation: { presented: { current: null } } });
+    manualBasis: {}, devicePose: null, orientation: { presented: { current: null } } }));
   assert.equal(revoked.skyResourcesActive, false); assert.equal(revoked.nativeCanvasMounted, false, "the case must detect the original empty-query regression");
 });

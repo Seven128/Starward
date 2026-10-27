@@ -22,12 +22,12 @@ function runtime() {
     },
   };
   const exports: any = {};
-  const code = ts.transpileModule(readFileSync(new URL("./sky-public-image-runtime.ts", import.meta.url), "utf8"),
+  const code = ts.transpileModule(readFileSync(new URL("./sky-public-image-owner.ts", import.meta.url), "utf8"),
     { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   runInNewContext(code, { exports, ArrayBuffer, Uint8Array, Date, Math, Set, Promise,
     __MINIAPP_API_BASE__: "http://fixture.invalid", __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "",
     require(id: string) {
-      if (id === "./sky-resource-origin") return skyResourceOriginTestOwner("http://fixture.invalid");
+      if (id === "./sky-resource-preview") return skyResourceOriginTestOwner("http://fixture.invalid");
       if (id === "./sky-image-diagnostics") return skyResourceOriginTestOwner("http://fixture.invalid");
       if (id === "@tarojs/taro") return { default: taro };
       if (id === "@starward/miniapp-contracts") return { skyImageContentHash: () => "a".repeat(64) };

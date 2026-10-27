@@ -17,6 +17,7 @@ import { createSkyStarTransitions } from "./sky-star-transition";
 import { createSkyViewBasis, type SkyViewBasis } from "./sky-view-projection";
 import { selectSkyStellarTiles } from "./sky-stellar-tile-selection";
 import { drawSkyScene } from "./sky-scene-render";
+import { projectStellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import type { SkyPickSnapshot } from "./sky-object-picking";
 import type { SkyRenderSurface } from "./sky-render-surface";
 
@@ -70,6 +71,29 @@ const extra=resolveSkyStellarSupplement(saoPublication,tiles,a.skyScene,a.hourly
 assert.equal(publication.rows.length,8404);assert(selected.length>100&&extra.pointCount!>2000);
 assert(isReusableSkyStellarFrame(resolveSkySceneFrame(a.skyScene,a.hourly[0]!.at)!));
 assert(isReusableSkyStellarSupplementFrame(extra));
+
+test("frame-local motion scratch preserves every full BSC and loaded SAO position across exact times",()=>{
+  const first=resolveSkySceneFrame(a.skyScene,a.hourly[0]!.at)!;
+  const retainedFirst=first.points[0]!,retainedValue=[...retainedFirst];
+  for(const data of [a,b]) {
+    const at=data.hourly[0]!.at,geometry=data.skyScene.frames[0]!.geometry!;
+    const actual=resolveSkySceneFrame(data.skyScene,at)!.points;
+    assert.equal(actual.length,publication.rows.length);
+    publication.rows.forEach((row,index)=>{
+      const position=projectStellarMotion([row[4],row[5],row[6],row[7],row[8],row[9]],geometry.julianYears,geometry.equatorialToEnu);
+      assert.deepEqual(actual[index],[index,position.azimuthDeg,position.altitudeDeg]);
+    });
+    const supplement=resolveSkyStellarSupplement(saoPublication,tiles,data.skyScene,at)!;
+    let index=0;
+    for(const tile of tiles)for(const row of tile.tile.rows) {
+      const position=projectStellarMotion([row[2],row[3],row[4],row[5],row[6],row[7]],geometry.julianYears,geometry.equatorialToEnu);
+      assert.deepEqual(supplement.points[index++],[row[0],row[1],position.azimuthDeg,position.altitudeDeg]);
+    }
+    assert.equal(index,supplement.pointCount);
+  }
+  assert.equal(first.points[0],retainedFirst);
+  assert.deepEqual(retainedFirst,retainedValue,"later rows and frames cannot overwrite an earlier accepted point");
+});
 
 type Settings={basis?:SkyViewBasis;width?:number;height?:number;fov?:number;center?:{x:number;y:number};
   mode?:"DAY"|"NIGHT"|"OBSERVATION";reduced?:boolean;paused?:boolean;commit?:boolean;

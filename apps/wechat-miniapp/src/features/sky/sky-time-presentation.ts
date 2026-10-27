@@ -10,9 +10,19 @@ export type SkyTimeRulerRow = Pick<HourlySkyRow, "at"> & Partial<Pick<HourlySkyR
 
 /** Calendar selection keeps the complete observation day even when the
  * admitted geometry is only a short preview. These ticks supply no facts. */
-export function skyTimeRulerRows(report: SkyReport | undefined, model: SkyTimeModel | null): readonly SkyTimeRulerRow[] {
-  return model && report && model !== skyPresentationTimeModel(report)
-    ? skyGeometryWindow(model.startAt, report.context.timezone).hourlyAt.map(at => ({ at })) : report?.hourly ?? [];
+export function skyTimeRulerRows(report: SkyReport | undefined, model: SkyTimeModel | null,
+  requestedAt?: string, previous?: readonly SkyTimeRulerRow[]): readonly SkyTimeRulerRow[] {
+  const original = skyPresentationTimeModel(report);
+  const outsideOriginal = requestedAt && (!original || Date.parse(requestedAt) < Date.parse(original.startAt) ||
+    Date.parse(requestedAt) > Date.parse(original.endAt));
+  if (!model || !report || model === original && !outsideOriginal) return report?.hourly ?? [];
+  const at = requestedAt ?? model.startAt, instant = Date.parse(at);
+  // The caller retains only this report's current ticks. Reuse their exact
+  // civil-day interval without repeating IANA conversion on every Play frame.
+  if (previous && previous !== report.hourly && previous.length > 1 &&
+    Date.parse(previous[0]!.at) <= instant && instant < Date.parse(previous[previous.length - 1]!.at)) return previous;
+  try { return skyGeometryWindow(at, report.context.timezone).hourlyAt.map(at => ({ at })); }
+  catch { return []; } // Unsupported supply must not crash the independent civil controls.
 }
 
 /** The ruler spaces supplied rows uniformly, not their elapsed durations.

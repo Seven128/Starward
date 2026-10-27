@@ -18,3 +18,14 @@ test("geometry arrival cannot claim the delayed or failed native frame has been 
     geometryAt: "2026-09-29T13:00:19.000Z", playing: true, runStartAt: at }).ready, true,
     "1x playback keeps its actual accepted frame from the same run");
 });
+
+test("an equal timestamp from an earlier preview or run is not current native acceptance", () => {
+  const at = "2026-09-30T14:15:17.123Z";
+  const input = { requestedAt: at, geometryAt: at, paintedAt: at, generation: 4,
+    playing: false, runStartAt: null, geometryFailed: false, canvasFailed: false };
+  for (const paintedGeneration of [undefined, 3, 5, NaN]) {
+    const status = skyTimePreviewStatus({ ...input, paintedGeneration });
+    assert.equal(status.ready, false); assert.equal(status.pending, true); assert.equal(status.presentedAt, at);
+  }
+  assert.equal(skyTimePreviewStatus({ ...input, paintedGeneration: 4 }).ready, true);
+});

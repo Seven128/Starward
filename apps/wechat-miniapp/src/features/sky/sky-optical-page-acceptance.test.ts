@@ -11,7 +11,7 @@ import {copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions} from "./sky
 import {sameSkyHipsCompletion} from "./sky-hips-source-credit";
 import {skyNativeImageIsCurrent} from "./sky-artwork-loader";
 import * as bodyImages from "./sky-body-image-completion";
-import { skyPageCanvasTestBindings, skyPageCanvasTestFrame } from "./sky-optical-page-test-support";
+import { skyPageCanvasTestBindings, skyPageCanvasTestFrame, skyPageCanvasLifecyclePort } from "./sky-optical-page-test-support";
 import type { SkySceneFrameInput, SkyScenePorts } from "./sky-scene-frame";
 
 // Actual page callbacks + actual Canvas lifecycle, controlled draw completion.
@@ -19,12 +19,8 @@ import type { SkySceneFrameInput, SkyScenePorts } from "./sky-scene-frame";
 const text=readFileSync(process.env.CLOUD_SKY_OPTICAL_PAGE_SOURCE ?? new URL("./spot-sky-page.tsx",import.meta.url),"utf8");
 const source=ts.createSourceFile("spot-sky-page.tsx",text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
 const expressions=new Map<string,ts.Expression>();
-function find(node:ts.Node){
-  if(ts.isPropertyAssignment(node)&&["paint","presented","invalidated","sameScene"].includes(node.name.getText(source)))
-    expressions.set(node.name.getText(source),node.initializer);
-  ts.forEachChild(node,find);
-}
-find(source);
+for (const name of ["paint", "presented", "invalidated", "sameScene"] as const)
+  expressions.set(name, skyPageCanvasLifecyclePort(source, name));
 const basis=createSkyViewBasis(20,110,0)!,nextBasis=createSkyViewBasis(55,125,0)!;
 
 function harness(){

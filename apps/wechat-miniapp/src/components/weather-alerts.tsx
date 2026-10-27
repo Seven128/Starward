@@ -1,6 +1,6 @@
 import { Text, View } from "@tarojs/components";
 import { SharedButton as Button } from "./shared-button-press";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { WeatherEvidenceSummary } from "@starward/miniapp-contracts";
 import { useWeatherAlertClock } from "./use-weather-alert-clock";
 import { useAppStore } from "@/state/app-store";
@@ -10,8 +10,9 @@ import { StatusPanel } from "./status-panel";
 import { SourceAttribution } from "./source-attribution";
 import { SourceEntry } from "./source-entry";
 import { SemanticIcon } from "./semantic-asset";
+import { createResourceFailureEpisode } from "@/services/resource-failure-episode";
 
-export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = false, refreshFailed = false, refreshing = false, reportHandlesFailure = false, onRecover, onContentChange }: {
+export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = false, refreshFailed = false, refreshing = false, reportHandlesFailure = false, onRecover, onRefresh, onContentChange }: {
   evidence: WeatherEvidenceSummary | undefined;
   timezone: string;
   active: boolean;
@@ -22,13 +23,17 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
   refreshing?: boolean;
   /** Suppress only duplicate feedback, not usable independent warning evidence. */
   reportHandlesFailure?: boolean;
-  onRecover: () => void;
+  /** True confirms an accepted explicit retry; clock refreshes do not rearm feedback. */
+  onRecover: () => boolean | void;
+  /** A parent with explicit-retry bookkeeping supplies its ordinary refresh. */
+  onRefresh?: () => void;
   /** A measured parent can respond to local activation/expiry without polling. */
   onContentChange?: () => void;
 }) {
-  const now = useWeatherAlertClock(evidence, active, onRecover);
+  const now = useWeatherAlertClock(evidence, active, onRefresh ?? onRecover);
   const view = weatherAlertState(evidence, now, refreshFailed);
   const notify = useAppStore(state => state.notify);
+  const failureEpisode = useMemo(() => createResourceFailureEpisode(), []);
   const [expandedWarnings, setExpandedWarnings] = useState<readonly string[]>([]);
   // Reading a source hides this page; returning keeps the same warning reading.
   useEffect(() => setExpandedWarnings([]), [scopeKey]);
@@ -38,16 +43,23 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
   useEffect(() => {
     // The report owner reports transport failure once. A due feed being
     // revalidated is not a failed request; only a settled child failure notifies.
-    if (active && view.failed && !refreshing && !refreshFailed && !reportHandlesFailure) notify({ owner: "weather-alerts", placement: "floating", tone: "info",
+    if (!failureEpisode.observe({ scope: scopeKey, active,
+      pending: refreshing || refreshFailed || reportHandlesFailure, failed: view.failed,
+      healthy: evidence?.warningState === "FRESH" && !view.failed })) return;
+    notify({ owner: "weather-alerts", placement: "floating", tone: "info",
       title: "官方预警数据异常", body: "暂时无法确认最新预警，可在预警区域重试。", dedupeKey: scopeKey });
-  }, [active, view.failed, refreshing, refreshFailed, reportHandlesFailure, notify, scopeKey]);
+  }, [active, view.failed, evidence?.warningState, refreshing, refreshFailed, reportHandlesFailure, notify, scopeKey, failureEpisode]);
+  const retry = () => {
+    if (!active || refreshing) return;
+    if (onRecover() === true) failureEpisode.retry();
+  };
   if (!evidence || (!view.failed && !view.alerts.length)) return null;
   const label = (at: string) => Number.isFinite(Date.parse(at))
     ? `${calendarDateInTimezone(new Date(at), timezone)} ${clockTimeInTimezone(new Date(at), timezone)}` : "时间暂无数据";
   return <View className={`weather-alerts${compact ? " weather-alerts--compact" : ""}`} data-control="official-weather-alerts">
     {view.failed ? <StatusPanel state={refreshing ? "LOADING" : "ERROR"}
       detail={refreshing ? "正在更新官方预警…" : "官方预警暂未确认最新状态，不能据此判断没有预警。"}
-      recoveryLabel={refreshing ? undefined : "重试官方预警"} onRecover={onRecover} /> : null}
+      recoveryLabel={refreshing ? undefined : "重试官方预警"} onRecover={retry} /> : null}
     {view.alerts.map(alert => <View className="weather-alerts__item" role="alert" key={alert.id}>
       {compact ? <>
         <View className="weather-alerts__heading">

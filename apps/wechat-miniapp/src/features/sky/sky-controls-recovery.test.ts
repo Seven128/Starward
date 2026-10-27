@@ -9,6 +9,7 @@ import { skyCommandStateSetter } from "./sky-command-state";
 import { createSkyDisclosureCommands } from "./sky-disclosure-commands";
 import { skyImageRecoveryTestOwner } from "./sky-image-recovery-test-support";
 import { skyMenuProps } from "./sky-menu-test-support";
+import { skyFailureTestEpisodes } from "./sky-failure-test-support";
 import type { ContextVersion } from "../../services/observation-context-version";
 
 const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(
@@ -18,7 +19,7 @@ const page = source.statements.find(node => ts.isFunctionDeclaration(node) && no
 assert.ok(page?.body);
 const names = ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "skyDisplayCurrent", "setSkyControlPanel",
   "canRetryReport", "retryReport", "retrySkyData", "recoverSkyResource", "retrySkyCanvas", "onSkyCanvasError",
-  "retryConstellations",
+  "retryConstellations", "retryStellarSupplement",
   "recoverCompass", "skyDisclosures"];
 const commands = page.body.statements.filter(node => ts.isVariableStatement(node) &&
   node.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
@@ -75,6 +76,7 @@ function harness() {
   const flags = { landscape: true, constellations: true, wide: false, horizontal: false, equatorial: false };
   const setFlag = (key: "landscape" | "constellations" | "wide") => (update: (value: boolean) => boolean) => { hit("flags"); flags[key] = update(flags[key]); };
   const sandbox: Record<string, any> = {
+    failureEpisodes: skyFailureTestEpisodes(),
     contextSession: session, observationTime: time, timeBinding: binding, committedAt: at,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
     activeContext: context, timeSaving: false, mode: "NORMAL",

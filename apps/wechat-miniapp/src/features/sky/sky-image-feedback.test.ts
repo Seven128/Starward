@@ -91,6 +91,7 @@ test("actual image status and display consumers stay silent on image failure, re
     coordinateGrids: { equatorial: false }, coordinateGridFrame: null, constellationFailed: false, stellarSupplement: { failed: false },
     retryConstellations: noop, retryOptical: noop, retryWideField: noop, retryGalacticImage: noop, retryLandscapeImage: noop,
     retrySkyRendering: noop, retryReport: noop, retryBodyImage: noop, retryDeepSkyImage: noop, retrySdssOptical: noop, recoverSkyResource: noop,
+    retryStellarSupplement: noop,
     skyHasDisclosure,skyControlPanel:null,orientationObjectListOpen:false,datePickerOpen:false,selectedCatalogObject:null,selectedTargetId:null,catalogPickChoices:[] };
   function render(name: string, patch: object = {}): ReturnType<typeof visible> {
     return visible(vm.runInNewContext(ts.transpileModule(`(${regions.get(name)!.getText(source)})`,
@@ -101,6 +102,8 @@ test("actual image status and display consumers stay silent on image failure, re
   assert.match(coarse.text, /NASA\/IPAC IRSA/u); assert.equal(coarse.buttons.length, 0); assert.doesNotMatch(coarse.text, /失败|未加载|重试/u);
   assert.equal(render("sky-resource-recoveries").buttons.length, 0);
   assert.equal(render("sky-resource-recoveries", { constellationFailed: true, stellarSupplement: { failed: true } }).buttons.length, 2);
+  assert.equal(render("sky-resource-recoveries", { stellarSupplement: { failed: false, interrupted: true } }).buttons.length, 1,
+    "bounded cancellation retains an explicit recovery action without being a data error");
   for(const disclosure of [{skyControlPanel:"menu"},{skyControlPanel:"layers"},{skyControlPanel:"time"},
     {skyControlPanel:"calibration"},{orientationObjectListOpen:true},{datePickerOpen:true},
     {selectedCatalogObject:{reference:"M:51"}},{selectedTargetId:"current-target"},{catalogPickChoices:[{}]}])

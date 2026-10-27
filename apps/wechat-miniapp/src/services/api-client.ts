@@ -18,6 +18,7 @@ import { contributionSubmitBelongsTo, createContributionSubmitRetry } from "./co
 import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo } from "./profile-link-retry";
 import {
   CURRENT_DEEP_SKY_CATALOG_VERSION,
+  NIGHT_LIGHT_CONTRAST_DISPLAY,
   type ApiEnvelope,
   type ApiError,
   type AuthSessionData,
@@ -61,7 +62,7 @@ import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { reportRuntimeError } from "./runtime-error";
 import { miniappQueryClient } from "./query-client";
-import { clearSkyPublicImageCache } from "./sky-public-image-runtime";
+import { clearSkyPublicImageCache } from "./sky-public-image-owner";
 import { useAppStore } from "@/state/app-store";
 import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, type CachedResponse } from "./response-cache";
 import { createMutationRetry } from "./mutation-retry";
@@ -978,6 +979,7 @@ export function getTerrainHorizon(input: TerrainHorizonRequest, signal?: AbortSi
 export function getMapNightLight(viewport: import("@starward/miniapp-contracts").MapNightLightRequest["viewport"], signal?: AbortSignal) {
   return requestOperation("map-night-light", "mapNightLightGet", {
     query: [`centerLat=${viewport.center.latitude.toFixed(6)}`, `centerLng=${viewport.center.longitude.toFixed(6)}`,
+      `displayStyle=${encodeURIComponent(NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion)}`,
       `zoom=${viewport.zoom}`, `viewportBounds=${[viewport.bounds.west, viewport.bounds.south,
         viewport.bounds.east, viewport.bounds.north].map(value => value.toFixed(7)).join(",")}`].join("&"),
     cache: false,

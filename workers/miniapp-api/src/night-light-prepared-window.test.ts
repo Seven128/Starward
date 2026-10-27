@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
@@ -6,7 +7,11 @@ import { syncBuiltinESMExports } from "node:module";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { PNG } from "pngjs";
+import { Module } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { FastifyAdapter } from "@nestjs/platform-fastify";
 import { displayRasterWindowBounds, type DisplayRasterWindow } from "@starward/coordinate-system";
+import { NIGHT_LIGHT_CONTRAST_DISPLAY } from "@starward/miniapp-contracts";
 import { NightLightService } from "./night-light-service.ts";
 import { PreparedNightLightWindows, type PreparedNightLightPublication } from "./night-light-prepared-window.ts";
 import { readFixedNightLightInventory, readFixedNightLightProof, type FixedNightLightDataset, type FixedNightLightRaster } from "./night-light-publication.ts";
@@ -14,6 +19,9 @@ import { mapStaticHash, mapStaticSourceId, type MapStaticManifest } from "./map-
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
+import { MiniappController } from "./controller.ts";
+import { MiniappService } from "./miniapp-service.ts";
+import { fastifyDeploymentOptions } from "./release-metadata.ts";
 
 const w: DisplayRasterWindow = { grid: "gcj02-mercator-pixel-centres-v1", tilePixels: 256, zoom: 11, x: 1672, y: 890, columns: 2, rows: 1 };
 const view = (window: DisplayRasterWindow) => {
@@ -77,6 +85,56 @@ test("sealed prepared window and fixed URLs serve exactly the original published
   assert.deepEqual(await service.asset(record.datasetVersion, proofs[0].image.file), fixed, "existing fixed URL is unchanged");
   assert.equal(encode.mock.callCount(), 0);
   assert.equal(await service.asset(record.datasetVersion, filename(expected).replace(/-[a-f0-9]{64}\.png$/u, `-${"0".repeat(64)}.png`)), null);
+}));
+
+test("contrast display consumes the verified prepared image without changing the prepared publication or its V1 URL", async () => fixture(async ({ record, proofs, fresh, directory, imagePath }) => {
+  const service = fresh(), original = await service.layer(record.datasetVersion, view(w)); assert.ok(original?.raster);
+  const sealedBefore = await readFile(imagePath), oldAsset = await service.asset(record.datasetVersion, filename(original)); assert.ok(oldAsset);
+  for (const proof of proofs) await rename(path.join(directory, proof.image.file), path.join(directory, proof.image.file + ".source-disabled"));
+  const display = await service.layer(record.datasetVersion, view(w), undefined, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion); assert.ok(display?.raster);
+  const asset = await service.asset(record.datasetVersion, filename(display)); assert.ok(asset);
+  assert.notDeepEqual(asset.bytes, oldAsset.bytes);
+  assert.equal(display.raster.displaySource?.imageSha256, original.raster.imageSha256);
+  assert.deepEqual(display.raster.qualitySummary, original.raster.qualitySummary);
+  assert.deepEqual(await readFile(imagePath), sealedBefore);
+  assert.deepEqual((await fresh().asset(record.datasetVersion, filename(display)))?.bytes, asset.bytes);
+  assert.deepEqual((await service.asset(record.datasetVersion, filename(original)))?.bytes, oldAsset.bytes);
+}));
+
+test("the public Map and asset controllers deliver the requested display with its real immutable bytes and retain default V1", async () => fixture(async ({ record, root, prepared }) => {
+  const repository = new InMemoryTestRepository();
+  Object.defineProperty(repository, "kind", { value: "postgres" });
+  Object.defineProperty(repository, "getPublishedDarkSkyDataset", { value: async () => record });
+  const service = createTestMiniappService({ repository, config: createTestRuntimeConfig({ storageMode: "POSTGRES",
+    darkSkyDatasetVersion: record.datasetVersion, nightLightPublicationRoot: root, mapStaticPublication: prepared }) });
+  class TestModule {}
+  Module({ controllers: [MiniappController], providers: [{ provide: MiniappService, useValue: service }] })(TestModule);
+  const adapter = new FastifyAdapter(fastifyDeploymentOptions({ origins: [], trustedProxyCidrs: [] }));
+  const app = await NestFactory.create(TestModule, adapter, { logger: false });
+  try {
+    await app.init(); await adapter.getInstance().ready();
+    const bounds = view(w), query = new URLSearchParams({ centerLat: String((bounds.north + bounds.south) / 2),
+      centerLng: String((bounds.east + bounds.west) / 2), zoom: "11",
+      viewportBounds: [bounds.west, bounds.south, bounds.east, bounds.north].join(",") });
+    const endpoint = `/v2/map/night-light?${query}`, http = adapter.getInstance();
+    const originalReply = await http.inject({ method: "GET", url: endpoint }); assert.equal(originalReply.statusCode, 200);
+    const original = originalReply.json().data;
+    const originalBytes = await http.inject({ method: "GET", url: original.raster.imageUrl }); assert.equal(originalBytes.statusCode, 200);
+    const changedReply = await http.inject({ method: "GET", url: `${endpoint}&displayStyle=${NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion}` });
+    assert.equal(changedReply.statusCode, 200);
+    const changed = changedReply.json().data;
+    assert.equal(changed.raster.styleVersion, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion);
+    assert.equal(changed.raster.displaySource.imageSha256, original.raster.imageSha256);
+    assert.deepEqual(changed.raster.qualitySummary, original.raster.qualitySummary);
+    const actual = await http.inject({ method: "GET", url: changed.raster.imageUrl }); assert.equal(actual.statusCode, 200);
+    assert.match(String(actual.headers["content-type"]), /^image\/png/u);
+    assert.match(String(actual.headers["cache-control"]), /immutable/u);
+    assert.equal(mapStaticHash(actual.rawPayload), changed.raster.imageSha256);
+    assert.equal(actual.rawPayload.length, changed.raster.imageBytes);
+    assert.notDeepEqual(actual.rawPayload, originalBytes.rawPayload);
+    assert.deepEqual((await http.inject({ method: "GET", url: endpoint })).json().data, original);
+    assert.deepEqual((await http.inject({ method: "GET", url: original.raster.imageUrl })).rawPayload, originalBytes.rawPayload);
+  } finally { await app.close(); }
 }));
 
 test("an undeclared window keeps bounded original composition and its immutable URL after cache loss", async t => fixture(async ({ record, fresh }) => {

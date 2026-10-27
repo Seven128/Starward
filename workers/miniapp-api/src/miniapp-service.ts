@@ -1135,12 +1135,13 @@ export class MiniappService {
 
   /** Same publication and legacy reader for both old Scenes and the independent
    * public layer. No observation context, catalogue or weather work belongs here. */
-  private async readMapNightLight(viewport?: MapSceneRequest["viewport"], signal?: AbortSignal): Promise<MapLayerData> {
+  private async readMapNightLight(viewport?: MapSceneRequest["viewport"], signal?: AbortSignal,
+    displayStyle?: MapNightLightRequest["displayStyle"]): Promise<MapLayerData> {
     signal?.throwIfAborted();
     const version = this.config.darkSkyDatasetVersion;
     if (this.repository.kind !== "postgres") return legacyNightLightLayer([], version);
     try {
-      const fixed = await this.nightLight.layer(version, viewport?.bounds, signal);
+      const fixed = await this.nightLight.layer(version, viewport?.bounds, signal, displayStyle);
       if (fixed) return fixed;
       const center = viewport ? gcj02ToWgs84({ system: "GCJ-02",
         lat: viewport.center.latitude, lon: viewport.center.longitude }) : null;
@@ -1158,7 +1159,7 @@ export class MiniappService {
 
   async getMapNightLight(input: MapNightLightRequest, signal?: AbortSignal): Promise<ApiEnvelope<MapLayerData>> {
     const startedAt = performance.now();
-    const layer = await this.readMapNightLight(input.viewport, signal);
+    const layer = await this.readMapNightLight(input.viewport, signal, input.displayStyle);
     this.telemetry.event("nightlight_metadata_read", { milliseconds: performance.now() - startedAt,
       state: layer.state, assetSha256: layer.raster?.imageSha256 ?? null });
     return envelope(layer, layer.state, layer.source ? [layer.source] : [], layer.source?.limitations ?? []);

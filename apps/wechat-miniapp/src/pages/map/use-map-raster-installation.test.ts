@@ -4,11 +4,13 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { mapGroundOverlayKey } from "./map-ground-overlay.ts";
+import { rasterImageDiagnostic } from "../../services/raster-image-diagnostic";
 
 function harness(supportsUpdates = false) {
   const ast = ts.createSourceFile("hook.ts", readFileSync(new URL("./use-map-raster-installation.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useMapRasterInstallation")!;
   const states: any[] = [], memos: any[] = [], effects: any[] = [];
+  const diagnostics: unknown[][] = [];
   let stateIndex = 0, memoIndex = 0, effectIndex = 0;
   let pending: (() => void)[] = [];
   const coordinators: { callback: (result: any) => void; calls: { target: any; intent: string; replacement: string }[]; disposed: boolean; replaceReady: boolean;
@@ -26,6 +28,8 @@ function harness(supportsUpdates = false) {
   const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";useMapRasterInstallation;",
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     Taro: { createMapContext() {}, getImageInfo: async () => ({}) }, mapRasterFiles: {}, mapGroundOverlayKey,
+    reportRuntimeError: (...args: unknown[]) => diagnostics.push(args),
+    rasterImageDiagnostic,
     useState(initial: any) { const index = stateIndex++; if (!(index in states)) states[index] = initial;
       return [states[index], (value: any) => { states[index] = typeof value === "function" ? value(states[index]) : value; }]; },
     useRef(initial: any) { const index = stateIndex++; if (!(index in states)) states[index] = { current: initial }; return states[index]; },
@@ -51,7 +55,7 @@ function harness(supportsUpdates = false) {
     stateIndex = memoIndex = effectIndex = 0; hook(input); pending.splice(0).forEach(effect => effect());
     stateIndex = memoIndex = effectIndex = 0; return hook(input);
   };
-  return { render, coordinators, set(value: any) { input = { ...input, ...value }; },
+  return { render, coordinators, diagnostics, set(value: any) { input = { ...input, ...value }; },
     ack(owner = coordinators.at(-1)!, error: unknown = null, state: any = {}) { const call = owner.calls.at(-1)!;
       owner.replaceReady = !error && Boolean(call.target) && !state.presentationUnknown;
       owner.callback({ target: call.target, error, isCurrent: () => true, ...state }); },
@@ -132,7 +136,26 @@ test("genuine unavailable data removes at native ack while pending metadata reta
   const h = harness(); h.render(); h.ack(); h.render();
   h.set({ unavailable: true, src: null }); let state = h.render();
   assert.equal(state.target, null); assert.equal(state.presentedData.source, "a");
+  assert.equal(state.settled, false, "empty metadata alone does not acknowledge native removal");
   h.ack(); state = h.render(); assert.equal(state.presentedData, null);
+  assert.equal(state.settled, true);
+  h.unmount();
+});
+
+test('native raster diagnostics distinguish display and cleanup without serializing resource identity',()=>{
+  const h=harness();h.render();
+  const failure=Object.assign(new Error('private-path'),{errno:600003});
+  h.ack(undefined,failure,{phase:'display',requiresMapRecovery:true});
+  assert.equal(h.diagnostics.length,1);
+  assert.equal(h.diagnostics[0]![1],'map_raster_recovery_required');
+  assert.equal(h.diagnostics[0]![2],failure);
+  assert.equal((h.diagnostics[0]![3] as {stage:string}).stage,'display');
+  assert.equal((h.diagnostics[0]![3] as {resource:string}).resource,'terrain');
+  h.ack(undefined,failure,{phase:'cleanup',requiresMapRecovery:true});
+  assert.equal((h.diagnostics[1]![3] as {stage:string}).stage,'cleanup');
+  h.ack(undefined,new Error('raster_image_file_not_owned'));
+  assert.equal(h.diagnostics[2]![1],'raster_image_file_not_owned');
+  assert.equal((h.diagnostics[2]![3] as {stage:string}).stage,'file_owner');
   h.unmount();
 });
 

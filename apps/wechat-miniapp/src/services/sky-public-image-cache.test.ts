@@ -36,6 +36,99 @@ function harness() {
 const drain = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
 async function waitFor(condition: () => boolean) { for (let i = 0; i < 200; i++) { if (condition()) return; await Promise.resolve(); } assert.fail("callback not reached"); }
 
+function fullIndex() {
+  const h = harness(), root = "/owned/sky-public-images-v1", records: object[] = [];
+  const assets: PublicSkyFileDescriptor[] = [];
+  for (let i = 1; ; i++) {
+    const value = jsonFile(i), { url: _url, ...binding } = value.asset;
+    const file = `stage-catalog_${binding.environment}_${binding.sha256}_seed-${i}`;
+    const record = { ...binding, file, last: 0 };
+    if (Buffer.byteLength(JSON.stringify({ version: 2, entries: [...records, record] })) > 256 * 1024) break;
+    records.push(record); assets.push(value.asset); h.bodies.set(binding.sha256, value.body); h.files.set(`${root}/${file}`, value.body);
+  }
+  h.files.set(`${root}/index-v2.json`, new TextEncoder().encode(JSON.stringify({ version: 2, entries: records })).buffer);
+  const additions = [jsonFile(10000), jsonFile(10001)];
+  for (const value of additions) h.bodies.set(value.asset.sha256, value.body);
+  return { h, root, assets, additions, cache: h.make("index_admission", 1024 * 1024) };
+}
+
+test("index capacity admits concurrent files by LRU while protecting leased and pending entries", async () => {
+  const { h, root, assets, additions, cache } = fullIndex(); await cache.ready();
+  const held = await cache.acquire(assets[0]!).promise;
+  await waitFor(() => cache.inspect().running === 0);
+  // The next warm read remains in flight while another entry needs index room.
+  const read = h.fs.read;
+  const pendingFile = [...h.files.keys()].find(p => p.includes(assets[1]!.sha256))!;
+  let finish!: () => void, reading = false;
+  h.fs.read = async (path, length) => {
+    if (path === pendingFile && !reading) { reading = true; await new Promise<void>(r => finish = r); }
+    return read(path, length);
+  };
+  const warm = cache.acquire(assets[1]!); await waitFor(() => reading);
+  const fresh = await cache.acquire(additions[0]!.asset).promise;
+  assert(held.isCurrent()); assert(h.files.has(held.filePath)); assert(h.files.has(pendingFile));
+  assert(h.removed.some(p => p.includes("_seed-3")), "the first unprotected LRU file is actually removed");
+  finish(); const second = await warm.promise;
+  const next = await cache.acquire(additions[1]!.asset).promise;
+  assert(second.isCurrent()); assert(fresh.isCurrent());
+  assert(h.files.get(`${root}/index-v2.json`)!.byteLength <= 256 * 1024);
+  const inventory = JSON.parse(Buffer.from(h.files.get(`${root}/index-v2.json`)!).toString());
+  for (const lease of [held, second, fresh, next]) {
+    assert(inventory.entries.some((e: { file: string }) => lease.filePath.endsWith("/" + e.file)));
+    lease.release();
+  }
+  await waitFor(() => cache.inspect().running === 0);
+  const restart = h.make("index_restart", 1024 * 1024); await restart.ready();
+  const restored = await restart.acquire(additions[1]!.asset).promise;
+  assert.equal(h.downloads.length, 2); assert.equal(restored.filePath, next.filePath); restored.release();
+});
+
+test("index admission keeps failed evictions accounted and retries them through the original owner", async t => {
+  t.mock.method(console, "error", () => undefined);
+  const { h, assets, additions, cache } = fullIndex(); await cache.ready();
+  const held = await cache.acquire(assets[0]!).promise; await waitFor(() => cache.inspect().running === 0);
+  const before = cache.inspect().bytes, remove = h.fs.remove;
+  let failedPath = "", failedAttempts = 0;
+  h.fs.remove = async path => {
+    if (path.endsWith("_seed-2")) { failedAttempts++; failedPath = path; throw Object.assign(Error("permission denied"), { errno: 1300013 }); }
+    await remove(path);
+  };
+  const fresh = await cache.acquire(additions[0]!.asset).promise;
+  assert(failedPath); assert(h.files.has(failedPath)); assert.equal(cache.inspect().retired, 1);
+  assert.equal(failedAttempts, 1, "commit does not repeat a failed eviction when both capacities already fit");
+  assert.equal(cache.inspect().bytes, before + additions[0]!.asset.bytes,
+    "failed physical removal still consumes encoded bytes although its index slot retired");
+  assert(held.isCurrent()); h.fs.remove = remove;
+  const next = await cache.acquire(additions[1]!.asset).promise;
+  assert(!h.files.has(failedPath)); assert.equal(cache.inspect().retired, 0);
+  held.release(); fresh.release(); next.release();
+});
+
+test("unchanged cold reservation does not rewrite the complete durable inventory", async () => {
+  const h = harness(), value = jsonFile(15); h.bodies.set(value.asset.sha256, value.body);
+  const cache = h.make(); await cache.ready(); let writes = 0;
+  h.writeHook = async path => { if (/\/index-.*\.stage$/.test(path)) writes++; };
+  const lease = await cache.acquire(value.asset).promise;
+  assert.equal(writes, 1, "only the completed new entry changes the inventory"); lease.release();
+});
+
+test("same-size corruption in an index readback never publishes a lease", async () => {
+  const h = harness(), value = jsonFile(9); h.bodies.set(value.asset.sha256, value.body);
+  const cache = h.make(); await cache.ready();
+  const read = h.fs.read;
+  h.fs.read = async (path, length) => {
+    const data = await read(path, length);
+    if (path.endsWith("/index-v2.json")) {
+      const bytes = new Uint8Array(data); bytes[data.byteLength - 2] = bytes[data.byteLength - 2]! ^ 1;
+    }
+    return data;
+  };
+  await assert.rejects(cache.acquire(value.asset).promise, /index_readback/);
+  await waitFor(() => cache.inspect().running === 0); assert.equal(cache.inspect().leased, 0);
+  h.fs.read = read; const recovered = await cache.acquire(value.asset).promise;
+  assert(recovered.isCurrent()); recovered.release();
+});
+
 test("large files share a byte-bounded I/O queue without retiring a displayed coarse lease", async () => {
   const h = harness(), coarse = image(1, 64), first = image(2, 96), second = image(3, 96), small = image(4, 48);
   h.bodies.set(coarse.asset.sha256, coarse.body);

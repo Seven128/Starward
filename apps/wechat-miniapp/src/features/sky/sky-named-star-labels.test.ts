@@ -8,12 +8,11 @@ import { skyStarAppearance, createSkyStarAppearance } from "./sky-star-appearanc
 import { paintedSkyPointVisible, paintedSkyBoundsVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
 import { resolveSkyDeepSkyScene } from "./sky-stellar-scene";
-import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { skySolarLightAt } from "./sky-solar-light";
 import { skyDeepAuxiliaryDecisionOpacity } from "./sky-deep-auxiliary-visibility";
 import { skyObjectNameOpacity } from "./sky-selection-marker";
 import { projectSkyCatalogNames } from "./sky-label-presentation";
-import {skyPagePaintCommit} from "./sky-optical-page-test-support";
+import {skyPagePaintCommit, skyPageTimeTestBindings} from "./sky-optical-page-test-support";
 import {labelInteriorForeground} from "./sky-name-layout-test-support";
 
 // Exercise the page's rendered-label eligibility, including the shared selection owner.
@@ -65,6 +64,7 @@ function labels(sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION",
   const appearance = skyStarAppearance(entry.magnitude, fov, mode === "OBSERVATION" ? undefined : sunAltitudeDeg,
     mode === "OBSERVATION" ? undefined : starAltitude);
   let presentedSkyFrame:any = presentation === "none" ? null : {
+    timeGeneration: 0,
     data: presentation === "old-report" ? {} : reportData,
     frameAt: presentation === "old-time" ? "2026-10-08T13:00:00.000Z" : at,
     mode: presentation === "old-mode" ? (mode === "NIGHT" ? "OBSERVATION" : "NIGHT") : mode,
@@ -86,7 +86,7 @@ function labels(sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION",
   }
   return vm.runInNewContext(selection, {
     reportData, rawReportData: reportData, orientationData: reportData, presentedSkyFrame,
-    skyPresentedTimeCurrent, timePlaying: false, timeIntent: { runStartAt: null },
+    ...skyPageTimeTestBindings(at),
     skySolarLightAt, skyDeepAuxiliaryDecisionOpacity, skyObjectNameOpacity, projectSkyCatalogNames,
     row: { at }, currentViewBasis: basis, canvasSize: { width: 390, height: 844 },
     viewportInsets,

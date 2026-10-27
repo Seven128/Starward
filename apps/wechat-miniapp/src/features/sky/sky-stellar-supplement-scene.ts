@@ -42,8 +42,10 @@ export function resolveSkyStellarSupplement(publication:SaoIndexPublication,tile
     let cached=transformed.get(tile);
     if(cached?.geometry!==geometry){
       const rows=tile.tile.rows;
-      const transform=createSkyStellarTransform(rows.length,index=>{
-        const row=rows[index]!;return [row[2],row[3],row[4],row[5],row[6],row[7]];
+      const transform=createSkyStellarTransform(rows.length,(index,output=[0,0,0,0,0,0])=>{
+        const row=rows[index]!;
+        output[0]=row[2];output[1]=row[3];output[2]=row[4];
+        output[3]=row[5];output[4]=row[6];output[5]=row[7];return output;
       },geometry);
       const positioned:Array<SupplementPoint|undefined>=new Array(rows.length);
       const pointAt=(index:number)=>{

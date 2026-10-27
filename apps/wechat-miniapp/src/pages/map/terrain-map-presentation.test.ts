@@ -42,6 +42,18 @@ test("the Map discloses the installed terrain rather than a pending metadata sou
   state.terrainInstallation.presentedData = second; assert.equal(read(), second);
 });
 
+test("the shared map source entry retains timezone and terrain until native retirement", () => {
+  const timezone = { id: "timezone", licenseUrl: "https://opendatacommons.org/licenses/odbl/1-0/", sourceVersion: "boundary-current" };
+  const light = { id: "light" }, terrain = { source: { id: "terrain", sourceVersion: "installed" } };
+  const state = { activeContext: { timezoneSource: timezone }, visibleLayer: "LIGHT", displayedLightLayer: { source: light },
+    cloudPresentation: null, terrainEnabled: false, presentedTerrainData: terrain as typeof terrain | null,
+    terrainDisclosure: terrain, uniqueSourceRecords: (sources: unknown[]) => sources };
+  const read = () => Array.from(vm.runInNewContext(expression("layerSources"), state));
+  assert.deepEqual(read(), [timezone, light, terrain.source], "logical off does not withdraw a still-visible native image's source");
+  state.presentedTerrainData = null;
+  assert.deepEqual(read(), [timezone, light], "retired terrain metadata cannot masquerade as a displayed layer");
+});
+
 test("Map preview admission checks the actual visible viewport independently of the buffered fine request", () => {
   const visible = { west: 113.1, east: 113.9, south: 22.1, north: 22.9 };
   const buffered = { west: 112.9, east: 114.1, south: 21.9, north: 23.1 };

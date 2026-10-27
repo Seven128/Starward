@@ -15,8 +15,11 @@ import { createSkySceneFrameIdentity } from '../../../../apps/wechat-miniapp/src
 import { createSkyViewBasis } from '../../../../apps/wechat-miniapp/src/features/sky/sky-view-projection';
 import { assertSaoIndexPublication, assertSaoTilePublication } from '@starward/miniapp-contracts';
 
-const [inputFile, outputFile] = process.argv.slice(2);
+const [inputFile, outputFile, viewSequence, ...unexpected] = process.argv.slice(2);
 if (!inputFile || !outputFile) throw Error('input_and_new_output_required');
+const views = viewSequence === undefined ? [45, 10.8] : viewSequence.split(',').map(Number);
+if (unexpected.length || !views.length || views.length > 8 || views.some(fov => !Number.isFinite(fov) || fov <= 0 || fov >= 360))
+  throw Error('finite_valid_view_sequence_required');
 const inputBytes = await fs.readFile(inputFile);
 const input = JSON.parse(inputBytes.toString('utf8'));
 if (input.envelope?.data?.context?.spotId !== 'spot:test-published') throw Error('public_fixture_required');
@@ -34,7 +37,7 @@ const basis = createSkyViewBasis(45,110,0)!;
 const width=390,height=844;
 const tiles = new Map<string,any>();
 const results=[];
-for (const fov of [45,10.8]) {
+for (const [viewIndex, fov] of views.entries()) {
   const durations:Record<string,number[]>={presentation:[],base:[],selection:[],supplement:[],constellations:[],draw:[],total:[]};
   const hash=createHash('sha256');
   let loadedRows=0, selectedTiles=0, submittedStars=0, pickedSao=0, pickedBase=0;
@@ -67,7 +70,9 @@ for (const fov of [45,10.8]) {
     }
     beginning+=performance.now()-ioStart;started=performance.now();
     const supplement=resolveSkyStellarSupplement(publication,selected.map(t=>tiles.get(t.id)),attached.skyScene,at)!;
-    loadedRows=Math.max(loadedRows,supplement.points.length);selectedTiles=Math.max(selectedTiles,selected.length);sample('supplement');
+    // Count admitted rows without forcing every lazy position before its
+    // real drawing consumer. The current product uses this same count owner.
+    loadedRows=Math.max(loadedRows,supplement.pointCount??supplement.points.length);selectedTiles=Math.max(selectedTiles,selected.length);sample('supplement');
     const constellations=resolveConstellationFrame(input.constellations.data,attached.skyScene,at);sample('constellations');
     frameStars=0;recording=[10,50,99].includes(i);
     drawSkyScene(surface,{identity:createSkySceneFrameIdentity({
@@ -86,12 +91,14 @@ for (const fov of [45,10.8]) {
     const sorted=values.toSorted((a,b)=>a-b);
     return [key,{samples:sorted.length,medianMs:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)]}];
   }));
-  results.push({fov,baseCatalogRows:catalog.rows.length,saoPublicationRows:index.rowCount,
+  results.push({viewIndex,fov,baseCatalogRows:catalog.rows.length,saoPublicationRows:index.rowCount,
+    warmedTilePool:tiles.size,
     selectedTiles,loadedSaoRows:loadedRows,sampledFrames:3,submittedStars,pickedBase,pickedSao,
     outputSha256:hash.digest('hex'),stages});
 }
 const result={scope:'LOCAL_CPU_CURRENT_PRODUCTION_OWNERS_PUBLIC_FIXTURE_BASE_PLUS_SELECTED_SAO',
   inputSha256:createHash('sha256').update(inputBytes).digest('hex'),results,
+  stageMeaning:'Base/supplement prepare lazy frames; deferred transforms are charged to the consuming draw. Historical eager-stage medians are not comparable.',
   limitations:['No native GPU, React or physical FPS claim','No photos/textures or sensor workload','Not all catalogue rows are loaded or drawn together']};
 await fs.writeFile(outputFile,JSON.stringify(result,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify(result));

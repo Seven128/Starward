@@ -7,9 +7,14 @@ export type EquatorialToEnu = readonly [number, number, number, number, number, 
 
 const RAD = Math.PI / 180;
 
-function normalized(x: number, y: number, z: number): StellarDirection {
+function directionLength(x: number, y: number, z: number): number {
   const length = Math.hypot(x, y, z);
   if (!Number.isFinite(length) || length < 1e-12) throw new Error("stellar_direction_invalid");
+  return length;
+}
+
+function normalized(x: number, y: number, z: number): StellarDirection {
+  const length = directionLength(x, y, z);
   return [x / length, y / length, z / length];
 }
 
@@ -37,6 +42,10 @@ export function stellarDirectionAt(motion: StellarMotion, julianYears: number): 
 /** The matrix must come from a validated frame; this does not compute observer/time facts. */
 export function rotateStellarDirection(direction: StellarDirection, matrix: EquatorialToEnu): StellarDirection {
   const [x, y, z] = direction;
+  return rotateComponents(x, y, z, matrix);
+}
+
+function rotateComponents(x: number, y: number, z: number, matrix: EquatorialToEnu): StellarDirection {
   return normalized(matrix[0] * x + matrix[1] * y + matrix[2] * z,
     matrix[3] * x + matrix[4] * y + matrix[5] * z,
     matrix[6] * x + matrix[7] * y + matrix[8] * z);
@@ -52,7 +61,15 @@ export function stellarHorizontalPosition(direction: StellarDirection) {
 /** The exact proper-motion ray before angular materialization. This shares
  * the original normalizations; it introduces no time or position approximation. */
 export function projectStellarMotionDirection(motion: StellarMotion, julianYears: number, matrix: EquatorialToEnu): StellarDirection {
-  return rotateStellarDirection(stellarDirectionAt(motion, julianYears), matrix);
+  if (!Number.isFinite(julianYears)) throw new Error("stellar_epoch_delta_invalid");
+  const x = motion[0] + motion[3] * julianYears;
+  const y = motion[1] + motion[4] * julianYears;
+  const z = motion[2] + motion[5] * julianYears;
+  const length = directionLength(x, y, z);
+  // Preserve both normalizations and their arithmetic order. Only the
+  // intermediate equatorial tuple is omitted; the returned ray stays owned
+  // by its exact-time frame and is never a shared mutable scratch buffer.
+  return rotateComponents(x / length, y / length, z / length, matrix);
 }
 
 export function projectStellarMotion(motion: StellarMotion, julianYears: number, matrix: EquatorialToEnu) {

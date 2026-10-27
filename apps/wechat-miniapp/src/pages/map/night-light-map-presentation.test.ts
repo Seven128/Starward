@@ -75,6 +75,7 @@ test("static light is displayed while unrelated Scene weather is pending or fail
 test("the actual light retry uses its metadata and image owners without awaiting Scene weather", async () => {
   const calls: string[] = [];
   const retry = vm.runInNewContext(expression("retryLightLayer"), {
+    rasterRetryCurrent: () => true, lightFailureEpisode: { retry() {} },
     lightInstallation: { requiresMapRecovery: false }, nativeViewport: { error: null },
     lightImage: { retryImage: () => calls.push("image") }, setLightNativeRetry: () => calls.push("native"),
     nightLight: { refetch: async () => calls.push("static-metadata") },

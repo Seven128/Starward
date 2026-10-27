@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import Quaternion from "quaternion";
 import { createSkyContextSession } from "./sky-context-session";
-import { createSkyObservationTime } from "./sky-observation-time";
+import { createSkyObservationTime, skyContinuousTimeCoverage } from "./sky-observation-time";
 import { createSkyObjectSelection } from "./sky-object-selection";
 import { createSkyObjectTracking } from "./sky-object-tracking";
 import { createSkyBrowsingCamera } from "./sky-browsing-camera";
@@ -32,7 +32,7 @@ ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 assert.ok(page?.body);
 const names = ["skyInteractionRevision", "setPreviewIndex", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "skyDisplayCurrent", "skyTimeIntentRetirable", "cancelSkyTimePreview",
-  "toggleSkyTimePlayback", "advanceSkyTime", "commitInstant", "commitCivilDate", "settleTimeIndex", "onPreview", "selectCatalogObject",
+  "toggleSkyTimePlayback", "advanceSkyTime", "commitInstant", "commitCivilDate", "previewSkyTime", "settleTimeIndex", "onPreview", "selectCatalogObject",
   "locateCatalogObject", "trackCatalogObject", "applyTrackedPosition", "selectSkyTarget", "selectSearchObject", "enterManualView",
   "setDatePickerOpen", "setSelectedCatalogObject", "setSkyControlPanel", "skyDisclosures"];
 const commands = page.body.statements.filter(node => ts.isVariableStatement(node) &&
@@ -71,7 +71,7 @@ function visitPage(node: ts.Node) {
     rulerSettle = commit.initializer.expression.getText(source);
   }
   if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" &&
-    node.arguments[0]?.getText(source).includes("if (!timePlaying) return;")) {
+    node.arguments[0]?.getText(source).includes("setInterval(advanceSkyTime")) {
     assert.equal(timeEffect, "", "one public elapsed-time effect");
     timeEffect = node.getText(source);
   }
@@ -145,6 +145,8 @@ function harness() {
     observationTime: time, contextSession: session, objectSelection: selection, objectTracking: tracking,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true, activeContext: context,
     timeSaving: false, timeBinding, committedAt, requestedAt: committedAt, timePlaying: false,
+    timeIntent: time.snapshot(), timePreviewing: false, reducedMotion: false, reducedMotionRef:{current:false},
+    acceptedTimePresentationFor:()=>null,skyContinuousTimeCoverage,
     timePlayRequested: false, previewGeometry: { playbackReady: true }, carriedReport: null,
     skyRulerTime, setTimeScrubbing: () => {},
     timeCommitContinuity: createSkyTimeCommitContinuity(skyForecastPresentation),
@@ -194,8 +196,11 @@ function harness() {
     disclosure: () => ({ panel, listOpen, dateOpen: datePickerOpenRef.current, catalogObject: selectedCatalogObjectRef.current }),
     rerender: () => vm.runInNewContext(code, { ...sandbox, selectedCatalogObject: selectedCatalogObjectRef.current,
       skyControlPanel: sandbox.skyControlPanelRef.current, orientationObjectListOpen: listOpen }) as typeof actions,
-    installTimer: () => { sandbox.timePlaying = true; vm.runInContext(compile(timeEffect), scope); assert.ok(timer); },
-    preparePlayback: () => { sandbox.timePlayRequested = true; vm.runInContext(compile(playbackPreparationEffect), scope); },
+    installTimer: () => {
+      sandbox.timeIntent = time.snapshot(); sandbox.timePlaying = true;
+      vm.runInContext(compile(timeEffect), scope); assert.ok(timer);
+    },
+    preparePlayback: () => { sandbox.timePlayRequested = true; sandbox.timeIntent = time.snapshot(); vm.runInContext(compile(playbackPreparationEffect), scope); },
     tickTimer: (at: number) => { elapsed = at; assert.ok(timer); timer(); },
     replaceContext: () => { store = { ...store, observationContext: { ...context, revision: 2, contextFingerprint: "fp:2" } }; },
     replaceSelection: (field: "selectedSpotId" | "mapResetVersion" | "spotOpenRequestVersion") => {
@@ -239,12 +244,13 @@ for (const [name, retire] of retirements) {
       if (["cancel", "commit", "timeDock", "listDock", "calibrationDock"].includes(actionName)) page.time.preview(previewAt);
       page.tracking.start(object, reportContext.spotId);
       page.tracking.accept(page.position, reportContext as any, committedAt, catalog);
-      const before = { time: page.time.snapshot(), selection: page.selection.snapshot(), tracking: page.tracking.snapshot(), disclosure: page.disclosure() };
+      const before = { selection: page.selection.snapshot(), tracking: page.tracking.snapshot(), disclosure: page.disclosure() };
       retire(page);
-      // hide itself legitimately pauses 1x play; these cases start fixed or
-      // previewed, so the queued command must preserve that retired intent.
+      // Retirement itself may advance the native-frame generation. The queued
+      // command must preserve the time owner's exact post-retirement state.
+      const retiredTime = page.time.snapshot();
       await act(page);
-      assert.strictEqual(page.time.snapshot(), before.time, actionName);
+      assert.strictEqual(page.time.snapshot(), retiredTime, actionName);
       assert.strictEqual(page.selection.snapshot(), before.selection, actionName);
       assert.strictEqual(page.tracking.snapshot(), before.tracking, actionName);
       assert.equal(page.cameras.length, 0, actionName);

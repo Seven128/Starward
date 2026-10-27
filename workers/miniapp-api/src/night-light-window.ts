@@ -2,11 +2,14 @@ import { createHash } from "node:crypto";
 import { PNG } from "pngjs";
 import { displayRasterWindowForBounds, displayRasterWindowBounds, displayRasterWindowKey,
   type DisplayRasterWindow, type RasterBounds } from "@starward/coordinate-system";
-import { copyFixedRasterCell } from "./fixed-raster-image.ts";
-import { readFixedNightLightImage, type FixedNightLightRaster } from "./night-light-publication.ts";
+import { copyFixedRasterPixels } from "./fixed-raster-image.ts";
+import { NIGHT_LIGHT_LEGACY_DISPLAY, type MapLayerRaster, type NightLightDisplayStyle } from "@starward/miniapp-contracts";
+import { readFixedNightLightImage, readFixedNightLightImagePixels, type FixedNightLightRaster } from "./night-light-publication.ts";
+import { projectNightLightDisplay } from "./night-light-display-image.ts";
 
 export type NightLightView = Pick<FixedNightLightRaster, "publicationId" | "methodVersion" | "styleVersion" | "statistic" | "quality" | "image">
-  & { grid: Pick<FixedNightLightRaster["grid"], "window" | "width" | "height" | "boundsGcj02"> };
+  & { grid: Pick<FixedNightLightRaster["grid"], "window" | "width" | "height" | "boundsGcj02">;
+    displaySource?: MapLayerRaster["displaySource"] };
 export type NightLightWindow = { proof: NightLightView; bytes: Buffer };
 export const overlapsNightLight = (a: RasterBounds, b: RasterBounds) => a.west < b.east && a.east > b.west && a.north > b.south && a.south < b.north;
 const cell = (p: FixedNightLightRaster) => p.grid.window.columns === 1 && p.grid.window.rows === 1;
@@ -76,21 +79,27 @@ export function nightLightWindowView(inventorySha256: string, proofs: FixedNight
 /** Image-only composition: all statistics and quality remain those of the
  * pinned numerical cells. This is not another published numerical proof. */
 export async function composeNightLightWindow(directory: string, inventorySha256: string,
-  proofs: FixedNightLightRaster[], window: DisplayRasterWindow, signal: AbortSignal): Promise<NightLightWindow | null> {
+  proofs: FixedNightLightRaster[], window: DisplayRasterWindow, signal: AbortSignal,
+  displayStyle: NightLightDisplayStyle = NIGHT_LIGHT_LEGACY_DISPLAY): Promise<NightLightWindow | null> {
   validateNightLightWindow(window); signal.throwIfAborted();
   const selected = windowCells(proofs, window);
   if (!selected.some(p => p !== null)) return null;
   const exact = proofs.find(p => displayRasterWindowKey(p.grid.window) === displayRasterWindowKey(window));
-  if (exact) return { proof: exact, bytes: await readFixedNightLightImage(directory, exact, signal) };
+  if (exact) {
+    if (displayStyle === NIGHT_LIGHT_LEGACY_DISPLAY) return { proof: exact, bytes: await readFixedNightLightImage(directory, exact, signal) };
+    const image = await readFixedNightLightImagePixels(directory, exact, signal);
+    return projectNightLightDisplay({ proof: exact, bytes: image.bytes }, inventorySha256, displayStyle, signal, image.pixels);
+  }
   const png = new PNG({ width: window.columns * 256, height: window.rows * 256 });
   for (let index = 0; index < selected.length; index++) {
     signal.throwIfAborted();
     const proof = selected[index];
     if (!proof) continue;
-    const bytes = await readFixedNightLightImage(directory, proof, signal); signal.throwIfAborted();
-    copyFixedRasterCell(png, bytes, index % window.columns, Math.floor(index / window.columns));
+    const image = await readFixedNightLightImagePixels(directory, proof, signal); signal.throwIfAborted();
+    copyFixedRasterPixels(png, image.pixels, index % window.columns, Math.floor(index / window.columns));
   }
   signal.throwIfAborted();
   const bytes = PNG.sync.write(png), hash = createHash("sha256").update(bytes).digest("hex");
-  return { bytes, proof: nightLightWindowView(inventorySha256, proofs, window, { sha256: hash, bytes: bytes.length })! };
+  const source = { bytes, proof: nightLightWindowView(inventorySha256, proofs, window, { sha256: hash, bytes: bytes.length })! };
+  return projectNightLightDisplay(source, inventorySha256, displayStyle, signal, png);
 }

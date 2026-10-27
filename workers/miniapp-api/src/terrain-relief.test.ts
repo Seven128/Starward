@@ -1,9 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createHash } from "node:crypto";
 import { terrainReliefRgba } from "./terrain-relief.ts";
 
 const size = 9, rgb = [112, 139, 104] as const;
 const alpha = (rgba: Uint8Array, row: number, column: number) => rgba[(row * size + column) * 4 + 3];
+
+test("fixed-cell halo, varying ground spacing and missing pixels retain current and legacy published bytes", () => {
+  const size = 258;
+  const terrain = Float32Array.from({ length: size * size }, (_, index) => index % 43 === 0 ? NaN
+    : Math.sin(index % size * 0.31) * 230 + Math.cos(Math.floor(index / size) * 0.17) * 380 - 150);
+  const spacing = (row: number) => ({ x: 30 * Math.cos((20 + row / size * 12) * Math.PI / 180), y: 30 });
+  const expected = ["4941fb2ae56e58ee6eac12ffa4c0e1708ff5997d3594b13126caf72e4d098800",
+    "ac78e250d8afa4ab4e16fd7c6d3b6112270c86b992c233576068183cdb93060b"];
+  for (const [index, legacy] of [false, true].entries()) {
+    const rgba = terrainReliefRgba(terrain, size, spacing, rgb, legacy, { x: 333 * 256 - 1, y: 175 * 256 - 1 });
+    assert.equal(createHash("sha256").update(rgba).digest("hex"), expected[index]);
+  }
+});
 
 test("known level terrain does not paint an opaque rectangular wash", () => {
   const rgba = terrainReliefRgba(new Float32Array(size * size).fill(130), size, 30, rgb);

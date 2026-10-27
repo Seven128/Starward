@@ -5,10 +5,11 @@ import vm from "node:vm";
 import ts from "typescript";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { DISPLAY_RASTER_GRID, displayRasterWindowBounds, displayRasterWindowForBounds } from "@starward/coordinate-system";
-import { createRasterImageResources } from "../services/raster-image-resources.ts";
+import { createRasterImageResources, type RasterImageDescriptor } from "../services/raster-image-resources.ts";
 import { normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity, terrainOverlayRequestWindow } from "../services/terrain-overlay-request.ts";
 import { terrainCoverageForRequest, terrainPreviewForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
 import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import { rasterImageDiagnostic } from "../services/raster-image-diagnostic";
 
 function harness(liveMetadata = false) {
   const ast = ts.createSourceFile("hook.ts", readFileSync(process.env.TERRAIN_OVERLAY_TEST_SOURCE ?? new URL("./use-terrain-overlay.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -17,9 +18,10 @@ function harness(liveMetadata = false) {
   const imageAst = ts.createSourceFile("image.ts", readFileSync(new URL("./use-raster-image.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const imageDeclaration = imageAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useRasterImage")!;
   const states: any[] = [], dependencies: any[][] = [], cleanups: any[] = [];
-  const requests: { url: string; signal: AbortSignal; resolve(value: string): void; reject(error: Error): void }[] = [];
+  const requests: { input: RasterImageDescriptor; url: string; signal: AbortSignal; resolve(value: string): void; reject(error: Error): void }[] = [];
+  const diagnostics: unknown[][] = [];
   const resources = createRasterImageResources({
-    download: (input, signal) => new Promise<string>((resolve, reject) => requests.push({ url: input.url, signal, resolve, reject }))
+    download: (input, signal) => new Promise<string>((resolve, reject) => requests.push({ input, url: input.url, signal, resolve, reject }))
       .then(path => ({ path, bytes: 1 })),
     remove: async () => undefined,
   }, { maximumFiles: 8, maximumBytes: 16, maximumConcurrent: 2 });
@@ -34,6 +36,7 @@ function harness(liveMetadata = false) {
   let data: any = { imageUrl: "/v2/terrain/assets/tile.png", publicationId: "publication:a", lightPollution: { state: "PARTIAL", cells: [{ id: "independent-light" }] } };
   const fn = vm.runInNewContext(ts.transpileModule(imageDeclaration.getText(imageAst).replace(/^export /, "") + "\n" + declarations + ";useTerrainOverlay;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     mapRasterFiles: resources, AbortController, terrainCoverageForRequest, terrainPreviewForRequest, terrainRequestForCoverage,
+    rasterImageDiagnostic, reportRuntimeError: (...args: unknown[]) => diagnostics.push(args),
     normalizeTerrainOverlayRequest, terrainOverlayRequestIdentity, terrainOverlayRequestWindow,
     useState(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = value;
       return [states[index], (next: any) => { states[index] = typeof next === "function" ? next(states[index]) : next; }]; },
@@ -74,7 +77,7 @@ function harness(liveMetadata = false) {
     isMiniappRequestCancelled: (error: Error) => error.message === "cancelled",
   });
   return {
-    requests, metadataRequests, previewRequests, get retries() { return retries; }, setPublication(id: string) { data = { ...data, publicationId: id }; },
+    requests, resources, metadataRequests, previewRequests, diagnostics, get retries() { return retries; }, setPublication(id: string) { data = { ...data, publicationId: id }; },
     setFailure() { data = { ...data, imageUrl: null, failureCode: "TERRAIN_READ_FAILED" }; },
     setFetching(value: boolean) { fetching = value; }, get retryOptions() { return retryOptions; },
     setData(value: any) { data = value; },
@@ -361,6 +364,28 @@ test("a fine failure preserves the ready parent and its actual bounds without re
     assert.deepEqual(result.candidate.data.imageBoundsGcj02, parent.data.imageBoundsGcj02);
     assert.ok(result.candidate.data.preview);
   } finally { h.unmount(); }
+});
+
+test("retrying an old image failure joins another reader's valid replacement download", async () => {
+  const h = harness();
+  let replacement: ReturnType<typeof h.resources.acquire> | undefined;
+  try {
+    h.render(); await settle();
+    h.requests[0]!.reject(new Error("offline")); await settle();
+    const failed = h.render(); assert.ok(failed.imageError);
+    replacement = h.resources.acquire(h.requests[0]!.input);
+    const recovered = replacement.promise.catch(error => { throw error; });
+    // Always observe the promise, including cleanup after a failed assertion.
+    void recovered.catch(() => undefined);
+    await settle(); assert.equal(h.requests.length, 2);
+    failed.retryImage(); h.render(); await settle();
+    assert.equal(h.requests.length, 2, "retry must not retire an independent pending file and start a third transfer");
+    h.requests[1]!.resolve("/local/recovered.png"); await recovered; await settle();
+    const current = h.render();
+    assert.equal(current.imagePath, "/local/recovered.png");
+    assert.equal(current.imageError, null);
+    assert.equal(h.resources.snapshot().activeReaders, 2);
+  } finally { replacement?.release(); h.unmount(); }
 });
 
 test("a native failure of the parent retries that image without changing the pending fine read", async () => {

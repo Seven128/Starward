@@ -9,12 +9,12 @@ import { isAdmittedStellarCatalogPublication } from "../../services/stellar-cata
 
 import { skyStarDisplayColor, skyStarDisplayTransmission } from "./sky-star-appearance";
 import { prepareSkyDirection, type PreparedSkyDirection, type SkyDirectionProjector, type SkyDirectionProjection } from "./sky-view-projection";
-import { createSkyStellarTransform, immutableSkyStellarGeometry } from "./sky-stellar-transform";
+import { createSkyStellarTransform, immutableSkyStellarGeometry, type SkyStellarMotionReader, type SkyStellarMotionBuffer } from "./sky-stellar-transform";
 
 // Palette projection belongs to this immutable local render model, not the
 // wire catalogue or report cache. Legacy controlled scenes may omit it.
 type RenderCatalog = SkySceneCatalog & SkySceneCatalogReference & { readonly displayColors?: readonly (string | null)[]; readonly magnitudeOrdered?: boolean;
-  readonly motionAt?: (index: number) => StellarMotion };
+  readonly motionAt?: SkyStellarMotionReader };
 
 export interface ResolvedStellarScene extends Omit<SkyScene, "catalog"> {
   catalog: RenderCatalog | null;
@@ -89,8 +89,10 @@ export function attachSkyCatalog(report: SkyGeometryReport, publication: Stellar
           // brightness prefix; legacy/non-monotonic inputs keep a full scan.
           magnitudeOrdered: publication.rows.every((row,index)=>index===0 || row[2]>=publication.rows[index-1]![2]),
           displayColors: Object.freeze(publication.rows.map(row => skyStarDisplayColor(row[3]))),
-          ...(isAdmittedStellarCatalogPublication(publication)?{motionAt: (index: number): StellarMotion => {
-            const row=publication.rows[index]!;return [row[4],row[5],row[6],row[7],row[8],row[9]];
+          ...(isAdmittedStellarCatalogPublication(publication)?{motionAt: (index: number, output: SkyStellarMotionBuffer = [0,0,0,0,0,0]): StellarMotion => {
+            const row=publication.rows[index]!;
+            output[0]=row[4];output[1]=row[5];output[2]=row[6];
+            output[3]=row[7];output[4]=row[8];output[5]=row[9];return output;
           }}:{}),
           entries: Object.freeze(publication.rows.map(([sourceId, displayName, magnitude, colorIndex]) => Object.freeze({
             sourceId, objectRef: sourceId, displayName, magnitude, colorIndex, magnitudeBand: "V" as const, colorIndexBand: "B-V" as const,

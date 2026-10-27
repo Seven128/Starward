@@ -7,6 +7,7 @@ import * as installedEvents from "@tarojs/runtime/dist/dom/event.js";
 import { userMapRegionEnd, userMapRegionStarted, mapRegionEnded } from "./map-region-event";
 import { transportHarness } from "../../services/api-request-test-support";
 import { isMiniappRequestCancelled } from "../../services/request-lifecycle";
+import { createMapSceneAdmissionTestBoundaries } from "./map-page-test-support";
 
 type Center = { latitude: number; longitude: number };
 const center: Center = { latitude: 20, longitude: 110 }; // synthetic only
@@ -38,8 +39,10 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
   const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveMapPoint, onRegionChange});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
+    ...createMapSceneAdmissionTestBoundaries(),
     useAppStore: { getState: () => ({ mapResetVersion: version, notifications: [] }) },
     mapPointIntent: { current: 0 }, currentDraftUserId: () => "owner",
+    mapRegionScaleRead: { current: null },
     failedMapRegion: { current: null }, setSpotContextAttempt() {},
     nativeMap: { isCurrent: () => true },
     gcj02ToWgs84: () => ({ lat: 20, lon: 110 }), activeContext: null, timeReference: null,
@@ -154,7 +157,6 @@ test("programmatic and malformed events neither resolve a new context nor cancel
   const map = mapRuntime(Promise.resolve({ data: {} }));
   const invalid = [
     { type: "end", causedBy: "update", detail: { centerLocation: center, scale: 12 } },
-    { type: "begin", causedBy: "gesture", detail: { centerLocation: center } },
     { type: "end", causedBy: "unknown", detail: { centerLocation: center } },
     { type: "end", causedBy: "drag", detail: { centerLocation: { latitude: NaN, longitude: 0 } } },
     { type: "end", causedBy: "drag", detail: { centerLocation: { latitude: 91, longitude: 0 } } },
@@ -164,9 +166,9 @@ test("programmatic and malformed events neither resolve a new context nor cancel
   invalid.forEach((event) => map.onRegionChange(event));
   map.fireTimers();
   assert.equal(map.calls, 0);
-  map.onRegionChange({ type: "end", causedBy: "drag", detail: { centerLocation: center } });
+  map.onRegionChange({ type: "end", causedBy: "drag", detail: { centerLocation: center, scale: 12 } });
   invalid.forEach((event) => map.onRegionChange(event));
   map.fireTimers();
   assert.equal(map.calls, 1);
-  assert.equal("zoom" in map.viewports[0]!, false);
+  assert.equal((map.viewports[0] as { zoom: number }).zoom, 12);
 });

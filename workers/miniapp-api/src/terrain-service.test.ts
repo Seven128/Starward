@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -91,6 +91,40 @@ function controlledRenderer(): TerrainRenderer {
     } };
   };
 }
+
+for (const stop of ["cancel", "close"] as const) test(`a ${stop === "cancel" ? "cancelled" : "closed"} terrain read does not start a queued cache write`, async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-terrain-queued-cache-"));
+  let release!: () => void, rendered!: () => void;
+  const previousWrite = new Promise<void>(resolve => { release = resolve; });
+  const ready = new Promise<void>(resolve => { rendered = resolve; });
+  const renderer = controlledRenderer();
+  const terrain = new TerrainService({ directory, renderer: async (request, signal) => {
+    const result = await renderer(request, signal); rendered(); return result;
+  } });
+  // Hold the existing serialized I/O boundary. The public request still uses
+  // the real source owner, validation, cancellation and actual filesystem writer.
+  const writer = terrain as unknown as { cacheWrite: Promise<void> };
+  writer.cacheWrite = previousWrite;
+  const controller = new AbortController();
+  try {
+    const request = terrain.getPublication(input, controller.signal);
+    const stopped = assert.rejects(request, /superseded|terrain_service_closed/u);
+    await ready;
+    await new Promise<void>(resolve => setImmediate(resolve));
+    if (stop === "cancel") controller.abort(new Error("superseded")); else terrain.close();
+    await stopped;
+    release(); await writer.cacheWrite;
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.deepEqual(await readdir(directory), [], "an abandoned queued write must create no PNG, manifests or prune work");
+    if (stop === "cancel") {
+      const current = await terrain.getPublication({ ...input, radiusKm: 6 });
+      assert.ok(current);
+      const files = await readdir(directory);
+      assert(files.includes(current.image.file), "the next current reader still commits its image");
+      assert(files.includes(`${current.image.file}.json`), "the immutable image proof is still committed");
+    }
+  } finally { release(); terrain.close(); await rm(directory, { recursive: true, force: true }); }
+});
 
 test("cancelling an evicted asset reconstruction releases its source before the same viewport retries", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "starward-terrain-asset-abort-"));

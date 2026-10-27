@@ -23,6 +23,15 @@ export function userMapRegionStarted(event: unknown) {
   return phase === "begin" && (cause === "gesture" || cause === "drag" || cause === "scale");
 }
 
+/** Includes a cancelled/empty gesture end, without treating programmatic
+ * camera settlement as completion of the user's pending Scene transaction. */
+export function userMapRegionEnded(event: unknown) {
+  const root = record(event), detail = record(root?.detail), nested = record(detail?.detail);
+  const phase = detail?.type ?? root?.type ?? nested?.type;
+  const cause = detail?.causedBy ?? root?.causedBy ?? nested?.causedBy;
+  return phase === "end" && (cause === "gesture" || cause === "drag" || cause === "scale");
+}
+
 /** WeChat puts phase/cause at the event root; Taro's component types also admit a nested wrapper. */
 function gesturePayload(event: unknown): Record<string, unknown> | null {
   const root = record(event);

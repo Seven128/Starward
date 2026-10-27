@@ -2,9 +2,14 @@
 
 Use this reference for latency, rendering, allocation and memory investigations. Product requirements and evidence boundaries remain with [development feedback](../../../../project_context/development-workflow/development-feedback.md#performance-measurement-boundaries); the [device skill](../../starward-wechat-device-verification/SKILL.md) owns phone operations, target binding and privacy.
 
+## Choose the method and operator
+
+- Choose from the [four observation methods](../../../../project_context/development-workflow/development-feedback.md#feedback-and-capture-choice) by the unresolved question and total cost. Reuse feedback and existing data before requesting a new profile; there is no mandatory sequence.
+- Prepare the candidate and a minimal checklist first. Preserve the workload and lifecycle needed for the claim without imposing a fixed duration or capture bundle. User-led capture is the default; agent capture requires delegation and tool support, with interruption and recovery costs considered.
+
 ## Primary profiler
 
-**真机调试开发者工具（主用）** is the adopted performance-analysis solution. This means the separate developer window attached to the physical phone, with **Performance** and **Memory** panels. It is distinct from the desktop simulator, ordinary preview and the phone's CPU-profile menu.
+**真机调试开发者工具（主用）** is the adopted route when physical-device profiling is needed. This means the separate developer window attached to the physical phone, with **Performance** and **Memory** panels. It is distinct from the desktop simulator, ordinary preview and the phone's CPU-profile menu.
 
 The decision is settled: usable debugging in the required high-memory scene plus a complete, parseable Heap export are sufficient to establish this route. Reuse the successful session and evidence. Do not commission every profiler mode, repeat a tool-selection comparison, or require a new validation matrix before investigating the next problem. Use the needed feature directly and check the resulting data. A feature not yet exercised is not thereby verified, unsupported, or a new prerequisite.
 

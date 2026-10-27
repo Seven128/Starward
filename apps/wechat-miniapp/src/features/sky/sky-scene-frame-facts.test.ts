@@ -4,7 +4,7 @@ import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
 import { skySceneFrameFacts, skyPresentedViewFacts } from "./sky-scene-frame-facts";
-import { skyPresentedTimeCurrent } from "./sky-observation-time";
+import { skyPageTimeTestBindings } from "./sky-optical-page-test-support";
 import { resolveSkySceneFrame, type ResolvedStellarScene } from "./sky-stellar-scene";
 import { INITIAL_MANUAL_SKY_VIEW } from "./sky-manual-view";
 import { skyProjectionScale } from "./sky-view-projection";
@@ -114,12 +114,13 @@ function publicScene(playing: boolean, nextAt = requestedAt,
   const code = ts.transpileModule(`${body}\n({${output},provenance:skySceneAccessibleProvenance,countText:skySceneAccessibleCount,targetCountText:skyTargetAccessibleCount,current:presentedSceneCurrent,state:skyScenePresentationState})`,
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   return vm.runInNewContext(code, { reportData: requestedData, rawReportData: requestedData,
-    orientationData: requestedData, presentedSkyFrame: { data: paintedData, frameAt: paintedAt, mode: "NIGHT" },
-    row: { at: nextAt }, mode: "NIGHT", timePlaying: playing, timeIntent: { runStartAt: paintedAt },
+    orientationData: requestedData, presentedSkyFrame: { data: paintedData, frameAt: paintedAt, mode: "NIGHT", timeGeneration: 0 },
+    row: { at: nextAt }, mode: "NIGHT",
+    ...skyPageTimeTestBindings(nextAt, { mode: playing ? "PLAYING" : "FIXED", runStartAt: paintedAt }),
     canvasError: null, nativeCanvasMounted: options.mounted ?? true, skySceneReady: true,
     orientationTargetFrame: {}, orientationTargets: [{}, {}],
     paintedSkyObjectsRef: { current: options.snapshot === undefined ? completedSnapshot() : options.snapshot },
-    skyPresentedTimeCurrent, skySceneFrameFacts, skyPresentedViewFacts, resolveSkySceneFrame,
+    skySceneFrameFacts, skyPresentedViewFacts, resolveSkySceneFrame,
   }) as Record<string, unknown>;
 }
 

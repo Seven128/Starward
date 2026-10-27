@@ -121,6 +121,7 @@ function sceneFeedback(scope: Record<string, unknown>) {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, {
     mapTerrainLoading: false, mapDataStale: false, layerSheetOwnsSceneFailure: false,
+    formalMarkerPresentation: { hasConfirmed: false },
     bootstrapReplacementBlocked: false, visibleSpotContextAttempt: null, bottomPresentation: "none",
     StatusPanel: "StatusPanel", SoftButton: "SoftButton",
     React: { createElement: (type: string, props: object) => ({ type, props }) }, ...scope,
@@ -168,4 +169,13 @@ test("a retained point resolution owns its pending and cancelled feedback withou
   assert.equal(shown("ERROR", true, { pending: false }), true, "a separate scene failure retains recovery");
   assert.equal(shown("LOADING", true, { pending: false }, "layer-sheet"), true, "the hidden spot panel cannot own visible layer feedback");
   assert.equal(shown("LOADING", true, { pending: false }, "none"), true, "closing the spot panel keeps map feedback");
+});
+
+
+test("initial Scene loading remains visible but a confirmed marker refresh does not flash the loader", () => {
+  const scope = { pageState: "LOADING", formalMarkerPresentation: { hasConfirmed: false } };
+  assert.ok(sceneFeedback(scope));
+  assert.equal(sceneFeedback({ ...scope, formalMarkerPresentation: { hasConfirmed: true } }), null);
+  assert.ok(sceneFeedback({ pageState: "ERROR", formalMarkerPresentation: { hasConfirmed: true } }),
+    "retained markers cannot suppress a genuine current failure");
 });

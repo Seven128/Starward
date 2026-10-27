@@ -15,7 +15,7 @@ import { skyPickSnapshotIsCurrent } from "./sky-object-picking.ts";
 import { createSkyObjectSelection } from "./sky-object-selection.ts";
 import { createSkyObjectTracking } from "./sky-object-tracking.ts";
 import { createSkyContextSession } from "./sky-context-session.ts";
-import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observation-time.ts";
+import { createSkyObservationTime, skyPresentedTimeCurrent, skyObservationFrameCurrent, skyObservationFrameReadable } from "./sky-observation-time.ts";
 import { sameContextVersion, type ContextVersion } from "../../services/observation-context-version";
 import {pickSkyCatalogName,createSkyNameLayouts,pickSkyControlName} from "./sky-name-layout";
 import {exactSkyTimeFrame} from "./sky-time-frame";
@@ -80,7 +80,7 @@ function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
     orientationController:{ snapshot:()=>({alignment:{mode:state.alignmentEditing ? "editing":"auto"}}), stopFollowing:()=>state.stopCompass() },
     contextSession:session,observationTime:time,timeBinding:binding,committedAt:at,activeContext,contextComplete:true,
     pageVisible:true,viewportActiveRef:{current:true},viewportMountedRef:{current:true},canvasGenerationRef:{current:1},
-    skyPresentedTimeCurrent,sameContextVersion,
+    skyPresentedTimeCurrent,skyObservationFrameCurrent,skyObservationFrameReadable,sameContextVersion,
     datePickerOpenRef:{current:false},selectedCatalogObjectRef:{current:null},selectedTargetIdRef:{current:null},
     catalogPickChoicesRef:{current:[]},orientationObjectListOpenRef:{current:false},
     followRequested:false, skySceneReady:true, presentedSceneCurrent:true,
@@ -129,7 +129,7 @@ function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
       observation:{data:state.reportData,frameAt:state.row.at,stellarSupplement:state.stellarSupplement.frame,...inputs.observation},
       view,
       canvas:{generation:state.canvasGenerationRef.current,width:state.canvasSize.width,height:state.canvasSize.height,...inputs.canvas},
-    },{catalogNames:state.catalogNames,controlNames:state.controlNames},state.paintedSkyObjectsRef.current);
+    },{catalogNames:state.catalogNames,controlNames:state.controlNames,timeGeneration:time.snapshot().presentationGeneration},state.paintedSkyObjectsRef.current);
     state.presentedSkyFrameRef.current=accepted.frame;
     state.paintedSkyObjectsRef.current=accepted.picked;
   }

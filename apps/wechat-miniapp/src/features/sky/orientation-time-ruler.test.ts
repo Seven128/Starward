@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
-import { createSkyObservationTime } from './sky-observation-time';
+import { createSkyObservationTime, skyContinuousTimeCoverage } from './sky-observation-time';
 import { skyRulerTime } from './sky-time-presentation';
 import { skyTimeInputAllowed } from './sky-time-input';
 import { createOrientationRulerLayout } from './orientation-ruler-layout';
@@ -24,9 +24,12 @@ test('actual page previews the fractional public time and withholds fine target 
   timeModel:{startAt:start,endAt:end},skyRulerTime,cancelSkyCalibration:()=>{},setTimeIntent:()=>{},observationTime:time};
  const preview=vm.runInNewContext(expression('onPreview'),sandbox);
  preview(.25);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z');
- const settle=vm.runInNewContext(expression('settleTimeIndex'),{...sandbox,skyTimeInputAllowed,
+ const settleScope=vm.createContext({...sandbox,skyTimeInputAllowed,skyContinuousTimeCoverage,
+   timeBinding:'current',committedAt:start,acceptedTimePresentationFor:()=>null,presentedSkyFrameRef:{current:null},
    clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),
    commitInstant:()=>{assert.fail('ruler settlement cannot write the public Context before Apply');}});
+ settleScope.previewSkyTime=vm.runInContext(expression('previewSkyTime'),settleScope);
+ const settle=vm.runInContext(expression('settleTimeIndex'),settleScope);
  settle(1);assert.equal(time.snapshot().at,end);
  assert.equal(time.snapshot().committedAt,start,'released ruler remains a cancellable preview');
  time.cancel();assert.equal(time.snapshot().at,start);

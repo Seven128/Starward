@@ -33,7 +33,10 @@ import {
   type ColorPalette,
 } from "@starward/ui-system/tokens";
 import { PreferenceWizard } from "../features/preferences/PreferenceWizard";
-import { createProfileSaveAttempt } from "../features/preferences/profile-save-attempt";
+import { createNewPreferenceDraft, NewPreferenceProfileWizard } from "../features/preferences/NewPreferenceProfileWizard";
+import { useProfileEditor } from "../features/preferences/use-profile-editor";
+import { preferenceTargetLabels } from "../features/preferences/profile-target-labels";
+import { quickProfileResolver } from "../features/preferences/quick-profile-resolver";
 import { expoPermissionGateway, type PermissionDecision } from "../native/permissions/permission-gateway";
 import { expoForegroundLocationGateway } from "../native/permissions/foreground-location-gateway";
 import { useShellStore } from "../state/shell-store";
@@ -55,28 +58,6 @@ const walkingOptions: Array<{ value: WalkingChoice; label: string }> = [
   { value: 0.8, label: "≤ 800 m" },
   { value: 2, label: "≤ 2 km" },
 ];
-
-function makeQuickProfile(target: QuickTarget, maxWalkingKilometers: WalkingChoice, previous?: PreferenceProfile): PreferenceProfile {
-  const now = new Date().toISOString();
-  const base = createUnrestrictedProfile(now);
-  return {
-    ...base,
-    id: "quick-observing-profile",
-    name: target === "milky-way" ? "银河优先" : target === "planets" ? "行星优先" : "流星优先",
-    revision: (previous?.revision ?? 0) + 1,
-    updatedAt: now,
-    observerTypes: target === "milky-way" ? ["astrophotographer"] : ["visual-observer"],
-    travel: {
-      ...base.travel,
-      modes: ["drive"],
-      maxWalkingKilometers,
-      directAccessRequired: maxWalkingKilometers === 0,
-    },
-    targets: [target],
-    equipment: target === "milky-way" ? ["camera", "lens", "tripod"] : ["naked-eye"],
-    lensFocalLengthsMm: target === "milky-way" ? [14, 24] : [],
-  };
-}
 
 function ContextHeader({ styles, palette }: { styles: ShellStyles; palette: ColorPalette }) {
   const location = useShellStore((state) => state.location);
@@ -187,6 +168,7 @@ function ProfileSwitcherDialog({
   onClose,
   onSelect,
   onCreate,
+  resumeCreation,
 }: {
   visible: boolean;
   profiles: PreferenceProfile[];
@@ -195,6 +177,7 @@ function ProfileSwitcherDialog({
   onClose(): void;
   onSelect(id: string): Promise<void>;
   onCreate(): void;
+  resumeCreation: boolean;
 }) {
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const [selectingId, setSelectingId] = useState<string | null>(null);
@@ -252,7 +235,7 @@ function ProfileSwitcherDialog({
             ))}
           </View>
           <Pressable accessibilityRole="button" onPress={() => leave(onCreate)} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>新建完整预设</Text>
+            <Text style={styles.primaryButtonText}>{resumeCreation ? "继续上次新建预设" : "新建完整预设"}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={() => leave(onClose)} style={styles.secondaryButtonWide}>
             <Text style={styles.secondaryButtonText}>关闭</Text>
@@ -312,10 +295,9 @@ export function MobileShellScreen() {
   const permissionLoading = ["requesting", "locating", "saving"].includes(locationRequest.phase);
   const focused = useIsFocused();
   const [profileSwitcherVisible, setProfileSwitcherVisible] = useState(false);
-  const [wizardVisible, setWizardVisible] = useState(false);
-  const [quickTarget, setQuickTarget] = useState<QuickTarget>("milky-way");
-  const [walking, setWalking] = useState<WalkingChoice>(0.8);
-  const quickSaveAttempt = useRef(createProfileSaveAttempt());
+  const [wizardEntry, setWizardEntry] = useState<"quick" | "independent" | null>(null);
+  const [creationDraft, setCreationDraft] = useState<PreferenceProfile | null>(null);
+  const creationDraftRef = useRef<PreferenceProfile | null>(null);
 
   useEffect(() => {
     if (!focused) locationSelection.cancel();
@@ -334,6 +316,10 @@ export function MobileShellScreen() {
     () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? createUnrestrictedProfile(),
     [activeProfileId, profiles],
   );
+  const quickEditor = useProfileEditor({ initial: activeProfile, visible: true, ready: hydrationState === "ready", onSave: saveProfile, resolver: wizardEntry === "quick" ? undefined : quickProfileResolver, resolveProfile: id => useShellStore.getState().profiles.find(profile => profile.id === id) });
+  const quickDraft = quickEditor.watch();
+  const quickTarget = quickDraft.targets.length === 1 && targetOptions.some(option => option.value === quickDraft.targets[0]) ? quickDraft.targets[0] as QuickTarget : null;
+  const walking = walkingOptions.some(option => option.value === quickDraft.travel.maxWalkingKilometers) ? quickDraft.travel.maxWalkingKilometers as WalkingChoice : null;
   const manualVisible = manualEditorVisible || location.source === "manual";
   const persistenceLabel = hydrationState === "idle" || hydrationState === "loading"
     ? "正在恢复"
@@ -343,9 +329,12 @@ export function MobileShellScreen() {
         ? "保存未确认"
         : "本机保存";
 
-  const saveQuickProfile = async () => {
-    const previous = profiles.find((profile) => profile.id === "quick-observing-profile");
-    await quickSaveAttempt.current.save(JSON.stringify([quickTarget, walking]), () => makeQuickProfile(quickTarget, walking, previous), saveProfile);
+  const saveQuickProfile = async () => { await quickEditor.submit(); };
+
+  const retireCreation = (id: string) => {
+    if (creationDraftRef.current?.id !== id) return;
+    creationDraftRef.current = null;
+    setCreationDraft(current => current?.id === id ? null : current);
   };
 
   const chooseManualLocation = async () => {
@@ -473,22 +462,25 @@ export function MobileShellScreen() {
               accessibilityLabel="编辑完整观测偏好"
               accessibilityHint="打开完整偏好字段"
               hitSlop={4}
-              onPress={() => setWizardVisible(true)}
+              onPress={() => setWizardEntry("quick")}
             >
               <Text style={styles.moduleTitle}>观测偏好</Text>
             </Pressable>
             <Text style={styles.moduleMeta}>{persistenceLabel}</Text>
           </View>
           <View style={styles.preferenceStack}>
+            <Text testID="quick-preference-owner" style={styles.meta}>正在编辑：{quickDraft.name}</Text>
+            {quickEditor.sourceChanged ? <View><Text style={styles.meta}>{quickEditor.confirmsOriginalSave ? "当前预设已变化。确认上次保存不会切换当前预设。" : "当前预设已变化，原编辑内容已保留。保存后会设为当前预设。"}</Text><Pressable disabled={quickEditor.formState.isSubmitting || quickEditor.hasUnresolvedSave} onPress={quickEditor.readCurrent} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>放弃修改并读取当前预设</Text></Pressable></View> : null}
             <View>
               <Text style={styles.fieldLabel}>今晚主要目标</Text>
+              <Text testID="quick-preference-targets" style={styles.meta}>{quickDraft.targets.length ? `已填目标：${quickDraft.targets.map(target => preferenceTargetLabels[target]).join("、")}` : "观测目标未限制"}</Text>
               <View style={styles.choiceRow}>
                 {targetOptions.map((option) => (
                   <Pressable
                     key={option.value}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: quickTarget === option.value }}
-                    onPress={() => setQuickTarget(option.value)}
+                    onPress={() => quickEditor.setValue("targets", [option.value], { shouldDirty: true })}
                     style={({ pressed }) => choiceStyle(pressed, quickTarget === option.value, styles)}
                   >
                     <Text style={[styles.choiceText, quickTarget === option.value && styles.choiceTextSelected]}>{option.label}</Text>
@@ -498,13 +490,14 @@ export function MobileShellScreen() {
             </View>
             <View>
               <Text style={styles.fieldLabel}>步行容忍度</Text>
+              <Text testID="quick-preference-walking" style={styles.meta}>{quickDraft.travel.maxWalkingKilometers === null ? "步行距离未限制" : quickDraft.travel.maxWalkingKilometers === 0 ? "不步行" : `已填步行距离不超过 ${quickDraft.travel.maxWalkingKilometers} km`}</Text>
               <View style={styles.segmented}>
                 {walkingOptions.map((option) => (
                   <Pressable
                     key={option.value}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: walking === option.value }}
-                    onPress={() => setWalking(option.value)}
+                    onPress={() => quickEditor.setValue("travel.maxWalkingKilometers", option.value, { shouldDirty: true })}
                     style={({ pressed }) => [
                       styles.segmentOption,
                       walking === option.value && styles.segmentSelected,
@@ -520,22 +513,23 @@ export function MobileShellScreen() {
               testID="shell-switch-profile"
               accessibilityRole="button"
               accessibilityState={{ busy: persistenceState === "saving" }}
-              disabled={persistenceState === "saving"}
+              disabled={persistenceState === "saving" || quickEditor.formState.isSubmitting || hydrationState !== "ready"}
               onPress={() => void saveQuickProfile().catch(() => undefined)}
               style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, persistenceState === "saving" && styles.disabled]}
             >
               {persistenceState === "saving"
                 ? <ActivityIndicator color={palette.onPrimary} />
-                : <Text style={styles.primaryButtonText}>保存偏好</Text>}
+                : <Text style={styles.primaryButtonText}>{quickEditor.confirmsOriginalSave ? "确认上次保存" : quickEditor.hasUnresolvedSave ? "保存新的修改" : quickEditor.sourceChanged && quickDraft.id !== activeProfile.id ? "保存并切回此预设" : "保存偏好"}</Text>}
             </Pressable>
             {preferenceScenario.action(saveQuickProfile)}
             {preferenceScenario.result}
+            {quickEditor.saveError ? <Text testID="quick-preference-save-error" style={styles.error}>{quickEditor.saveError}</Text> : null}
             <Text testID="preference-ranking-impact" accessibilityLiveRegion="polite" style={styles.meta}>
               {persistenceState === "error"
                 ? persistenceError ?? "偏好保存未确认；输入仍保留。"
                 : recommendationState === "stale"
                   ? "推荐正在按新预设重算；旧结果已标记 stale。"
-                  : "未选择的完整字段保持“不限制”，不会静默套用样例默认值。"}
+                  : "保留现有完整设置，可进入完整偏好修改。"}
             </Text>
           </View>
         </View>
@@ -563,12 +557,12 @@ export function MobileShellScreen() {
               <View style={styles.listCopy}>
                 <Text testID="shell-guest-state" style={styles.listTitle}>{guest ? "本机游客" : activeProfile.name}</Text>
                 <Text testID="preference-active-profile" style={styles.listMeta}>
-                  {activeProfile.name} · {activeProfile.id === "base" ? "未设置限制" : "用于当前推荐"}
+                  {activeProfile.name} · 用于当前推荐
                 </Text>
               </View>
               <View style={styles.currentBadge}>
                 <Text testID="preference-saved-state" style={styles.currentBadgeText}>
-                  {activeProfile.id === "base" ? "当前" : "已保存 · 当前"}
+                  {activeProfile.id === "base" && activeProfile.revision === 1 ? "当前" : "已保存 · 当前"}
                 </Text>
               </View>
             </Pressable>
@@ -614,17 +608,33 @@ export function MobileShellScreen() {
         styles={styles}
         onClose={() => setProfileSwitcherVisible(false)}
         onSelect={activateProfile}
+        resumeCreation={creationDraft !== null}
         onCreate={() => {
+          if (!creationDraftRef.current) {
+            const draft = createNewPreferenceDraft(useShellStore.getState().profiles);
+            creationDraftRef.current = draft;
+            setCreationDraft(draft);
+          }
           setProfileSwitcherVisible(false);
-          setWizardVisible(true);
+          setWizardEntry("independent");
         }}
       />
       <PreferenceWizard
-        visible={wizardVisible}
-        initial={activeProfile}
-        onClose={() => setWizardVisible(false)}
-        onSave={saveProfile}
+        visible={wizardEntry === "quick"}
+        editor={quickEditor}
+        onClose={() => setWizardEntry(null)}
+        ready={hydrationState === "ready"}
       />
+      {creationDraft ? <NewPreferenceProfileWizard
+        key={creationDraft.id}
+        visible={wizardEntry === "independent"}
+        initial={creationDraft}
+        onClose={() => setWizardEntry(null)}
+        onRetire={retireCreation}
+        onSave={saveProfile}
+        ready={hydrationState === "ready"}
+        resolveProfile={id => useShellStore.getState().profiles.find(profile => profile.id === id)}
+      /> : null}
     </SafeAreaView>
   );
 }

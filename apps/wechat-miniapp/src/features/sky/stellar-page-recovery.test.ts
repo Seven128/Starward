@@ -7,11 +7,12 @@ import ts from "typescript";
 import {skyImageRecoveryTestOwner} from './sky-image-recovery-test-support';
 import { skySceneHasContent } from "./sky-stellar-scene";
 import { createSkyBrowsingCamera } from "./sky-browsing-camera";
-import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observation-time";
+import { createSkyObservationTime, skyObservationFrameReadable } from "./sky-observation-time";
 import { OBSERVATION_FRAME_FORMAT, SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
 import { drawSkyScene } from "./sky-scene-render";
 import { skyLandscapeVisibleInView } from "./sky-landscape-mask";
 import { createSkyViewBasis } from "./sky-view-projection";
+import { skyFailureTestEpisodes } from "./sky-failure-test-support";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
 import type { SkyRenderSurface } from "./sky-render-surface";
 import type { SkyPickSnapshot } from "./sky-object-picking";
@@ -32,7 +33,7 @@ test("static cold and refresh failure use floating info, with retry owned by the
  let effect="";function visit(node:ts.Node){if(ts.isCallExpression(node)&&node.expression.getText(source)==="useEffect"&&node.arguments[0]?.getText(source).includes('dedupeKey: `stellar-catalog:'))effect=node.arguments[0].getText(source);ts.forEachChild(node,visit);}visit(source);assert.ok(effect);
  for(const retained of [false,true]){
  const notifications:any[]=[];
- run(effect,{pageVisible:true,stellarReference:{catalogVersion:"v2",catalogHash:"hash"},stellarCatalog:{isFetching:false,isError:!retained,refreshError:retained?Error("offline"):undefined,data:retained?{dataState:"FRESH"}:undefined},notify:(n:unknown)=>notifications.push(n)})();
+ run(effect,{pageVisible:true,failureEpisodes:skyFailureTestEpisodes(),stellarReference:{catalogVersion:"v2",catalogHash:"hash"},stellarCatalog:{isFetching:false,isError:!retained,refreshError:retained?Error("offline"):undefined,data:retained?{dataState:"FRESH"}:undefined},notify:(n:unknown)=>notifications.push(n)})();
  assert.equal(notifications.length,1);assert.equal(notifications[0].placement,"floating");assert.equal(notifications[0].tone,"info");
  }
  let reports=0,stars=0,current=true;
@@ -42,8 +43,9 @@ test("static cold and refresh failure use floating info, with retry owned by the
  const useCallback=(callback:unknown)=>callback;
  const canRetryReport=run(expression("canRetryReport"),{useCallback,reportRecoveryRef,
    skyDisplayCurrent:()=>current,contextSession:{canRequest:()=>true}});
- const retryReport=run(expression("retryReport"),{useCallback,reportRecoveryRef,autoRestoreAttemptedRef,canRetryReport});
- const retry=run(expression("retrySkyData"),{useCallback,retryReport,reportRecoveryRef});
+ const failureEpisodes=skyFailureTestEpisodes();
+ const retryReport=run(expression("retryReport"),{useCallback,reportRecoveryRef,autoRestoreAttemptedRef,canRetryReport,failureEpisodes});
+ const retry=run(expression("retrySkyData"),{useCallback,retryReport,reportRecoveryRef,failureEpisodes});
  retry();assert.equal(reports,1);assert.equal(stars,1);assert.equal(autoRestoreAttemptedRef.current,false);
  current=false;retry();assert.equal(reports,1);assert.equal(stars,1);
 });
@@ -53,8 +55,8 @@ function startTouch(skySceneReady:boolean){
  observationTime.bind("test-time",at,{startAt:at,endAt:at});
  const identity=skySceneTestFrame({observation:{frameAt:at}}).identity;
  const scope={zoomRef:{current:45},presentedFov:45,viewportInsets:{top:0,bottom:0},skyLandscapeVisibleInView,mode:"NIGHT",pickSkyCatalogName:()=>null,pickSkyControlName:()=>null,__MINIAPP_SKY_FEEDBACK_ID__:"",orientationController:{snapshot:()=>({alignment:{mode:"automatic"}})},skySceneReady,presentedSceneCurrent:true,
- skyTimeIntentCurrent:()=>true,skyPresentedTimeCurrent,observationTime,
- presentedSkyFrameRef:{current:{identity,nativeCanvasGeneration:1,frameAt:at}},canvasGenerationRef:{current:1},
+ skyTimeIntentCurrent:()=>true,skyObservationFrameReadable,observationTime,
+ presentedSkyFrameRef:{current:{identity,nativeCanvasGeneration:1,frameAt:at,timeGeneration:observationTime.snapshot().presentationGeneration}},canvasGenerationRef:{current:1},
  paintedSkyObjectsRef:{current:{identity}},navigationRequestRef:{current:null},
  selectedCatalogObjectRef:{current:null},selectedTargetIdRef:{current:null},orientationObjectListOpenRef:{current:false},datePickerOpenRef:{current:false},
  skyInteractionRevision:0,contextSession:{},activeContext:{},timeBinding:"test-time",committedAt:at,

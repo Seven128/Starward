@@ -9,6 +9,7 @@ import { skyResourceOriginTestOwner } from "../../services/sky-resource-origin-t
 import { skyImageContentHash, sdssOpticalPublication, sdssOpticalPublicationHash, decodeSkyLandscapeAlpha, SKY_LANDSCAPE_RESOURCES } from "@starward/miniapp-contracts";
 import { createSkyPublicImageCache } from "../../services/sky-public-image-cache";
 import { skyImageFileSession } from "../../services/sky-image-file-session";
+import { withSkyPublicImageOwner } from '../../services/sky-public-image-runtime-test-support';
 import { skyNativeArrayBuffer } from "../../services/sky-native-array-buffer";
 import { transportHarness, TEST_API_BASE } from "../../services/api-request-test-support";
 import { reportRuntimeError } from "../../services/runtime-error";
@@ -40,8 +41,8 @@ const compile = (file: URL, bindings: Record<string, unknown>, sourceOverride?: 
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX,
   } }).outputText, { exports, ArrayBuffer, Uint8Array, DataView, setTimeout, clearTimeout,
     __MINIAPP_API_BASE__: base, __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: false,
-    require(name: string) { if (name === "./sky-resource-origin" || name === "./sky-image-diagnostics") return skyResourceOriginTestOwner(base, delivery.resource, delivery.preview);
-      assert.ok(name in bindings, name); return bindings[name]; } });
+    require: withSkyPublicImageOwner((name: string) => { if (name === "./sky-resource-origin" || name === "./sky-image-diagnostics") return skyResourceOriginTestOwner(base, delivery.resource, delivery.preview);
+      assert.ok(name in bindings, name); return bindings[name]; }) });
   return exports;
 };
 const evidence: unknown[] = [];
@@ -279,7 +280,7 @@ test("full App launch preserves legacy cleanup and initializes the same public o
     "@/theme/native-chrome": { syncNativeChrome: async () => { chrome++; } },
     "@/services/acceptance-diagnostics": {}, "@/services/sky-image-file-session": { skyImageFileSession },
     "@/services/runtime-error": { reportRuntimeError }, "@/services/request-lifecycle": { isMiniappRequestCancelled },
-    "@/services/sky-public-image-runtime": runtime, "./app.scss": {},
+    "@/services/sky-public-image-owner": runtime, "./app.scss": {},
   });
   app.default({ children: undefined });
   for (let i = 0; i < 400; i++) await Promise.resolve();

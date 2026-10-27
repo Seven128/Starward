@@ -4,7 +4,7 @@ import test from "node:test";
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter } from "@nestjs/platform-fastify";
-import type { MapLayerData, TerrainBounds } from "@starward/miniapp-contracts";
+import { NIGHT_LIGHT_CONTRAST_DISPLAY, type MapLayerData, type TerrainBounds, type NightLightDisplayStyle } from "@starward/miniapp-contracts";
 import { MiniappController } from "./controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
@@ -22,12 +22,14 @@ test("public static light responds during a pending Scene and recovers its own f
   t.mock.method(service, "getMapScene", async () => { await sceneHold; settledScene = true; return { deliberatelyHeld: true }; });
   const sceneWork = service.getMapScene({ contextId: "unrelated-weather-context" });
   let reads = 0, fail = false;
+  const requestedStyles: (NightLightDisplayStyle | undefined)[] = [];
   const layer: MapLayerData = { kind: "LIGHT_POLLUTION", cloudLayer: null, validAt: "2025-01-01T00:00:00Z",
     datasetVersion: "isolated-static-fixture", state: "PARTIAL", source: null, precision: "controlled dependency fixture",
     polygons: [{ id: "valid-zero", points: [{ latitude: 22, longitude: 114 }, { latitude: 22, longitude: 114.01 },
       { latitude: 22.01, longitude: 114.01 }], fillColor: "#87714A66", strokeColor: "#87714A66", strokeWidth: 1,
       value: 0, label: "valid zero", state: "PARTIAL" }], legend: [{ label: "valid zero", color: "#87714A", range: "fixture only" }] };
-  t.mock.method(service.nightLight, "layer", async (_version: string, bounds: TerrainBounds | undefined, signal?: AbortSignal) => {
+  t.mock.method(service.nightLight, "layer", async (_version: string, bounds: TerrainBounds | undefined, signal?: AbortSignal, displayStyle?: NightLightDisplayStyle) => {
+    requestedStyles.push(displayStyle);
     reads++; assert.deepEqual(bounds, { west: 113.9, south: 21.9, east: 114.1, north: 22.1 });
     assert.equal(signal?.aborted, false);
     if (fail) throw new Error("controlled_publication_read_failure");
@@ -44,6 +46,13 @@ test("public static light responds during a pending Scene and recovers its own f
     const response = await fetch(url); assert.equal(response.status, 200);
     const result = await response.json();
     assert.deepEqual(result.data, layer, "published values/coverage cannot be replaced by an empty success");
+    assert.deepEqual(requestedStyles, [undefined], "old clients must keep the default display contract");
+    assert.equal((await fetch(`${url}&displayStyle=${NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion}`)).status, 200);
+    assert.equal(requestedStyles.at(-1), NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion);
+    const admitted = reads;
+    for (const style of ["unknown", "", `${NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion}&displayStyle=unknown`])
+      assert.equal((await fetch(`${url}&displayStyle=${style}`)).status, 400);
+    assert.equal(reads, admitted, "unsupported display requests must fail before publication work");
     assert.equal(settledScene, false, "static response must not wait for the unrelated Scene promise");
     fail = true;
     const failed = await (await fetch(url)).json();

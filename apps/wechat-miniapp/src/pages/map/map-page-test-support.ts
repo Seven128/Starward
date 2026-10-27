@@ -1,6 +1,19 @@
 import type { AnalysisOverlay } from "../../state/app-store";
 import { mapLayerKindForOverlay, mapSceneLayerForOverlay } from "./map-layer-selection";
 import { createPrimaryNavigationController } from "../../navigation/primary-navigation-controller";
+import { userMapRegionEnded } from "./map-region-event";
+
+/** Scene admission is a callback boundary in tests of unrelated Map effects.
+ * The full Map-intent runtime separately executes the actual admission owner. */
+export function createMapSceneAdmissionTestBoundaries() {
+  const pending = { current: null as { intent: number; gesture: boolean } | null };
+  return {
+    mapSceneRegionIntent: pending,
+    beginMapSceneRegion: (intent: number, gesture = false) => { pending.current = { intent, gesture }; },
+    finishMapSceneRegion: (intent: number | null) => { if (pending.current?.intent === intent) pending.current = null; },
+    userMapRegionEnded,
+  };
+}
 
 /** Query-owner dependencies used by the existing focused Map callback tests.
  * Use the real layer policy; static reads require an explicit response adapter. */
@@ -9,6 +22,8 @@ export function createMapSceneTestBoundaries(options: {
   refetchLight?: () => Promise<unknown>;
 } = {}) {
   return { scope: {
+    mapSceneRegionPending: false,
+    mapRegionScaleRead: { current: null as null | { controller: AbortController; isCurrent(): boolean } },
     mapLayerKindForOverlay,
     mapSceneLayerForOverlay,
     analysisOverlay: options.overlay ?? "NONE",
@@ -30,6 +45,8 @@ export function createMapPageTestBoundaries() {
     calls,
     nativePage,
     scope: {
+      ...createMapSceneAdmissionTestBoundaries(),
+      mapRegionScaleRead: { current: null as null | { controller: AbortController; isCurrent(): boolean } },
       pageVisible: true,
       primaryNavigation: { controller, get presentation() { return controller.getSnapshot(); } },
       mapReturnPhase: { current: null as "waiting" | "revealing" | null },

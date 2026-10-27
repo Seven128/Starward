@@ -3,6 +3,7 @@ export type * from "./map-cloud-snapshot.ts";
 export { mapCloudCellId } from "./map-cloud-snapshot.ts";
 export * from "./terrain-map-coverage.ts";
 export * from "./night-light-fixed-scale.ts";
+export * from "./night-light-display.ts";
 export * from "./source-records.ts";
 export * from "./plan.ts";
 export * from "./plan-timing.ts";
@@ -53,6 +54,7 @@ export { MINIAPP_API_OPERATIONS } from "./generated/miniapp-api.generated.ts";
 export type { MiniappApiOperationTypes, MiniappApiOperationId, MiniappApiJsonOperationId, MiniappApiRequest, MiniappApiResponse } from "./generated/miniapp-api.generated.ts";
 export { MINIAPP_API_BASE_PATH } from "./generated/miniapp-api-base.generated.ts";
 export { MINIAPP_API_JSON_OPERATIONS } from "./generated/miniapp-api-json.generated.ts";
+export { MINIAPP_API_JSON_TRANSPORT } from "./generated/miniapp-api-json-transport.generated.ts";
 
 export * from "./account-profile.ts";
 export * from "./contribution-intake.ts";

@@ -1,47 +1,32 @@
-# 当前交接：仅微信小程序（2026-10-25续办）
+# 当前交接：候选19与换机检查点
 
-## 当前目标与唯一下一步
+用户最新要求：提交全部仓库变更、推送远端，转到另一台电脑继续。完整目标归[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)，唯一计划归[PLAN](PLAN.md)；Goal未完成，状态以get_goal实读为准。仅微信小程序及实际依赖；App WIP随本次检查点保全，不恢复App开发或冒其验收。
 
-本线程已核范围一致的无预算active Goal，唯一PLAN不变。当前及未来只做WEAPP及其真实BFF/管理/共享消费者；App、专属API/工具链和全部dirty/中断成果保留不继续。两类性能及相关内存/OOM后置，OOM未解决；gen34不重建，gen24 scene-memo暂停、R27同条件停止。
+换机先读[CROSS-MACHINE-HANDOFF](CROSS-MACHINE-HANDOFF-20261027.md)与[交接包身份](HANDOFF-TRANSFER-20261027.json)。代码/文档在Git，性能原件和私有恢复另包；本机路径/PID/IP/截图授权不是接收机事实。
 
-**下一步先收完本批层叠窄修的独立输出核对、Git与实际CI回执。** 新手机包已实际看到下入/下出，源码独审、定向检查、完整编译、预算与唯一IDE同步已完成，见[层叠记录](R19-LAYER-PRESENTATION-20261025.md)。已确认方向/取消等不再重复列待办。之后普通业务首个失败边界仍是Windows管理员NetSecurity访问；用户不在电脑前，不重复RunAs、同条件Read/TCP或生成过期QR。可交互OS条件具备后，由Root先读新8808 packet的管理员Read结果，再按原受控Apply和同手机HTTP推进正常UI/数据/权限；不重放旧8806包或gen2设备绑定。其间只取唯一PLAN中依赖独立且确未完成的小程序结果，不转App、不把失败态充正常验收。
+## 当前结果与下一步
 
-## 当前源码、完整产物与手机
+- 13–18已实施并检查/独审：Map自有文件删除/准入与Sky索引；地图手势接管/scale读回；Scene/marker稳定及加载提示；夜光显式对比色标；地形shader、冷格读取顺序和采样数字索引；Sky按住同向代次、跨窗口供给及真实native复制回执；顶点staging和星座临时数组减少。原r6数值/阈值/掩膜/旧URL、完整星数/时间精度、资源预算和失败语义保留。直接复用，不重新开发。
+- 16/17普通手机窄视野已见分钟/跨日按住期间多次更新、松手稳定、正常Play/Pause、返回Map/My。关闭debug后的暂停进程PSS从1011598→837971KiB回落；两运行历史/重启不同，不能算严格A/B、JS泄漏或OOM解决。
+- 18补证：正常My空态及计划列表往返、Sky系统Back；45°地景进入/淡灰背面/负高度对象点选/返回、网格关闭恢复。Merak实显地平线下11.1°。原PTS采样序列已判读，不冒物理FPS/同手势反向或全天视野通过；详[实际补证](CANDIDATE18-CONTINUATION-20261027.md)。当前账户无昵称/计划行，不能替正常有内容账户验收；当前管理session真实503/CAPABILITY_DISABLED。
+- 19仅修Sky披露层被持久通知遮挡：四类SkyOverlayMotion共用既有z30，保通知、重试、透明材质与无通用标题结构。43项及独立聚焦审查通过，完整构建和官方推送已完成；**换机请求打断前，19的遮挡真机回归尚未完成**。推送不等于目标验证。
+- 下一内存窄方案仍**未实施**：`displayDirection`缓存完成后释放已不再需要的`vectors[index]`引用。完整BSC/实际SAO原型宽视野退休6018个冗余三元组，保原构造、未知projector回调、旧输出身份及同帧相机复用。只使用包内`sky-transform-memory-analysis/results-v2.private.json`；v1受诊断getter干扰作废。结构工作集数不等于手机heap字节/峰值/OOM。
+- 剩余优先：19目标回归、全天跨字段与持续Play/分配/暂停排空/退出、native/GPU退休及冷源到可见覆盖。一个隔离真实冷窗2944ms、16源/2活动格、100%有效、PNG与旧proof一致；与历史网络/缓存条件不同，不算手机提速比例。福建夜光仍在现有r6覆盖外，未扩供给。完整P1–P6、两个性能结果和OOM均未完成。
 
-本机只在main。当前提交基线为`a37b3dbbe428bf7198f07bcc497115cf4f1fee23`，本批新增层叠呈现改动待成批提交；最终HEAD/CI须实时读，不把下方旧绿冒本批绿。
+## 代码、候选与环境绑定
 
-- 普通canonical和手机：`1576576c36c7628332f9c9b03e62cbbc840d3cbe78b1a7efde5d5c2ebce9390d`，339件/5,038,377B，主包2,027,585B，API/Sky素材归当前8808 owner，无preview credential。`szzwZq/gen3 NUlAjG`官方auto_preview terminal success、无pending task；Root实际观察新退出后bind，当前嵌套session`tEShJz`已fresh capture。开发反馈，不是固定候选；手机独立字节和runtime AppID未验。
-- 唯一IDE仍为`dist/weapp-check-sky-4086cb4f36b44324`，本批同源8807完整编译`1aab8b3ad33f2701ec5cb0f02b38f7e7958c9e7c23a2a2a94892411cb4c0b135`，339件/5,038,352B，主包2,027,560B，已完整同步并由官方refresh返回0。没有新增窗口、清账号/storage/session或重启8807。手机canonical已恢复1576576c。刷新触发不冒完整目标UI通过；继续操作先核当前route/页面资格，不继承旧s5/pageId/input许可。
-- 旧`0acc/77b8/413a/2d68/5e/58dc`及冻结代保全。gen2 feedback全部392文件逐件SHA一致后才refresh；旧`REwX2Q/GDWVeL`不能作gen3输入许可。原GDWVeL在旧feedback的嵌套目录，不用错误的裸Temp路径判不存在。gen3资格诊断`3JiYHF`的11文件全部逐件SHA归档后已由原stop owner移除，当前`tEShJz`和手机数据保留；前`h4CqJf`5文件同样归档/退休。
+- 提交前main基线为`56ba8f62e06297bedb6c34eee4ce2c4208b503aa`；本次检查点commit及推送以Git和实际readback为准。全部源码/文档/既有App WIP纳入保存，原始采集、数据库/凭据、运行工具、构建和旧锁文件留在其私有owner。
+- 当前IDE外部项目`performance-repair-20261026/project-19`（源机s5）；完整输出`apps/wechat-miniapp/dist/weapp-check-d1-20261026-g19`。compiled SHA `c9734b6f725f6f1bd042f81fe8874acb1eb14e89f722fde48acf4ca8b77afbb0`；prepared SHA `057bdb3dabcf92901e2a9bc3ee2fef060880ad3cd8483f0e3ccf7d3da2263f5b`，113输入/340文件。测试大包支持开启，普通官方包体资格未测。
+- 源机19设备会话为`C:/Users/momoooo/AppData/Local/Temp/starward-device-test-8BvNKE`；只作历史绑定，换机重新创建。普通preview、debug/vConsole关闭；手机整包字节/runtime AppID未独立读回。旧候选与私有原件保留，18窗口在19完整同步后正常关闭。
+- API仍为18后台（19只改前端），原可信配置、25后台输入、ready200，PG未重启，无迁移/worker/提醒投递或VPN变更。源机指针为`C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/miniapp-entry-20261025/phone-current-api-selection.private.json`，含databaseOwnerPath；不能把其中PID/地址移植后执行。
+- 16一次官方remote错选VPN虚拟地址后LAN失败/回退并通信错误，已正常结束。Computer Use原16与新17窗口均capture timeout，未重复同条件重连或走私有协议。换机按真实条件恢复主用Profiler；原四份Performance/后续Performance/三份Heap/Console及展开计数已齐，不能索要旧批。
 
-## 本轮已取得的目标结果
+## 提交前验证与保全
 
-[当前手机API与取消返回](R20-PHONE-CURRENT-API-20261025.md)记录新8808与同原手机任务库/session secret成对准备、公开r6/26迁移只读核验、真实手机新origin请求，以及原生chooseLocation打开→Back取消→Search原查询保留。未改全球权限、未确认新地点/Context、未改N05、未重发R6。
+完整检查先通过contracts92项、API1006项/74skip及相关类型检查；小程序首次2854pass/39fail/1skip。已确认并修复11个test/helper的旧提取/上下文/计时夹具，未修改产品或削弱内容/身份断言。最终小程序2922pass/0fail/1skip及typecheck通过；未再重跑未变的API/contracts。该结果不是目标设备或完整产品验收。
 
-[采用转场记录](R19-LAYER-PRESENTATION-20261025.md)记录实际My左入左出、Search右入右出与独审。新发现层叠原关闭直接卸载，已复用现有Sky纯视觉存续为共享hook并局部修复；Map业务presentation/阅读恢复即时切换，退出只保最后视觉内容并挡输入。新手机原帧已看向下移出，返回Map无新选择或提交。35项定向检查与类型检查通过，补充pending tick隐藏回归后的Map3项通过；完整构建保原10 warnings。正常My、实际图层覆盖/来源/时刻、快速反向、选择/Context/阅读等完整P1及其他必需结果仍未验。
+原有同基线CI：Product40199397216与Context40199397226成功；staging40200094757容量检查失败、发布/promotion skipped，未部署。本次新检查点CI须按新SHA核，不能沿用旧绿；App功能不在本次新验证范围。
 
-既有最小管理body HTTP/PG判别、窄修和独审直接复用[HTTP](R20-ADMIN-INPUT-HTTP-20261025.md)/[独审](R20-ADMIN-INPUT-REVIEW-20261025.md)，不再开发或判别。P2首装假STALE修复及真实r6普通概览开关、P5轮廓/来源恢复直接复用[P2](R20-P2-REAL-PUBLICATION-READBACK-20261025.md)/[P5](R20-P5-HORIZON-READER-20261025.md)。当前公开资料资格见[P5输入](R20-P5-INPUT-QUALIFICATION-20261025.md)：测试命名公开点/媒体无拍摄时间或方向正值不能造真实材料；owner-IP仅开发profile，不冒正式身份。
+`Starward-performance-evidence-20261027.zip`约314MB，4101成员逐项hash读回；`Starward-private-recovery-20261027.zip`约693KB，含任务库dump和私有配置，归档可列举但接收机恢复未执行。两包当前为LOCAL_ONLY，精确身份见HANDOFF-TRANSFER。全球EOG原件复用现有锁定备份，未重打包。手机本地Storage/草稿不在数据库dump内；保原手机、N05、R6和gen34，不清缓存、不重发、不重建冻结基线。
 
-## 普通API与系统边界
-
-私有当前入口：`C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/miniapp-entry-20261025/phone-current-api-selection.private.json`。只从该pointer实读网络、端口、进程出生与owner，不抄旧IP/PID。当前8808只监听选定手机侧物理IPv4，host ready=200；沿原启动owner使用原8806手机任务库和session secret，migrate/worker/reminder关闭。自动catalog分支启动前只读核wouldMigrate=false。现为POSTGRES/LOCAL_TEST/media DISABLED，未取得正式资格。
-
-该root下`firewall/prepared.private.json`现重绑gen3，SHA`a33803942962d8da27127e54326257cf99fdd17e4177a0ba7cc6242dda548247`；脚本SHA`cc808d7b5067411596a924a0fe0a6611250e943b5487712852a36a45992ea983`。Root已重新核10 pins、CIM监听/启动祖先、物理接口、完整7条Node规则；实际manifest注入检查10/10、ParserErrors0、策略/设备修改0。原8792例外、其他TCP/UDP/IPv6及原规则保留。
-
-真实Read此前在NetSecurity单一新规则ID查询为`PermissionDenied / Windows System Error 5`，当前token仍非admin，未Apply、无attempt/receipt、策略修改0。本批不重复UAC/相同失败。待OS交互可完成，Root走授权管理员入口；必须核解析Status精确`prepared_not_applied`、OwnedRules=0、CurrentHostBoundary=true、SystemWrites=0，`partial_requires_review`可exit0，不能只看退出码。然后原Apply仍实时检查手机/监听/规则/pins；实际同手机HTTP成功前不称API恢复。不要求用户手工执行管理员命令。
-
-gen2一次已审阅刷新后的手机8808为3条SYN-SENT、旧8806为0，支持新origin实际生效，未证明连接成功。没有adb reverse、VPN/TUN/全局TLS或代理改动。旧8806任务服务/原库、8807独立PG及内存Context仍运行保留；原PG22/任务库26/独立副本26不重迁移、导入或重启。
-
-## 仍欠的产品与环境结果
-
-普通业务API、正式账户/管理身份、用户媒体对象存储与worker/Redis实际恢复、真实H4、系统定位允许/拒绝/成功恢复、真实分享接收/文件交接仍按PLAN保缺口。现代码无已资格的用户媒体云adapter/具体目标；Map静态OSS不能充用户媒体，worker/replay有副作用，不能作只读探针。外部身份/权益不足不用LOCAL_TEST或App替代，不擅选联系人或重发已送达R6。
-
-独立Sky的既有合法restore/天文/BSC数值、普通入口和失败边界归[P3](R20-SKY-INDEPENDENT-ENTRY-20261025.md)。一次Map故障后继仍失败，停止重建；限定恢复后、未启用Map栅格的正常Sky入口成功但桌面仍仅Canvas/控件不可见。无新决定性条件不重复cache/机型/popup/样式试验，不猜改相机或冒物理资源释放。当前UI同步没有关闭这些缺口。
-
-## Git、CI与部署
-
-新层叠批次提交及CI尚待实际收尾。此前a37已推送，Context40176715978与Product40176716041成功；release code、backend/WEAPP构建、owner/candidate、隔离基础设施和OCI实际执行，既有App/API/admin消费者按affected范围skipped。日志contracts89/89；API995pass/74skip；WEAPP2822pass/1skip；resource preparation另有既有skip，不称零skip或完整产品验收。
-
-a37 staging40177424974实际失败：qualify成功，publish-and-deploy的pre-publication check为`host_preflight_disk_below_10_gib`；镜像发布和promotion skipped，未部署。此前340/2f等同容量失败与只读cache盘点仍有效；无合格归属/保留集合不prune、不盲重试。
-
-本批只提交明确WEAPP/共享owner/本轮证据写集；285件LFS材料化差异、4件App dirty、原HANDOFF-VALIDATION/Native环境dirty、私有原件和N05保全不夹带。旧HANDOFF和INDEX完整dirty原字节已归本轮private owner保全。既有App中断文档和tmp私有保全不清理、不转作本Goal待办。Goal保持active，不标complete。
+主要证据在交接包`performance-repair-20261026/user-feedback-20261027/`的repair/review/phone目录；提交前夹具证据在`checkpoint-tests/`。迁移时按包内manifest校验，旧绝对路径只作定位。此前完整HANDOFF原件仍保存在源机私有检查点目录。不要把归档、提交或本交接完成标成整个Goal完成。

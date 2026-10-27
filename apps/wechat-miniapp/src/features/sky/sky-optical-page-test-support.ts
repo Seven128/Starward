@@ -1,4 +1,5 @@
 import vm from "node:vm";
+import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { liveSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput } from "./sky-sdss-optical-completion";
 import { copySkyDeepAuxiliaryDecisions, sameSkyDeepAuxiliaryDecisions } from "./sky-deep-auxiliary-visibility";
@@ -23,16 +24,67 @@ import {locatedBodyOccludesMarker} from "./sky-located-object";
 import {skyConstellationAvoidsPoints} from "./sky-constellation-labels";
 import { createSkySceneFrameIdentity, type SkySceneFrameIdentity, type SkySceneFrameInput, type SkyScenePorts } from "./sky-scene-frame";
 import type { SkyPickSnapshot } from "./sky-object-picking";
+import { createSkyObservationTime, skyObservationFrameCurrent, skyObservationFrameReadable, skyObservationFrameAt, skyContinuousTimeCoverage,
+  type SkyObservationTimeState } from "./sky-observation-time";
+import { presentSkyTime, selectSkyTimePresentation, skyTimeRulerRows } from "./sky-time-presentation";
+// The coverage owner is pure; load its actual declaration without importing
+// the hook's React/Query runtime into these controlled page-port tests.
+const skyTimeModelCovers: typeof import("./use-sky-time-geometry").skyTimeModelCovers = (() => {
+  const source = ts.createSourceFile("use-sky-time-geometry.ts", readFileSync(
+    new URL("./use-sky-time-geometry.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const owner = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "skyTimeModelCovers");
+  if (!owner) throw new Error("sky_time_coverage_owner_missing");
+  return vm.runInNewContext(ts.transpileModule(`(${owner.getText(source).replace(/^export /, "")})`,
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText);
+})();
 export const skyPageSceneTestDependencies={liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput,
   copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,sameSkyHipsCompletion,skyNativeImageIsCurrent,sameSkyViewBasis,
   ...bodyImages,...preparedRegions,...sceneResources,...labelPresentation,constellationVisibility,exactSkyTimeFrame,sameSkyCatalogNames,pickSkyCatalogName,
   sameSkyControlNames,pickSkyControlName,resolvedSkyBodyReferences,paintedSkyBoundsVisible,paintedSkyPointVisible,
-  projectSkySelectionMarker,skyObjectPositionIsCurrent,locatedBodyOccludesMarker,skyConstellationAvoidsPoints,createSkySceneFrameIdentity};
+  projectSkySelectionMarker,skyObjectPositionIsCurrent,locatedBodyOccludesMarker,skyConstellationAvoidsPoints,createSkySceneFrameIdentity,
+  skyObservationFrameCurrent,skyObservationFrameReadable,skyObservationFrameAt,skyContinuousTimeCoverage};
+
+/** Explicit neutral time generation for camera/label reader fixtures. No
+ * native frame, geometry or Context qualification is supplied by this adapter. */
+export function skyPageTimeTestBindings(at: string, overrides: Partial<SkyObservationTimeState> = {}) {
+  const timeIntent = { ...createSkyObservationTime().snapshot(), at, ...overrides };
+  return { skyObservationFrameCurrent, skyObservationFrameReadable, timeIntent,
+    timePlaying: timeIntent.mode === "PLAYING", timePreviewing: timeIntent.previewMotion === "moving" };
+}
+
+/** Execute this page's time selection declarations with controlled inputs.
+ * Effects, Query and native acceptance remain outside this adapter. Keeping
+ * the actual dependency chain here avoids isolated readers silently omitting
+ * a newly admitted presentation window or accepted-frame fence. */
+export function skyPageTimePresentationTestCode(source: ts.SourceFile, extraNames: readonly string[] = []) {
+  const names = new Set(["committedAt", "timeBinding", "restoredAt", "requestedAt", "intentPresentationAt",
+    "timePlaying", "timePresentationScope", "acceptedTimePresentationFor", "acceptedTimePresentation",
+    "acceptedMotionPresentation", "preparedTimeSample", "presentationAt", "presentationModel", "presentationSources",
+    "requestedTimePresentation", "timePresentation", "timeGeometryReady", "timeRuler", "timeRows", ...extraNames]);
+  const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage");
+  if (!page || !ts.isFunctionDeclaration(page) || !page.body) throw new Error("sky_page_time_owner_missing");
+  const declarations = page.body.statements.filter(ts.isVariableStatement)
+    .flatMap(statement => [...statement.declarationList.declarations]).filter(declaration => names.has(declaration.name.getText(source)));
+  if (declarations.length !== names.size) throw new Error("sky_page_time_declarations_missing");
+  return declarations.map(declaration => `const ${declaration.getText(source)};`).join("\n");
+}
+
+/** Neutral platform slots supply no accepted frame or resource qualification. */
+export function skyPageTimePresentationTestBindings(bindings: Record<string, any>) {
+  const observationTime = bindings.observationTime ?? createSkyObservationTime();
+  return { presentSkyTime, selectSkyTimePresentation, skyTimeRulerRows, skyTimeModelCovers, exactSkyTimeFrame,
+    skyObservationFrameAt, skyObservationFrameCurrent, useMemo: (compute: () => unknown) => compute(),
+    mode: "NIGHT", canvasNodeRevision: 0, skyInteractionRevision: 0, pageVisible: false,
+    skyResourcesActive: false, canvasError: null, canvasGenerationRef: { current: 1 },
+    presentedSkyFrame: null, presentedSkyFrameRef: { current: null }, previewGeometry: {},
+    timeModel: null, timeGeometrySources: undefined, observationTime, ...bindings,
+    timeIntent: { ...observationTime.snapshot(), ...bindings.timeIntent } };
+}
 
 /** Minimum empty resource declarations for tests of the page's camera port.
  * Supplied publications/bitmaps remain unchanged; absence is never success. */
 export const skyPageCanvasTestFrame = <T extends object>(frame: T) => ({ mode: "NIGHT", heading: null, pose: null,
-  manualBasis: null, verticalFovDeg: 45, timePresentation: null, preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
+  manualBasis: null, verticalFovDeg: 45, timePresentation: null, timeGeneration: 0, preparedRegionImages: [], bodyImageBindings: [], hipsTiles: [], ...frame });
 
 /** Empty resource declarations for a controlled accepted reader. This supplies
  * no draw receipt or success; a test's actual family completions override them. */
@@ -59,7 +111,7 @@ export function skyPageAcceptedTestFrame<F extends object,
 ) {
   const identity = createSkySceneFrameIdentity(input);
   return {
-    frame: { ...skyPageCompletedResourceTestFrame(frame), identity, data: identity.observation.data, frameAt: identity.observation.frameAt,
+    frame: { timeGeneration: 0, ...skyPageCompletedResourceTestFrame(frame), identity, data: identity.observation.data, frameAt: identity.observation.frameAt,
       stellarSupplement: identity.observation.stellarSupplement, mode: identity.view.mode,
       nativeCanvasGeneration: identity.canvas.generation },
     picked: { ...picked, identity, frameAt: identity.observation.frameAt ?? "",
@@ -73,6 +125,9 @@ export function skyPageAcceptedTestFrame<F extends object,
  * supplies its result-bearing ports; these defaults represent absent resources
  * and out-of-scope UI effects, never a successful draw or publication. */
 export function skyPageCanvasTestBindings(bindings:Record<string,any>={}) {
+  // Generation zero is a controlled neutral time scope for camera/resource
+  // port tests; it supplies no requested time, geometry or product acceptance.
+  const observationTime = bindings.observationTime ?? createSkyObservationTime();
   const basis=bindings.basis??createSkyViewBasis(0,0,0)!;
   const measureText = (text:string)=>({width:text.length*8,left:0,right:text.length*8,ascent:9,descent:9});
   const canvasSurfaceRef=bindings.canvasSurfaceRef??{current:{present(){}}};
@@ -100,7 +155,7 @@ export function skyPageCanvasTestBindings(bindings:Record<string,any>={}) {
     canvasDrawRevisionRef:{current:0},canvasSurfaceRef,
     automaticContributionGroupsRef:{current:0},acceptSkyCalibrationRef:{current(){}},
     preparedRegionFailureRef:{current(){}},browsingDrawRef:{current(){}},
-    renderTimePresentation:null,timePresentationScope:{},
+    renderTimePresentation:null,timePresentationScope:{},observationTime,timeIntent:observationTime.snapshot(),
     orientationController:{snapshot:()=>({alignment:{mode:'auto'}})},
     manualBasisRef:{current:null},objectTracking:{snapshot:()=>({target:null})},zoomRef:{current:45},
     viewportInsetsRef:{current:{top:0,bottom:0}},reducedMotionRef:{current:false},
@@ -160,17 +215,29 @@ export function skyPageResourceTestScope(source:ts.SourceFile,bindings:Record<st
   return context;
 }
 
-/** Execute the actual page's staged painted/done/accepted callbacks. Controlled
- * dependencies are supplied by each requirement test; this is not native/GPU evidence. */
-export function skyPagePaintCommit(source: ts.SourceFile, bindings: Record<string, unknown>) {
-  let paint: ts.Expression | undefined, presented: ts.Expression | undefined;
+/** Name the lifecycle owner, not a same-named property in another callback. */
+export function skyPageCanvasLifecyclePort(source: ts.SourceFile,
+  name: "paint" | "presented" | "invalidated" | "sameScene"): ts.Expression {
+  let expression: ts.Expression | undefined;
   const find = (node: ts.Node) => {
-    if (ts.isPropertyAssignment(node) && node.name.getText(source) === "paint") paint = node.initializer;
-    if (ts.isPropertyAssignment(node) && node.name.getText(source) === "presented") presented = node.initializer;
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "createSkyCanvasLifecycle") {
+      const options = node.arguments[0];
+      if (!options || !ts.isObjectLiteralExpression(options) || expression) throw new Error("sky_page_canvas_owner_ambiguous");
+      const property = options.properties.find(value => value.name?.getText(source) === name);
+      if (!property || !ts.isPropertyAssignment(property)) throw new Error(`sky_page_canvas_port_missing:${name}`);
+      expression = property.initializer;
+    }
     ts.forEachChild(node, find);
   };
   find(source);
-  if (!paint || !presented) throw new Error("sky_page_paint_callbacks_missing");
+  if (!expression) throw new Error("sky_page_canvas_owner_missing");
+  return expression;
+}
+
+/** Execute the actual page's staged painted/done/accepted callbacks. Controlled
+ * dependencies are supplied by each requirement test; this is not native/GPU evidence. */
+export function skyPagePaintCommit(source: ts.SourceFile, bindings: Record<string, unknown>) {
+  const paint = skyPageCanvasLifecyclePort(source, "paint"), presented = skyPageCanvasLifecyclePort(source, "presented");
   const generation=(bindings.canvasGenerationRef as {current:number}|undefined)?.current??1;
   const frame=bindings.frame&&skyPageCanvasTestFrame({nativeImageGeneration:generation,
     orientationRevision:0,inspection:{spotId:'controlled'},...bindings.frame as object});

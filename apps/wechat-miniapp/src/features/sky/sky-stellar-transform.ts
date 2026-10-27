@@ -3,6 +3,10 @@ import type {StellarGeometryFrame} from '@starward/miniapp-contracts';
 import {prepareSkyDirection,type PreparedSkyDirection,type SkyVector,type SkyDirectionProjector,type SkyDirectionProjection} from './sky-view-projection';
 import {skyStarDisplayTransmission} from './sky-star-appearance';
 
+export type SkyStellarMotionBuffer=[number,number,number,number,number,number];
+/** The optional output belongs to the synchronous caller, never to a catalog. */
+export type SkyStellarMotionReader=(index:number,output?:SkyStellarMotionBuffer)=>StellarMotion;
+
 /** Qualification for retaining derived drawing input, not geometry admission. */
 export function immutableSkyStellarGeometry(value:StellarGeometryFrame):boolean {
   return Object.isFrozen(value)&&Object.isFrozen(value.observer)&&Object.isFrozen(value.equatorialToEnu);
@@ -12,13 +16,16 @@ export function immutableSkyStellarGeometry(value:StellarGeometryFrame):boolean 
  * with their publication; these lazy values live only with its current frame.
  * Viewport rejection reads the original vector first. Surviving consumers use
  * the original angles, projection and display formulas without a round-trip change. */
-export function createSkyStellarTransform(count:number,motionAt:(index:number)=>StellarMotion,geometry:StellarGeometryFrame){
+export function createSkyStellarTransform(count:number,motionAt:SkyStellarMotionReader,geometry:StellarGeometryFrame){
+  // Copy only the requested row into one frame-local scratch. Projected rays
+  // remain independently owned; no second catalog or historical time is kept.
+  const motion:SkyStellarMotionBuffer=[0,0,0,0,0,0];
   const vectors:Array<SkyVector|undefined>=new Array(count);
   const positions:Array<ReturnType<typeof stellarHorizontalPosition>|undefined>=new Array(count);
   const directions:Array<PreparedSkyDirection|null|undefined>=new Array(count);
   const transmissions:Array<number|undefined>=new Array(count);
   const vector=(index:number)=>vectors[index]??=Object.freeze(projectStellarMotionDirection(
-    motionAt(index),geometry.julianYears,geometry.equatorialToEnu));
+    motionAt(index,motion),geometry.julianYears,geometry.equatorialToEnu));
   const position=(index:number)=>positions[index]??=Object.freeze(stellarHorizontalPosition(vector(index)));
   const displayDirection=(index:number)=>{
     if(directions[index]===undefined){

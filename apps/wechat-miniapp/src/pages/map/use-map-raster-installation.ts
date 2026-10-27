@@ -2,6 +2,8 @@ import Taro from "@tarojs/taro";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mapRasterFiles } from "@/services/map-raster-files";
 import type { NativeMapRasterOwner } from "./native-map-session";
+import { reportRuntimeError } from "@/services/runtime-error";
+import { rasterImageDiagnostic } from "@/services/raster-image-diagnostic";
 import { createMapGroundOverlayCoordinator, mapGroundOverlayKey, type MapGroundOverlayTarget,
   type MapGroundOverlayContext, type MapGroundOverlayResult } from "./map-ground-overlay";
 
@@ -95,6 +97,12 @@ export function useMapRasterInstallation<T>(input: {
       else if (actualData) setPresented({ mapId: nativeMap.mapId, key: key!, data: actualData });
       return;
     }
+    const resource = input.label === "地形" ? "terrain" : input.label === "光污染" ? "night_light" : "map_raster";
+    const fileFailure = rasterImageDiagnostic(failure, null);
+    if (fileFailure.code !== "raster_image_read_failed")
+      reportRuntimeError("request", fileFailure.code, failure, { ...fileFailure, resource });
+    else reportRuntimeError("native", needsRecovery ? "map_raster_recovery_required" : "map_raster_installation_failed", failure,
+      { stage: phase === "cleanup" ? "cleanup" : "display", resource });
     if (actual && phase !== "cleanup") void Taro.getImageInfo({ src: actual.src }).catch(imageError => {
       if (nativeMap.isCurrent() && isCurrent()) input.reportImageFailure(imageError, actual.src);
     });
@@ -147,6 +155,7 @@ export function useMapRasterInstallation<T>(input: {
     } };
   };
   return { error, requiresMapRecovery, target, canPreview, suspendForExit,
+    settled: installed === desiredKey,
     retirementPending: nativeMap.rastersBlocked && enabled && Boolean(target),
     pending: Boolean(target) && installed !== desiredKey,
     presentedData: presented?.mapId === nativeMap.mapId ? presented.data : null };

@@ -139,7 +139,7 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
     const pending: Array<{ x: number; y: number }> = [];
     for (let y = window.top; y <= window.bottom; y++) for (let x = window.left; x <= window.right; x++) pending.push({ x, y });
     const budget: SourceBudget = { bytes: 0, reads: 0, hits: 0, joins: 0, ioMs: 0, decodeMs: 0 };
-    const tiles = new Map<string, Tile>(), sources: TerrainPublicationSourceObject[] = [], unavailable: string[] = [];
+    const tiles: Array<Float32Array | undefined> = new Array(pending.length), sources: TerrainPublicationSourceObject[] = [], unavailable: string[] = [];
     const sourceIssues: { tileId: string; reason: "NOT_FOUND" | "READ_FAILED" | "UNSUPPORTED_SOURCE" }[] = [];
     const sourceReadStarted = performance.now();
     const results = await Promise.allSettled(pending.map(({ x, y }) => readTile(z, x, y, signal, budget)));
@@ -147,7 +147,7 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
     signal.throwIfAborted();
     results.forEach((result, index) => {
       const { x, y } = pending[index], key = `${x}/${y}`;
-      if (result.status === "fulfilled") { tiles.set(key, result.value); sources.push(result.value.source); }
+      if (result.status === "fulfilled") { tiles[index] = result.value.elevations; sources.push(result.value.source); }
       else {
         const tileId = `terrarium/${z}/${key}`;
         unavailable.push(tileId);
@@ -156,15 +156,21 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
       }
     });
     const elevations = new Float32Array(count).fill(Number.NaN), worldPixels = tileSize * 2 ** z;
-    const sample = (x: number, y: number) => tiles.get(`${Math.floor(x / tileSize)}/${Math.floor(y / tileSize)}`)?.elevations[(y % tileSize) * tileSize + x % tileSize] ?? Number.NaN;
+    const columns = window.right - window.left + 1, rows = window.bottom - window.top + 1;
+    const sample = (x: number, y: number) => {
+      const column = Math.floor(x / tileSize) - window.left, row = Math.floor(y / tileSize) - window.top;
+      // Keep an off-window column from aliasing a tile in the next row.
+      if (column < 0 || column >= columns || row < 0 || row >= rows) return Number.NaN;
+      return tiles[row * columns + column]?.[(y % tileSize) * tileSize + x % tileSize] ?? Number.NaN;
+    };
     let valid = 0, minimum = Infinity, maximum = -Infinity;
     for (let index = 0; index < count; index++) {
       if (!supported[index]) continue;
       const px = longitudes[index] * worldPixels - 0.5, py = latitudes[index] * worldPixels - 0.5;
       const x = Math.floor(px), y = Math.floor(py), fx = px - x, fy = py - y;
-      const values = [sample(x, y), sample(x + 1, y), sample(x, y + 1), sample(x + 1, y + 1)];
-      if (!values.every(Number.isFinite)) continue;
-      const value = (values[0] * (1 - fx) + values[1] * fx) * (1 - fy) + (values[2] * (1 - fx) + values[3] * fx) * fy;
+      const nw = sample(x, y), ne = sample(x + 1, y), sw = sample(x, y + 1), se = sample(x + 1, y + 1);
+      if (!Number.isFinite(nw) || !Number.isFinite(ne) || !Number.isFinite(sw) || !Number.isFinite(se)) continue;
+      const value = (nw * (1 - fx) + ne * fx) * (1 - fy) + (sw * (1 - fx) + se * fx) * fy;
       elevations[index] = value;
       const row = Math.floor(index / size), column = index % size;
       if (row >= halo && row < size - halo && column >= halo && column < size - halo) {

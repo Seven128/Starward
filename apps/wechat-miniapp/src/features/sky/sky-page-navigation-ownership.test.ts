@@ -84,11 +84,11 @@ function harness(options: { unloadedMap?: boolean } = {}) {
     observation:{data:data as unknown as ResolvedSkyReport,frameAt:at},
     view:{heading:null,pose:null,manualBasis:createSkyViewBasis(0,35,0)!,mode:"NIGHT",verticalFovDeg:45,center:{x:195,y:422}},
     canvas:{generation:1,width:390,height:844},
-  },{sdssOptical:completion("M:51"),preparedRegions:[],opticalHips:[],bodyImages:[]},
+  },{timeGeneration:time.snapshot().presentationGeneration,sdssOptical:completion("M:51"),preparedRegions:[],opticalHips:[],bodyImages:[]},
   {catalogVersion:"controlled-navigation",catalogHash:"controlled-navigation",objects:[]});
   const sandbox: Record<string, any> = {
     ...skyPageSceneTestDependencies,
-    contextSession: session, observationTime: time, timeBinding: binding, committedAt: at,
+    contextSession: session, observationTime: time, timeIntent: time.snapshot(), timeBinding: binding, committedAt: at,
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
     activeContext: context, timeSaving: false, mode: "NIGHT", alignmentMode: "auto", active: true,
     orientationController: { snapshot: () => ({ alignment: { mode: sandbox.alignmentMode } }) },

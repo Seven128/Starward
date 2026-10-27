@@ -33,6 +33,21 @@ test("shared error output is safe, keeps numeric native causes and reports one f
   });
 });
 
+test('raster budget diagnostics expose only fixed finite counters and tolerate hostile getters',async()=>{
+  await captureErrors(rows=>{
+    const error=Object.assign(new Error('private-path'),{budget:{entries:8,readyBytes:16,activeDownloads:1,
+      queued:0,nativePins:2,activeReaders:3,physicalFiles:5,failedRemovals:1,url:'private-url',
+      unknown:999}});
+    reportRuntimeError('request','raster_image_budget_busy',error);
+    const detail=rows[0]![1] as Record<string,unknown>;
+    assert.equal(detail.entries,8);assert.equal(detail.activeReaders,3);assert.equal(detail.failedRemovals,1);
+    assert.doesNotMatch(JSON.stringify(rows),/private|unknown|url/u);
+    reportRuntimeError('request','raster_image_budget_busy',{budget:{entries:NaN,readyBytes:-1,
+      get nativePins(){throw Error('private');}}});
+    assert.deepEqual(rows[1]![1],{code:'raster_image_budget_busy'});
+  });
+});
+
 test("the common transport logs real HTTP, contract, timeout and native failures once, including successful stale fallback", async () => {
   const h = transportHarness(false, () => {}, true);
   await h.seed();

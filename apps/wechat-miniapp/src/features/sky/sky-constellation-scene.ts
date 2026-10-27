@@ -1,6 +1,6 @@
 import { assertStellarGeometryFrame, type ConstellationCatalogPublication, type ConstellationArtwork,
   type SkyScene } from "@starward/miniapp-contracts";
-import { createStellarMotion, stellarDirectionAt, rotateStellarDirection, type StellarMotion } from "@starward/astronomy-core/stellar-vectors";
+import { createStellarMotion, projectStellarMotionDirection, type StellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 import { registerSkyArtwork, type SkyArtworkRegistration } from "./sky-artwork-registration";
 import type { SkyVector } from "./sky-view-projection";
@@ -47,8 +47,8 @@ export function resolveConstellationFrame(catalog: ConstellationCatalogPublicati
     // Propagate from the publication epoch; both catalog and frame now use J2000.
     const years=frame.geometry.julianYears+(2000-catalog.astrometry.epochJulianYear);
     const directions=new Map<number,SkyVector>();
-    for (const [hip,motion] of model.motions) directions.set(hip,Object.freeze(rotateStellarDirection(
-      stellarDirectionAt(motion,years),frame.geometry.equatorialToEnu)));
+    for (const [hip,motion] of model.motions) directions.set(hip,Object.freeze(projectStellarMotionDirection(
+      motion,years,frame.geometry.equatorialToEnu)));
     const lines=model.lines.map(([a,b])=>Object.freeze([directions.get(a)!,directions.get(b)!] as const));
     // Each identity gets its own label even when several definitions share an
     // illustration. Use its unique line stars rather than an image midpoint.

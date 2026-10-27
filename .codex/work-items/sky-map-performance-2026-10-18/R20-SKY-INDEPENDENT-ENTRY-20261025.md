@@ -1,6 +1,6 @@
 # P3 独立WEAPP入口：天气资格与未来时间边界
 
-2026-10-25。承接唯一[PLAN](PLAN.md) P3，仍为 `development_feedback`。记录时基线为main `2f32ccaf`，本批4个生产文件及5个测试文件共9件增量尚未提交；本文不建立第二计划或完整P3验收。当前运行与后续操作只归[HANDOFF](HANDOFF.md)。
+2026-10-25。承接唯一[PLAN](PLAN.md) P3，仍为 `development_feedback`。实施基线为main `2f32ccaf`；本批4个生产文件及5个测试文件共9件增量已随15件显式写集提交/推送为 `34011408`。本文不建立第二计划或完整P3验收，当前运行与后续操作只归[HANDOFF](HANDOFF.md)。
 
 ## 实际反例与修复责任
 
@@ -62,4 +62,16 @@ iPhone及Pixel 9的官方截图均只见天空；Root读到页面opacity=1、vis
 
 Map同时出现过相机调整未完成提示，点位/详情保留。只读追踪表明它可合并请求期限、范围修正或原生投影失败，不能从截图归因为Context失败或F04物理资源退休。本轮随后沿既有Native读回函数、当前所选正式测试点和原机型做了一次有效读回：page实例前后稳定，布局/getScale/getRegion已返回，selected-projection的toScreenLocation在既有2.5秒读取期限内未收回，后续角点/逆投影未取得。因此不认证4km或居中，也不推断永久不支持、物理释放或源算法错误，不重试同条件或添加fallback。此前`.cmd`多行参数导致的语法错误和Node路径别名导入失败均为准备/读回入口错误，没有计作产品反例；有效调用复用现有官方原生CLI，回执为private run的`map-focus-native-cli.private.json`和`map-focus-native-summary.private.json`。原机型已恢复，popup/s5已精确关闭后同路径重开作此读回；关闭前已确认产物指纹完整匹配2d68。
 
-已交付head `2f32ccaf` 的Product40160622692和Context40160622664通过，但不覆盖当前dirty P3。该head的staging40161606084在镜像发布前因 `host_preflight_disk_below_10_gib` 失败，发布/promotion跳过，未部署。真实控件、Cancel/Apply、正常Play、SAO、手机、正式身份/供给及完整视觉仍有未验范围；两类性能和内存/OOM继续后置，OOM仍未解决，整个Goal未完成。
+当前head `34011408d17ac0033ca4e29df474ef1ea9584b0d` 已推送，origin/main实读0/0、暂存为空；既有App、资产和旧dirty回执未夹带。Product40171854619与Context40171854578成功，全部产品步骤实际执行，含既有消费者、backend/WEAPP构建、候选检查、真实隔离基础设施和OCI。该head实际API995pass/74skip、WEAPP2822pass/1skip，另resource preparation1个skip；未隐去内部skip。staging40172587365的qualify成功，但在镜像发布前因 `host_preflight_disk_below_10_gib` 失败，镜像发布/promotion均跳过，未部署。旧2f的CI和失败保留为历史，不替代当前结果。
+
+经现有feedback owner另备新普通413a候选szzwZq/gen1 o1ut5N，339件，官方ordinary preview生成新私有QR并为qr_ready；未推断已送达/已在手机运行，没有绑定deviceSession。入口准备首次误传dist根被separate_bundle_root guard拒绝，没有官方调用或QR；改用旧成功run记录的sourceProject后沿原owner完成准备，没有绕guard或重编译。新候选私有回执为`current-phone-preparation.private.json`，旧手机58dc仍作历史保全。真实控件、Cancel/Apply、正常Play、SAO、手机、正式身份/供给及完整视觉仍有未验范围；性能和内存/OOM继续后置，OOM未解决，Goal未完成。CI/部署最终回执只在本地更新，不因状态另造提交。
+
+## a37之后的单次新条件资格读回
+
+P2普通Map状态窄修与编译缓存恢复后，Root尝试同一正式点的正常Sky按钮。已有失败native栅格的运行仍停Map，Console确认sky_entry_navigation_failed而非timeout；没有重放按钮或推断cleanup/redirect具体原因。一次现有Map恢复把id1换id2、保10/25 21:00，但后继仍同类图层ERROR，已停止再次重建。
+
+随后按session的现有恢复边界刷新当前项目小程序运行，先实核完整产物仍5e414539、源码a37，未清账号、业务storage/session、未重建产物或重开其他窗口。新运行Map.id为spot-map-1，期间未开启任何Map栅格；沿Search选择同一正式点，正常可用的云观星按钮实际进入sky/detail/index。路由仍携Map13:00Z规划时刻，未为获取样本解除Sky当前时刻上限；既有P3合法restore/独立天文/BSC8404证据直接复用，不重新跑API或数值检查。
+
+实际查看p3-no-overlay-entry-20261025T092650631Z.png（484×1047）：可见Canvas天空/轮廓，meta/menu控件仍未呈现。此次新的源码/缓存与无栅格前置条件没有解决控件可见性；停止同条件刷新、机型/popup变换或猜样式。正常入口可进入的限定结果与完整控件、六字段取消/应用、正常Play、SAO、手机等缺口分开，P3/D2/OOM不关闭。
+
+当前仍停在该Sky普通运行；后续若因独立工作需用官方compiler跳回Map，只能作开发准备，不冒正常可见返回控件或Map状态恢复验收。当前完整进度及下一步仍只归HANDOFF。

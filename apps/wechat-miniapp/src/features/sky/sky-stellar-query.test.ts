@@ -43,7 +43,9 @@ test('clear while SAO index delivery is pending cannot capture a new generation 
 function functionBody(file:URL,name:string){
   const source=ts.createSourceFile(file.href,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true);
   const fn=source.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text===name)!;
-  return ts.transpileModule(fn.getText(source).replace(/^export /u,'')+`\n${name};`,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText;
+  const bindings=source.statements.filter(node=>ts.isVariableStatement(node)&&
+    node.declarationList.declarations.some(value=>value.name.getText(source)==='getSaoIndex'));
+  return ts.transpileModule(bindings.map(node=>node.getText(source)).join('\n')+'\n'+fn.getText(source).replace(/^export /u,'')+`\n${name};`,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText;
 }
 
 test('actual sky hook forwards immutable query policy; a changed publication remains client-valid after Query observer storage',async()=>{
@@ -54,6 +56,7 @@ test('actual sky hook forwards immutable query policy; a changed publication rem
   const hook=vm.runInNewContext(functionBody(new URL('./use-sky-stellar-supplement.ts',import.meta.url),'useSkyStellarSupplement'),{
     useResourceQuery,useEffect(){},useRef:(v:unknown)=>({current:v}),useState:()=>[null,()=>{}],useMemo:(f:()=>unknown)=>f(),useCallback:(f:unknown)=>f,
     EMPTY:{tiles:[],loading:false,failed:false},
+    saoCatalogClient:{getIndex:()=>assert.fail('this scope checks Query policy without fetching')},
   });
   hook(undefined,undefined,null,false);assert.equal(options.structuralSharing,false);
   const location=new URL('../../../../../workers/miniapp-api/assets/sao/',import.meta.url);

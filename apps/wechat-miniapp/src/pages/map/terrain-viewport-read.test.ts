@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { mapBoundsForNativeRegion, bufferTerrainBounds } from "./terrain-geometry";
 import { mapRegionEnded, userMapRegionEnd, userMapRegionStarted } from "./map-region-event";
+import { NATIVE_MAP_CAMERA_READ_TIMEOUT_MS } from "./map-camera";
 
 const source = ts.createSourceFile("native-region.ts", readFileSync(new URL("./use-native-map-region.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 function initializer(name: string, callback = false) {
@@ -20,20 +21,22 @@ function initializer(name: string, callback = false) {
 
 function harness() {
   const viewport = { center: { latitude: 23, longitude: 114 }, zoom: 9, loadedViewport: "initial" };
-  const reads: { success(value: unknown): void; fail(): void }[] = [], scales: { success(value: unknown): void; fail(): void }[] = [], timers = new Map<number, () => void>(); let timer = 0;
+  const reads: { success(value: unknown): void; fail(cause?: unknown): void }[] = [], scales: { success(value: unknown): void; fail(cause?: unknown): void }[] = [], timers = new Map<number, () => void>(); let timer = 0;
+  const diagnostics: unknown[][] = [];
   const cameraKey = () => JSON.stringify(["spot-map", viewport.center, viewport.zoom, viewport.loadedViewport, 0, 700]);
   const state: any = { enabled: true, nativeMap: { mapId: "spot-map", isCurrent: () => true },
     useAppStore: { getState: () => ({ viewport }) }, keyFor: () => cameraKey(),
     scope: { current: cameraKey() }, pending: { current: null },
     cameraKey: cameraKey(), measured: null, failure: null, expectedScale: null,
-    mapBoundsForNativeRegion,
+    mapBoundsForNativeRegion, NATIVE_MAP_CAMERA_READ_TIMEOUT_MS,
+    reportRuntimeError: (...args: unknown[]) => diagnostics.push(args),
     Taro: { createMapContext: () => ({ getRegion: (options: any) => { reads.push(options); }, getScale: (options: any) => { scales.push(options); } }) },
     setTimeout: (fn: () => void) => { const id = ++timer; timers.set(id, fn); return id; }, clearTimeout: (id: number) => timers.delete(id),
     setFailure: (failure: unknown) => { state.failure = failure; },
     setMeasured: (value: unknown) => { state.measured = value; },
   };
   const read = vm.runInNewContext(initializer("readNativeViewport", true), state);
-  return { read, reads, scales, state,
+  return { read, reads, scales, state, diagnostics,
     bounds: () => vm.runInNewContext(initializer("mapNativeBounds"), state),
     terrainBounds: () => { const bounds = vm.runInNewContext(initializer("mapNativeBounds"), state); return bounds ? bufferTerrainBounds(bounds) : null; },
     error: () => vm.runInNewContext(initializer("error"), state),
@@ -67,6 +70,21 @@ test("formal and private spot panels wait for their promoted zoom before accepti
   }
   assert.equal(vm.runInNewContext(expression, { ...state, bottomPresentation: "none" }), null,
     "ordinary map browsing retains its existing read path");
+});
+
+test('native viewport terminal diagnostics retain the failed boundary and numeric cause without camera data',()=>{
+  const h=harness(),cause={errno:600002,errMsg:'private native details'};
+  h.read();h.reads[0]!.fail(cause);h.reads[0]!.fail(cause);
+  assert.equal(h.diagnostics.length,1,'callback/Promise duplication cannot report another terminal failure');
+  assert.equal(h.diagnostics[0]![1],'map_viewport_region_failed');
+  assert.equal((h.diagnostics[0]![2] as Error).cause,cause);
+  h.read(true);h.reads[1]!.success({});
+  assert.equal(h.diagnostics.at(-1)![1],'map_viewport_bounds_failed');
+  h.state.expectedScale=14;h.read(true);h.scales[0]!.fail(cause);
+  assert.equal(h.diagnostics.at(-1)![1],'map_viewport_scale_failed');
+  h.read(true);h.timeout();assert.equal(h.diagnostics.at(-1)![1],'map_viewport_timeout_failed');
+  assert.equal((h.diagnostics.at(-1)![3] as {stage:string}).stage,'timeout');
+  assert.equal((h.diagnostics.at(-1)![3] as {resource:string}).resource,'map_viewport');
 });
 
 test("editor camera waits for its requested scale before publishing native bounds", () => {

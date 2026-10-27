@@ -5,6 +5,7 @@ import { SOURCE_READING_ROUTE, type SourceDocument } from "@/utils/source-docume
 import { skyConstellationSourceDocument, skyGalacticSourceDocument, skyLandscapeSourceDocument,
   skySolarLightSourceDocument, skyStellarSupplementSourceDocument, skyWideFieldSourceDocument } from "./sky-source-documents";
 import { reportRuntimeError } from "@/services/runtime-error";
+import { createResourceFailureEpisode } from "@/services/resource-failure-episode";
 import { skyMapLifecycle } from "@/navigation/sky-map-lifecycle";
 import { openPrimaryPage } from "@/navigation/primary-page-navigation";
 import { PAGE_BLACKOUT_FADE_MS } from "@/navigation/page-blackout-transition";
@@ -94,6 +95,7 @@ import { Canvas, ScrollView, Text, View } from "@tarojs/components";
 import { SharedButton as Button } from "@/components/shared-button-press";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createSkyContextSession } from "./sky-context-session";
+import { getSkyPageObservationContext } from "./sky-context-query";
 import { matchesPrivateProposal } from "../../services/observation-context-version";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
@@ -129,7 +131,6 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   MiniappApiError,
-  getObservationContext,
   getSkyReport,
   getSpotOverview,
   restoreObservationContext,
@@ -158,7 +159,8 @@ import { dragSkyView, INITIAL_MANUAL_SKY_VIEW, type SkyPanMode } from "./sky-man
 import { attachSkyCatalog, resolveSkyDeepSkyScene, resolveSkySceneFrame, skySceneHasContent, type ResolvedSkyReport as SkyReport } from "./sky-stellar-scene";
 import { skySceneFrameFacts, skyPresentedViewFacts } from "./sky-scene-frame-facts";
 import { exactSkyTimeFrame } from "./sky-time-frame";
-import { createSkyObservationTime, skyPresentedTimeCurrent, type SkyTimeEditSource } from "./sky-observation-time";
+import { createSkyObservationTime, skyContinuousTimeCoverage, skyObservationFrameAt, skyObservationFrameCurrent, skyObservationFrameReadable,
+  type SkyTimeEditSource } from "./sky-observation-time";
 import { skyCommandStateSetter } from "./sky-command-state";
 import { createSkyDisclosureCommands, skyHasDisclosure, type SkyControlPanel } from "./sky-disclosure-commands";
 import { SkyBrowseControl, SkyLayerToggle, SkyMenuAction, SkyNavigationMenu, SkySourceSummary } from "./sky-menu";
@@ -167,7 +169,7 @@ import { useSkyTimeTargetQuery } from "./sky-time-target-query";
 import { sameContextVersion } from "../../services/observation-context-version";
 import { presentSkyTime, selectSkyTimePresentation, skyPresentationTimeModel, skyRulerTime, skyTimeRulerRows,
   type SkyTimePresentation, type SkyTimeRulerRow } from "./sky-time-presentation";
-import { useSkyTimeGeometry } from "./use-sky-time-geometry";
+import { useSkyTimeGeometry, skyTimeModelCovers } from "./use-sky-time-geometry";
 import { skyTimePreviewStatus } from "./sky-time-preview-status";
 import type { SkyPositionPresentation } from "./sky-presentation-position";
 import { createSkyCanvasLifecycle, createSkyCanvasFrameClock, skyCanvasFailureCode } from "./sky-canvas-lifecycle";
@@ -228,6 +230,7 @@ interface SkyCanvasFrame extends SkyCanvasResourceFrame {
   readonly frameAt: SkySceneFrameIdentity["observation"]["frameAt"];
   readonly timePresentation: SkyTimePresentation | null;
   readonly timePresentationScope: object;
+  readonly timeGeneration: number;
   readonly heading: number | null;
   readonly pose: DevicePose | null;
   readonly manualBasis: SkyViewBasis | null;
@@ -1247,6 +1250,8 @@ export interface SpotSkyPageProps {
     artworkContributions: { readonly auxiliaryBytesLimit?: number; readonly maxGroups: number } }>;
 }
 export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions }: SpotSkyPageProps = {}) {
+  const failureEpisodes = useMemo(() => ({ report: createResourceFailureEpisode(),
+    catalog: createResourceFailureEpisode(), supplement: createResourceFailureEpisode() }), []);
   // Explicit trial limits remain fixed. Ordinary adopted Prepared fields use
   // only this frame's actual group count and native drawing-buffer dimensions.
   const contributionInput=targetOpticalPublication?.artworkContributions??opticalHipsContributions;
@@ -1305,7 +1310,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   // navigation/background teardown keep their existing cancellation semantics.
   const resourcePageVisible = pageVisible || sourceReturn;
   const contextSession = useMemo(
-    () => createSkyContextSession(routeContext.contextId, () => useAppStore.getState()),
+    () => createSkyContextSession(routeContext.contextId, useAppStore.getState),
     [routeContext.contextId],
   );
   const timeCommitContinuity = useMemo(() => createSkyTimeCommitContinuity(useSkyForecastQuery.presentation), []);
@@ -1376,25 +1381,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const privateLookupEnabled = pageVisible && Boolean(activeContext?.privateProposal && activeContext.privateProposal.ownerId === accountOwnerId);
   const contextLookup = useResourceQuery({
     queryKey: ["observation-context", accountOwnerId, contextSession.contextId],
-    queryFn: async (signal) => {
-      const current = useAppStore.getState().observationContext;
-      const request = current?.privateProposal ? contextSession.begin(current) : null;
-      try {
-        let response;
-        try { response = await getObservationContext(contextSession.contextId, signal); }
-        catch (error) {
-          if (!request || !current || !contextSession.isCurrent(request) || !(error instanceof MiniappApiError) ||
-              (error.code !== "NOT_FOUND" && error.code !== "STALE_REJECTED")) throw error;
-          response = await restoreObservationContext(current, signal);
-        }
-        if (request && contextSession.accept(request, response.data)) setObservationContext(response.data);
-        return response;
-      } catch (error) {
-        if (request && contextSession.isCurrent(request) && error instanceof MiniappApiError &&
-            (error.code === "PERMISSION_DENIED" || error.code === "NOT_FOUND")) setObservationContext(null);
-        throw error;
-      } finally { if (request) contextSession.finish(request); }
-    },
+    queryFn: getSkyPageObservationContext.bind(null, contextSession, setObservationContext),
     enabled: contextLookupEnabled || privateLookupEnabled,
     staleTime: privateLookupEnabled ? 0 : 30_000,
     refetchInterval: privateLookupEnabled ? WEATHER_ALERT_REFRESH_MS : false,
@@ -1432,6 +1419,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         Date.parse(activeContext.selectedAtUtc) ===
           Date.parse(routeContext.selectedAt))),
   );
+  // Query can outlive this render. Bind its request identity directly, so a
+  // cached fetch function does not retain this page's unrelated Sky frames.
   const overview = useResourceQuery({
     queryKey: [
       "spot-overview",
@@ -1440,12 +1429,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       activeContext?.contextFingerprint,
       activeContext?.revision,
     ],
-    queryFn: (signal) =>
-      getSpotOverview(
-        routeContext.spotId,
-        activeContext?.contextId ?? routeContext.contextId,
-        signal,
-      ),
+    queryFn: getSpotOverview.bind(null, routeContext.spotId, activeContext?.contextId ?? routeContext.contextId),
     enabled: pageVisible && contextComplete && !proposalRoute,
     staleTime: 30_000,
   });
@@ -1459,12 +1443,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       activeContext?.localDate,
       routeContext.dataRevision,
     ],
-    queryFn: (signal) =>
-      getSkyReport(
-        routeContext.spotId,
-        activeContext?.contextId ?? routeContext.contextId,
-        signal,
-      ),
+    queryFn: getSkyReport.bind(null, routeContext.spotId, activeContext?.contextId ?? routeContext.contextId),
     enabled: pageVisible && contextComplete,
     staleTime: 0,
     refetchInterval: WEATHER_ALERT_REFRESH_MS,
@@ -1519,7 +1498,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     if (index === null) { setTimeIntent(observationTime.cancel()); }
     else {
       const at = report.data?.data.hourly[index]?.at;
-      if (at) setTimeIntent(observationTime.preview(at));
+      if (at) previewSkyTime(at);
     }
   };
   const [manualBasis, setManualBasis] = useState<SkyViewBasis | null>(INITIAL_MANUAL_SKY_VIEW);
@@ -1602,7 +1581,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     catalogNames: readonly SkyPlacedCatalogName[]; controlNames:readonly SkyPlacedControlName[] } | null>(null);
   // DOM labels must wait for the matching native frame; the ref alone cannot trigger that commit.
   const [presentedSkyFrame, setPresentedSkyFrameState] = useState<(Pick<SkyCanvasFrame,
-    "data" | "frameAt" | "timePresentation" | "timePresentationScope" | "mode" | "constellations" | "constellationsEnabled" | "stellarSupplement"> &
+    "data" | "frameAt" | "timePresentation" | "timePresentationScope" | "timeGeneration" | "mode" | "constellations" | "constellationsEnabled" | "stellarSupplement"> &
     SkyCompletedSceneResources & { identity: SkySceneFrameIdentity; nativeCanvasGeneration: number;
       deepSkyAuxiliaryDecisions: readonly SkyDeepAuxiliaryDecision[];
       namedStars: NonNullable<SkyPickSnapshot["namedStars"]>;
@@ -1887,6 +1866,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
               completedResources.deepSkyImage || completedResources.galacticImage || completedResources.opticalHips.length || completedResources.bodyImages.length ?
               previous && previous.identity === sceneIdentity && previous.data === frame.data && previous.frameAt === frame.frameAt && previous.timePresentation === frame.timePresentation &&
                 previous.timePresentationScope === frame.timePresentationScope &&
+                previous.timeGeneration === frame.timeGeneration &&
                 previous.mode === frame.mode && previous.constellations === frame.constellations &&
                 previous.stellarSupplement === frame.stellarSupplement &&
                 previous.constellationsEnabled === frame.constellationsEnabled &&
@@ -1907,7 +1887,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
                 previous.resolvedBodyReferences.every((reference, index) => reference === resolvedBodyReferences[index])
                 ? previous : { identity: sceneIdentity, data: sceneIdentity.observation.data,
                   frameAt: sceneIdentity.observation.frameAt, timePresentation: frame.timePresentation,
-                  timePresentationScope: frame.timePresentationScope, mode: frame.mode,
+                  timePresentationScope: frame.timePresentationScope, timeGeneration: frame.timeGeneration, mode: frame.mode,
                   constellations: frame.constellations, constellationsEnabled: frame.constellationsEnabled,
                   stellarSupplement: frame.stellarSupplement,
                   ...completedResources, nativeCanvasGeneration: paintAttempt.generation,
@@ -1953,6 +1933,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       });
     },
     sameScene: (completed, latest) => completed.data === latest.data && completed.frameAt === latest.frameAt &&
+      completed.timeGeneration === latest.timeGeneration &&
       completed.timePresentation === latest.timePresentation &&
       completed.timePresentationScope === latest.timePresentationScope &&
       completed.mode === latest.mode && completed.verticalFovDeg === latest.verticalFovDeg &&
@@ -1963,8 +1944,16 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     presented: (frame, size) => {
       const attempt = pendingSkyPaintRef.current;
       pendingSkyPaintRef.current = null;
+      const currentTime = observationTime.snapshot();
+      if (!Number.isSafeInteger(frame.timeGeneration) || frame.timeGeneration !== currentTime.presentationGeneration) return;
       if (!attempt || attempt.frame !== frame || attempt.generation !== canvasGenerationRef.current ||
         attempt.identity.canvas.generation !== canvasGenerationRef.current || !attempt.publish) return;
+      const previous = presentedSkyFrameRef.current;
+      if (frame.data && frame.frameAt && previous?.timeGeneration === frame.timeGeneration &&
+        previous.timePresentationScope === frame.timePresentationScope) {
+        if (previous.frameAt === currentTime.at && frame.frameAt !== currentTime.at) return;
+        if (currentTime.previewFromAt && !skyObservationFrameCurrent(currentTime, frame.frameAt, frame.timeGeneration, previous.frameAt)) return;
+      }
       if (attempt.camera?.navigation && (!navigationCurrentRef.current() || !browsingCamera.current(attempt.camera))) return;
       const surface = canvasSurfaceRef.current;
       if (!surface) throw new Error("sky_canvas_surface_unavailable");
@@ -2042,6 +2031,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     timeBinding: string;
     committedAt: string;
     at: string;
+    timeGeneration: number;
     canvasGeneration: number;
     startX: number;
     startY: number;
@@ -2094,36 +2084,59 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const restoredAt = observationTime.restoreInstant(timeBinding, committedAt);
   const requestedAt = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt
     ? timeIntent.at : restoredAt;
+  const intentPresentationAt = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt
+    ? skyObservationFrameAt(timeIntent) : restoredAt;
   const timePlaying = timeIntent.binding === timeBinding && timeIntent.mode === "PLAYING";
+  const timePreviewing = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt && timeIntent.previewMotion === "moving";
   const timePlayRequested = timeIntent.binding === timeBinding && timeIntent.committedAt === committedAt && timeIntent.playRequested;
-  const previewGeometry = useSkyTimeGeometry(rawReportData, requestedAt,
-    pageVisible && skyResourcesActive && !carriedReport && !timeSaving, timePlaying || timePlayRequested, () => {
-      if (!skyTimeIntentCurrent()) return null;
-      const time = observationTime.snapshot();
-      return { at: time.at, fullWindow: time.mode === "PLAYING" || time.playRequested };
-    });
-  const timeModel = carriedReport ? timeCommitContinuity.model() ?? previewGeometry.model : previewGeometry.model;
-  const timeGeometrySources = carriedReport ? timeCommitContinuity.sources() : previewGeometry.sources;
-  useEffect(() => {
-    if (!timeBinding) return;
-    setTimeIntent(observationTime.bind(timeBinding, committedAt, timeModel));
-  }, [observationTime, timeBinding, committedAt, timeModel]);
   // A return to the same values must not revive an input invalidated in between.
   // This is a scope ticket on the existing accepted frame, not another clock.
   const timePresentationScope = useMemo(() => ({}), [rawReportData, timeBinding, committedAt, mode, canvasNodeRevision,
     skyInteractionRevision, pageVisible, skyResourcesActive, canvasError]);
-  const requestedTimePresentation = useMemo(() => presentSkyTime(rawReportData, requestedAt, timeModel, timeGeometrySources),
-    [rawReportData, requestedAt, timeModel, timeGeometrySources]);
-  const acceptedTimePresentation = pageVisible && skyResourcesActive && !canvasError &&
-    presentedSkyFrame?.mode === mode && presentedSkyFrame.nativeCanvasGeneration === canvasGenerationRef.current &&
-    presentedSkyFrame.timePresentationScope === timePresentationScope &&
-    presentedSkyFrame.data?.context === rawReportData?.context &&
-    presentedSkyFrame.timePresentation?.row.at === presentedSkyFrame.frameAt ? presentedSkyFrame.timePresentation : null;
+  const acceptedTimePresentationFor = (frame: typeof presentedSkyFrame) => pageVisible && skyResourcesActive && !canvasError &&
+    frame?.mode === mode && frame.nativeCanvasGeneration === canvasGenerationRef.current &&
+    frame.timePresentationScope === timePresentationScope && frame.data?.context === rawReportData?.context &&
+    frame.timePresentation?.row.at === frame.frameAt ? frame.timePresentation : null;
+  const acceptedTimePresentation = acceptedTimePresentationFor(presentedSkyFrame);
+  const acceptedMotionPresentation = acceptedTimePresentationFor(presentedSkyFrameRef.current);
+  const geometryCanvasGeneration = canvasGenerationRef.current;
+  const previewGeometry = useSkyTimeGeometry(rawReportData, requestedAt,
+    pageVisible && skyResourcesActive && !carriedReport && !timeSaving, timePlaying || timePlayRequested, () => {
+      if (!skyTimeIntentCurrent() || canvasError || canvasGenerationRef.current !== geometryCanvasGeneration) return null;
+      const demand = observationTime.preparationDemand();
+      const frame = presentedSkyFrameRef.current, presentation = acceptedTimePresentationFor(frame);
+      return { ...demand, epoch: timePresentationScope,
+        ...(presentation && frame?.timeGeneration === demand.generation ? {
+          presented: { at: presentation.row.at, model: presentation.model, generation: frame.timeGeneration },
+        } : {}) };
+    });
+  const timeModel = carriedReport ? timeCommitContinuity.model() ?? previewGeometry.model : previewGeometry.model;
+  const timeGeometrySources = carriedReport ? timeCommitContinuity.sources() : previewGeometry.sources;
+  const preparedTimeSample = previewGeometry.heldSample;
+  const presentationAt = preparedTimeSample && timeIntent.editing.length === 1 && timeIntent.editing[0] === "fields" &&
+    skyObservationFrameCurrent(timeIntent, preparedTimeSample.at, preparedTimeSample.generation, acceptedMotionPresentation?.row.at)
+    ? preparedTimeSample.at : intentPresentationAt;
+  const previewCoverage = useMemo(() => skyContinuousTimeCoverage(timeModel, acceptedMotionPresentation?.model ?? null),
+    [timeModel, acceptedMotionPresentation?.model]);
+  useEffect(() => {
+    if (!timeBinding) return;
+    setTimeIntent(observationTime.bind(timeBinding, committedAt, timeModel, { coverage: previewCoverage, elapsedAt: Date.now() }));
+  }, [observationTime, timeBinding, committedAt, timeModel, previewCoverage]);
+  // Only the target window and the currently accepted model may supply this
+  // path. Once the accepted frame enters the target window, the old one drops.
+  const presentationModel = timeIntent.previewAt != null && !skyTimeModelCovers(timeModel, presentationAt)
+    ? acceptedMotionPresentation?.model ?? timeModel : timeModel;
+  const presentationSources = presentationModel !== timeModel ? acceptedMotionPresentation?.report.sources : timeGeometrySources;
+  const requestedTimePresentation = useMemo(() => presentSkyTime(rawReportData, presentationAt, presentationModel, presentationSources),
+    [rawReportData, presentationAt, presentationModel, presentationSources]);
   const timePresentation = useMemo(() => selectSkyTimePresentation(rawReportData, requestedAt, restoredAt,
     requestedTimePresentation, acceptedTimePresentation, observationTime.latestInstant()),
     [rawReportData, requestedAt, restoredAt, requestedTimePresentation, acceptedTimePresentation, observationTime]);
   const timeGeometryReady = requestedTimePresentation?.row.at === requestedAt;
-  const timeRows = useMemo(() => skyTimeRulerRows(rawReportData, timeModel), [rawReportData, timeModel]);
+  // One current set of input ticks follows the selected civil day, independently
+  // of the earlier model being painted. It retains no geometry or frame history.
+  const timeRuler = useMemo(() => ({ rows: undefined as readonly SkyTimeRulerRow[] | undefined }), [rawReportData]);
+  const timeRows = timeRuler.rows = skyTimeRulerRows(rawReportData, timeModel, requestedAt, timeRuler.rows);
   const registrationAt = skyPresentationTimeModel(rawReportData)?.startAt ?? rawReportData?.observationFrames?.[0]?.at ?? committedAt;
   const fineTargetBinding = timeGeometryReady && timePresentation?.mode === "MODEL" && !carriedReport && !timePlaying &&
     !timeScrubbing && rawReportData && activeContext && Date.parse(requestedAt) >= Date.parse(activeContext.nightStartUtc) &&
@@ -2155,7 +2168,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   useEffect(() => {
     if (!timePlayRequested) return;
     const current = observationTime.snapshot();
-    if (!current.playRequested || current.at !== requestedAt) return;
+    if (!current.playRequested || current.at !== requestedAt || current.presentationGeneration !== timeIntent.presentationGeneration) return;
     if (!pageVisible || contextSession.busy || timeSaving || alignmentEditing || report.isError ||
       !geometryReport || report.data?.dataState === "EXPIRED" || report.data?.dataState === "UNAVAILABLE") {
       setTimeIntent(observationTime.pause());
@@ -2165,11 +2178,11 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       setTimeIntent(observationTime.play(Date.now()));
   }, [observationTime, timePlayRequested, requestedAt, previewGeometry.playbackReady, pageVisible,
     contextSession, contextSession.busy, timeSaving, alignmentEditing, report.isError, Boolean(geometryReport),
-    report.data?.dataState, timeBinding, committedAt, skyInteractionRevision]);
+    report.data?.dataState, timeBinding, committedAt, skyInteractionRevision, timeIntent.presentationGeneration]);
   useEffect(() => {
-    if (!timePlaying) return;
+    if (!timePlaying && !timePreviewing) return;
     if (!pageVisible || contextSession.busy || timeSaving || alignmentEditing || report.isError ||
-      !geometryReport || report.data?.dataState === "EXPIRED" || report.data?.dataState === "UNAVAILABLE") {
+      !geometryReport || report.data?.dataState === "EXPIRED" || report.data?.dataState === "UNAVAILABLE" || timePreviewing && reducedMotion) {
       setTimeIntent(observationTime.pause());
       return;
     }
@@ -2177,13 +2190,13 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     // when rendering coalesces or scheduling is delayed.
     const timer = setInterval(advanceSkyTime, 16);
     return () => clearInterval(timer);
-  }, [observationTime, timePlaying, pageVisible, contextSession, contextSession.busy, activeContext, contextComplete,
+  }, [observationTime, timePlaying, timePreviewing, timeIntent.presentationGeneration, reducedMotion, pageVisible, contextSession, contextSession.busy, activeContext, contextComplete,
     skyInteractionRevision, timeBinding, committedAt, timeSaving, alignmentEditing,
     report.isError, Boolean(geometryReport), report.data?.dataState]);
   const stellarReference = rawReportData?.skyScene.state === "AVAILABLE" ? rawReportData.skyScene.catalog : null;
   const stellarCatalog = useResourceQuery({
     queryKey: ["stellar-catalog", stellarReference?.catalogVersion, stellarReference?.catalogHash],
-    queryFn: signal => getStellarCatalog(stellarReference!, signal),
+    queryFn: getStellarCatalog.bind(null, stellarReference!),
     enabled: pageVisible && Boolean(stellarReference),
     staleTime: Infinity,
     structuralSharing: false,
@@ -2197,17 +2210,24 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       : undefined,
     [reportData, report.data, carriedReport, registrationAt, timePresentation?.mode, timePresentation?.model?.algorithmVersion]);
   const constellationCatalog = useResourceQuery({
-    queryKey: ["constellation-catalog", CONSTELLATION_CATALOG_VERSION], queryFn: signal => getConstellationCatalog(signal),
+    queryKey: ["constellation-catalog", CONSTELLATION_CATALOG_VERSION], queryFn: getConstellationCatalog,
     enabled: pageVisible && Boolean(stellarReference) && constellationsEnabled, staleTime: Infinity,
   });
   useEffect(() => {
-    if (!pageVisible || !stellarReference || stellarCatalog.isFetching ||
-      !(stellarCatalog.isError || stellarCatalog.refreshError || stellarCatalog.data?.dataState === "STALE_USABLE")) return;
+    if (!stellarReference) return;
+    const failed = stellarCatalog.isError || Boolean(stellarCatalog.refreshError) ||
+      ["STALE_USABLE", "EXPIRED", "UNAVAILABLE"].includes(stellarCatalog.data?.dataState ?? "");
+    if (!failureEpisodes.catalog.observe({
+      scope: `${stellarReference?.catalogVersion}:${stellarReference?.catalogHash}`,
+      active: pageVisible && Boolean(stellarReference), pending: stellarCatalog.isPending || stellarCatalog.isFetching,
+      failed, healthy: stellarCatalog.data?.dataState === "FRESH" && !failed,
+    })) return;
     notify({ owner: "spot-night", placement: "floating", tone: "info", title: "星图未加载",
-      body: stellarCatalog.data ? "已保留星图，可在显示中重试" : "仍可查看目标与天气，稍后可重试",
+      body: stellarCatalog.data && ["FRESH", "STALE_USABLE"].includes(stellarCatalog.data.dataState)
+        ? "已保留星图，可在显示中重试" : "仍可查看目标与天气，稍后可重试",
       dedupeKey: `stellar-catalog:${stellarReference.catalogVersion}:${stellarReference.catalogHash}` });
   }, [pageVisible, stellarReference?.catalogVersion, stellarReference?.catalogHash, stellarCatalog.isFetching,
-    stellarCatalog.isError, stellarCatalog.refreshError, stellarCatalog.data?.dataState, notify]);
+    stellarCatalog.isPending, stellarCatalog.isError, stellarCatalog.refreshError, stellarCatalog.data?.dataState, notify, failureEpisodes]);
   const skyDisplayCurrent = () => skyTimeIntentCurrent() && useAppStore.getState().mode === mode;
   const recoverSkyResource = <T,>(recover: () => T): T | false => {
     if (!skyDisplayCurrent()) return false;
@@ -2242,15 +2262,16 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   },[contextSession,skyDisplayCurrent]);
   const retryReport = useCallback(() => {
     if(!canRetryReport())return false;
+    failureEpisodes.report.retry();
     autoRestoreAttemptedRef.current = false;
     void reportRecoveryRef.current.refetch();
     return true;
-  },[canRetryReport]);
+  },[canRetryReport,failureEpisodes]);
   const retrySkyData = useCallback(() => {
     if(!retryReport())return;
     const current=reportRecoveryRef.current;
-    if(current.stellarReference)void current.refetchStars();
-  },[retryReport]);
+    if(current.stellarReference){failureEpisodes.catalog.retry();void current.refetchStars();}
+  },[retryReport,failureEpisodes]);
   useEffect(() => {
     if (selectedCatalogObject)
       setFocusedDeepSkyReference(selectedCatalogObject.kind === "GALAXY" || selectedCatalogObject.kind === "NEBULA" ? selectedCatalogObject.reference : null);
@@ -2343,10 +2364,20 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     return currentOptical===optical.tiles?hipsTiles:[...wideField.tiles,...currentOptical];
   },[hipsTiles,wideField.tiles,optical.tiles,optical.currentTiles]);
   useEffect(()=>{
-    if(!stellarSupplement.failed)return;
+    if(!failureEpisodes.supplement.observe({
+      scope: `${stellarReference?.catalogVersion}:${stellarReference?.catalogHash}`,
+      active: pageVisible && skyResourcesActive, pending: stellarSupplement.loading,
+      failed: stellarSupplement.failed,
+      healthy: Boolean(stellarSupplement.frame) && !stellarSupplement.failed && !stellarSupplement.interrupted,
+    }))return;
     notify({owner:'spot-night',placement:'floating',tone:'info',title:'暗星未加载',
       body:'亮星仍在，可在显示中重试',dedupeKey:'sky-stellar-supplement'});
-  },[stellarSupplement.failed,notify]);
+  },[pageVisible,skyResourcesActive,stellarReference?.catalogVersion,stellarReference?.catalogHash,
+    stellarSupplement.failed,stellarSupplement.loading,stellarSupplement.interrupted,Boolean(stellarSupplement.frame),notify,failureEpisodes]);
+  const retryStellarSupplement = () => recoverSkyResource(() => {
+    failureEpisodes.supplement.retry();
+    stellarSupplement.retry();
+  });
   const constellationFrame = useMemo(() => resolveConstellationFrame(constellationCatalog.data?.data,geometryReport?.skyScene,row?.at),
     [constellationCatalog.data?.data,rawReportData?.skyScene,row?.at]);
   const coordinateGridFrame = useMemo(() => report.data?.dataState === "EXPIRED" ||
@@ -2491,6 +2522,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     publishAcceptanceSkySceneInspection(owner, { ...canvasFrameInfo.inspection, state: "PENDING", drawRevision: canvasDrawRevisionRef.current });
     canvasLifecycle.request({ nativeImageGeneration: canvasNodeRevision, orientationRevision: orientation.snapshot.presentationRevision,
       data: canvasData, frameAt: row?.at, timePresentation: canvasData ? renderTimePresentation : null, timePresentationScope,
+      timeGeneration: timeIntent.presentationGeneration,
       heading, pose, manualBasis: selectedManualBasis, mode,
       verticalFovDeg: zoomRef.current, deepSkyImage: mode === "OBSERVATION" || !desiredDeepSkyImageLevel ? null : canvasDeepSkyImage,
       sdssOpticalImage: canvasData && mode !== "OBSERVATION" ? skyTargetOpticalFrame(sdssOptical) : null,
@@ -2509,7 +2541,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       sceneReady, owner, inspection: canvasFrameInfo.inspection },
       !canvasData || (!selectedManualBasis && pose === null) || previousCanvasModeRef.current !== mode, continuation);
     previousCanvasModeRef.current = mode;
-  }, [canvasLifecycle, canvasNodeRevision, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, renderTimePresentation, timePresentationScope, sensorHeadingForScene, sensorBasis, manualBasis, desiredDeepSkyImageLevel, canvasDeepSkyImage, sdssOptical.image, sdssOptical.renderedAsset, sdssOptical.renderedLevel, sdssOptical.coarser, sdssOptical.fallback, sdssOptical.publication, preparedRegions.frames, orientation.snapshot.presentationRevision, viewportInsets, constellationFrame, artwork.images, constellationsEnabled,landscapeEnabled,coordinateGrids,stellarSupplement.frame,hipsTiles,readHipsTiles,bodyImageBindings,galacticImage.image,galacticImage.publication,landscapeImage.panorama,landscapeImage.mask,landscapeImage.opacity,landscapeImage.loading,landscapeImage.failed]);
+  }, [canvasLifecycle, canvasNodeRevision, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, renderTimePresentation, timePresentationScope, timeIntent.presentationGeneration, sensorHeadingForScene, sensorBasis, manualBasis, desiredDeepSkyImageLevel, canvasDeepSkyImage, sdssOptical.image, sdssOptical.renderedAsset, sdssOptical.renderedLevel, sdssOptical.coarser, sdssOptical.fallback, sdssOptical.publication, preparedRegions.frames, orientation.snapshot.presentationRevision, viewportInsets, constellationFrame, artwork.images, constellationsEnabled,landscapeEnabled,coordinateGrids,stellarSupplement.frame,hipsTiles,readHipsTiles,bodyImageBindings,galacticImage.image,galacticImage.publication,landscapeImage.panorama,landscapeImage.mask,landscapeImage.opacity,landscapeImage.loading,landscapeImage.failed]);
   browsingDrawRef.current = draw;
 
   // PageHide and AppHide can arrive in either order, before React commits.
@@ -2561,7 +2593,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   useEffect(() => {
     measureBottomControls();
   }, [measureBottomControls, Boolean(manualBasis), followRequested, alignment.mode, alignment.ready,
-    compassState, orientationObjectListOpen, skyControlPanel, calibrationPreparing, themeClass, canvasSize.width, canvasSize.height, Boolean(reportData), coordinateGrids, Boolean(coordinateGridFrame), constellationFailed,stellarSupplement.failed,optical.failed,wideField.failed]);
+    compassState, orientationObjectListOpen, skyControlPanel, calibrationPreparing, themeClass, canvasSize.width, canvasSize.height, Boolean(reportData), coordinateGrids, Boolean(coordinateGridFrame), constellationFailed,stellarSupplement.failed,stellarSupplement.interrupted,optical.failed,wideField.failed]);
   useEffect(() => { measureBottomControls(); }, [measureBottomControls, skyInlineNotice, skyInlineNoticeResidual]);
   useDidHide(() => hideSkyPageRef.current(sourceReturnRef.current));
   useDidShow(() => showSkyPageRef.current());
@@ -2596,7 +2628,18 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     Boolean(report.data), report.data?.dataState);
   useEffect(() => {
     const dataState = report.data?.dataState;
-    if (!contextComplete || !pageVisible || report.isFetching) return;
+    const solarWarning = dataState === "PARTIAL" && report.data?.warnings.some(message => message.includes("太阳精确位置"));
+    const moonWarning = dataState === "PARTIAL" && report.data?.warnings.some(message => message.includes("月球精确位置"));
+    const planetWarning = dataState === "PARTIAL" && report.data?.warnings.some(message => message.includes("行星精确位置"));
+    const failed = report.isError || Boolean(report.refreshError) ||
+      dataState === "UNAVAILABLE" || dataState === "EXPIRED" || dataState === "STALE_USABLE" ||
+      Boolean(solarWarning || moonWarning || planetWarning);
+    if (!failureEpisodes.report.observe({
+      scope: `${routeContext.spotId}:${activeContext?.contextId}:${routeContext.localDate}`,
+      active: contextComplete && pageVisible,
+      pending: report.isPending || report.isFetching || Boolean(carriedReport), failed,
+      healthy: contextMatches && Boolean(report.data) && !failed && (dataState === "FRESH" || dataState === "PARTIAL"),
+    })) return;
     const base = {
       owner: "spot-night",
       placement: "floating" as const,
@@ -2619,13 +2662,10 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         dedupeKey: `spot-night-state:${routeContext.spotId}:${routeContext.localDate}:${dataState}`,
       });
     } else if (dataState === "PARTIAL") {
-      const solarWarning = report.data?.warnings.find(message => message.includes("太阳精确位置"));
       if (solarWarning) notify({ ...base, tone: "info", title: "晨昏未全",
         body: "晨昏资料未全，星图仍可浏览", dedupeKey: `spot-night-solar-data:${routeContext.spotId}:${routeContext.localDate}` });
-      const moonWarning = report.data?.warnings.find(message => message.includes("月球精确位置"));
       if (moonWarning) notify({ ...base, tone: "info", title: "月球未全",
         body: "月球资料未全，星图仍可浏览", dedupeKey: `spot-night-moon-data:${routeContext.spotId}:${routeContext.localDate}` });
-      const planetWarning = report.data?.warnings.find(message => message.includes("行星精确位置"));
       if (planetWarning) notify({ ...base, tone: "info", title: "行星未全",
         body: "行星资料未全，星图仍可浏览", dedupeKey: `spot-night-planet-data:${routeContext.spotId}:${routeContext.localDate}` });
     }
@@ -2640,7 +2680,11 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     reportRecovery.reason,
     activeContext?.contextId,
     report.refreshError,
+    report.isPending,
     report.isFetching,
+    Boolean(carriedReport),
+    contextMatches,
+    failureEpisodes,
     pageVisible,
     routeContext.localDate,
     routeContext.spotId,
@@ -2663,11 +2707,12 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     const frame = presentedSkyFrameRef.current, time = observationTime.snapshot();
     const identity = frame?.identity, picked = paintedSkyObjectsRef.current;
     if (!skyTimeIntentCurrent() || !frame || !orientationData || !nativeCanvasMounted || canvasError ||
+      time.presentationGeneration !== timeIntent.presentationGeneration ||
       !identity || identity.observation.data?.context !== rawReportData?.context ||
-      (time.mode !== "PLAYING" && identity.observation.data !== orientationData) ||
+      (time.mode !== "PLAYING" && time.previewMotion !== "moving" && !time.editing.includes("fields") && identity.observation.data !== orientationData) ||
       identity.canvas.generation !== canvasGenerationRef.current || identity.view.mode !== mode ||
       (picked && picked.identity !== identity) ||
-      !skyPresentedTimeCurrent(time.at, identity.observation.frameAt, time.mode === "PLAYING", time.runStartAt)) return null;
+      !skyObservationFrameReadable(time, identity.observation.frameAt, frame.timeGeneration)) return null;
     return { ...frame, ...liveSkySceneResources(frame, canvasGenerationRef.current) };
   };
   const openOpticalSources = (credit: Pick<SkyOpticalSourceCredit, "sourceRoute">) => {
@@ -2681,6 +2726,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const advanceSkyTime = () => {
     const time = observationTime.snapshot();
     if (contextSession.visibilityRevision !== skyInteractionRevision || time.binding !== timeBinding || time.committedAt !== committedAt) return;
+    if (time.presentationGeneration !== timeIntent.presentationGeneration || time.mode !== "PLAYING" && time.previewMotion !== "moving") return;
     if (!skyInteractionCurrent() || datePickerOpenRef.current) { setTimeIntent(observationTime.pause()); return; }
     setTimeIntent(observationTime.tick(Date.now()));
   };
@@ -2752,14 +2798,23 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     }
   };
 
+  const previewSkyTime = (at: string) => {
+    if (!skyTimeIntentCurrent() || datePickerOpenRef.current || !skyTimeInputAllowed(at, Date.now())) return false;
+    cancelSkyCalibration();
+    const accepted = acceptedTimePresentationFor(presentedSkyFrameRef.current);
+    const elapsedAt = Date.now();
+    observationTime.bind(timeBinding, committedAt, timeModel,
+      { coverage: skyContinuousTimeCoverage(timeModel, accepted?.model ?? null), elapsedAt });
+    setTimeIntent(observationTime.preview(at, accepted ? { fromAt: accepted.row.at, elapsedAt, reducedMotion: reducedMotionRef.current } : undefined));
+    return true;
+  };
   const settleTimeIndex = (nextIndex: number) => {
     if (!skyTimeIntentCurrent() || datePickerOpenRef.current || !timeRows.length) return;
     const nextRow = timeRows[clampIndex(nextIndex, timeRows.length)];
     // A released ruler chooses a precise preview tick. Only the disclosure's
     // Apply action commits the public Context, just like the six civil fields.
     if (nextRow && skyTimeInputAllowed(nextRow.at, Date.now())) {
-      cancelSkyCalibration();
-      setTimeIntent(observationTime.preview(nextRow.at));
+      previewSkyTime(nextRow.at);
     }
   };
 
@@ -2959,8 +3014,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const presentedSceneCurrent = Boolean(orientationData && !canvasError && presentedSkyFrame &&
     presentedSkyFrame.mode === mode &&
     presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
-    skyPresentedTimeCurrent(row.at, presentedSkyFrame.frameAt, timePlaying, timeIntent.runStartAt) &&
-    (timePlaying || presentedSkyFrame.data === orientationData));
+    skyObservationFrameReadable(timeIntent, presentedSkyFrame.frameAt, presentedSkyFrame.timeGeneration) &&
+    (timePlaying || timePreviewing || timeIntent.editing.includes("fields") || presentedSkyFrame.data === orientationData));
   const paintedData = presentedSceneCurrent ? presentedSkyFrame?.data : undefined;
   const paintedAt = presentedSceneCurrent ? presentedSkyFrame?.frameAt : undefined;
   const acceptedClockAt = pageVisible && !canvasError && presentedSkyFrame?.mode === mode &&
@@ -2968,6 +3023,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     presentedSkyFrame.data?.context === rawReportData?.context ? presentedSkyFrame.frameAt : undefined;
   const timePreviewStatus = skyTimePreviewStatus({ requestedAt, geometryAt: timePresentation?.row.at,
     paintedAt: acceptedClockAt, playing: timePlaying, runStartAt: timeIntent.runStartAt,
+    generation: timeIntent.presentationGeneration, paintedGeneration: presentedSkyFrame?.timeGeneration,
     geometryFailed: previewGeometry.failed, canvasFailed: Boolean(canvasError) });
   const paintedLandscapePhoto = presentedSceneCurrent ? skyLandscapePaintedPanorama(presentedSkyFrame?.landscape) : null;
   const paintedSceneFacts = skySceneFrameFacts(paintedData?.skyScene, paintedAt);
@@ -3353,6 +3409,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
               detail:
                 "天空资料未加载，请重试",
             }
+          : !reportData && contextMatches && rawReportData && previewGeometry.pending && !previewGeometry.failed
+            ? { state: "LOADING" as const, detail: "正在加载此刻的星空…" }
           : !reportData
             ? {
                 state: "ERROR" as const,
@@ -3401,13 +3459,13 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     return viewportMountedRef.current && skyGestureCallbackOwns(gesture) && contextSession.canRetireInteraction(gesture.visibilityRevision) &&
       contextSession.ownsContext(gesture.expectedContext) && time.binding === gesture.timeBinding &&
       time.committedAt === gesture.committedAt && canvasGenerationRef.current === gesture.canvasGeneration &&
-      skyPresentedTimeCurrent(time.at, gesture.at, time.mode === "PLAYING", time.runStartAt);
+      skyObservationFrameCurrent(time, gesture.at, gesture.timeGeneration);
   };
   const skyGestureCurrent = (gesture: NonNullable<typeof skyTapRef.current>) => {
     const time = observationTime.snapshot();
     return skyTimeIntentCurrent() && skyGestureRetirable(gesture) &&
       !selectedCatalogObjectRef.current && !selectedTargetIdRef.current &&
-      !datePickerOpenRef.current && skyPresentedTimeCurrent(time.at, gesture.at, time.mode === "PLAYING", time.runStartAt);
+      !datePickerOpenRef.current && skyObservationFrameCurrent(time, gesture.at, gesture.timeGeneration);
   };
   const onSkyTouchStart = (event: unknown) => {
     if (!skyTimeIntentCurrent() || !presentedSceneCurrent || !skySceneReady || selectedCatalogObjectRef.current ||
@@ -3415,7 +3473,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     const frame = presentedSkyFrameRef.current, time = observationTime.snapshot();
     if (!frame || frame.identity.canvas.generation !== canvasGenerationRef.current ||
       paintedSkyObjectsRef.current?.identity !== frame.identity ||
-      !skyPresentedTimeCurrent(time.at, frame.identity.observation.frameAt, time.mode === "PLAYING", time.runStartAt)) return;
+      !skyObservationFrameReadable(time, frame.identity.observation.frameAt, frame.timeGeneration)) return;
     const point = skyTouchPoint(event);
     const count = (event as SkyTouchLike).touches?.length ?? 0;
     const gestureBasis = paintedSkyObjectsRef.current?.view?.basis ?? currentViewBasis ?? INITIAL_MANUAL_SKY_VIEW;
@@ -3432,7 +3490,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     }
     skyTapRef.current = point && count >= 1 && count <= 2 ? {
       session: contextSession, visibilityRevision: skyInteractionRevision, expectedContext: activeContext!,
-      timeBinding, committedAt, at: observationTime.snapshot().at, canvasGeneration: canvasGenerationRef.current,
+      timeBinding, committedAt, at: frame.frameAt!, timeGeneration: time.presentationGeneration, canvasGeneration: canvasGenerationRef.current,
       startX: point.x,
       startY: point.y,
       nameReference: mode !== "OBSERVATION" && count === 1
@@ -3769,7 +3827,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
               suspended={contextSession.busy || timeSaving}
               onPosition={onSkySelectionPosition}
               onSelect={selectCatalogObject}
-              onRetrySky={() => { if(retryReport())stellarSupplement.retry(); }} /> : null}
+              onRetrySky={() => { if(retryReport())retryStellarSupplement(); }} /> : null}
           {skySceneReady && !canvasError && canvasSize.width > 0 && canvasSize.height > 0 ?
             ([[0, "北"], [90, "东"], [180, "南"], [270, "西"]] as const).map(([azimuth, label]) => {
               const point = projectHorizontalPoint(azimuth, 0, null, null, canvasSize.width, canvasSize.height,
@@ -3857,7 +3915,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
               onContentChange={measureBottomControls}
               active={pageVisible && contextComplete} refreshing={report.isFetching} scopeKey={routeContext.spotId}
               reportHandlesFailure={report.data?.dataState === "UNAVAILABLE" || report.data?.dataState === "EXPIRED"}
-              refreshFailed={Boolean(report.refreshError) || report.data?.dataState === "STALE_USABLE"} onRecover={retryReport} />
+              refreshFailed={Boolean(report.refreshError) || report.data?.dataState === "STALE_USABLE"} onRecover={retryReport}
+              onRefresh={() => { if (canRetryReport()) void reportRecoveryRef.current.refetch(); }} />
           </ScrollView>
         </View>
 
@@ -4044,7 +4103,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
               suspended={!active || contextSession.busy || timeSaving}
               onLocate={locateCatalogObject}
               onTrack={trackCatalogObject}
-              onRetrySky={() => { if(retryReport())stellarSupplement.retry(); }} /></View> : null}
+              onRetrySky={() => { if(retryReport())retryStellarSupplement(); }} /></View> : null}
           />
         ) : null}
         </>}</SkyOverlayMotion>
@@ -4070,7 +4129,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         <View className="sky-resource-recoveries">
           {coordinateGrids.equatorial && !coordinateGridFrame ? <View className="sky-view-mode__status" role="status" aria-live="polite"><Text className="type-caption">此刻的星空坐标暂不可用</Text></View> : null}
           {constellationFailed ? <Button className="sky-view-mode__button focus-ring" onClick={retryConstellations}>重试星座</Button> : null}
-          {stellarSupplement.failed ? <Button className="sky-view-mode__button focus-ring" onClick={() => recoverSkyResource(stellarSupplement.retry)}>重试暗星</Button> : null}
+          {stellarSupplement.failed || stellarSupplement.interrupted ? <Button className="sky-view-mode__button focus-ring" onClick={retryStellarSupplement}>重试暗星</Button> : null}
         </View>
         </ScrollView>
         </SkyDisclosureSurface>
@@ -4121,7 +4180,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             suspended={contextSession.busy || timeSaving}
             onPosition={applyTrackedPosition}
             onStop={() => enterManualView()}
-            onRetrySky={() => { if(retryReport())stellarSupplement.retry(); }} /> : null}
+            onRetrySky={() => { if(retryReport())retryStellarSupplement(); }} /> : null}
         </View>
         {(!manualBasis || followRequested) && (alignmentEditing || !compassIsReady || orientationSensorState === "LOW_ACCURACY" || alignmentRequired) &&
           (skyControlPanel === "menu" || skyControlPanel === "calibration") ? <View className="sky-follow-recovery">
@@ -4149,10 +4208,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
             }}
             onPause={pauseSkyTime} onTogglePlay={toggleSkyTimePlayback}
             onEditChange={editing => setSkyTimeEditing("fields", editing)}
-            onPreview={at => {
-              if (!skyTimeIntentCurrent() || !skyTimeInputAllowed(at, Date.now())) return false;
-              cancelSkyCalibration(); setTimeIntent(observationTime.preview(at)); return true;
-            }}
+            onPreview={previewSkyTime}
             onApply={at => { void commitInstant(at).then(applied => {
               if (applied && skyControlPanelRef.current === "time") setSkyControlPanel("menu");
             }); }} />

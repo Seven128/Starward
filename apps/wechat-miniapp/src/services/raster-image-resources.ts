@@ -1,4 +1,5 @@
 import { MiniappRequestCancelled } from "./request-lifecycle";
+import { reportRuntimeError } from './runtime-error';
 
 export interface RasterImageDescriptor {
   key: string;
@@ -8,10 +9,12 @@ export interface RasterImageDescriptor {
 }
 export interface RasterImageFile {
   path: string; bytes: number; sha256?: string;
-  /** An owned temp file can still require disposal after stat/integrity failure. */
+  /** An owned file can still require disposal after stat/integrity failure. */
   integrityError?: Error;
 }
 export interface RasterImageAdapter {
+  /** Files left in this owner's namespace by a previous process. */
+  recover?(): Promise<RasterImageFile[]>;
   download(input: RasterImageDescriptor, signal: AbortSignal, maximumBytes: number): Promise<RasterImageFile>;
   remove(path: string): Promise<void>;
 }
@@ -38,6 +41,12 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
     throw new Error("raster_image_limits_invalid");
   const current = new Map<string, Entry>(), files = new Map<string, Entry>(), physicalSizes = new Map<string, number>(), entries = new Set<Entry>();
   let readyBytes = 0, active = 0, sequence = 0, closed = false;
+  const snapshot = () => ({ entries: entries.size, readyBytes, activeDownloads: active,
+    queued: [...entries].filter(entry => entry.state === 'queued').length,
+    nativePins: [...entries].reduce((sum, entry) => sum + entry.pins, 0),
+    failedRemovals: [...entries].filter(entry => entry.cleanupFailed).length,
+    activeReaders: [...entries].reduce((sum, entry) => sum + entry.readers.size, 0),
+    physicalFiles: physicalSizes.size });
   let serial: Promise<unknown> = Promise.resolve();
   const mutate = <T>(action: () => T | Promise<T>) => {
     const result = serial.then(action); serial = result.catch(() => undefined); return result;
@@ -70,7 +79,11 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
       await adapter.remove(path);
       readyBytes -= physicalSizes.get(path)!; physicalSizes.delete(path); files.delete(path);
       detach(entry); aliases.forEach(detach); return true;
-    } catch { entry.cleanupFailed = true; return false; }
+    } catch (error) {
+      entry.cleanupFailed = true;
+      reportRuntimeError('request', 'raster_image_remove_failed', error, { stage: 'file_remove', resource: 'map_raster' });
+      return false;
+    }
     finally { entry.removing = false; aliases.forEach(other => { other.removing = false; }); }
   };
   const makeRoom = async (additionalFiles: number, additionalBytes: number) => {
@@ -81,10 +94,25 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
       const idle = [...entries].filter(entry => entry.file && !entry.pins && !entry.readers.size
         && !failedPaths.has(entry.file.path) && !entry.removing)
         .sort((a, b) => a.used - b.used)[0];
-      if (!idle) throw new Error("raster_image_budget_busy");
+      if (!idle) throw Object.assign(new Error("raster_image_budget_busy"), { budget: snapshot() });
       const path = idle.file!.path;
       if (!await remove(idle)) failedPaths.add(path);
     }
+  };
+  let initialized = !adapter.recover;
+  const initialize = async () => {
+    if (initialized) return;
+    const recovered = await adapter.recover!();
+    for (const file of recovered) {
+      const entry: Entry = { input: { key: file.path, url: "recovered" }, file: null, state: "ready",
+        readers: new Set(), controller: new AbortController(), pins: 0, used: 0,
+        retired: true, removing: false, cleanupFailed: false };
+      entries.add(entry); ownFile(entry, file);
+    }
+    initialized = true;
+    // No old-process native handle is a current lease. Failed removals remain
+    // counted and retry through the normal bounded admission path.
+    for (const entry of entries) await remove(entry);
   };
   const retireAbandoned = (entry: Entry) => {
     if (entry.readers.size || entry.pins || entry.state === "ready") return;
@@ -106,8 +134,8 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
       if (entry.state !== "queued" || entry.retired || !entry.readers.size) continue;
       entry.state = "loading"; active++;
       void Promise.resolve().then(() => adapter.download(entry.input, entry.controller.signal, limits.maximumBytes)).then(file => mutate(async () => {
-        if (!Number.isSafeInteger(file.bytes) || file.bytes <= 0 || !file.path) {
-          rejectReaders(entry, new Error("raster_image_file_invalid")); entry.readers.clear();
+        if (!Number.isSafeInteger(file.bytes) || file.bytes < 0 || !file.path) {
+          rejectReaders(entry, file.integrityError ?? new Error("raster_image_file_invalid")); entry.readers.clear();
           if (file.path) await discardDownloaded(entry, { path: file.path, bytes: limits.maximumBytes });
           else detach(entry);
           return;
@@ -117,6 +145,7 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
         }
         try {
           if (file.integrityError) throw file.integrityError;
+          if (file.bytes === 0) throw new Error("raster_image_file_invalid");
           if (file.bytes > limits.maximumBytes || (entry.input.expectedBytes !== undefined && file.bytes !== entry.input.expectedBytes))
             throw new Error("raster_image_size_mismatch");
           if (entry.input.expectedSha256 && file.sha256 !== entry.input.expectedSha256) throw new Error("raster_image_hash_mismatch");
@@ -153,6 +182,9 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
     };
     signal?.addEventListener("abort", release, { once: true });
     void mutate(async () => {
+      if (!reader.active || signal?.aborted) { release(); return; }
+      if (closed) throw new Error("raster_image_resources_closed");
+      await initialize();
       if (!reader.active || signal?.aborted) { release(); return; }
       if (closed) throw new Error("raster_image_resources_closed");
       if (!input.key || !input.url || (input.expectedBytes !== undefined && (!Number.isSafeInteger(input.expectedBytes)
@@ -198,10 +230,7 @@ export function createRasterImageResources(adapter: RasterImageAdapter, limits: 
       entry.retired = true; current.delete(key); retireAbandoned(entry);
       void mutate(async () => { await remove(entry); drain(); });
     },
-    snapshot: () => ({ entries: entries.size, readyBytes, activeDownloads: active,
-      queued: [...entries].filter(entry => entry.state === "queued").length,
-      nativePins: [...entries].reduce((sum, entry) => sum + entry.pins, 0),
-      failedRemovals: [...entries].filter(entry => entry.cleanupFailed).length }),
+    snapshot,
     async close() {
       closed = true;
       for (const entry of entries) { entry.retired = true; rejectReaders(entry, cancelled()); entry.readers.clear(); entry.controller.abort(); }

@@ -11,7 +11,7 @@ import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
 import { inspectAcceptanceSkyScene } from "@/services/acceptance-diagnostics";
 import { skyImageFileSession } from "@/services/sky-image-file-session";
-import { initializeSkyPublicImageCache } from "@/services/sky-public-image-runtime";
+import { initializeSkyPublicImageCache } from "@/services/sky-public-image-owner";
 import { reportRuntimeError } from "@/services/runtime-error";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import "./app.scss";

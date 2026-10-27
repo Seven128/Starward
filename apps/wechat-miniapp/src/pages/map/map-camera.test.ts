@@ -1,6 +1,25 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cameraCenterForNativeMapTarget, spotNeighborhoodGroundRange, NEIGHBORHOOD_MAX_VISIBLE_SPAN_M, type NativeMapProjection } from "./map-camera.ts";
+import { cameraCenterForNativeMapTarget, readNativeMapScale, spotNeighborhoodGroundRange, NEIGHBORHOOD_MAX_VISIBLE_SPAN_M, type NativeMapProjection } from "./map-camera.ts";
+
+test("native scale read preserves fractional zoom and settles callback plus Promise once", async () => {
+  const scale = await readNativeMapScale({ getScale(options) {
+    options.success({ scale: 17.25 });
+    return Promise.reject(new Error("duplicate native rejection"));
+  } }, new AbortController().signal);
+  assert.equal(scale, 17.25);
+  const promiseOnly = await readNativeMapScale({ getScale: () => Promise.resolve({ scale: 13.5 }) }, new AbortController().signal);
+  assert.equal(promiseOnly, 13.5);
+});
+
+test("invalid or cancelled native scale cannot fall back to the last stored value", async () => {
+  for (const scale of [NaN, Infinity, 2.99, 20.01, "17.25", undefined])
+    await assert.rejects(readNativeMapScale({ getScale: () => Promise.resolve({ scale }) }, new AbortController().signal), /map_native_scale_invalid/);
+  const controller = new AbortController(); let callback: ((value: unknown) => void) | undefined;
+  const pending = readNativeMapScale({ getScale(options) { callback = options.success; } }, controller.signal);
+  controller.abort(); await assert.rejects(pending, { name: "AbortError" });
+  callback?.({ scale: 17.25 }); await Promise.resolve();
+});
 
 test("neighborhood detail follows actual visible ground coverage and preserves a finer view", () => {
   const bounds = { west: 114.30, east: 114.40, south: 22.55, north: 22.65 };

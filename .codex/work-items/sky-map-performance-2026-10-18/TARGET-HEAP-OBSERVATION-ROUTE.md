@@ -6,6 +6,74 @@
 
 The [VPN/TUN LAN run](LAN-DEBUG-RESUME-20261023.md) established a usable high-memory Sky connection and a complete, parseable Heap export. Those strong boundaries are sufficient for adopting the primary route; do not run a per-feature qualification matrix for Performance or allocation tools. Directly use the needed profile for the pending cause, preserving exact target/build and source-map semantics. The ordinary-preview combination is a backup, with its prior [r25/gen29 evidence](R25-CHECKPOINT-PHONE-RESULT-20261022.md) and [review](R25-CHECKPOINT-PHONE-REVIEW-20261022.md) still reusable within their scopes. The obsolete-frame/aggregate retention question and prior [V8 OOM failure](R25-MEMORY-PHONE-RESULT-20261022.md) remain unresolved; successful transport/capture does not itself locate the root or repair the product.
 
+<a id="current-performance-entry"></a>
+## 当前性能入口与操作分工
+
+这是当前采用方案的唯一操作入口。Root负责独立做好前置准备、设计足以归因的采集任务并分析结果，不能依赖用户记忆提醒。**2026-10-26最新分工：到真机调试环节默认交由用户操作，包括启动/结束/重连、局域网模式、切换IP、扫码或自动接入、手机测试动作以及Profiler录制/停止/保存。只有用户明确要求agent代操作时，agent才在该次要求范围内接手；完成后回到用户操作的默认分工。** 这取代先前“默认agent自动真机调试”和概括界面授权，不因工具可用或历史授权自行接管。
+
+本机成功拓扑为：**电脑保上游Wi-Fi和VPN/TUN → Windows移动热点 → 手机连电脑热点 → 真机调试选当前热点网卡地址**。已证共享出口是现有VPN虚拟网卡、下行为热点网卡；复用前只核必要现状，确实失效才由原owner恢复。不能从物理WLAN、TUN或历史IP随意换路线；IP/接口/端口/PID均以本次实读为准。独立真机调试窗口承载服务，应保持打开。微信调试、业务API和USB是独立通路，任一成功不能替代另两项。
+
+### Root准备，用户连接与采集，Root核验分析
+
+| 责任 | 必要结果与分工 |
+| --- | --- |
+| 热点与共享出口 | Root核热点状态、当前地址、手机路由和已有ICS，必要时验证手机从热点到所需域名/下载入口的实际效果；失败先分直连、DNS、共享出口。保VPN/TUN、凭据及无关共享，不用蜂窝回退冒热点出网。系统不可代办动作只交最小步骤。 |
+| 业务API与真实数据 | Root沿现有owner核源码、实际监听、账户/数据库、所需版本及资源；交给用户开始录制前，确认当前API仍ready且本次代表测试点/资源真实可取，不能沿用旧启动/HTTP回执冒当前健康。实际失效时先恢复原数据库进程和API，不重种数据/新建副本/重放提醒；恢复后读当前手机HTTP及代表业务结果。开发profile与正式资格分开，不用fixture/空页/App替代目标负载。旧USB桥不是恢复命令；防火墙仅在实际需要时精确处理，保原保护和恢复回执。 |
+| 完整候选和项目 | Root核源码→完整WEAPP→准确项目→手机候选及配对数据。保API与Sky资源origin、当前开发候选private的bigPackageSizeSupport；开发大包开关不改正式预算。仅实际构建输入变化才重编，保冻结代/全部原件/用户数据，不重建gen34。只保必要项目入口，关闭前核同步；source maps缺失如实保留，不虚构TS位置或无因重建。 |
+| 真机调试与LAN | Root提供准确项目、当前热点IP和清单。用户启动/结束/重连，选局域网/IP并扫码或自动接入；Root默认不remote、不代点、不关闭窗口。完成后Root按需只读核同一手机、实际热点peer Established、非零消息和当前页面。Wi-Fi字样、绿色状态、QR、USB、loopback和模拟器都不能替代LAN证据。 |
+| 测试与导出 | Root给出待决问题、起始条件、动作顺序、停止条件、要收的数据和绝对保存目录；用户控制手机以及Performance的开始/停止/保存。一次只开需要的Profiler；原始文件在项目/Git外本地保存，已有原件不覆盖、不上传。 |
+| 分析与后续 | Root验证文件可解析、目标与负载覆盖、事件/计时/栈的真实含义和缺口，再归因到责任owner。重用有效记录；连接、导出、归因、修复和产品验收分别结论。源码修复后仍须正常运行下核实际效果，OOM不因连接成功而关闭。 |
+
+用户操作期间Root不并发点击、导航、ADB输入、切Profiler、刷新/remote或关闭窗口；只读观察也避开干扰采集的高开销操作。只做无干扰的主机准备、现有数据分析和必要状态读回。用户保存后由Root读本地文件，不让用户读CPU图或负责整套故障定位。
+
+### 显式委托agent代操作时
+
+有效连接先复用。需要新连接时，已确认同账号、手机微信前台及移动目标才用官方`remote --auto`；账号不同/未知或自动入口不可用则用同候选二维码，不切账号。USB只选择ADB观察设备，不决定微信推送目标；`auto_preview`不是真机调试。一次委托不扩展为后续自动接管。
+
+自动接入已在本机自然断连后成功，证据见[本轮记录](PERFORMANCE-ENTRY-20261026.md)；但IDE重开后也曾选到VPN地址并回退广域网，不能假设LAN/IP会继承。新会话核实际目标、选择和LAN；错误时按界面修正，不能修正才交用户同候选二维码，不改VPN或放宽防火墙。命令超时后仍可能继续启动，先读实际窗口/手机结果，不立即重发。账号规则复用[现有owner](../../../project_context/areas/main/verification/wechat-device/development-feedback.md#account-routing-and-automatic-delivery)。
+
+### 采集条件与判断
+
+- 监听随QR/连接阶段重新识别：从当前独立窗口和实际程序找端口/手机peer，不套旧端口或英文程序名，不要求开放全部IDE内部端口。
+- CLI/结构化SDK/CUA截图输入/USB/调试传输/产品故障分别判断；已有有效手机和消息连接时，工具截图失败不触发重编、换网或remote。按[性能方法](../../skills/starward-miniapp-development/references/performance-investigation.md)有界恢复。
+- 保候选、数据、视野/时刻、Storage和缓存条件。正常Play保完整BSC/实际加载SAO、地景与accepted身份；停止由实际用户/产品控制，不由模型或宿主延迟控制。暂停后排空和退出应进入记录。
+- 原始profile解析、有效目标/动作覆盖完成才称取得数据；请求完成、JS、native绘制和截图首见分开解释。缺字段/映射是未知，不能冒零或精确FPS。已有Heap基线不重采作资格证明。
+
+<a id="operator-checklist"></a>
+### 一次交付用户的本轮采集清单
+
+本批用户已完成A/B/C并另交extra，四份均已保全和解析；结果见PERFORMANCE-CAPTURE-ANALYSIS-20261026.md。以下保留为已执行清单和后续有依据补采的模板，不是再次要求用户重录。已有夜光首开Performance和有效Heap原件直接复用。A定位图层供给/覆盖与手势接管成本；B定位Sky进入、正常Play、暂停排空和退出的CPU/事件成本；C补当前正常Play的函数级分配来源，区分需要优先检查的分配责任。C有独立待决问题，不是Profiler资格测试，也不能证明泄漏或完整native/GPU/OOM根因。已保存的新文件先由Root检查，不能要求重复录制来凑全套。
+
+**共用准备。** Root先核当前业务API与代表点可取，并给出准确项目、当前热点IP和绝对保存目录。用户让手机连电脑热点，保USB和VPN/TUN；有效真机连接直接复用，需要连接时由用户启动、选择LAN/当前热点IP并扫码或自动接入。独立“真机调试”窗口留开。Performance勾选Screenshots，保持现有Storage/缓存、数据和画质条件。Ctrl+E开始/停止，Ctrl+S保存，界面按钮同样可用。一次只运行一个Profiler；局域网失败/回退WAN/断连先处理，不冒LAN基线。
+
+**A．层叠覆盖与手势（layers-pan-<日期>.json，Performance）。**
+
+1. Map选择已准备且位于数据覆盖范围内的测试观星点，保光污染开启、地形关闭，等初始覆盖稳定。
+2. 开始录制；开启地形，等有效覆盖，再关闭图层面板。
+3. 短拖动一次、松手，等最终覆盖；再连续拖动约3秒、松手，等最终覆盖。注意拖动中旧覆盖是否保留、松手后细节是否补齐。
+4. 再拖动一次，随即缩放一级，模拟加载中视野再次变化；等最终覆盖与细节。如果响应已很快，不人为限速或反复制造在途状态。
+5. 打开My后返回Map，等恢复；停止录制并保存。当前云量无可用数据，跳过，不用空结果测云性能。
+
+**B．Sky正常播放与生命周期（sky-play-<日期>.json，Performance）。**
+
+1. 回到同一测试点的Map，开始新录制，再进入云观星，等真实非空星空出现。
+2. 打开菜单→时钟面板；点右侧播放三角，按实际经过时间约10秒后点同一按钮暂停。显示时刻不推进也不延长或反复点击。
+3. 等暂停后的目标和画面稳定，再正常返回Map；等Map恢复后停止录制并保存。记录时刻是否推进、暂停后是否能稳定、退出是否卡住。
+
+**C．正常Play的内存分配来源（sky-play-allocation-<日期>，保留工具导出的扩展名，通常.heapprofile）。**
+
+1. 确认Performance已经停止并保存；从同一测试点重新进入Sky，等星空稳定并打开时钟面板。本段先完成进入，避免把入口初始化分配混为Play分配。
+2. 电脑独立真机调试窗口切Memory，沿用当前手机VM，选择Allocation sampling（分配采样）；保默认采样设置，点击Start。
+3. 手机正常播放约10秒→暂停→等画面稳定，再静置约5秒。
+4. 保持手机仍在Sky，电脑点Stop；选择左侧本次采样结果的Save保存原始文件，再退出Sky。停止点保留在Sky，避免先退出让默认存活分配采样丢掉要看的工作集；不能把样本直接当总分配量、强保留链或泄漏证据。
+5. 本段不同时运行Allocation instrumentation on timeline、Heap snapshot或强制GC；若Start/Stop/Save实际不可用，记录失败控件并结束本段，不临时换重型Profiler。操作参考[官方函数级分配采样说明](https://developer.chrome.com/docs/devtools/memory-problems#investigate-memory-allocation-by-function)，微信目标覆盖仍由实际导出确认。
+
+**统一停止与交付。** 等待阶段约15秒仍没有有效结果，记下卡住阶段并结束该段；这是防止无界等待的操作上限，不是产品性能预算。断连时停止手机动作，能停录导出就保存并加-interrupted，保窗口、热点/VPN；由用户重连，只有明确委托才由agent代办。若Sky始终不能进入/正常Play无法执行，保失败记录并跳过C，不循环重试。
+
+三份原始文件各保存一次，文件名已有则加序号，不覆盖。附简短文字：A覆盖/手势/My恢复哪步卡；B时刻推进/暂停/退出是否正常；C是否成功导出；断连发生在哪一步。用户无需读CPU图、逐帧计时、另导Network/HAR或上传原件。Root读取本地文件、验证可解析和真实目标/负载覆盖，再分析归因。此清单是当前已确定的完整采集批次；修复后的对照或新的具体缺口另有依据才补测，不承诺一次采集等于整个性能/OOM验收完成。
+
+当前地址、目录、状态和唯一下一步归HANDOFF；原始数据/实时网络/进程/规则归私有证据。采集由用户执行时Root不并发输入，不开高开销观察；会话结束后的临时共享/防火墙收尾仍归原owner。
+
 ## Historical qualification routes (2026-10-19)
 
 1. **JS allocation attribution:** reuse official ordinary true-debug → Memory → Allocation sampling → Start/Stop → Save. The actual phone Map qualification completed capture, export and parsing. It produced 254 call-tree nodes and 21 samples with valid references and compiled script locations. Keep this route ahead of another adjacent disable/implementation-shape comparison when it can distinguish the current causes.

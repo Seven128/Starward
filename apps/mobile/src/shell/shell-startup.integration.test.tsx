@@ -233,10 +233,10 @@ describe("actual shell entry and location button wiring", () => {
     await react.act(async () => button("保存偏好").click());
     const first = boundary.persistPreferenceProfile.mock.calls[0][0];
     expect(container.textContent).toContain("偏好预设保存未确认");
-    await react.act(async () => button("保存偏好").click());
+    await react.act(async () => button("确认上次保存").click());
     expect(boundary.persistPreferenceProfile.mock.calls[1][0]).toBe(first);
     await react.act(async () => button("行星").click());
-    await react.act(async () => button("保存偏好").click());
+    await react.act(async () => button("保存新的修改").click());
     const changed = boundary.persistPreferenceProfile.mock.calls[2][0];
     expect(changed).not.toBe(first);
     expect(changed.targets).toEqual(["planets"]);

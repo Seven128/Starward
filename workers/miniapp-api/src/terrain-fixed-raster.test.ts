@@ -7,8 +7,9 @@ import path from "node:path";
 import { PNG } from "pngjs";
 import { DISPLAY_RASTER_GRID, displayRasterBounds, displayRasterWindowForBounds, displayRasterWindowBounds } from "@starward/coordinate-system";
 import { TerrainService } from "./terrain-service.ts";
-import { terrainFixedRequest, terrainRequestKey } from "./terrain-request.ts";
+import { terrainFixedRequest, terrainRequestKey, terrainWindowRequest } from "./terrain-request.ts";
 import { createTerrainViewportRenderer } from "./terrain-viewport-renderer.ts";
+import { renderTerrainWindow } from "./terrain-window-renderer.ts";
 import { terrainInventoryVersion, type TerrainFixedInventory } from "./terrain-fixed-publication.ts";
 import { continuousTerrainTestSource as continuousSource } from "./test-fixtures/continuous-terrain-source.ts";
 
@@ -17,6 +18,82 @@ function deferred() {
   const promise = new Promise<void>(done => { resolve = done; });
   return { promise, resolve };
 }
+
+test("normal cold windows warm their required source edges without a serial row-by-row network sweep", async () => {
+  for (const [columns, rows, maximumWaves] of [[1, 3, 1], [2, 3, 2], [3, 3, 2]] as const) {
+    const source = continuousSource(), waiting = new Set<() => void>(), urls: string[] = [];
+    const renderer = createTerrainViewportRenderer(async (url, options) => {
+      urls.push(String(url));
+      await new Promise<void>(resolve => waiting.add(resolve));
+      options?.signal?.throwIfAborted();
+      return source.transport(url, options);
+    });
+    const controller = new AbortController();
+    let active = 0, peak = 0, finished = false, waves = 0;
+    const input = terrainWindowRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256, zoom: 7, x: 104, y: 54, columns, rows });
+    const result = renderTerrainWindow(input, controller.signal, async (request, signal) => {
+      active++; peak = Math.max(peak, active);
+      try { return await renderer.render(request, signal); } finally { active--; }
+    });
+    result.then(() => { finished = true; }, () => { finished = true; });
+    try {
+      for (let turn = 0; !finished; turn++) {
+        assert.ok(turn < 1000, "a geographic result cannot wait forever for an unstarted cell");
+        await new Promise<void>(resolve => setImmediate(resolve));
+        if (waiting.size) {
+          waves++;
+          const ready = [...waiting]; waiting.clear();
+          for (const release of ready) release();
+        }
+      }
+      const rendered = await result;
+      assert.ok(rendered); assert.equal(rendered.publication.validPixelPercent, 100);
+      assert.ok(waves <= maximumWaves, `${columns}x${rows} required ${waves} separate source waits`);
+      assert.equal(peak, 2); assert.equal(urls.length, new Set(urls).size);
+      assert.equal(urls.length, rendered.publication.sources.length, "only final-image sources were fetched");
+      assert.deepEqual(rendered.publication.fixedWindow!.cells.map(cell => [cell.x, cell.y]),
+        Array.from({ length: columns * rows }, (_, index) => [104 + index % columns, 54 + Math.floor(index / columns)]));
+    } finally {
+      controller.abort(new Error("test_finished")); renderer.close();
+      for (const release of waiting) release();
+      await result.catch(() => undefined);
+    }
+  }
+});
+
+test("cancelling while the next geographic cell is not started retires the window and active corner reads", async () => {
+  const source = continuousSource(), renderer = createTerrainViewportRenderer(source.transport);
+  const input = terrainWindowRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256, zoom: 7, x: 104, y: 54, columns: 3, rows: 3 });
+  const first = await renderer.render(terrainFixedRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256, zoom: 7,
+    x: 104, y: 54, span: 1 }), new AbortController().signal);
+  assert.ok(first);
+  const controller = new AbortController(), thirdStarted = deferred();
+  let started = 0, active = 0, peak = 0;
+  const result = renderTerrainWindow(input, controller.signal, async (request, signal) => {
+    started++;
+    if (request.fixedRaster?.x === 104 && request.fixedRaster.y === 54) return first;
+    active++; peak = Math.max(peak, active);
+    if (started === 3) thirdStarted.resolve();
+    try {
+      await new Promise<never>((_, reject) => {
+        const abort = () => reject(signal.reason);
+        signal.addEventListener("abort", abort, { once: true });
+        if (signal.aborted) abort();
+      });
+    } finally { active--; }
+    return null;
+  });
+  const rejected = assert.rejects(result, /superseded/u);
+  try {
+    await thirdStarted.promise;
+    await new Promise<void>(resolve => setImmediate(resolve));
+    controller.abort(new Error("superseded"));
+    await rejected;
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(started, 3, "cancelled look-ahead cannot start the remaining cells");
+    assert.equal(peak, 2); assert.equal(active, 0);
+  } finally { controller.abort(); renderer.close(); await rejected; }
+});
 
 test("overlapping fixed cells share actual source fetches and one cancelled cell does not cancel its neighbour", async () => {
   const source = continuousSource(), gate = deferred(), calls: string[] = [];

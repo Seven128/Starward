@@ -8,8 +8,9 @@ import { PNG } from "pngjs";
 import Fastify from "fastify";
 import { fastifyDeploymentOptions } from "./release-metadata.ts";
 import { displayRasterWindowBounds, WEB_MERCATOR_CIRCUMFERENCE_M, type DisplayRasterWindow } from "@starward/coordinate-system";
-import { NIGHT_LIGHT_FIXED_SCALE as policy, type SourceSummary } from "@starward/miniapp-contracts";
+import { NIGHT_LIGHT_CONTRAST_DISPLAY, NIGHT_LIGHT_FIXED_SCALE as policy, nightLightDisplayLegend, type SourceSummary } from "@starward/miniapp-contracts";
 import { NightLightService } from "./night-light-service.ts";
+import { projectNightLightDisplay } from "./night-light-display-image.ts";
 import type { FixedNightLightDataset, FixedNightLightRaster } from "./night-light-publication.ts";
 
 const hash = (value: Buffer | string) => createHash("sha256").update(value).digest("hex");
@@ -142,4 +143,102 @@ test("the production HTTP router serves the generated composed asset URL with it
     assert.equal(hash(response.rawPayload), layer.raster.imageSha256);
     assert.equal(response.rawPayload.length, layer.raster.imageBytes);
   } finally { await app.close(); }
+}));
+
+test("contrast windows retain source meaning and old bytes while their new immutable URL survives cache loss", async () => fixture(async ({ service, proofs, fresh }) => {
+  const version = proofs[0].datasetVersion, bounds = view(window(11, 1672, 890), 2);
+  const original = await service.layer(version, bounds); assert.ok(original?.raster);
+  const originalAsset = await service.asset(version, imageFile(original)); assert.ok(originalAsset);
+  const concurrent = await Promise.all(Array.from({ length: 4 }, () => service.layer(version, bounds, undefined, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion)));
+  const display = concurrent[0]; assert.ok(display?.raster);
+  assert.equal(new Set(concurrent.map(layer => layer!.raster!.imageSha256)).size, 1, "same-style readers share one projection and binary slot");
+  const displayAsset = await service.asset(version, imageFile(display)); assert.ok(displayAsset);
+  assert.notEqual(display.raster.imageUrl, original.raster.imageUrl);
+  assert.notEqual(display.raster.publicationId, original.raster.publicationId);
+  assert.equal(display.raster.styleVersion, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion);
+  assert.equal(display.raster.displaySource?.imageSha256, original.raster.imageSha256);
+  assert.equal(display.raster.displaySource?.publicationId, original.raster.publicationId);
+  assert.match(display.raster.displaySource!.policySha256, /^[a-f0-9]{64}$/u);
+  for (const field of ["boundsGcj02", "methodVersion", "statistic", "unit", "validPixelCount", "pixelCount", "qualitySummary", "qualityPolicyVersion"] as const)
+    assert.deepEqual(display.raster[field], original.raster[field]);
+  assert.deepEqual(display.source, original.source); assert.equal(display.datasetVersion, original.datasetVersion);
+  assert.deepEqual(display.legend, nightLightDisplayLegend(NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion));
+  assert.deepEqual((await service.asset(version, imageFile(original)))?.bytes, originalAsset.bytes);
+  const pixels = PNG.sync.read(displayAsset.bytes), low = NIGHT_LIGHT_CONTRAST_DISPLAY.bands.VERY_LOW, high = NIGHT_LIGHT_CONTRAST_DISPLAY.bands.VERY_HIGH;
+  const rgba = (band: { color: string; alpha: number }) => [1, 3, 5].map(offset => parseInt(band.color.slice(offset, offset + 2), 16)).concat(band.alpha);
+  assert.deepEqual([...pixels.data.subarray(0, 4)], rgba(low));
+  assert.deepEqual([...pixels.data.subarray(256 * 4, 256 * 4 + 4)], rgba(high));
+  assert.ok(low.alpha > 0 && low.alpha < policy.alpha && high.alpha > policy.alpha);
+  const cold = fresh();
+  assert.deepEqual((await cold.asset(version, imageFile(display)))?.bytes, displayAsset.bytes);
+  assert.equal(await cold.asset(version, imageFile(display).replace(/-[a-f0-9]{64}\.png$/u, `-${"0".repeat(64)}.png`)), null);
+  assert.deepEqual((await cold.asset(version, imageFile(original)))?.bytes, originalAsset.bytes);
+}));
+
+test("contrast exact cells get distinct identity and preserve transparent unpublished pixels and cancellation", async () => fixture(async ({ service, proofs }) => {
+  const version = proofs[0].datasetVersion;
+  const exactBounds = view(window(11, 1672, 890), 1);
+  const original = await service.layer(version, exactBounds); assert.ok(original?.raster);
+  const display = await service.layer(version, exactBounds, undefined, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion); assert.ok(display?.raster);
+  assert.notEqual(display.raster.imageUrl, original.raster.imageUrl);
+  assert.equal(display.raster.displaySource?.imageSha256, original.raster.imageSha256);
+  const partial = await service.layer(version, view(window(11, 1672, 890), 3), undefined, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion); assert.ok(partial?.raster);
+  assert.equal(partial.state, "PARTIAL"); assert.equal(partial.raster.qualitySummary.unpublishedPixels, 65536);
+  const asset = await service.asset(version, imageFile(partial)); assert.ok(asset);
+  const pixels = PNG.sync.read(asset.bytes);
+  for (let row = 0; row < 256; row++) assert.ok(pixels.data.subarray((row * 768 + 256) * 4, (row * 768 + 512) * 4).equals(Buffer.alloc(1024)));
+  const cancelled = new AbortController(); cancelled.abort(new Error("display_consumer_cancelled"));
+  await assert.rejects(service.layer(version, exactBounds, cancelled.signal, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion), /display_consumer_cancelled/u);
+  service.close();
+  await assert.rejects(service.asset(version, imageFile(display)), /nightlight_service_closed/u);
+}, true));
+
+test("display projection maps all five classes, keeps transparent pixels and rejects an unknown visible class", async () => fixture(async ({ proofs, directory }) => {
+  // Controlled pixels exercise the display mapper only; numerical publication
+  // qualification is owned by the original sealed-file/producer tests.
+  const original = await readFile(path.join(directory, proofs[0].image.file)), png = PNG.sync.read(original);
+  for (let pixel = 0; pixel < 6; pixel++) {
+    const band = policy.bands[pixel];
+    const rgba = band ? [1, 3, 5].map(offset => parseInt(band.color.slice(offset, offset + 2), 16)).concat(policy.alpha) : [0, 0, 0, 0];
+    png.data.set(rgba, pixel * 4);
+  }
+  const bytes = PNG.sync.write(png), proof = { ...proofs[0], image: { ...proofs[0].image, sha256: hash(bytes), bytes: bytes.length } };
+  const transformed = projectNightLightDisplay({ proof, bytes }, "a".repeat(64), NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion, new AbortController().signal);
+  assert.equal("numeric" in transformed.proof, false, "a display image is not a new numerical publication");
+  const output = PNG.sync.read(transformed.bytes);
+  policy.bands.forEach((band, index) => {
+    const mapped = NIGHT_LIGHT_CONTRAST_DISPLAY.bands[band.id];
+    assert.deepEqual([...output.data.subarray(index * 4, index * 4 + 4)],
+      [1, 3, 5].map(offset => parseInt(mapped.color.slice(offset, offset + 2), 16)).concat(mapped.alpha));
+  });
+  assert.deepEqual([...output.data.subarray(20, 24)], [0, 0, 0, 0]);
+  assert.equal(hash(bytes), proof.image.sha256, "source bytes must stay immutable");
+  png.data.set([255, 0, 255, 102], 0);
+  const invalid = PNG.sync.write(png), invalidProof = { ...proof, image: { ...proof.image, sha256: hash(invalid), bytes: invalid.length } };
+  assert.throws(() => projectNightLightDisplay({ proof: invalidProof, bytes: invalid }, "a".repeat(64),
+    NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion, new AbortController().signal), /nightlight_display_class_invalid/u);
+}));
+
+test("old and contrast windows share the existing retention capacity rather than retaining eight of each", async () => fixture(async ({ service, proofs, directory }) => {
+  const version = proofs[0].datasetVersion, urls: string[] = [];
+  for (const style of [undefined, NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion]) {
+    for (const [zoom, x, y] of [[11, 1672, 890], [10, 836, 445]]) {
+      for (const [offset, span] of [[0, 2], [0, 1], [1, 1]]) {
+        const bounds = view(window(zoom, x + offset, y), span);
+        if (zoom === 10) {
+          const cell = displayRasterWindowBounds(window(zoom, x + offset, y));
+          bounds.south = cell.south - (cell.north - cell.south) * .5; bounds.north = cell.north;
+        }
+        const layer = await service.layer(version, bounds, undefined, style); assert.ok(layer?.raster);
+        urls.push(imageFile(layer));
+      }
+    }
+  }
+  assert.equal(new Set(urls).size, 12);
+  const file = path.join(directory, proofs[0].image.file), bytes = await readFile(file), altered = Buffer.from(bytes);
+  altered[altered.length - 1] ^= 1; await writeFile(file, altered);
+  await assert.rejects(service.asset(version, urls[0]), /nightlight_file_hash_invalid/u,
+    "the oldest composed V1 entry must have retired under the shared eight-window limit");
+  await writeFile(file, bytes);
+  assert.ok(await service.asset(version, urls[0]), "ordinary source recovery must still reconstruct the immutable old URL");
 }));

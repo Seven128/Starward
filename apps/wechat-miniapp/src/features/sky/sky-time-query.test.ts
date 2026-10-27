@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { MutationCache, QueryCache, QueryClient, QueryObserver } from "@tanstack/react-query";
-import { createSkyObservationTime } from "./sky-observation-time";
+import { createSkyObservationTime, skyContinuousTimeCoverage } from "./sky-observation-time";
 import { skyTargetInstantQueryKey } from "../../services/sky-target-instant-response";
 import { MiniappRequestCancelled, isMiniappRequestCancelled } from "../../services/request-lifecycle";
 import { harness, controls } from "./sky-overlay-test-support";
@@ -67,13 +67,14 @@ const waitQuery = () => new Promise<void>(resolve => setImmediate(resolve));
 /** Exercise the page's actual field callbacks with the original controls and
  * observation-time owner, including a new render before an old timer fires. */
 function pageFieldCallbacks(time: ReturnType<typeof createSkyObservationTime>, permitted: () => boolean,
-  previews: string[]) {
+  previews: string[], timeModel: { startAt: string; endAt: string } | null = null) {
   const ast = ts.createSourceFile("page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let command = "";
+  let command = "", previewCommand = "";
   const callbacks: Record<string, string> = {};
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "setSkyTimeEditing") command = node.initializer!.getText(ast);
+    if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "previewSkyTime") previewCommand = node.initializer!.getText(ast);
     if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(ast) === "SkyTimeControls") {
       for (const attribute of node.attributes.properties) if (ts.isJsxAttribute(attribute) &&
         ["current", "editingCurrent", "editingGeneration", "onEditChange", "onPreview"].includes(attribute.name.getText(ast)) &&
@@ -82,17 +83,20 @@ function pageFieldCallbacks(time: ReturnType<typeof createSkyObservationTime>, p
     }
     ts.forEachChild(node, visit);
   }; visit(ast);
-  assert.ok(command && callbacks.current && callbacks.editingCurrent && callbacks.editingGeneration && callbacks.onEditChange && callbacks.onPreview);
+  assert.ok(command && previewCommand && callbacks.current && callbacks.editingCurrent && callbacks.editingGeneration && callbacks.onEditChange && callbacks.onPreview);
   const expected = time.snapshot(), owns = () => time.snapshot().binding === expected.binding &&
     time.snapshot().committedAt === expected.committedAt;
-  const result = vm.runInNewContext(ts.transpileModule(`const setSkyTimeEditing = ${command};
+  const result = vm.runInNewContext(ts.transpileModule(`const setSkyTimeEditing = ${command}; const previewSkyTime = ${previewCommand};
     ({ current: ${callbacks.current}, editingCurrent: ${callbacks.editingCurrent}, editingGeneration: ${callbacks.editingGeneration},
       onEditChange: ${callbacks.onEditChange}, onPreview: ${callbacks.onPreview} });`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     observationTime: time, timeIntent: expected, skyControlPanelRef: { current: "time" },
     skyTimeIntentCurrent: () => permitted() && owns(), skyTimeIntentRetirable: owns,
     setTimeIntent: (value: ReturnType<typeof time.snapshot>) => assert.equal(value, time.snapshot()),
-    cancelSkyCalibration() {}, skyTimeInputAllowed,
+    cancelSkyCalibration() {}, skyTimeInputAllowed, skyContinuousTimeCoverage,
+    timeBinding: expected.binding, committedAt: expected.committedAt, timeModel,
+    acceptedTimePresentationFor: () => null, presentedSkyFrameRef: { current: null },
+    datePickerOpenRef: { current: false }, reducedMotionRef: { current: false },
   });
   return { ...result, onPreview: (value: string) => {
     const accepted: boolean = result.onPreview(value); if (accepted) previews.push(value); return accepted;
@@ -205,7 +209,8 @@ test("a held field cannot adopt replacement Context callbacks or revive after A 
 
 test("six-field hold previews every exact instant but settles one target query at release", async () => {
   const ui = harness("SkyTimeControls"), time = createSkyObservationTime(), requests: string[] = [], previews: string[] = [];
-  time.bind("ctx:time:1:fp:time", at, { startAt: "2026-10-16T00:00:00.000Z", endAt: "2026-10-17T00:00:00.000Z" });
+  const timeModel = { startAt: "2026-10-16T00:00:00.000Z", endAt: "2026-10-17T00:00:00.000Z" };
+  time.bind("ctx:time:1:fp:time", at, timeModel);
   const query = queryHarness(async binding => { requests.push(binding.at); return { data: { ...binding,
     targets: [{ targetId: "target:actual", displayName: `精确目标 ${binding.at}` }] } }; });
   const renderQuery = () => { query.render({ timeGeometryReady: true, timePresentation: { mode: "MODEL" },
@@ -214,7 +219,7 @@ test("six-field hold previews every exact instant but settles one target query a
     requestedAt: time.snapshot().at, pageVisible: true, skyResourcesActive: true,
     observationTime: time, skyTimeIntentCurrent: () => true }); query.commit(); };
   const renderControls = () => ui.render({ at: time.snapshot().at, timezone: "UTC", active: true, playing: false, canPlay: true,
-    ...pageFieldCallbacks(time, () => true, previews), onPause: time.pause, onApply() {},
+    ...pageFieldCallbacks(time, () => true, previews, timeModel), onPause: time.pause, onApply() {},
     onTogglePlay: () => time.snapshot().mode === "PLAYING" ? time.pause() : time.play(0) });
   try {
     renderQuery(); await waitQuery(); requests.length = 0;

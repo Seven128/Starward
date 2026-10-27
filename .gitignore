@@ -12,7 +12,7 @@ tmp/venvs/
 .DS_Store
 Thumbs.db
 apps/mobile/public/.well-known/starward-acceptance-session-*.json
-apps/mobile/modules/design-evidence/android/build/
+apps/mobile/modules/*/android/build/
 apps/wechat-miniapp/dist/
 apps/wechat-miniapp/project.private.config.json
 apps/wechat-miniapp/.swc/
@@ -47,6 +47,9 @@ tmp/project-efficiency-android-20260908/*.apk
 
 # Local downloads, device transports, QR codes and raw captures are not source.
 # Only explicitly reviewed, non-private defect evidence is shared below.
+/.codex/task-notes/
+/tmp/git-index-stale*.lock
+/.codex/work-items/external-code-review-2026-10-23/Starward-code-review-pack-20261023.zip
 /output/*
 !/output/miniapp-uiux-alignment-2026-09-13/
 /output/miniapp-uiux-alignment-2026-09-13/*

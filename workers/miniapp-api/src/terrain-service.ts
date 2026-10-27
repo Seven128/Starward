@@ -161,7 +161,12 @@ export class TerrainService implements TerrainPort {
       if (result) {
         validateTerrainPublication(result.publication);
         validateTerrainAsset(result.bytes, result.publication);
-        const write = this.cacheWrite.then(() => this.writeCached(input, result));
+        const write = this.cacheWrite.then(() => {
+          // A queued cache write has not acquired any filesystem ownership.
+          // Skip abandoned work here; a write already started still finishes
+          // its existing image/proof commit before the source slot is released.
+          if (!controller.signal.aborted) return this.writeCached(input, result);
+        });
         this.cacheWrite = write.catch(() => { console.warn("terrain_cache_write_failed"); });
         await this.cacheWrite;
       }

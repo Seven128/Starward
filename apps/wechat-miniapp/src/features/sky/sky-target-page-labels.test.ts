@@ -8,9 +8,8 @@ import { resolvedSkyBodyReferences, skyTargetLabelSuppressed } from "./sky-body-
 import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
 import type { SkyScenePaintedSources } from "./sky-scene-render";
-import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { completeLegacySkyOptical } from "./sky-sdss-optical-completion";
-import { skyPageCompletedResourceTestFrame, skyPagePaintCommit, skyPageScenePort, skyPageSceneTestDependencies } from "./sky-optical-page-test-support";
+import { skyPageCompletedResourceTestFrame, skyPagePaintCommit, skyPageScenePort, skyPageSceneTestDependencies, skyPageTimeTestBindings } from "./sky-optical-page-test-support";
 import { projectSkyTargetLabels } from "./sky-label-presentation";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -54,8 +53,9 @@ const evaluateSelection = (context: Record<string, any>) => {
   const targets = context.orientationTargets.map((target: object) => ({ ...target,
     azimuthDeg: (Math.atan2(ray[0], ray[1]) * 180 / Math.PI + 360) % 360,
     altitudeDeg: Math.asin(ray[2]) * 180 / Math.PI }));
-  return vm.runInNewContext(selection, { skyPresentedTimeCurrent, projectSkyTargetLabels,
-    timePlaying: false, timeIntent: { runStartAt: null }, viewportInsets:{top:0,bottom:0},...context, orientationTargets: targets });
+  return vm.runInNewContext(selection, { projectSkyTargetLabels, ...skyPageTimeTestBindings(context.row.at),
+    viewportInsets:{top:0,bottom:0}, ...context, orientationTargets: targets,
+    presentedSkyFrame: context.presentedSkyFrame ? { timeGeneration: 0, ...context.presentedSkyFrame } : null });
 };
 const openSnapshot: SkyPickSnapshot = { frameAt: "t", catalogVersion: "v", catalogHash: "h",
   width: 390, height: 844, objects: [] };

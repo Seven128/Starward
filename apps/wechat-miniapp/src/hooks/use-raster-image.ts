@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { mapRasterFiles } from "@/services/map-raster-files";
 import type { RasterImageDescriptor } from "@/services/raster-image-resources";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
+import { reportRuntimeError } from "@/services/runtime-error";
+import { rasterImageDiagnostic } from "@/services/raster-image-diagnostic";
 
 /** A consumer lease on the one shared immutable-file owner. Metadata, actual
  * bounds, source disclosure and native installation remain with their owners. */
@@ -23,7 +25,11 @@ export function useRasterImage(input: RasterImageDescriptor | null, enabled: boo
     void read.promise.then(({ path }) => {
       if (!controller.signal.aborted) setImageState({ url: imageKey, path, error: null });
     }).catch(error => {
-      if (!controller.signal.aborted && !isMiniappRequestCancelled(error)) setImageState({ url: imageKey, path: null, error });
+      if (!controller.signal.aborted && !isMiniappRequestCancelled(error)) {
+        const { code, ...context } = rasterImageDiagnostic(error, imageUrl);
+        reportRuntimeError("request", code, error, context);
+        setImageState({ url: imageKey, path: null, error });
+      }
     });
     return () => { controller.abort(); read.release(); };
   }, [enabled, imageUrl, imageKey, imageAttempt, imageBytes, imageSha256]);
@@ -33,11 +39,16 @@ export function useRasterImage(input: RasterImageDescriptor | null, enabled: boo
     imagePending: Boolean(enabled && imageUrl && (imageState.url !== imageKey || (!imageState.path && !imageState.error))),
     reportImageFailure: (error: unknown, failedPath = imageState.path) => {
       if (failedPath) mapRasterFiles.invalidate(imageKey, failedPath);
+      if (enabled && failedPath && imageState.url === imageKey && imageState.path === failedPath)
+        reportRuntimeError("native", "map_raster_image_info_failed", error,
+          { stage: "image_info", resource: rasterImageDiagnostic(error, imageUrl).resource });
       setImageState(current => current.url === imageKey && current.path === failedPath ? { url: imageKey, path: null, error } : current);
     },
     retryImage: () => {
       if (imageState.url === imageKey && imageState.error) {
-        mapRasterFiles.invalidate(imageKey, imageState.path);
+        // Failed transfers are already retired by the file owner; native
+        // decode failures invalidate their exact path above. A key-only retry
+        // must not discard another reader's newer pending or ready file.
         setImageAttempt(value => value + 1);
       }
     },

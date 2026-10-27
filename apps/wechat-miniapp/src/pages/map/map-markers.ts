@@ -8,6 +8,7 @@ export function formalSpotMarkerIconPath(mode: DisplayMode, selected: boolean) {
 }
 
 interface MarkerGroup {
+  key: string;
   id: number;
   latitude: number;
   longitude: number;
@@ -17,14 +18,30 @@ interface MarkerGroup {
 export function markerGroups(
   spots: readonly SpotSummary[],
   zoom: number,
+  previous: readonly MarkerGroup[] = [],
 ): MarkerGroup[] {
+  const stableIds = (groups: MarkerGroup[]) => {
+    const previousIds = new globalThis.Map(previous.map(group => [group.key, group.id]));
+    const used = new Set(groups.flatMap(group => previousIds.has(group.key) ? [previousIds.get(group.key)!] : []));
+    let nextId = 1;
+    for (const group of groups) {
+      const existing = previousIds.get(group.key);
+      if (existing !== undefined) group.id = existing;
+      else {
+        while (used.has(nextId)) nextId++;
+        group.id = nextId++; used.add(group.id);
+      }
+    }
+    return groups.sort((a, b) => a.id - b.id);
+  };
   if (zoom >= 9) {
-    return spots.map((spot, index) => ({
+    return stableIds(spots.map((spot, index) => ({
+      key: `spot:${spot.spotId}`,
       id: index + 1,
       latitude: spot.gcj02.latitude,
       longitude: spot.gcj02.longitude,
       spots: [spot],
-    }));
+    })));
   }
   const cellSize = zoom <= 7 ? 1.2 : 0.55;
   const cells = new globalThis.Map<string, SpotSummary[]>();
@@ -37,14 +54,51 @@ export function markerGroups(
     cell.push(spot);
     cells.set(key, cell);
   }
-  return [...cells.values()].map((items, index) => ({
+  return stableIds([...cells.entries()].map(([cell, items], index) => ({
+    key: items.length === 1 ? `spot:${items[0]!.spotId}` : `cell:${cellSize}:${cell}`,
     id: index + 1,
     latitude:
       items.reduce((sum, spot) => sum + spot.gcj02.latitude, 0) / items.length,
     longitude:
       items.reduce((sum, spot) => sum + spot.gcj02.longitude, 0) / items.length,
     spots: items,
-  }));
+  })));
+}
+
+const NO_SPOTS: readonly SpotSummary[] = [];
+
+/** Keep only the current marker summaries while the new viewport's Scene is
+ * pending. Scene evaluations/time frames stay with the current query. */
+export function createMapMarkerPresentation() {
+  let scope: string | null = null;
+  let spots: readonly SpotSummary[] = NO_SPOTS;
+  let confirmed = false;
+  let groups: MarkerGroup[] = [];
+  let markers: ReturnType<typeof markerItems> = [];
+  let rendering = "";
+  let renderedSpots: readonly SpotSummary[] | null = null;
+  return {
+    present(input: { scope: string; spots?: readonly SpotSummary[] | undefined; denied: boolean;
+      zoom: number; selectedSpotId: string | null; mode: DisplayMode; largeText: boolean }) {
+      if (input.scope !== scope || input.denied) {
+        scope = input.scope; spots = NO_SPOTS; confirmed = false; groups = []; markers = [];
+        rendering = ""; renderedSpots = null;
+      }
+      if (!input.denied && input.spots !== undefined) { spots = input.spots; confirmed = true; }
+      // Fractional camera changes do not change these three clustering levels.
+      const nextRendering = JSON.stringify([input.zoom >= 9 ? 9 : input.zoom <= 7 ? 7 : 8,
+        input.selectedSpotId, input.mode, input.largeText]);
+      if (spots !== renderedSpots || rendering !== nextRendering) {
+        groups = markerGroups(spots, input.zoom, groups);
+        const next = markerItems(groups, input.selectedSpotId, input.mode, input.largeText);
+        // Keep unchanged native marker props and ordering across new query
+        // envelopes. This avoids clearing/replacing the same native images.
+        if (JSON.stringify(next) !== JSON.stringify(markers)) markers = next;
+        renderedSpots = spots; rendering = nextRendering;
+      }
+      return { groups, markers, hasConfirmed: confirmed, retained: confirmed && input.spots === undefined };
+    },
+  };
 }
 
 export function markerItems(

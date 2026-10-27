@@ -7,6 +7,8 @@ import type { WeatherEvidenceSummary, WeatherAlertEvidence, SourceSummary } from
 import { weatherAlertState } from "./weather-alert-state";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../utils/zoned-date";
 import { skyReportTestPolicy } from "../features/sky/sky-report-test-support";
+import { skyFailureTestEpisodes } from "../features/sky/sky-failure-test-support";
+import { createResourceFailureEpisode } from "../services/resource-failure-episode";
 const {skyReportRecovery}=skyReportTestPolicy;
 
 const now = Date.parse("2026-09-15T04:00:00Z");
@@ -23,8 +25,48 @@ function load(file: string, name: string, context: object) {
   const code = ast.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(ast).replace(/^export /, "")).join("\n");
   return vm.runInNewContext(ts.transpileModule(code + `;${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText,
     { Date, setTimeout, clearTimeout, weatherAlertState, SourceAttribution: "SourceAttribution", SourceEntry: "SourceEntry",
-      useState: (value: unknown) => [value, () => {}], ...context });
+      useState: (value: unknown) => [value, () => {}], useMemo: (create: () => unknown) => create(),
+      createResourceFailureEpisode, ...context });
 }
+
+test("one official-warning failure survives source return and automatic refresh until health or accepted retry", () => {
+  const notices: unknown[] = [], dependencies: unknown[][] = [];
+  let slot = 0, memo: unknown, allowRetry = false, retries = 0, refreshes = 0;
+  let clockRefresh = () => {};
+  const notify = (notice: unknown) => notices.push(notice);
+  const component = load("./weather-alerts.tsx", "WeatherAlerts", {
+    React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
+    Text: "Text", View: "View", StatusPanel: "StatusPanel", calendarDateInTimezone, clockTimeInTimezone,
+    useWeatherAlertClock: (_evidence: unknown, _active: boolean, refresh: () => void) => { clockRefresh = refresh; return now; },
+    useAppStore: (select: any) => select({ notify }),
+    useMemo: (create: () => unknown) => memo ??= create(),
+    useEffect: (effect: () => void, next: unknown[]) => {
+      const index = slot++, prior = dependencies[index];
+      dependencies[index] = next;
+      if (!prior || next.some((value, position) => value !== prior[position])) effect();
+    },
+  });
+  const failed = evidence({ alerts: [], warningState: "UNAVAILABLE" });
+  const props = { evidence: failed, timezone: "Asia/Shanghai", active: true, scopeKey: "spot:a",
+    onRecover: () => { if (!allowRetry) return false; retries++; return true; }, onRefresh: () => { refreshes++; } };
+  const render = (change: object = {}) => { slot = 0; return component({ ...props, ...change }); };
+  const status = (tree: any) => tree.children.flat().find((child: any) => child?.type === "StatusPanel");
+  render(); render({ active: false }); render();
+  assert.equal(notices.length, 1, "returning from Sources cannot restart the same failed warning episode");
+  render({ refreshing: true }); render();
+  render({ evidence: undefined }); render();
+  assert.equal(notices.length, 1, "refresh and temporary absence do not establish recovery");
+  render({ evidence: evidence({ alerts: [] }) }); render();
+  assert.equal(notices.length, 2, "a verified fresh empty feed ends the failure");
+  status(render()).props.onRecover(); render({ refreshing: true }); render();
+  assert.equal(retries, 0); assert.equal(notices.length, 2, "a rejected parent command cannot rearm feedback");
+  allowRetry = true; status(render()).props.onRecover(); render({ refreshing: true }); render();
+  assert.equal(retries, 1); assert.equal(notices.length, 3);
+  clockRefresh(); render({ refreshing: true }); render();
+  assert.equal(refreshes, 1); assert.equal(retries, 1, "the expiry clock uses refresh, not the parent's explicit retry policy");
+  assert.equal(notices.length, 3);
+  render({ scopeKey: "spot:b" }); assert.equal(notices.length, 4);
+});
 
 test("current warnings respect activation and expiry independently of available forecast hours", () => {
   const current = evidence({ timelineRole: "UNAVAILABLE" });
@@ -184,6 +226,30 @@ test("actual Map and Sky report queries refresh while visible, including a previ
   }
 });
 
+test("the actual Sky warning clock refresh respects the live guard without explicit-retry bookkeeping", () => {
+  const page = ts.createSourceFile("sky.tsx", readFileSync(new URL("../features/sky/spot-sky-page.tsx", import.meta.url), "utf8"),
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression = "";
+  function visit(node: ts.Node) {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(page) === "WeatherAlerts") {
+      const property = node.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(page) === "onRefresh");
+      if (property && ts.isJsxAttribute(property) && property.initializer && ts.isJsxExpression(property.initializer))
+        expression = property.initializer.expression?.getText(page) ?? "";
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(page); assert.ok(expression);
+  let allowed = false, requests = 0, manualRetries = 0;
+  const current = { current: { refetch: () => { requests++; } } }, restore = { current: true };
+  const refresh = vm.runInNewContext(ts.transpileModule(`(${expression})`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
+    { canRetryReport: () => allowed, reportRecoveryRef: current, autoRestoreAttemptedRef: restore,
+      retryReport: () => { manualRetries++; }, failureEpisodes: { report: { retry: () => { manualRetries++; } } } });
+  refresh(); assert.equal(requests, 0);
+  allowed = true; refresh(); assert.equal(requests, 1);
+  current.current = { refetch: () => { requests += 10; } }; refresh(); assert.equal(requests, 11);
+  assert.equal(manualRetries, 0); assert.equal(restore.current, true);
+});
+
 test("actual Sky report feedback and warning consumer produce one notice without discarding independent alerts", () => {
   const ast = ts.createSourceFile("sky.tsx", readFileSync(new URL("../features/sky/spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let hostEffect = "";
@@ -212,7 +278,9 @@ test("actual Sky report feedback and warning consumer produce one notice without
   for (const dataState of ["STALE_USABLE", "UNAVAILABLE", "EXPIRED", "PARTIAL"]) for (const fresh of [false, true]) {
     notices.length = 0;
     const report = { data: { dataState, warnings: [] }, isFetching: false, isError: false, refreshError: undefined };
-    run(`(${hostEffect})()`, { report,reportRecovery:skyReportRecovery(undefined,true,dataState as any),activeContext:{contextId:'ctx'},contextComplete: true, pageVisible: true, notify, routeContext: { spotId: "spot:a", localDate: "2026-09-15" } });
+    run(`(${hostEffect})()`, { report,reportRecovery:skyReportRecovery(undefined,true,dataState as any),
+      failureEpisodes:skyFailureTestEpisodes(),carriedReport:null,contextMatches:true,
+      activeContext:{contextId:'ctx'},contextComplete: true, pageVisible: true, notify, routeContext: { spotId: "spot:a", localDate: "2026-09-15" } });
     const tree = render({ evidence: evidence({ warningState: fresh ? "FRESH" : "UNAVAILABLE", alerts: fresh ? [alert] : [] }),
       timezone: "Asia/Shanghai", active: true, scopeKey: "spot:a", refreshing: false,
       ...Object.fromEntries(Object.entries(expressions).map(([key, expression]) => [key, run(expression, { report })])), onRecover: () => {} });

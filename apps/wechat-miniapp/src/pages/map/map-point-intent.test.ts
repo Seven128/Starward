@@ -1,53 +1,97 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import vm from 'node:vm';
-import ts from 'typescript';
-import { userMapRegionEnd, userMapRegionStarted } from './map-region-event';
-import { sameContextVersion } from '../../services/observation-context-version';
-import { retryObservationScene } from './context-restore';
-import { spotNeighborhoodCamera } from './map-camera';
-import { createMapSceneTestBoundaries } from './map-page-test-support';
-function runtime() {
-    const source = ts.createSourceFile('map.tsx', readFileSync(new URL('./index.tsx', import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    const names = new Set(['invalidateMapPointIntent', 'dismissMapRegionFailure', 'resolveMapPoint', 'onRegionChange', 'resolveSpotContext', 'openDetail', 'refreshMap']);
-    const declarations: string[] = [];
-    const visit = (node: ts.Node) => {
-        if (ts.isVariableDeclaration(node) && names.has(node.name.getText(source)))
-            declarations.push('const ' + node.getText(source) + ';');
-        ts.forEachChild(node, visit);
-    };
-    visit(source);
-    let selected: string | null = null, context: any = null, left = 0, viewportWrites = 0, attempt: any = null;
-    let owner = 'owner', resetVersion = 0;
-    const viewport = { center: { latitude: 22, longitude: 114 }, zoom: 9, loadedViewport: 'initial' };
-    const notices = new Map<string, any>();
-    const timers = new Map<number, () => void>();
-    let timer = 0;
-    const requests: {
-        input: any;
-        resolve(v: any): void;
-        reject(e: Error): void;
-    }[] = [];
-    const state = () => ({ viewport, selectedSpotId: selected, mapResetVersion: resetVersion, spotOpenRequestVersion: 0, observationContext: context, retiredObservationContextId: null,
-        retireObservationContextEdit() {}, notifications: [...notices.values()], dismissNotification: (id: string) => notices.delete(id) });
-    const no = () => { };
-    const scope: any = { ...createMapSceneTestBoundaries().scope, useAppStore: { getState: state }, mapResetVersion: 0, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => owner,
-        mapPointIntent: { current: 0 }, failedMapRegion: { current: null }, detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 }, navigationEpoch: { current: 0 }, regionTimer: { current: null }, candidateCameraGuard: { current: null }, panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
-        gcj02ToWgs84: ({ lat, lon }: any) => ({ lat, lon }), currentTimezoneHint: () => 'UTC', localDateForNow: () => '2026-09-26', activeContext: null, timeReference: null,
-        bootstrapReplacementBlocked: false, selected: null, bootstrapContext: { refetch: async () => undefined }, retryObservationScene, sameContextVersion,
-        userMapRegionEnd, userMapRegionStarted, spotNeighborhoodCamera, spotMapFocus: { begin() {}, cancel() {} }, isMiniappRequestCancelled: () => false, errorMessage: (e: Error) => e.message,
-        selectSpot: (id: string) => selected = id, setObservationContext: (v: any) => context = v, leaveSelectedLocationForMapPoint: () => { left++; selected = null; }, setViewport: (patch: object) => { viewportWrites++; Object.assign(viewport, patch); },
-        resolveObservationContext: (input: any) => new Promise((resolve, reject) => requests.push({ input, resolve, reject })),
-        notify: (v: any) => notices.set(v.dedupeKey, { ...v, id: v.dedupeKey }), setPanelPhase: no, setPanelExtent: no, setPanelDragOffset: no, setSelectedFallback: no, setSelectedProposal: no, setBottomPresentation: no, setAnnouncement: no, setSpotContextAttempt: (v: any) => { attempt = typeof v === "function" ? v(attempt) : v; }, scene: { refetch: () => assert.fail("must not refresh old scene") },
-        clearTimeout: (id: number) => timers.delete(id), setTimeout: (fn: () => void) => { timers.set(++timer, fn); return timer; } };
-    const fn = vm.runInNewContext(ts.transpileModule(declarations.join('\n') + '\n({onRegionChange,resolveMapPoint,openDetail,refreshMap,invalidateMapPointIntent});', { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, scope);
-    return { ...fn, viewport, requests, notices, switchOwner() { owner = 'other'; }, reset() { resetVersion++; }, fire() { const f = [...timers.values()]; timers.clear(); f.forEach(x => x()); }, get attempt() { return attempt; }, get selected() { return selected; }, get context() { return context; }, get left() { return left; }, get viewportWrites() { return viewportWrites; } };
-}
+import { createMapPointIntentTestRuntime as runtime } from './map-point-intent-test-support';
+
 const center = { latitude: 22, longitude: 114 };
 const drag = { type: 'end', causedBy: 'drag', detail: { centerLocation: center, scale: 12 } };
 const settle = () => new Promise<void>(r => setImmediate(r));
 const newSpot = { spotId: 'spot:new', name: 'new', gcj02: { latitude: 23, longitude: 115 } };
+
+test('Scene waits for the existing gesture debounce and current Context result', async () => {
+    const m = runtime();
+    assert.equal(m.scenePending(), false, 'initial no-gesture Scene remains eligible');
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    assert.equal(m.scenePending(), true);
+    m.onRegionChange(drag);
+    assert.equal(m.scenePending(), true); assert.equal(m.requests.length, 0);
+    m.fire();
+    assert.equal(m.scenePending(), true, 'new viewport cannot query against the old Context');
+    m.requests[0].resolve({ data: { contextId: 'settled-camera' } }); await settle();
+    assert.equal(m.scenePending(), false); assert.equal(m.context.contextId, 'settled-camera');
+});
+
+test('cancelled gesture releases Scene, while programmatic settle cannot release a user transaction', async () => {
+    const m = runtime();
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    m.onRegionChange({ type: 'end', causedBy: 'update', detail: {} });
+    assert.equal(m.scenePending(), true);
+    m.onRegionChange({ type: 'end', causedBy: 'gesture', detail: {} });
+    assert.equal(m.scenePending(), false); assert.equal(m.requests.length, 0);
+    m.onRegionChange(drag); m.fire();
+    m.onRegionChange({ type: 'end', causedBy: 'drag', detail: {} });
+    assert.equal(m.scenePending(), true, 'a malformed later callback cannot release an already settled Context transaction');
+    m.requests[0].reject(Error('current request failed')); await settle();
+    assert.equal(m.scenePending(), false, 'real failure exposes recovery instead of holding Scene indefinitely');
+    const retry = m.refreshMap();
+    assert.equal(m.scenePending(), true);
+    m.requests[1].resolve({ data: { contextId: 'recovered-camera' } }); await retry;
+    assert.equal(m.scenePending(), false);
+});
+
+test('retired Context work cannot release a newer Scene gate; hide and scope changes are eligible independently', async () => {
+    const m = runtime();
+    m.onRegionChange(drag); m.fire();
+    m.onRegionChange(drag);
+    m.requests[0].resolve({ data: { contextId: 'old-camera' } }); await settle();
+    assert.equal(m.scenePending(), true);
+    m.hide(); assert.equal(m.scenePending(), false); m.show(); assert.equal(m.scenePending(), false);
+    m.onRegionChange(drag); m.switchOwner(); assert.equal(m.scenePending(), false);
+    const reset = runtime(); reset.onRegionChange(drag); reset.reset(); assert.equal(reset.scenePending(), false);
+});
+
+test('a new native gesture retires queued conditions before its settled camera is known', async () => {
+    const m = runtime();
+    m.onRegionChange(drag);
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    m.fire(); await settle();
+    assert.equal(m.requests.length, 0, 'the previous camera must not start a conditions request during the next gesture');
+    assert.equal(m.viewportWrites, 1, 'gesture begin does not invent a new camera or rewrite the previous one');
+    m.onRegionChange({ type: 'end', causedBy: 'scale', detail: { centerLocation: center, scale: 17.25 } });
+    m.fire();
+    assert.equal(m.requests.length, 1);
+    assert.equal(m.viewport.zoom, 17.25, 'the actual settled fractional zoom remains exact');
+});
+
+test('a new native gesture fences in-flight old conditions and their late failure', async () => {
+    for (const fail of [false, true]) {
+        const m = runtime();
+        m.onRegionChange(drag); m.fire();
+        m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+        if (fail) m.requests[0].reject(Error('old camera failure'));
+        else m.requests[0].resolve({ data: { contextId: 'old-camera' } });
+        await settle();
+        assert.equal(m.context, null, 'the previous camera result cannot commit after the new gesture begins');
+        assert.equal(m.left, 0); assert.equal(m.notices.size, 0);
+        const latest = { latitude: 23, longitude: 115 };
+        m.onRegionChange({ type: 'end', causedBy: 'scale', detail: { centerLocation: latest, scale: 17.25 } });
+        m.fire(); m.requests[1].resolve({ data: { contextId: 'current-camera' } }); await settle();
+        assert.equal(m.context.contextId, 'current-camera'); assert.equal(m.viewport.zoom, 17.25);
+        assert.deepEqual(m.viewport.center, latest); assert.equal(m.left, 1);
+    }
+});
+
+test('a gesture without a new settled camera preserves the previous real failure recovery', async () => {
+    const m = runtime();
+    m.onRegionChange(drag); m.fire(); m.requests[0].reject(Error('current camera failure')); await settle();
+    assert(m.notices.has('map-context-region-failed'));
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    assert(m.notices.has('map-context-region-failed'), 'a cancelled gesture must not erase the known failure before any new camera settles');
+    const recovery = m.refreshMap();
+    assert.equal(m.requests[1].input.location.wgs84.latitude, center.latitude);
+    m.requests[1].resolve({ data: { contextId: 'recovered-original-camera' } }); await recovery;
+    assert.equal(m.context.contextId, 'recovered-original-camera');
+    assert(!m.notices.has('map-context-region-failed'));
+});
 
 test('native refined view survives an immediate selection before the conditions debounce', async () => {
     const m = runtime();

@@ -36,7 +36,7 @@ const at = "2026-09-15T12:30:00.000Z", laterAt = "2026-09-15T13:30:00.000Z";
 function scope() {
   const values: Record<string, any> = { useMemo: (read: () => unknown) => read(),
     mapSceneLayerForOverlay, mapLayerKindForOverlay, cloudTimeFrameChoices, mapTimeFrameAt, projectMapEvaluations, projectedLayerPolygons,
-    accountOwnerId: null, mapResetVersion: 2, pageVisible: true, analysisOverlay: "TOTAL_CLOUD",
+    accountOwnerId: null, mapResetVersion: 2, pageVisible: true, mapSceneRegionPending: false, analysisOverlay: "TOTAL_CLOUD",
     activeContext: { contextId: "context:controlled", contextFingerprint: "one", revision: 2, weatherView: { cloudLayer: "TOTAL" } },
     observationContext: null, committedFilters: {}, debouncedFinderQuery: "unrelated marker filter",
     viewport: { center: { latitude: 22.5, longitude: 114.5 }, zoom: 12 },
@@ -67,6 +67,15 @@ test("actual Map query and API binding read cloud independently of Scene filters
   assert.equal(query.get("centerLat"), "22.500000"); assert.equal(query.get("viewportBounds"), "114.4800000,22.4800000,114.5200000,22.5200000");
   assert.equal(query.has("filters"), false); assert.equal(query.has("preferences"), false);
   assert.equal(new URLSearchParams(sceneCall[2].query).get("layer"), "NORMAL", "marker Scene no longer repeats the cloud read");
+  assert.equal(new URLSearchParams(sceneCall[2].query).has("viewportBounds"), false, "marker radius does not change when a layer measures native bounds");
+  const sceneKey = JSON.stringify(scene.queryKey);
+  const actualBounds = values.nativeViewport.bounds;
+  values.nativeViewport.bounds = null;
+  assert.equal(JSON.stringify(read("scene", values).queryKey), sceneKey);
+  values.nativeViewport.bounds = actualBounds;
+  values.mapSceneRegionPending = true;
+  assert.equal(read("scene", values).enabled, false, "the existing camera/Context transaction gates Scene");
+  values.mapSceneRegionPending = false;
   values.cloud = { data: { data: { identity: "cloud-only" } }, forecastClockOffsetMs: 123 };
   values.scene = { data: undefined, forecastClockOffsetMs: 999 };
   values.useMapCloudPresentation = (input: unknown) => input;

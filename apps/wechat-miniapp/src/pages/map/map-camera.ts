@@ -8,6 +8,8 @@ type MapBounds = { west: number; south: number; east: number; north: number };
 // with roughly 30m terrain remaining distinct. This is a ground-range starting
 // view, not an increase in either source's resolution or a physical scale.
 export const NEIGHBORHOOD_MAX_VISIBLE_SPAN_M = 4_000;
+/** Existing native camera/region read bound; not a visible-performance target. */
+export const NATIVE_MAP_CAMERA_READ_TIMEOUT_MS = 10_000;
 
 /** Seed the same native camera used for address selection. Selection cannot
  * finish from this zoom alone: its measured ground range is checked below. */
@@ -67,6 +69,17 @@ function nativeProjectionCall(invoke: (callbacks: NativeCallbacks) => unknown, s
         void Promise.resolve(result).then(value => finish(true, value), error => finish(false, error));
     } catch (error) { finish(false, error); }
   });
+}
+
+/** Complete an otherwise valid native camera event without inventing its zoom.
+ * The event owner retains cancellation, deadline and current-input authority. */
+export async function readNativeMapScale(context: { getScale(options: NativeCallbacks): unknown }, signal: AbortSignal): Promise<number> {
+  const result = await nativeProjectionCall(callbacks => context.getScale(callbacks), signal);
+  signal.throwIfAborted();
+  const scale = result && typeof result === "object" ? (result as { scale?: unknown }).scale : undefined;
+  if (typeof scale !== "number" || !Number.isFinite(scale) || scale < 3 || scale > 20)
+    throw new Error("map_native_scale_invalid");
+  return scale;
 }
 
 /** Convert through the actual native projection. Ratios use the same native

@@ -17,6 +17,21 @@ The existing Cloud Sky task has narrow ignore exceptions for current review evid
 
 Portable test consumers keep their inputs with their test owners. [Reviewed introduction expectations](../../workers/miniapp-api/src/test-fixtures/celestial-introduction-reviewed-batches.json) retain independent reviewed prose fingerprints and source-retrieval expectations; historical work-item paths are provenance rather than required reads. [Sky time consumer support](../../apps/wechat-miniapp/src/features/sky/sky-time-test-support.ts) uses the actual report producer in an isolated fixed-clock test process, with the existing public spot and deterministic weather fixtures. These inputs establish software behavior, not original production-data restoration, real-provider quality or device acceptance. Explicit real-publication verification still needs its declared external inputs.
 
+### Mini Program candidate retention and cleanup
+
+Review candidate retention before each new import and finish retirement after the replacement's source/build binding and relevant startup are verified. [Project source, snapshots and windows](development-feedback.md#project-source-snapshots-and-windows) owns entry/window reuse and official removal; this section owns which generated files still need to exist. An old imported entry can be removed while its diagnostic files remain archived outside DevTools.
+
+| Candidate use | File disposition |
+| --- | --- |
+| Current development, test/capture, pending delivery or active recovery | Keep the exact files in use; do not overwrite or remove another session's candidate. |
+| Unresolved crash/OOM/performance attribution or an actual before/after comparison | Retain the evidence-bound version until that dependency ends; keep its reason and release condition with the existing task evidence owner. |
+| Superseded intermediate build with no remaining consumer or evidence/recovery need | Delete the run-owned generated output through its existing owner after confirming reproducibility, no unique edits and no active process/tool use. No full-product acceptance is required merely to retire such an intermediate build. |
+| Unknown ownership, unique local inputs/edits or a still-applicable explicit preservation requirement | Preserve the affected files until that specific uncertainty or requirement is resolved; it does not justify retaining every other obsolete copy. |
+
+Diagnostic retention is selective, not a permanent exemption for every numbered or frozen build. Keep the exact compiled bytes, available matching source maps, effective build/configuration identity and necessary recoverable source/input version that the retained trace or failure needs. A current HEAD or hash alone cannot reconstruct an older dirty build. Raw captures, private originals and user/account data remain independently protected; deleting a redundant generated directory does not authorize deleting them. Reuse existing task bindings rather than creating another inventory or copying complete projects solely for archival bookkeeping.
+
+Once analysis, comparison or recovery no longer needs a retained version, reassess it and remove disposable outputs. Do not use age or a fixed generation-count rule as the decision. Resolve exact task-owned paths and check active use before deletion; preserve unrelated directories, independent source copies and required recovery material. Report actual entry removal, window closure and file cleanup separately, including retained exceptions. Updating these rules alone does not execute a cleanup of existing candidates.
+
 ## Efficient development
 
 Install Git LFS on each development machine. Before the first authorized push, run `git lfs install` and verify the pre-push hook; preserve and integrate any existing hook rather than overwriting it. Linked worktrees may share hooks/configuration, so inspect that scope first. Merely adding `.gitattributes` does not upload objects or rewrite history.

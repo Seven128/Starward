@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Taro from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { mapBoundsForNativeRegion, type TerrainBounds } from "./terrain-geometry";
+import { reportRuntimeError } from "@/services/runtime-error";
+import { NATIVE_MAP_CAMERA_READ_TIMEOUT_MS } from "./map-camera";
 
 type Camera = { center: { latitude: number; longitude: number }; zoom: number; loadedViewport: string };
 
@@ -35,38 +37,41 @@ export function useNativeMapRegion(nativeMap: { mapId: string; isCurrent(): bool
       if (!owned.reread) return false;
       owned.pending = false; owned.waitingForScale = false; clearTimeout(owned.timer); readCurrentViewport(true); return true;
     };
-    const fail = () => {
+    const fail = (stage: "context" | "region" | "scale" | "bounds" | "timeout", cause?: unknown) => {
       if (!current() || (!owned.pending && !owned.waitingForScale) || rereadAfterSettle()) return;
       owned.pending = false; owned.waitingForScale = false; clearTimeout(owned.timer);
-      setFailure({ camera: key, error: new Error("地图范围未能读取，请重新加载地图") });
+      const error = new Error("地图范围未能读取，请重新加载地图", { cause });
+      reportRuntimeError("native", `map_viewport_${stage}_failed`, error, { stage, resource: "map_viewport" });
+      setFailure({ camera: key, error });
     };
     const success = (actual: unknown) => {
       if (!current() || !owned.pending || rereadAfterSettle()) return;
       const bounds = mapBoundsForNativeRegion(actual);
       if (!bounds || camera.center.longitude < bounds.west || camera.center.longitude > bounds.east
-        || camera.center.latitude < bounds.south || camera.center.latitude > bounds.north) { fail(); return; }
+        || camera.center.latitude < bounds.south || camera.center.latitude > bounds.north) { fail("bounds"); return; }
       owned.pending = false; owned.success = true; clearTimeout(owned.timer);
       setFailure(null); setMeasured({ camera: key, bounds });
     };
     setFailure(null);
-    owned.timer = setTimeout(fail, 10000);
+    owned.timer = setTimeout(() => fail("timeout"), NATIVE_MAP_CAMERA_READ_TIMEOUT_MS);
     try {
       const context = Taro.createMapContext(nativeMap.mapId);
       const readRegion = () => {
+        const regionFailure = (cause?: unknown) => fail("region", cause);
         try {
-          const reading = context.getRegion({ success, fail });
-          if (reading && typeof reading.then === "function") void reading.then(success, fail);
-        } catch { fail(); }
+          const reading = context.getRegion({ success, fail: regionFailure });
+          if (reading && typeof reading.then === "function") void reading.then(success, regionFailure);
+        } catch (cause) { regionFailure(cause); }
       };
       if (expectedScale === null) readRegion();
       else {
         let scaleResolved = false;
-        const scaleFailure = () => { if (!scaleResolved) { scaleResolved = true; fail(); } };
+        const scaleFailure = (cause?: unknown) => { if (!scaleResolved) { scaleResolved = true; fail("scale", cause); } };
         const scaleSuccess = (actual: unknown) => {
           if (scaleResolved || !current() || !owned.pending || rereadAfterSettle()) return;
           scaleResolved = true;
           const scale = actual && typeof actual === "object" ? (actual as { scale?: unknown }).scale : undefined;
-          if (typeof scale !== "number" || !Number.isFinite(scale) || scale < 3 || scale > 20) { fail(); return; }
+          if (typeof scale !== "number" || !Number.isFinite(scale) || scale < 3 || scale > 20) { fail("scale"); return; }
           if (scale !== expectedScale) {
             // An old zoom can be lower or higher than the requested camera.
             // Wait for native settlement within the same bounded deadline.
@@ -77,9 +82,9 @@ export function useNativeMapRegion(nativeMap: { mapId: string; isCurrent(): bool
         try {
           const reading = context.getScale({ success: scaleSuccess, fail: scaleFailure });
           if (reading && typeof reading.then === "function") void reading.then(scaleSuccess, scaleFailure);
-        } catch { scaleFailure(); }
+        } catch (cause) { scaleFailure(cause); }
       }
-    } catch { fail(); }
+    } catch (cause) { fail("context", cause); }
   }, [enabled, nativeMap.mapId, keyFor, expectedScale]);
   useEffect(() => {
     readNativeViewport();

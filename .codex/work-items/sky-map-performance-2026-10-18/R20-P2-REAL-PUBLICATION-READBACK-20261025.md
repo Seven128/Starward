@@ -33,6 +33,26 @@ Root在当前正式Map项目实际点击图层→光污染。初图底图可读�
 
 源修正确性、目标UI结果与夜光功能完成是三件事。本批尚未证明原生叠加、实际配准/零值缺测或手机结果；P2及完整Goal不关闭。
 
+## 后续普通概览图片消费者与交付
+
+同一正式隔离测试点的大档地形概览已取得实际正值：最终地形为Copernicus GLO-30，PARTIAL/局部缺测；年度夜光为r6 AVAILABLE栅格、262144/262144有效像素、8760B，publication=nightlight-window:a84b1896b84401eb87506abf078dcfe606891f3720c9e210c4b54d516f02adcf，SHA=6c952cb091d13a02b353c187dd04196bfc32ee52290e05a886a246a6d05e670f，GCJ02网格/nW/cm²/sr/2025-01-01年度含义保留。早先Terrarium父预览与最终Copernicus分开记录，未冒最终同一来源。
+
+实际Image节点存在，5km外圈/1km标尺/北东西南/中心点可见；夜光关闭时绿色地势可辨，恢复开启后同位置出现年度夜光金褐色栅格和五级图例。Root已实际看两张原图：p2-spot-light-off-settled-20261025T085100858Z.png与p2-spot-light-on-boundary-20261025T085542889Z.png，概览边界/中心标记保持同位。初次纯程序滚动仍受来源返回锚点控制，位置不同比较被排除；后按公开coordinate touchstart/move/end完成接管再收图。恢复后一次offset读回失败，currentPage仍Map、原生截图和Image查询有效，没有重放开关或改源码。该失败读回不冒产品无图。
+
+此处证明普通Image下载/解码/合成消费者可实际工作。其a84b/262144像素素材不同于原Map的895d/131072像素素材，不推出原Map同图已下载/安装或配准通过；共享下载owner的准入复用，native Map失败仍保留。
+
+本批2源码/测试+3任务文档已提交推送为a37b3dbbe428bf7198f07bcc497115cf4f1fee23，main/origin为0/0、暂存为空。Product40176716041和Context40176715978成功：小程序release code、backend/WEAPP构建、隔离基础设施、候选和OCI实际执行，既有App/API/admin消费者步骤按affected范围skipped；实际API995pass/74skip、WEAPP2822pass/1skip，resource preparation另有既有skip。staging40177424974 qualify成功、发布前host_preflight_disk_below_10_gib失败，镜像发布和promotion均skip，未部署。未清理/重试容量，不为这些本地回执另造docs-only提交。
+
+## 后续一次故障实例恢复
+
+Root未把离屏extent按钮作可见动作：实读其left=-80后，改在实际可见的handle执行coordinate touchstart(195,122)/move(195,420)/end，真实大→中，class=spot-panel--medium及原图均已确认；没有关闭面板或清选择。
+
+在已有实际Light ERROR/“重新加载地图”状态下，通过可见恢复按钮只执行一次。实际map.id由spot-map-1换成spot-map-2，前后时间文字均10/25 21:00。新实例结算后图层仍ERROR并提供相同恢复入口，随即停止重建；不据此声称native叠加恢复、面板返回位置、旧资源物理释放或OOM已解决。
+
+此前真实点击已就绪Sky按钮后仍停Map，Console仅确认sky_entry_navigation_failed有一条、timeout无；日志刻意没有任意native错误文本，仍不能区分cleanup.ready=false与redirect失败。之后按现有session边界刷新当前小程序运行，未清账号/storage/session或动原服务；指纹仍5e414539。未打开图层的新运行从Search选择同一点后，正常Sky按钮实际进入sky/detail/index，见P3续记。这是独立入口恢复，不冒F04旧资源退休完成，也没有再次请求Map fault successor。
+
+原件归当前private run的p2-before/after-recovery-map-id.private.log、p2-before/after-native-recovery-*.png及对应有限日志；09:15大→中手柄原图亦保留。
+
 ## 原件归属
 
 全部原始Network、截图、PNG、db/check/build/readback/保全和实际状态回执均在既有私有entry的 `sky-current-4086cb4f36b44324` 下：`p2-night-light-*`、`p2-light-*`、`p2-*-built.private.json`、`p2-prebuild-preservation.private.json`。没有上传私有原件或打印headers/账户/实际私有坐标。当前状态和唯一下一步只归HANDOFF，本文不是第二计划。

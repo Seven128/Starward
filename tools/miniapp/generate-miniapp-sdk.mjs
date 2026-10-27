@@ -21,6 +21,7 @@ const outputPath = path.join(
 const generatedDirectory = path.dirname(outputPath);
 const baseOutputPath = path.join(generatedDirectory, "miniapp-api-base.generated.ts");
 const jsonOutputPath = path.join(generatedDirectory, "miniapp-api-json.generated.ts");
+const transportOutputPath = path.join(generatedDirectory, "miniapp-api-json-transport.generated.ts");
 const schema = JSON.parse(await readFile(schemaPath, "utf8"));
 if (schema.schemaVersion !== "starward-miniapp-api-operations-current")
   throw new Error("miniapp_sdk_schema_version_invalid");
@@ -56,6 +57,9 @@ const jsonOperationRows = schema.operations.filter(operation => operation.respon
   (operation) =>
     `  ${operation.id}: { method: ${JSON.stringify(operation.method)}, path: ${JSON.stringify(operation.path)} },`,
 );
+const transportRows = schema.operations.filter(operation => operation.responseEnvelope !== false).map(
+  operation => `  ${operation.id}: [${JSON.stringify(operation.method)}, ${JSON.stringify(operation.path)}],`,
+);
 const typeRows = schema.operations.map(
   (operation) =>
     `  ${operation.id}: { request: ${operation.requestType}; response: ${operation.responseEnvelope === false ? operation.responseType : `ApiEnvelope<${operation.responseType}>`} };`,
@@ -76,7 +80,11 @@ const jsonOutput = generatedHeader +
   `import type { MiniappApiJsonOperationId } from "./miniapp-api.generated.ts";\n\n` +
   `/** Envelope transport only; bare resource metadata stays in the complete catalogue. */\n` +
   `export const MINIAPP_API_JSON_OPERATIONS = {\n${jsonOperationRows.join("\n")}\n} as const satisfies Readonly<Record<MiniappApiJsonOperationId, { method: "GET" | "POST" | "PUT" | "DELETE"; path: string }>>;\n`;
-const outputs = new Map([[outputPath, output], [baseOutputPath, baseOutput], [jsonOutputPath, jsonOutput]]);
+const transportOutput = generatedHeader +
+  `import type { MiniappApiJsonOperationId } from "./miniapp-api.generated.ts";\n\n` +
+  `/** Static transport projection: [method, path]. The public object catalogues retain their shape. */\n` +
+  `export const MINIAPP_API_JSON_TRANSPORT = {\n${transportRows.join("\n")}\n} as const satisfies Readonly<Record<MiniappApiJsonOperationId, readonly [method: "GET" | "POST" | "PUT" | "DELETE", path: string]>>;\n`;
+const outputs = new Map([[outputPath, output], [baseOutputPath, baseOutput], [jsonOutputPath, jsonOutput], [transportOutputPath, transportOutput]]);
 if (process.argv.includes("--check")) {
   for (const [file, content] of outputs) {
     const current = await readFile(file, "utf8").catch(() => "");

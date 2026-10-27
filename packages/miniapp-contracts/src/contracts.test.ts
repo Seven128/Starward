@@ -14,6 +14,7 @@ import {
   MINIAPP_API_BASE_PATH,
   MINIAPP_API_OPERATIONS,
   MINIAPP_API_JSON_OPERATIONS,
+  MINIAPP_API_JSON_TRANSPORT,
   viewportRadiusKm,
 } from "./index.ts";
 import { MINIAPP_API_BASE_PATH as legacyApiBasePath } from "./generated/miniapp-api.generated.ts";
@@ -32,13 +33,20 @@ test("generated complete and JSON transport catalogues preserve declared methods
   assert.equal(legacyApiBasePath, declaration.basePath);
   const complete: Readonly<Record<string, { method: string; path: string }>> = MINIAPP_API_OPERATIONS;
   const json: Readonly<Record<string, { method: string; path: string }>> = MINIAPP_API_JSON_OPERATIONS;
+  const compact: Readonly<Record<string, readonly [string, string]>> = MINIAPP_API_JSON_TRANSPORT;
   assert.deepEqual(Object.keys(complete), declaration.operations.map(operation => operation.id));
   assert.deepEqual(Object.keys(json), declaration.operations.filter(operation => operation.responseEnvelope !== false).map(operation => operation.id));
+  assert.deepEqual(Object.keys(compact), Object.keys(json));
   for (const operation of declaration.operations) {
     const transport = { method: operation.method, path: operation.path };
     assert.deepEqual(complete[operation.id], transport, operation.id);
-    if (operation.responseEnvelope !== false) assert.deepEqual(json[operation.id], transport, operation.id);
-    else assert.equal(Object.hasOwn(json, operation.id), false, operation.id);
+    if (operation.responseEnvelope !== false) {
+      assert.deepEqual(json[operation.id], transport, operation.id);
+      assert.deepEqual(compact[operation.id], [operation.method, operation.path], operation.id);
+    } else {
+      assert.equal(Object.hasOwn(json, operation.id), false, operation.id);
+      assert.equal(Object.hasOwn(compact, operation.id), false, operation.id);
+    }
   }
 });
 

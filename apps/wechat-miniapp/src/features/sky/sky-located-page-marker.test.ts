@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { skyPresentedTimeCurrent } from "./sky-observation-time";
+import { skyPageTimeTestBindings } from "./sky-optical-page-test-support";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -52,11 +52,11 @@ test("a current returned position waits for its matching native sky frame before
     pageVisible: true, selectionState: { object: { reference: "PLANET:VENUS" }, spotId: "spot:test" },
     currentViewBasis: {}, canvasError: null, alignmentEditing: false,
     orientationData: report, rawReportData: report, row: { at }, mode: "NIGHT",
-    skyPresentedTimeCurrent, exactSkyTimeFrame, timePlaying: false, timeIntent: { runStartAt: null },
+    ...skyPageTimeTestBindings(at), exactSkyTimeFrame,
   };
   const visible = (presentedSkyFrame: object | null, canvasError: string | null = null) =>
     Boolean(vm.runInNewContext(guard, { ...context, presentedSkyFrame, canvasError }));
-  const current = { data: report, frameAt: at, mode: "NIGHT" };
+  const current = { data: report, frameAt: at, mode: "NIGHT", timeGeneration: 0 };
   assert.equal(visible(null), false, "old Canvas pixels cannot receive a new position marker");
   assert.equal(visible({ ...current, frameAt: "2026-10-08T13:00:00.000Z" }), false);
   assert.equal(visible({ ...current, data: {} }), false);

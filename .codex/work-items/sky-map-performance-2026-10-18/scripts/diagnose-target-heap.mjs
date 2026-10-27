@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 // Private input boundary: never emit strings, property names, IDs or raw paths
 // from a snapshot. Only this fixed allowlist can become an output label.
@@ -26,7 +27,7 @@ function label(snapshot, node) {
   return KNOWN_NAMES.has(name) ? `${type}: ${name}` : `${type}: other`;
 }
 
-async function loadSnapshot(path) {
+export async function loadSnapshot(path) {
   const bytes = await readFile(path);
   const digest = createHash('sha256').update(bytes).digest('hex');
   let input;
@@ -46,6 +47,7 @@ async function loadSnapshot(path) {
     typeOffset: fields.indexOf('type'), nameOffset: fields.indexOf('name'), idOffset: fields.indexOf('id'),
     sizeOffset: fields.indexOf('self_size'), edgeCountOffset: fields.indexOf('edge_count'),
     edgeTypeOffset: edgeFields.indexOf('type'), edgeTargetOffset: edgeFields.indexOf('to_node'),
+    edgeNameOffset: edgeFields.indexOf('name_or_index'),
     weak: edgeTypes.indexOf('weak'), byteLength: bytes.length, sha256: digest };
   snapshot.nodeCount = snapshot.nodes.length / snapshot.stride;
   snapshot.edgeCount = snapshot.edges.length / snapshot.edgeStride;
@@ -98,7 +100,7 @@ async function loadSnapshot(path) {
 
 // Lengauer-Tarjan dominators over the recorded graph with weak edges excluded.
 // This is a graph observation, not a claim about ephemeron/host/other-VM liveness.
-function strongGraph(snapshot) {
+export function strongGraph(snapshot) {
   const n = snapshot.nodeCount;
   const number = new Uint32Array(n), vertex = new Uint32Array(n + 1), parent = new Uint32Array(n + 1);
   const next = new Uint32Array(snapshot.starts);
@@ -279,7 +281,9 @@ async function main() {
       survivorCount: report.comparison.surviving.count, commonIdsWithChangedType: report.comparison.commonIdsWithChangedType } } : {}) })}\n`);
 }
 
-try { await main(); } catch (error) {
-  const safe = error instanceof Error && /^[A-Z_]+$/.test(error.message) ? error.message : 'HEAP_ANALYSIS_FAILED';
-  process.stderr.write(`${safe}\n`); process.exitCode = 1;
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  try { await main(); } catch (error) {
+    const safe = error instanceof Error && /^[A-Z_]+$/.test(error.message) ? error.message : 'HEAP_ANALYSIS_FAILED';
+    process.stderr.write(`${safe}\n`); process.exitCode = 1;
+  }
 }

@@ -38,10 +38,4 @@ export function skyResourceEnvironmentIdentity(): string {
   return api === resource ? api : `${api}\n${resource}`;
 }
 
-/** Operator-preview credentials belong only to the API. A public CDN request
- * cannot inherit preview, session or user authorization from that environment. */
-export function skyResourcePreviewHeaders(url: string): { header?: Record<string, string> } {
-  return url.startsWith(apiOrigin() + "/v2/sky/") &&
-    typeof __MINIAPP_OPERATOR_PREVIEW_TOKEN__ !== "undefined" && __MINIAPP_OPERATOR_PREVIEW_TOKEN__
-    ? { header: { "X-Starward-Operator-Preview": __MINIAPP_OPERATOR_PREVIEW_TOKEN__ } } : {};
-}
+export { skyResourcePreviewHeaders } from './sky-resource-preview';

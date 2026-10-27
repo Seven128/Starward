@@ -28,16 +28,18 @@ function code(name: "onRegionChange" | "onMarkerTap") {
   }).outputText;
 }
 
-test("actual native gesture begin cancels pending selection before the settled pan can commit", () => {
-  let cancellations = 0;
+test("actual native gesture begin cancels pending selection and earlier camera conditions before settlement", () => {
+  let cancellations = 0, invalidations = 0;
   vm.runInNewContext(code("onRegionChange"), {
     ...createMapPageTestBoundaries().scope,
     event: { type: "begin", causedBy: "gesture", detail: {} },
     nativeMap: { isCurrent: () => true }, editorPresentation: { isClosing: () => false },
     userMapRegionStarted, userMapRegionEnd: () => null, mapRegionEnded: () => false,
     spotMapFocus: { cancel() { cancellations++; } },
+    invalidateMapPointIntent() { invalidations++; },
   });
   assert.equal(cancellations, 1);
+  assert.equal(invalidations, 1);
 });
 
 test("settled native camera commits immediately while conditions debounce keeps its Map authority", async () => {

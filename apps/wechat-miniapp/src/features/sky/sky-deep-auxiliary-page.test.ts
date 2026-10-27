@@ -26,7 +26,7 @@ import { projectSkyCatalogNames } from "./sky-label-presentation";
 import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
 import { sdssOpticalPublication, assertSdssOpticalManifest, type SdssOpticalManifest } from "@starward/miniapp-contracts";
 import * as miniappContracts from "@starward/miniapp-contracts";
-import { skyPageCanvasTestBindings, skyPageCanvasTestFrame } from "./sky-optical-page-test-support";
+import { skyPageCanvasTestBindings, skyPageCanvasTestFrame, skyPageCanvasLifecyclePort } from "./sky-optical-page-test-support";
 import type { SkySceneFrameInput, SkyScenePorts } from "./sky-scene-frame";
 
 // Actual Scene, page callbacks/dependencies and lifecycle; only React scheduling,
@@ -36,14 +36,14 @@ const source = ts.createSourceFile("spot-sky-page.tsx", pageText, ts.ScriptTarge
 const nodes = new Map<string, ts.Expression>(); let drawEffect: ts.CallExpression | undefined;
 function visit(node: ts.Node) {
   if (ts.isVariableDeclaration(node) && node.initializer) nodes.set(node.name.getText(source), node.initializer);
-  if (ts.isPropertyAssignment(node) && ["paint", "presented", "invalidated", "sameScene"].includes(node.name.getText(source)))
-    nodes.set(node.name.getText(source), node.initializer);
   if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" &&
     node.arguments[0]?.getText(source).includes("canvasLifecycle.setMounted") &&
     node.arguments[0]?.getText(source).includes("draw();")) drawEffect = node;
   ts.forEachChild(node, visit);
 }
 visit(source);
+for (const name of ["paint", "presented", "invalidated", "sameScene"] as const)
+  nodes.set(name, skyPageCanvasLifecyclePort(source, name));
 const evaluate = (node: ts.Node, context: vm.Context) => vm.runInContext(ts.transpileModule(`(${node.getText(source)})`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
 const at = "2026-10-02T12:00:00.000Z", basis = createSkyViewBasis(20, 110, 0)!;

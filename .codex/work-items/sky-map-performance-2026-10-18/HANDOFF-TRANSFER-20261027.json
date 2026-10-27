@@ -1,0 +1,34 @@
+{
+  "schema": "starward-cross-machine-handoff-v1",
+  "createdAt": "2026-10-27T04:51:50.390880+00:00",
+  "evidence": {
+    "file": "Starward-performance-evidence-20261027.zip",
+    "bytes": 314065531,
+    "sha256": "b61c78d924150d3acfa24daf89a7a6299e306680a895266844e51e08e94f17dc",
+    "members": 4101,
+    "uncompressedBytes": 768246967,
+    "memberReadbackVerified": true,
+    "location": "LOCAL_ONLY"
+  },
+  "privateRecovery": {
+    "file": "Starward-private-recovery-20261027.zip",
+    "bytes": 693458,
+    "sha256": "e1d9b51bada008639c31edc227aa3d17a3a83ba3d6b727bf1f148e1d6f811a4b",
+    "members": 5,
+    "uncompressedBytes": 886103,
+    "memberReadbackVerified": true,
+    "location": "LOCAL_ONLY"
+  },
+  "uploaded": false,
+  "sourceFilesPreserved": true,
+  "globalEogSourcesRepackaged": false,
+  "publicRuntimeOwner": "data-pipelines/runtime-data/current.lock.json",
+  "privateRestorePolicy": "new-owned-database-only; use existing backup/restore owner; no worker or reminder replay",
+  "phoneStorageIncluded": false,
+  "sourceMachineArchiveRoot": "D:/dev/Starward-data/verification/sky-map-20261018/cross-machine-handoff-20261027",
+  "notes": [
+    "Archives are local-only until an explicit upload and readback is recorded",
+    "Global EOG originals reuse existing verified mirrors; do not repackage or regenerate r6",
+    "Code and product validation are separate from target acceptance; OOM remains unresolved"
+  ]
+}

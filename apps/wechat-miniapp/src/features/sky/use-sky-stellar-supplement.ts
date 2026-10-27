@@ -11,11 +11,14 @@ import type {SkyViewBasis} from './sky-view-projection';
 import type {SkyProjectionCenter} from './sky-viewport';
 
 type Loader=ReturnType<typeof createSkyStellarTileLoader>;
-const EMPTY:SkyStellarTileState={tiles:[],loading:false,failed:false};
+const EMPTY:SkyStellarTileState={tiles:[],loading:false,failed:false,interrupted:false};
+// The long-lived index Query must not retain this hook's exact-time frame or
+// tile-loader callbacks through its fetch closure. Preserve the service receiver.
+const getSaoIndex=saoCatalogClient.getIndex.bind(saoCatalogClient);
 export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:string|undefined,
   view:{basis:SkyViewBasis;width:number;height:number;verticalFovDeg:number;center:SkyProjectionCenter}|null,
   active:boolean,sunAltitudeDeg?:number,mode:DisplayMode='NIGHT'){
-  const index=useResourceQuery({queryKey:['sao-index','v2'],queryFn:signal=>saoCatalogClient.getIndex(signal),
+  const index=useResourceQuery({queryKey:['sao-index','v2'],queryFn:getSaoIndex,
     enabled:active&&Boolean(scene?.publication),staleTime:Infinity,structuralSharing:false});
   const publication=index.data?.data;
   const selection=useMemo<{ids:string[];failed:boolean;error?:unknown}>(()=>{
@@ -96,5 +99,6 @@ export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:
     void scope.refetch();
   },[]);
   return {publication,frame:resolved.frame,sources:index.data?.sources??[],retry,loading:active&&(index.isFetching||loaded.loading),
+    interrupted:active&&loaded.interrupted,
     failed:active&&(index.isError||Boolean(index.refreshError)||index.data?.dataState==='STALE_USABLE'||selection.failed||loaded.failed||resolved.failed)};
 }

@@ -1,5 +1,6 @@
 import type { AccountAvatarData, AccountAvatarSaveRequest, AccountProfileRecord } from "./account-profile.ts";
 import type { MapCloudSnapshot } from "./map-cloud-snapshot.ts";
+import type { NightLightDisplayStyle } from "./night-light-display.ts";
 import type { FeatureFlags } from "./feature-flags.ts";
 import type { FilterGroupKey, FilterState } from "./filters.ts";
 import type { ContributionCandidateProfile } from "./contribution-intake.ts";
@@ -273,6 +274,8 @@ export interface MapLayerRaster {
   imageUrl: string;
   imageBytes: number;
   imageSha256: string;
+  /** Present only for a separately versioned display projection of sealed pixels. */
+  displaySource?: { publicationId: string; imageSha256: string; policySha256: string };
   boundsGcj02: { west: number; south: number; east: number; north: number };
   statistic: string;
   unit: "nW/cm²/sr";
@@ -480,6 +483,7 @@ export interface MapSceneRequest {
  * observation time, weather, filters or account. */
 export interface MapNightLightRequest {
   viewport: NonNullable<MapSceneRequest["viewport"]> & { bounds: TerrainBounds };
+  displayStyle?: NightLightDisplayStyle;
 }
 
 /** Sampled cloud coverage has no dependency on marker searches, filters or
