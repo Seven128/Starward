@@ -12,12 +12,30 @@
 
 ## 随交接恢复的内容
 
-1. **Git代码。** 先检查接收机当前分支/dirty，再安全取得本次`origin/main`检查点；不要用reset/clean/force/stash覆盖原机工作，不切到旧`codex/remote-main-20260908`或另建worktree。实际提交与推送回执以用户收到的commit及远端readback为准。
+1. **Git代码。** 先检查接收机当前分支/dirty，再安全取得本次`origin/main`检查点；不要用reset/clean/force/stash覆盖原机工作，不切到旧`codex/remote-main-20260908`或另建worktree。产品代码检查点为`d7f808836ce11c1917a864b417487131069e09ee`，已推送/readback；后续交接文件提交保留同一产品源码19。
 2. **已发布资源。** 使用现有Node运行器、lockfile和资源owner：`npm ci`（依赖确需安装时）、`npm run assets:prepare`、`npm run assets:verify`、`npm run backend:data:status`，仅缺料时`npm run backend:data:prepare`。既有r6及EOG原件的Drive备份/分片由current.lock指向；不为换机重产r6或重复上传下载全部全球TIFF。Git源ZIP中的LFS指针不是可用图片。
-3. **性能证据包。** `Starward-performance-evidence-20261027.zip`包含原四份Performance/分配、后续Performance/三份Heap/Console及本批分析、必要冻结候选与实际手机原片。解到仓库外的`Starward-data/verification/sky-map-20261018/`，按包内清单校验。旧D盘/C用户目录仅是源机定位；诊断脚本需先适配接收机路径，不能整批执行旧启动/清理脚本。派生联系表可由原片重建。更早gen34仍受保护，不准用新编译替代原件。
+3. **性能证据包。** `Starward-performance-evidence-20261027.zip`包含原四份Performance/分配、后续Performance/三份Heap/Console及本批分析、必要冻结候选与实际手机原片。按下方传输步骤恢复，再解到仓库外的`Starward-data/verification/sky-map-20261018/`新目录，按包内`MANIFEST.json`校验。旧D盘/C用户目录仅是源机定位；诊断脚本需先适配接收机路径，不能整批执行旧启动/清理脚本。派生联系表可由原片重建。更早gen34仍受保护，不准用新编译替代原件。
 4. **私有恢复包。** `Starward-private-recovery-20261027.zip`含当前任务库的自定义格式dump、清单和精确API私有配置。仅保密迁移，不进Git/LFS或公开共享。归档可列举不等于已完成接收机恢复；优先复用兼容的既有环境，必要时用`tools/miniapp/backup-restore.mjs`恢复到新的owned数据库并核对。按现有owner调整本机路径/地址，保会话与数据身份，不盲套源机配置，不自动迁移/启worker/重放提醒。
 
 手机本地Storage和未保存草稿不在Git或数据库dump内；保原手机、AppID和N05，不清Storage，不重发R6。原机22GB未跟踪原始数据/数据库工具及旧锁文件原位保留，按仓库存储边界排除出Git；不是删除或丢失。两包身份及远端/本地状态由`HANDOFF-TRANSFER-20261027.json`记录，未上传就不能称远端可恢复。
+
+## 加密传输与接收
+
+**暂停状态：** 用户要求立即停传、另一台先开发，源机晚点续传。当前性能证据 8/19 分片已上传并逐份读回；私有恢复包已读回，密钥尚未上传。完整证据包暂不能从远端恢复。源机原ZIP、加密分片、密钥及续传清单均保留；续传前先查下一文件是否已完成在途上传，不能重复上传已核验部分。
+
+传输状态以`HANDOFF-TRANSFER-20261027.json`为准。下载其中`packages[].parts[].transport`列出的文件，保持其`path`文件名，全部放在仓库外的同一下载目录。源归档不变：性能包314065531字节，私有恢复包693458字节。大包使用19个至多16MiB明文的加密分片，小包使用1个加密分片；沿既有`verified-backup.mjs`加密和旧交接`restore.mjs assemble`拼接，不替换旧r6恢复资料。
+
+- 数据目录：[Starward 数据交接 2026-10-18](https://drive.google.com/drive/folders/1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz)。连接器返回的`.bin`后缀是传输命名，落盘时按manifest的`transport.path`命名。使用当前Git清单列出的文件，不从同名历史资料推测。
+- 独立密钥目录：[Starward 恢复密钥 2026-10-18](https://drive.google.com/drive/folders/1kGXJFw2UP6Gm8gep5jR1H3q8fJughgBl)，取`Starward-performance-handoff-20261027.key`。密钥和下载材料保存在仓库外，不能写进Git、聊天正文或日志；Unix接收机把密钥权限设为0600。
+- 在仓库根执行下列命令，把三个占位绝对路径替换为接收机实际位置；输出目录必须不存在、其父目录须已存在。脚本验证远端密文身份、GCM认证、每片明文及最终ZIP哈希，仅生成归档，不解压、不恢复数据库、不启动服务。
+
+```powershell
+node .codex/work-items/sky-map-performance-2026-10-18/scripts/restore-cross-machine-handoff.mjs --manifest .codex/work-items/sky-map-performance-2026-10-18/HANDOFF-TRANSFER-20261027.json --directory '<外部下载目录>' --key-file '<私有密钥文件>' --output '<全新恢复输出目录>'
+```
+
+恢复完成的ZIP分别解入新外部目录。性能包的旧`phone/NEXT-USER-CHECK.md`是候选18历史清单；当前候选、缺口和操作顺序以Git最新HANDOFF/PLAN为准。私有包只含当前任务库和配置，接收机必须按实际基础设施及原owner恢复，不能直接执行旧r6专用`restore-db`命令或照抄源机地址。
+
+检查点CI实况：Context通过；Product的小程序发布代码检查通过，保全的App WIP测试因Expo `__DEV__`未定义而7项失败，其后后台/WEAPP/OCI构建均跳过。staging40456535666整体skipped，未部署。后续仅交接文件的轻量CI通过也不能替代该产品检查；不在此处扩大App开发范围或隐藏失败。
 
 ## 给下一台助手的提示词
 

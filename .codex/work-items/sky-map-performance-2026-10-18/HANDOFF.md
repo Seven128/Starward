@@ -1,6 +1,6 @@
 # 当前交接：候选19与换机检查点
 
-用户最新要求：提交全部仓库变更、推送远端，转到另一台电脑继续。完整目标归[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)，唯一计划归[PLAN](PLAN.md)；Goal未完成，状态以get_goal实读为准。仅微信小程序及实际依赖；App WIP随本次检查点保全，不恢复App开发或冒其验收。
+用户最新要求：代码推送后立即停传并暂停本机Goal，另一台先开发，晚点回源机续传。完整目标归[GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)，唯一计划归[PLAN](PLAN.md)；Goal未完成，状态以get_goal实读为准。仅微信小程序及实际依赖；App WIP随本次检查点保全，不恢复App开发或冒其验收。
 
 换机先读[CROSS-MACHINE-HANDOFF](CROSS-MACHINE-HANDOFF-20261027.md)与[交接包身份](HANDOFF-TRANSFER-20261027.json)。代码/文档在Git，性能原件和私有恢复另包；本机路径/PID/IP/截图授权不是接收机事实。
 
@@ -15,7 +15,7 @@
 
 ## 代码、候选与环境绑定
 
-- 提交前main基线为`56ba8f62e06297bedb6c34eee4ce2c4208b503aa`；本次检查点commit及推送以Git和实际readback为准。全部源码/文档/既有App WIP纳入保存，原始采集、数据库/凭据、运行工具、构建和旧锁文件留在其私有owner。
+- 代码检查点`d7f808836ce11c1917a864b417487131069e09ee`已推送并由`origin/main`实读确认；随后交接元数据提交不改变产品源码19。全部源码/文档/既有App WIP纳入保存，原始采集、数据库/凭据、运行工具、构建和旧锁文件留在其私有owner。
 - 当前IDE外部项目`performance-repair-20261026/project-19`（源机s5）；完整输出`apps/wechat-miniapp/dist/weapp-check-d1-20261026-g19`。compiled SHA `c9734b6f725f6f1bd042f81fe8874acb1eb14e89f722fde48acf4ca8b77afbb0`；prepared SHA `057bdb3dabcf92901e2a9bc3ee2fef060880ad3cd8483f0e3ccf7d3da2263f5b`，113输入/340文件。测试大包支持开启，普通官方包体资格未测。
 - 源机19设备会话为`C:/Users/momoooo/AppData/Local/Temp/starward-device-test-8BvNKE`；只作历史绑定，换机重新创建。普通preview、debug/vConsole关闭；手机整包字节/runtime AppID未独立读回。旧候选与私有原件保留，18窗口在19完整同步后正常关闭。
 - API仍为18后台（19只改前端），原可信配置、25后台输入、ready200，PG未重启，无迁移/worker/提醒投递或VPN变更。源机指针为`C:/Users/momoooo/.starward-private/sky-map-20261020/device-resume/miniapp-entry-20261025/phone-current-api-selection.private.json`，含databaseOwnerPath；不能把其中PID/地址移植后执行。
@@ -25,8 +25,8 @@
 
 完整检查先通过contracts92项、API1006项/74skip及相关类型检查；小程序首次2854pass/39fail/1skip。已确认并修复11个test/helper的旧提取/上下文/计时夹具，未修改产品或削弱内容/身份断言。最终小程序2922pass/0fail/1skip及typecheck通过；未再重跑未变的API/contracts。该结果不是目标设备或完整产品验收。
 
-原有同基线CI：Product40199397216与Context40199397226成功；staging40200094757容量检查失败、发布/promotion skipped，未部署。本次新检查点CI须按新SHA核，不能沿用旧绿；App功能不在本次新验证范围。
+检查点`d7f80883`真实CI：Context40455721990成功；Product40455722021的小程序发布代码检查成功，随后原生App消费者阶段失败。`apps/mobile/src/shell/shell-startup.integration.test.tsx`为7fail/其余App228pass，Expo crypto导入链报`ReferenceError: __DEV__ is not defined`；这是保全的App WIP对应测试缺口，未在本次小程序交接中恢复App开发。失败之后的后台构建、WEAPP包检查、隔离基础设施及OCI构建均skipped；staging40456535666整体skipped，未部署。更早staging40200094757为磁盘容量检查失败、发布/promotion skipped；新文档提交即使轻量CI通过也不补齐上述产品证据。
 
-`Starward-performance-evidence-20261027.zip`约314MB，4101成员逐项hash读回；`Starward-private-recovery-20261027.zip`约693KB，含任务库dump和私有配置，归档可列举但接收机恢复未执行。两包当前为LOCAL_ONLY，精确身份见HANDOFF-TRANSFER。全球EOG原件复用现有锁定备份，未重打包。手机本地Storage/草稿不在数据库dump内；保原手机、N05、R6和gen34，不清缓存、不重发、不重建冻结基线。
+`Starward-performance-evidence-20261027.zip`约314MB，4101成员逐项hash读回；`Starward-private-recovery-20261027.zip`约693KB，含任务库dump和私有配置，归档可列举但接收机恢复未执行。用户要求立即停传、另一台先开发，源机晚点续传。当前性能证据 8/19 分片已上传并逐份读回；私有恢复包已读回，密钥尚未上传。完整证据包暂不能从远端恢复。源机原ZIP、加密分片、密钥及续传清单均保留；续传前先查下一文件是否已完成在途上传，不能重复上传已核验部分。 精确身份见HANDOFF-TRANSFER。全球EOG原件复用现有锁定备份，未重打包。手机本地Storage/草稿不在数据库dump内；保原手机、N05、R6和gen34，不清缓存、不重发、不重建冻结基线。
 
 主要证据在交接包`performance-repair-20261026/user-feedback-20261027/`的repair/review/phone目录；提交前夹具证据在`checkpoint-tests/`。迁移时按包内manifest校验，旧绝对路径只作定位。此前完整HANDOFF原件仍保存在源机私有检查点目录。不要把归档、提交或本交接完成标成整个Goal完成。
