@@ -25,6 +25,7 @@ test('actual page previews the fractional public time and withholds fine target 
  const preview=vm.runInNewContext(expression('onPreview'),sandbox);
  preview(.25);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z');
  const settleScope=vm.createContext({...sandbox,skyTimeInputAllowed,skyContinuousTimeCoverage,
+   timeModelRef:{current:sandbox.timeModel},
    timeBinding:'current',committedAt:start,acceptedTimePresentationFor:()=>null,presentedSkyFrameRef:{current:null},
    clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),
    commitInstant:()=>{assert.fail('ruler settlement cannot write the public Context before Apply');}});
@@ -72,7 +73,7 @@ function render(saving=false, interactionLocked=false, isPreviewing=false) {
   const component=vm.runInNewContext(ts.transpileModule(declaration.getText(source)+'\nOrientationTimeRuler;',{compilerOptions:{target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.React}}).outputText,{
     React:{createElement:(type:string,props:object,...children:unknown[])=>({type,props,children:children.flat()})},
     useDidShow:()=>{},useResize:()=>{},Taro:{nextTick:(callback:()=>void)=>nextTicks.push(callback)},createOrientationRulerLayout,createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{},readOffset:(accept:(left:number)=>void)=>accept(0)}),createSkyTimeRulerSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
-    useState:(v:unknown)=>[v,()=>{}],useRef:(v:unknown)=>({current:v}),useCallback:(fn:unknown)=>fn,
+    useState:(v:unknown)=>[v,()=>{}],useRef:(v:unknown)=>({current:v}),useCallback:(fn:unknown)=>fn,useMemo:(make:()=>unknown)=>make(),
     useEffect:(fn:()=>void|(()=>void))=>effects.push(fn),useDidHide:(fn:()=>void)=>{hide=fn;},
     clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),orientationRulerStepPx:()=>44,
     orientationRulerDistance:()=>0,formatTime:(s:string)=>s,orientationRulerLabel:()=>'',

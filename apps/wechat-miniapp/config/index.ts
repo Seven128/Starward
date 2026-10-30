@@ -100,7 +100,7 @@ const bIconFiles = {
     "sun--day--default.png",
     "warning--day--default.png",
     "temperature--day--default.png", "wind--day--default.png", "droplet--day--default.png",
-    "bulb--day--default.png", "cloud--day--default.png", "parking--day--default.png",
+    "bulb--day--default.png", "cloud--day--default.png", "terrain--day--default.png", "parking--day--default.png",
     "restroom--day--default.png", "plan-suv--day--default.png", "tent--day--default.png",
     "meteor--day--default.png", "moon--day--default.png", "walking--day--default.png",
     "signal--day--default.png", "charging--day--default.png", "verified--day--default.png",

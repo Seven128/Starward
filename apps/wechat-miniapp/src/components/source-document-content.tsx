@@ -35,7 +35,7 @@ export function SourceDocumentContent({ document }: { document: SourceDocument }
       {section.kind === "text" ? section.paragraphs.map((text, i) => <Text className="type-secondary" selectable key={i}>{text}</Text>)
         : section.kind === "facts" ? section.items.map((fact, i) => <View className="source-document__fact" key={i}><Text className="type-caption">{fact.label}</Text><Text className="type-secondary" selectable>{fact.value}</Text></View>)
         : section.kind === "links" ? <SourceLinks section={section} />
-        : <ForecastCoverageNote starts={section.starts} timezone={section.timezone} scopeKey={`source:${index}`} {...(section.scope === undefined ? {} : { scope: section.scope })} {...(section.stale === undefined ? {} : { stale: section.stale })} />}
+        : <ForecastCoverageNote starts={section.starts} timezone={section.timezone} scopeKey={`source:${index}`} {...(section.cloudIntervals === undefined ? {} : { cloudIntervals: section.cloudIntervals })} {...(section.scope === undefined ? {} : { scope: section.scope })} {...(section.stale === undefined ? {} : { stale: section.stale })} />}
     </View>)}
   </>;
 }

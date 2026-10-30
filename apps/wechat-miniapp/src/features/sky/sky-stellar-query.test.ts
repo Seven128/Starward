@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import {QueryClient,QueryObserver} from '@tanstack/react-query';
+import {resourceQueryTestOwner} from '../../hooks/use-resource-query-test-support';
 import {catalogJsonIntegrity} from '../../../../../packages/miniapp-contracts/src/catalog-json-integrity.ts';
 import type {ApiEnvelope,SaoIndexPublication} from '@starward/miniapp-contracts';
 import {createSaoCatalogClient} from '../../services/sao-catalog-client';
@@ -50,7 +51,7 @@ function functionBody(file:URL,name:string){
 
 test('actual sky hook forwards immutable query policy; a changed publication remains client-valid after Query observer storage',async()=>{
   let options:any;
-  const useResourceQuery=vm.runInNewContext(functionBody(new URL('../../hooks/use-resource-query.ts',import.meta.url),'useResourceQuery'),{
+  const useResourceQuery=resourceQueryTestOwner({
     useQueryClient:()=>new QueryClient(),useQuery:(value:any)=>{options=value;return {data:undefined,error:null,isFetching:false};},useEffect(){},recordAcceptanceDiagnostic(){},
   });
   const hook=vm.runInNewContext(functionBody(new URL('./use-sky-stellar-supplement.ts',import.meta.url),'useSkyStellarSupplement'),{

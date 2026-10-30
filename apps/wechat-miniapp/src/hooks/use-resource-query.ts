@@ -49,6 +49,20 @@ type QueryResult<T> = (
       refetch: (options?: RefetchOptions) => Promise<T | undefined>;
     }) & { refreshError?: unknown; isFetching: boolean; updatedAt: number; readCurrent(): ResourceSnapshot<T> };
 
+// Query can outlive this render and its detached observer. Build its stored
+// callbacks in a separate scope that holds only the required request policy.
+function resourceQueryFunction<T>(queryFn: QueryOptions<T>["queryFn"], diagnosticKey: string) {
+  return ({ signal }: { signal: AbortSignal }) => {
+    recordAcceptanceDiagnostic(diagnosticKey, "query_fn", "begin");
+    // Query owns subscription lifetime; the transport owns native cleanup.
+    return queryFn(signal);
+  };
+}
+
+function resourceFreshness<T>(staleTime: (data: T | undefined) => number) {
+  return (query: { state: { data: T | undefined } }) => staleTime(query.state.data);
+}
+
 export function useResourceQuery<T>({
   queryKey,
   queryFn,
@@ -70,13 +84,9 @@ export function useResourceQuery<T>({
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
   const result = useQuery<T>({
     queryKey,
-    queryFn: ({ signal }) => {
-      recordAcceptanceDiagnostic(diagnosticKey, "query_fn", "begin");
-      // Query owns subscription lifetime; the transport owns native cleanup.
-      return queryFn(signal);
-    },
+    queryFn: resourceQueryFunction(queryFn, diagnosticKey),
     enabled,
-    staleTime: typeof staleTime === "function" ? query => staleTime(query.state.data) : staleTime,
+    staleTime: typeof staleTime === "function" ? resourceFreshness(staleTime) : staleTime,
     ...(gcTime === undefined ? {} : { gcTime }),
     refetchInterval,
     structuralSharing,

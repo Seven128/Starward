@@ -133,21 +133,23 @@ async function stopDeviceMotion(port: CompassPort): Promise<void> {
   await port.stopDeviceMotionListening!();
 }
 
-function nativeCoordinator(
-  port: CompassPort,
-  initialRequireDeviceMotion: boolean,
-  initialListenerStartsCompass: boolean,
-) {
-  let requireDeviceMotion = initialRequireDeviceMotion;
-  let listenerStartsCompass = initialListenerStartsCompass;
-  let desired: Session | null = null;
-  let installed: { owner: object; listener: CompassListener } | null = null;
-  let installedMotion: { owner: object; listener: MotionListener } | null = null;
-  let mayBeRunning = false;
-  let motionMayBeRunning = false;
-  let tail = Promise.resolve();
+// Cached by the long-lived native port. Prototype methods must remain outside
+// controller creation even when the compressor inlines the lifecycle factory.
+class NativeCompassCoordinator {
+  private desired: Session | null = null;
+  private installed: { owner: object; listener: CompassListener } | null = null;
+  private installedMotion: { owner: object; listener: MotionListener } | null = null;
+  private mayBeRunning = false;
+  private motionMayBeRunning = false;
+  private tail = Promise.resolve();
 
-  const release = async () => {
+  constructor(
+    private readonly port: CompassPort,
+    private requireDeviceMotion: boolean,
+    private listenerStartsCompass: boolean,
+  ) {}
+
+  private async release() {
     // Preserve uncertain ownership on failure so the next request retries cleanup.
     let releaseError: unknown;
     let releaseFailed = false;
@@ -161,35 +163,35 @@ function nativeCoordinator(
     // first and await acknowledgement. A failed stop retains its listener so
     // detachment cannot disable the stream behind the next cleanup retry.
     // `desired` already invalidates callbacks during cancellation/replacement.
-    if (motionMayBeRunning) {
+    if (this.motionMayBeRunning) {
       try {
-        await stopDeviceMotion(port);
-        motionMayBeRunning = false;
+        await stopDeviceMotion(this.port);
+        this.motionMayBeRunning = false;
       } catch (error) {
         failedRelease("device_motion_stop", error);
       }
     }
-    if (mayBeRunning) {
+    if (this.mayBeRunning) {
       try {
-        await port.stopCompass();
-        mayBeRunning = false;
+        await this.port.stopCompass();
+        this.mayBeRunning = false;
       } catch (error) {
         failedRelease("compass_stop", error);
       }
     }
 
-    if (installedMotion && !motionMayBeRunning) {
+    if (this.installedMotion && !this.motionMayBeRunning) {
       try {
-        port.offDeviceMotionChange!(installedMotion.listener);
-        installedMotion = null;
+        this.port.offDeviceMotionChange!(this.installedMotion.listener);
+        this.installedMotion = null;
       } catch (error) {
         failedRelease("device_motion_unlisten", error);
       }
     }
-    if (installed && !mayBeRunning) {
+    if (this.installed && !this.mayBeRunning) {
       try {
-        port.offCompassChange(installed.listener);
-        installed = null;
+        this.port.offCompassChange(this.installed.listener);
+        this.installed = null;
       } catch (error) {
         failedRelease("compass_unlisten", error);
       }
@@ -198,147 +200,145 @@ function nativeCoordinator(
     if (releaseFailed) {
       throw releaseError ?? new Error("orientation_release_failed");
     }
-  };
+  }
 
-  const enqueue = (operation: () => Promise<void>) => {
-    const task = tail.then(operation);
-    tail = task.catch(() => undefined);
+  private enqueue(operation: () => Promise<void>) {
+    const task = this.tail.then(operation);
+    this.tail = task.catch(() => undefined);
     return task;
-  };
+  }
 
-  return {
-    configure(options: { requireDeviceMotion?: boolean; listenerStartsCompass?: boolean }) {
-      requireDeviceMotion = requireDeviceMotion || options.requireDeviceMotion === true;
-      listenerStartsCompass = listenerStartsCompass || options.listenerStartsCompass === true;
-    },
-    active(owner: object) {
-      return desired?.owner === owner;
-    },
-    isCurrent(owner: object, listener: CompassListener) {
-      return desired?.owner === owner && desired.listener === listener;
-    },
-    isCurrentMotion(owner: object, listener: MotionListener) {
-      return desired?.owner === owner && desired.motionListener === listener;
-    },
-    start(
-      owner: object,
-      listener: CompassListener,
-      failed: (error: unknown) => void,
-      motionListener?: MotionListener,
-      sessionOptions: Pick<Session, "motionInterval" | "compassOptional" | "compassUnavailable"> = {},
-    ): Promise<void> {
-      if (desired?.owner === owner) return tail;
+  configure(options: { requireDeviceMotion?: boolean; listenerStartsCompass?: boolean }) {
+    this.requireDeviceMotion = this.requireDeviceMotion || options.requireDeviceMotion === true;
+    this.listenerStartsCompass = this.listenerStartsCompass || options.listenerStartsCompass === true;
+  }
+  active(owner: object) {
+    return this.desired?.owner === owner;
+  }
+  isCurrent(owner: object, listener: CompassListener) {
+    return this.desired?.owner === owner && this.desired.listener === listener;
+  }
+  isCurrentMotion(owner: object, listener: MotionListener) {
+    return this.desired?.owner === owner && this.desired.motionListener === listener;
+  }
+  start(
+    owner: object,
+    listener: CompassListener,
+    failed: (error: unknown) => void,
+    motionListener?: MotionListener,
+    sessionOptions: Pick<Session, "motionInterval" | "compassOptional" | "compassUnavailable"> = {},
+  ): Promise<void> {
+    if (this.desired?.owner === owner) return this.tail;
 
-      const session: Session = motionListener
-        ? { owner, listener, motionListener, failed, ...sessionOptions }
-        : { owner, listener, failed, ...sessionOptions };
-      desired = session;
-      return enqueue(async () => {
-        if (desired !== session) return;
-        try {
-          await release();
-          if (desired !== session) return;
+    const session: Session = motionListener
+      ? { owner, listener, motionListener, failed, ...sessionOptions }
+      : { owner, listener, failed, ...sessionOptions };
+    this.desired = session;
+    return this.enqueue(async () => {
+      if (this.desired !== session) return;
+      try {
+        await this.release();
+        if (this.desired !== session) return;
 
-          const motionRequired = requireDeviceMotion;
-          if (
-            motionRequired &&
-            (!session.motionListener || !supportsDeviceMotion(port))
-          ) {
-            throw new Error("device_motion_unavailable");
-          }
+        const motionRequired = this.requireDeviceMotion;
+        if (
+          motionRequired &&
+          (!session.motionListener || !supportsDeviceMotion(this.port))
+        ) {
+          throw new Error("device_motion_unavailable");
+        }
 
-          if (session.motionListener && supportsDeviceMotion(port)) {
-            installedMotion = {
-              owner,
-              listener: (event) => {
-                if (desired === session) session.motionListener!(event);
-              },
-            };
-            port.onDeviceMotionChange!(installedMotion.listener);
-            motionMayBeRunning = true;
-            try {
-              await startDeviceMotion(port, session.motionInterval);
-            } catch (error) {
-              throw orientationStartError("device_motion", error);
-            }
-            if (desired !== session) {
-              await release();
-              return;
-            }
-          }
-
-          if (!listenerStartsCompass) {
-            try {
-              await port.startCompass();
-            } catch (error) {
-              // Some clients report a duplicate when listener registration
-              // has already resumed the stream before the explicit restart.
-              if (!compassAlreadyActive(error)) {
-                // A valid full-attitude stream can use the compass solely
-                // for quality metadata. Its failure must not stop motion.
-                if (session.compassOptional && installedMotion && desired === session) {
-                  reportRuntimeError("native", "sky_compass_start_failed", error, { stage: "optional_compass" });
-                  session.compassUnavailable?.(error);
-                  return;
-                }
-                throw orientationStartError("compass", error);
-              }
-            }
-            mayBeRunning = true;
-          }
-
-          // WeChat's listener registration can itself start the compass.  An
-          // explicit start must therefore happen first, otherwise the two
-          // starts race and some Android clients return an opaque `fail`.
-          installed = {
+        if (session.motionListener && supportsDeviceMotion(this.port)) {
+          this.installedMotion = {
             owner,
             listener: (event) => {
-              if (desired === session) listener(event);
+              if (this.desired === session) session.motionListener!(event);
             },
           };
-          port.onCompassChange(installed.listener);
-          mayBeRunning = true;
-          // Native starts have no cancellation handle; compensate after they settle.
-          if (desired !== session) await release();
-        } catch (error) {
-          reportRuntimeError("native", "sky_orientation_start_failed", error,
-            { stage: orientationStartFailureDiagnostic(error) });
-          if (desired === session) {
-            desired = null;
-            failed(error);
-          }
+          this.port.onDeviceMotionChange!(this.installedMotion.listener);
+          this.motionMayBeRunning = true;
           try {
-            await release();
-          } catch {
-            // Ownership remains uncertain; the next request retries cleanup.
+            await startDeviceMotion(this.port, session.motionInterval);
+          } catch (error) {
+            throw orientationStartError("device_motion", error);
+          }
+          if (this.desired !== session) {
+            await this.release();
+            return;
           }
         }
-      });
-    },
-    stop(owner: object): Promise<boolean> {
-      if (desired?.owner === owner) desired = null;
-      return enqueue(async () => {
-        // A late cleanup from an old page must not stop its replacement page.
-        if (
-          installed?.owner === owner ||
-          installedMotion?.owner === owner ||
-          (mayBeRunning && !installed) ||
-          (motionMayBeRunning && !installedMotion)
-        ) {
-          await release();
+
+        if (!this.listenerStartsCompass) {
+          try {
+            await this.port.startCompass();
+          } catch (error) {
+            // Some clients report a duplicate when listener registration
+            // has already resumed the stream before the explicit restart.
+            if (!compassAlreadyActive(error)) {
+              // A valid full-attitude stream can use the compass solely
+              // for quality metadata. Its failure must not stop motion.
+              if (session.compassOptional && this.installedMotion && this.desired === session) {
+                reportRuntimeError("native", "sky_compass_start_failed", error, { stage: "optional_compass" });
+                session.compassUnavailable?.(error);
+                return;
+              }
+              throw orientationStartError("compass", error);
+            }
+          }
+          this.mayBeRunning = true;
         }
-      }).then(
-        () => true,
-        () => false,
-      );
-    },
-  };
+
+        // WeChat's listener registration can itself start the compass.  An
+        // explicit start must therefore happen first, otherwise the two
+        // starts race and some Android clients return an opaque `fail`.
+        this.installed = {
+          owner,
+          listener: (event) => {
+            if (this.desired === session) listener(event);
+          },
+        };
+        this.port.onCompassChange(this.installed.listener);
+        this.mayBeRunning = true;
+        // Native starts have no cancellation handle; compensate after they settle.
+        if (this.desired !== session) await this.release();
+      } catch (error) {
+        reportRuntimeError("native", "sky_orientation_start_failed", error,
+          { stage: orientationStartFailureDiagnostic(error) });
+        if (this.desired === session) {
+          this.desired = null;
+          failed(error);
+        }
+        try {
+          await this.release();
+        } catch {
+          // Ownership remains uncertain; the next request retries cleanup.
+        }
+      }
+    });
+  }
+  stop(owner: object): Promise<boolean> {
+    if (this.desired?.owner === owner) this.desired = null;
+    return this.enqueue(async () => {
+      // A late cleanup from an old page must not stop its replacement page.
+      if (
+        this.installed?.owner === owner ||
+        this.installedMotion?.owner === owner ||
+        (this.mayBeRunning && !this.installed) ||
+        (this.motionMayBeRunning && !this.installedMotion)
+      ) {
+        await this.release();
+      }
+    }).then(
+      () => true,
+      () => false,
+    );
+  }
 }
 
 // Native orientation state is shared by pages using the same public platform port.
 const coordinators = new WeakMap<
   CompassPort,
-  ReturnType<typeof nativeCoordinator>
+  NativeCompassCoordinator
 >();
 
 export function createCompassLifecycle(
@@ -349,7 +349,7 @@ export function createCompassLifecycle(
 ) {
   let shared = coordinators.get(port);
   if (!shared) {
-    shared = nativeCoordinator(
+    shared = new NativeCompassCoordinator(
       port,
       options.requireDeviceMotion === true,
       options.listenerStartsCompass === true,

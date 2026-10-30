@@ -3,14 +3,17 @@ import type {
   MapSceneTimeFrame,
   MapSpotEvaluation,
 } from "@starward/miniapp-contracts";
+import { currentTotalCloudEvidence } from "../../services/forecast-presentation";
+import { mergeForecastIntervals, type ForecastInterval } from "../../components/forecast-coverage";
 
 /** Keep original indices: filtering weather choices must not retarget astronomy or plan time. */
-export function cloudTimeFrameChoices(frames: readonly MapSceneTimeFrame[]) {
+export function cloudTimeFrameChoices(frames: readonly MapSceneTimeFrame[], now = Date.now()) {
   return frames.map((frame, sourceIndex) => ({ frame, sourceIndex })).filter(({ frame }) =>
     (frame.dynamicLayer?.kind === "CLOUD" && frame.dynamicLayer.state !== "UNAVAILABLE" &&
       frame.dynamicLayer.polygons.some(polygon => Number.isFinite(polygon.value))) ||
-    Object.values(frame.spotSignals).some(signal => signal.weatherAt && signal.cloudPercent !== null &&
-      Number.isFinite(signal.cloudPercent) && signal.state !== "UNAVAILABLE"));
+    Object.values(frame.spotSignals).some(signal => signal.state !== "UNAVAILABLE" &&
+      (signal.cloudEvidence === undefined ? signal.weatherAt && signal.cloudPercent !== null && Number.isFinite(signal.cloudPercent)
+        : currentTotalCloudEvidence(signal.cloudEvidence, frame.atUtc, now) !== null)));
 }
 
 /** Display ticks may share a source hour; they never extend its coverage. */
@@ -18,9 +21,19 @@ export function cloudForecastStarts(frames: readonly MapSceneTimeFrame[]) {
   return frames.flatMap(frame => [
     ...(frame.dynamicLayer?.kind === "CLOUD" && frame.dynamicLayer.state !== "UNAVAILABLE"
       ? frame.dynamicLayer.polygons : []),
-    ...Object.values(frame.spotSignals),
+    ...Object.values(frame.spotSignals).filter(signal => signal.cloudEvidence === undefined),
   ].flatMap(signal => signal.weatherAt && signal.state !== "UNAVAILABLE" &&
     Number.isFinite("value" in signal ? signal.value : signal.cloudPercent) ? [signal.weatherAt] : []));
+}
+
+/** New point signals carry their qualified native bracket, not a QWeather hour. */
+export function cloudForecastIntervals(frames: readonly MapSceneTimeFrame[], now = Date.now()): ForecastInterval[] | undefined {
+  if (!frames.some(frame => Object.values(frame.spotSignals).some(signal => signal.cloudEvidence !== undefined))) return undefined;
+  return mergeForecastIntervals(frames.flatMap(frame => Object.values(frame.spotSignals).flatMap(signal => {
+    if (signal.state === "UNAVAILABLE") return [];
+    const evidence = currentTotalCloudEvidence(signal.cloudEvidence, frame.atUtc, now);
+    return evidence ? [{ start: evidence.lowerAt, end: evidence.upperAt }] : [];
+  })));
 }
 
 export function nearestMapTimeFrameIndex(
@@ -55,12 +68,15 @@ export function projectMapEvaluations(
   return Object.fromEntries(
     Object.entries(evaluations).map(([spotId, evaluation]) => {
       const signal = frame.spotSignals[spotId];
-      return [spotId, signal?.spotId === spotId ? { ...evaluation, ...signal,
+      const { cloudEvidence: _previousCloud, ...prior } = evaluation;
+      return [spotId, signal?.spotId === spotId ? { ...prior, ...signal,
         ...(signal.state === "UNAVAILABLE" ? { cloudPercent: null, weatherAt: null, opportunityScore: null,
+          ...(signal.cloudEvidence === undefined ? {} : { cloudEvidence: null }),
           opportunityConfidence: null, opportunityEligible: false } : {}),
       } : {
         ...evaluation,
         cloudPercent: null, weatherAt: null,
+        ...(evaluation.cloudEvidence === undefined ? {} : { cloudEvidence: null }),
         moonImpact: "UNKNOWN", opportunityScore: null, opportunityConfidence: null,
         opportunityEligible: false, opportunityLabel: "当前时段暂无数据", state: "UNAVAILABLE",
       }];

@@ -1,4 +1,4 @@
-.my-page { height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
+.my-page { position: relative; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
 .my-page.theme-day {
   background: radial-gradient(ellipse 100% 75% at 100% 3%, #f9e49eb5, transparent 64%), radial-gradient(ellipse 90% 42% at -7% 20%, #e9ccdda8, transparent 78%), radial-gradient(ellipse 90% 64% at -10% 67%, #bcd8eab5, transparent 80%), radial-gradient(ellipse 70% 54% at 112% 59%, #f4e5b195, transparent 78%), #f2f3f1;
   color: #273640;
@@ -21,7 +21,7 @@
 .my-nickname .semantic-icon { width: 16Px; height: 16Px; flex-basis: 16Px; }
 .theme-day .my-nickname .type-section { color: #273640; }
 .theme-day .my-nickname .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
-.my-settings-gear { margin: 0; padding: 0; flex: none; width: 48Px; height: 48Px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; }
+.my-settings-gear { margin: 0 68Px 0 0; padding: 0; flex: none; width: 48Px; height: 48Px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; }
 .my-settings-gear .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
 .theme-day .my-settings-gear .semantic-icon { width: 32Px; height: 32Px; flex-basis: 32Px; }
 .my-focus-actions { display: flex; flex-direction: column; gap: 18Px; }

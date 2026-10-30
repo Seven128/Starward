@@ -27,6 +27,7 @@ import type { PreparedOpticalImageryService } from "../prepared-optical-imagery.
 import type { OpticalHipsPublicationService } from "../optical-hips-publication.ts";
 import type { GalacticImagePublicationService } from "../galactic-image-publication.ts";
 import { TerrainService, type TerrainPort } from "../terrain-service.ts";
+import type { CloudPublicationRegistry } from "../cloud-publication-registry.ts";
 
 export function createTestMiniappService(
   input: {
@@ -47,6 +48,7 @@ export function createTestMiniappService(
     opticalHips?: OpticalHipsPublicationService;
     galacticImage?: GalacticImagePublicationService;
     terrain?: TerrainPort;
+    cloudPublications?: CloudPublicationRegistry;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -68,5 +70,6 @@ export function createTestMiniappService(
     ...(input.preparedOpticalImages ? { preparedOpticalImages: input.preparedOpticalImages } : {}),
     ...(input.opticalHips ? { opticalHips: input.opticalHips } : {}),
     ...(input.galacticImage ? { galacticImage: input.galacticImage } : {}),
+    ...(input.cloudPublications ? { cloudPublications: input.cloudPublications } : {}),
   });
 }

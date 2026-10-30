@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { ObservationPlan, SkyReport } from "@starward/miniapp-contracts";
 import { planReference } from "./plan-reference-model";
+import { totalCloudClientFixture } from "../../../services/total-cloud-test-support";
 
 const plan = { spotId: "spot:a", localDate: "2026-09-13", localTime: "22:00",
   contextSnapshot: { timezone: "Asia/Shanghai", selectedAtUtc: "2026-09-13T14:00:00Z" },
@@ -54,4 +55,18 @@ test("missing old-cache night facts and invalid plan interval do not invent astr
   assert.equal(planReference(legacy, report).cloud, "暂无数据");
   const absent = planReference(plan, null);
   assert.equal(absent.nightRange, null); assert.equal(absent.cloud, "暂无数据");
+});
+
+test("plan counts valid cloud independently of QWeather hours and never falls back for explicit gaps", () => {
+  const cloud = totalCloudClientFixture("2026-09-13T00:00:00.000Z");
+  const independent = { ...report, weatherEvidence: { ...report.weatherEvidence, totalCloud: cloud.forecast }, hourly: report.hourly.map(row => ({ ...row,
+    weatherAt: null, cloudPercent: cloud.evidence((Date.parse(row.at) - Date.parse(cloud.binding.runAt)) / 3_600_000).cloudPercent,
+    cloudEvidence: cloud.evidence((Date.parse(row.at) - Date.parse(cloud.binding.runAt)) / 3_600_000) })) } as SkyReport;
+  const facts = planReference(plan, independent, cloud.now);
+  assert.equal(facts.cloud, "3.9–4.4%");
+  assert.equal(facts.wind, "暂无数据"); assert.equal(facts.temperature, "暂无数据"); assert.deepEqual(facts.weatherStarts, []);
+  assert.equal(planReference(plan, independent, Date.parse(cloud.binding.supports240HoursUntil) + 1).cloud, "暂无数据");
+  const gap = { ...report, hourly: report.hourly.map(row => ({ ...row, cloudPercent: 80, cloudEvidence: null })) };
+  assert.equal(planReference(plan, gap, cloud.now).cloud, "暂无数据");
+  assert.equal(planReference(plan, gap, cloud.now).wind, "0 km/h", "valid other weather retains its own coverage");
 });

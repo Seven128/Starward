@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import ts from "typescript";
-import type { ApiEnvelope, SaoIndexPublication, SkyGeometryReport, StellarGeometryFrame, StellarCatalogPublication } from "@starward/miniapp-contracts";
+import type { ApiEnvelope, CelestialObjectPositionData, SaoIndexPublication, SkyGeometryReport, SkyReport, StellarGeometryFrame, StellarCatalogPublication } from "@starward/miniapp-contracts";
 import { saoCatalogSource } from "../../../../../workers/miniapp-api/src/sao-catalog-source";
 import { createStellarCatalogClient } from "../../services/stellar-catalog-client";
 import { createSaoCatalogClient } from "../../services/sao-catalog-client";
@@ -16,6 +16,8 @@ import { createSkyStarDrawPreparation } from "./sky-star-draw-preparation";
 import { createSkyStarTransitions } from "./sky-star-transition";
 import { createSkyViewBasis, type SkyViewBasis } from "./sky-view-projection";
 import { selectSkyStellarTiles } from "./sky-stellar-tile-selection";
+import { skyPresentationPosition } from "./sky-presentation-position";
+import { presentSkyTime } from "./sky-time-presentation";
 import { drawSkyScene } from "./sky-scene-render";
 import { projectStellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import type { SkyPickSnapshot } from "./sky-object-picking";
@@ -51,7 +53,7 @@ const saoClient=createSaoCatalogClient({index:async()=>indexEnvelope,tile:async(
   fileTile:async(_publication,tile)=>JSON.parse(readFileSync(new URL(tile.file,root),"utf8")),
   invalidateIndex(){assert.fail();},invalidateTile(){assert.fail();}});
 const saoPublication=(await saoClient.getIndex()).data;
-const scope={spotId:"r20-local",contextId:"exact-star-draw",contextRevision:1,contextFingerprint:"scope",dataRevision:"fixture"};
+const scope={spotId:"r20-local",contextId:"exact-star-draw",contextRevision:1,contextFingerprint:"scope",dataRevision:"fixture",algorithmVersion:"fixture"};
 function freezeGeometry(geometry:StellarGeometryFrame) {
   Object.freeze(geometry.observer);Object.freeze(geometry.equatorialToEnu);return Object.freeze(geometry);
 }
@@ -71,6 +73,58 @@ const extra=resolveSkyStellarSupplement(saoPublication,tiles,a.skyScene,a.hourly
 assert.equal(publication.rows.length,8404);assert(selected.length>100&&extra.pointCount!>2000);
 assert(isReusableSkyStellarFrame(resolveSkySceneFrame(a.skyScene,a.hourly[0]!.at)!));
 assert(isReusableSkyStellarSupplementFrame(extra));
+
+test("a loaded SAO pick uses its admitted exact frame without a remote position anchor",()=>{
+  const row=tiles[0]!.tile.rows[0]!,at=a.hourly[0]!.at,geometry=a.skyScene.frames[0]!.geometry!;
+  const catalog={catalogVersion:saoPublication.index.catalogVersion,catalogHash:saoPublication.index.catalogHash};
+  const binding={...a.context,at,reference:row[0]};
+  const presentation={source:{...envelope,data:a as unknown as SkyReport},rendered:a,anchorAt:at,stellarSupplement:extra};
+  const expected=projectStellarMotion([row[2],row[3],row[4],row[5],row[6],row[7]],geometry.julianYears,geometry.equatorialToEnu);
+  assert.deepEqual(skyPresentationPosition(binding,catalog,presentation),
+    {...binding,position:{...expected,...catalog},unavailableReason:null});
+  const anchor:ApiEnvelope<CelestialObjectPositionData>={...envelope,data:{...binding,position:{...expected,...catalog},unavailableReason:null,
+    stellarMotion:{referenceAt:"2000-01-01T12:00:00.000Z",factors:[row[2],row[3],row[4],row[5],row[6],row[7]]}}};
+  const remoteOnly={...presentation,stellarSupplement:null};
+  assert.deepEqual(skyPresentationPosition(binding,catalog,remoteOnly,anchor),
+    {...binding,position:{...expected,...catalog},unavailableReason:null},"unloaded objects retain the bound remote motion path");
+  const differentRevision={...anchor,data:{...anchor.data,dataRevision:"different-report"}};
+  assert.equal(skyPresentationPosition(binding,catalog,remoteOnly,differentRevision),null);
+  assert.deepEqual(skyPresentationPosition(binding,catalog,presentation,differentRevision),
+    {...binding,position:{...expected,...catalog},unavailableReason:null},"loaded geometry does not borrow a mismatched remote revision");
+  assert.equal(skyPresentationPosition({...binding,contextRevision:binding.contextRevision+1},catalog,presentation),null);
+  assert.equal(skyPresentationPosition(binding,{...catalog,catalogHash:"wrong"},presentation),null);
+  for(const stellarSupplement of [null,{...extra},
+    resolveSkyStellarSupplement(saoPublication,tiles,b.skyScene,b.hourly[0]!.at),
+    resolveSkyStellarSupplement(saoPublication,tiles.slice(1),a.skyScene,at),
+    resolveSkyStellarSupplement(saoPublication,tiles,report(at).skyScene,at)]) {
+    assert.equal(skyPresentationPosition(binding,catalog,{...presentation,stellarSupplement}),null,
+      "missing, copied, stale, withdrawn or another exact-frame identity cannot supply the selected position");
+  }
+});
+
+test("a loaded SAO position is available on an exact provider row before Play",()=>{
+  const at=a.hourly[0]!.at,provided=report(at,publication,false);
+  const exact=presentSkyTime(provided as unknown as SkyReport,at)!;
+  assert.equal(exact.mode,"EXACT");
+  const rendered=attachSkyCatalog(exact.report,publication);
+  const stellarSupplement=resolveSkyStellarSupplement(saoPublication,tiles,rendered.skyScene,at)!;
+  assert.equal(isReusableSkyStellarSupplementFrame(stellarSupplement),false,
+    "an unfrozen provider row is valid geometry but cannot reuse prepared drawing");
+  const row=tiles[0]!.tile.rows[0]!,geometry=rendered.skyScene.frames[0]!.geometry!;
+  const catalog={catalogVersion:saoPublication.index.catalogVersion,catalogHash:saoPublication.index.catalogHash};
+  const binding={...rendered.context,at,reference:row[0]};
+  const position=projectStellarMotion([row[2],row[3],row[4],row[5],row[6],row[7]],geometry.julianYears,geometry.equatorialToEnu);
+  assert.deepEqual(skyPresentationPosition(binding,catalog,
+    {source:{...envelope,data:provided as unknown as SkyReport},rendered,anchorAt:at,stellarSupplement}),
+    {...binding,position:{...position,...catalog},unavailableReason:null});
+  for(const invalid of [{...stellarSupplement},
+    resolveSkyStellarSupplement(structuredClone(saoPublication),tiles,rendered.skyScene,at),
+    resolveSkyStellarSupplement(saoPublication,[structuredClone(tiles[0]!)],rendered.skyScene,at)]) {
+    assert.equal(skyPresentationPosition(binding,catalog,
+      {source:{...envelope,data:provided as unknown as SkyReport},rendered,anchorAt:at,stellarSupplement:invalid}),null,
+      "copied frames or catalogue deliveries cannot certify a position");
+  }
+});
 
 test("frame-local motion scratch preserves every full BSC and loaded SAO position across exact times",()=>{
   const first=resolveSkySceneFrame(a.skyScene,a.hourly[0]!.at)!;

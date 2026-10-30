@@ -119,7 +119,8 @@ function harness() {
   const session = createSkyContextSession(context.contextId, () => store);
   const time = createSkyObservationTime();
   const timeBinding = `${context.contextId}:${context.revision}:${context.contextFingerprint}`;
-  time.bind(timeBinding, committedAt, { startAt: committedAt, endAt });
+  const timeModel = { startAt: committedAt, endAt };
+  time.bind(timeBinding, committedAt, timeModel);
   const tracking = createSkyObjectTracking(), selection = createSkyObjectSelection();
   selection.select(object, reportContext.spotId);
   const position = { ...reportContext, at: committedAt, reference: object.reference,
@@ -150,7 +151,7 @@ function harness() {
     timePlayRequested: false, previewGeometry: { playbackReady: true }, carriedReport: null,
     skyRulerTime, setTimeScrubbing: () => {},
     timeCommitContinuity: createSkyTimeCommitContinuity(skyForecastPresentation),
-    timeModel: { startAt: committedAt, endAt }, timeGeometrySources: undefined, timeRows: rawReportData.hourly, geometryReport: rawReportData,
+    timeModel, timeModelRef: { current: timeModel }, timeGeometrySources: undefined, timeRows: rawReportData.hourly, geometryReport: rawReportData,
     report: { isError: false, data: { data: rawReportData, dataState: "FRESH" } },
     rawReportData, reportData: rawReportData, row: { at: committedAt },
     selectedCatalogObject: object, selectedCatalogObjectRef, datePickerOpen: false, datePickerOpenRef,

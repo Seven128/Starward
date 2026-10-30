@@ -47,12 +47,14 @@ test("one official-warning failure survives source return and automatic refresh 
     },
   });
   const failed = evidence({ alerts: [], warningState: "UNAVAILABLE" });
-  const props = { evidence: failed, timezone: "Asia/Shanghai", active: true, scopeKey: "spot:a",
+  const props = { evidence: failed, timezone: "Asia/Shanghai", active: true, scopeKey: "spot:a", failureEpisode: createResourceFailureEpisode(),
     onRecover: () => { if (!allowRetry) return false; retries++; return true; }, onRefresh: () => { refreshes++; } };
   const render = (change: object = {}) => { slot = 0; return component({ ...props, ...change }); };
   const status = (tree: any) => tree.children.flat().find((child: any) => child?.type === "StatusPanel");
   render(); render({ active: false }); render();
   assert.equal(notices.length, 1, "returning from Sources cannot restart the same failed warning episode");
+  memo = undefined; dependencies.length = 0; render();
+  assert.equal(notices.length, 1, "a remounted spot document reuses its Map-owned warning episode");
   render({ refreshing: true }); render();
   render({ evidence: undefined }); render();
   assert.equal(notices.length, 1, "refresh and temporary absence do not establish recovery");

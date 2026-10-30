@@ -4,13 +4,16 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { observationContextRecoveryInput } from "./observation-context-recovery";
+import { confirmedObservationCloudRead, confirmedObservationContextRecovery, observationContextRecoveryBindings } from "./observation-context-recovery";
 
 const source = ts.createSourceFile("api-client.ts",
   readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
 const names = ["restoreObservationContext", "rebuildObservationContext", "replaceRetiredObservationContext"];
 const declarations = source.statements.filter(node => ts.isFunctionDeclaration(node) && names.includes(node.name?.text ?? ""));
 assert.equal(declarations.length, names.length);
-const functions = declarations.map(node => node.getText(source).replace(/^export /u, "")).join("\n");
+const adoption = source.statements.find(node => ts.isVariableStatement(node) &&
+  node.declarationList.declarations.some(declaration => declaration.name.getText(source) === "legacyCloudAdoption"))!;
+const functions = adoption.getText(source) + "\n" + declarations.map(node => node.getText(source).replace(/^export /u, "")).join("\n");
 const code = ts.transpileModule(functions + "\nrestoreObservationContext;",
   { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 
@@ -20,6 +23,7 @@ test("a removed formal spot restores its exact map origin instead of leaving the
   const origin = { data: { contextId: "ctx:origin-new", location: { kind: "MAP_POINT" } } };
   const calls: unknown[] = [];
   const restore = vm.runInNewContext(code, {
+    confirmedObservationCloudRead, confirmedObservationContextRecovery, observationContextRecoveryBindings,
     MiniappApiError: ApiError,
     getObservationContext: async () => { throw new ApiError("NOT_FOUND"); },
     observationContextRecoveryInput: (_context: unknown, routeOriginContextId: string) => {
@@ -42,6 +46,7 @@ test("a removed formal spot restores its exact map origin instead of leaving the
 test("transport failure does not rebuild or replace a stored location", async () => {
   let resolves = 0;
   const restore = vm.runInNewContext(code, {
+    confirmedObservationCloudRead, confirmedObservationContextRecovery, observationContextRecoveryBindings,
     MiniappApiError: ApiError,
     getObservationContext: async () => { throw new ApiError("PROVIDER_UNAVAILABLE"); },
     observationContextRecoveryInput: () => ({}),
@@ -55,6 +60,7 @@ test("retired replacement never reads its writable ID and recreates the exact co
   const calls: any[] = [];
   const replace = vm.runInNewContext(ts.transpileModule(functions + "\nreplaceRetiredObservationContext;",
     { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    confirmedObservationCloudRead, confirmedObservationContextRecovery, observationContextRecoveryBindings,
     MiniappApiError: ApiError, observationContextRecoveryInput,
     getObservationContext: () => { throw Error("must not read retired ID"); },
     resolveObservationContext: async (input: any) => { calls.push(input); return { data: { contextId: calls.length === 1 ? "fresh-origin" : "fresh-spot" } }; },
@@ -75,6 +81,7 @@ test("failed retired replacement retains the snapshot without retrying a read or
   let resolves = 0;
   const replace = vm.runInNewContext(ts.transpileModule(functions + "\nreplaceRetiredObservationContext;",
     { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    confirmedObservationCloudRead, confirmedObservationContextRecovery, observationContextRecoveryBindings,
     MiniappApiError: ApiError, observationContextRecoveryInput,
     getObservationContext: () => { throw Error("must not read retired ID"); },
     resolveObservationContext: async () => { resolves++;throw new ApiError("PROVIDER_UNAVAILABLE"); },

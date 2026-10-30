@@ -2,6 +2,7 @@ import { pathToFileURL } from "node:url";
 import { readPlainSkyFile, skyStaticHash } from "./sky-static-bundle.mjs";
 import { requestSkyStaticBytes } from "./sky-static-http.mjs";
 import { readMapObjectStorePackage } from "./map-object-store-package.mjs";
+import { mapStaticRouteFamily } from "./map-static-bundle.mjs";
 
 const fail = code => { throw new Error(`map_object_store_${code}`); };
 function checkHeaders(result, object, length, delivery) {
@@ -27,7 +28,7 @@ export async function verifyMapObjectStoreDelivery({ delivery = "oss", fetchImpl
     const response = await request(object, "GET", object.bytes);
     if (response.status !== 200 || response.bytes.length !== object.bytes || skyStaticHash(response.bytes) !== object.sha256) fail("http_identity_mismatch");
     checkHeaders(response, object, object.bytes, delivery); checkedFiles++; checkedBytes += response.bytes.length;
-    const family = object.objectKey.startsWith("v2/terrain/") ? "terrain" : "night-light";
+    const family = mapStaticRouteFamily("/" + object.objectKey);
     if (!representatives.has(family)) representatives.set(family, { object, etag: response.headers.get("etag") });
   }
   for (const { object, etag } of representatives.values()) {
@@ -49,6 +50,9 @@ export async function verifyMapObjectStoreDelivery({ delivery = "oss", fetchImpl
   return { status: "PASSED_MAP_STATIC_HTTP_CONTRACT", publicationHash: plan.publicationHash,
     packageSha256: prepared.packageSha256, resourceOrigin: plan.resourceOrigin, delivery,
     checkedFiles, checkedBytes, checkedHeads, checkedRanges, checkedConditionals,
+    ...(prepared.sourceAdmissions.some(source => source.family === "cloud") ? { totalCloudSourceAdmission: "DEVELOPMENT_ONLY", totalCloudFormalReady: false } : {}),
+    ...(prepared.sourceAdmissions.some(source => source.family === "night-light" && source.publicationVersion.startsWith("nightlight-sharded:"))
+      ? { shardedNightLightSourceAdmission: "DEVELOPMENT_ONLY", shardedNightLightFormalReady: false } : {}),
     runtimeActivated: false, cdnCacheAndCapacity: "UNVERIFIED" };
 }
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {

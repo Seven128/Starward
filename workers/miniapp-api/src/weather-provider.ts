@@ -1,7 +1,7 @@
 import { fetchJson, qweatherAttribution, qweatherInstant, qweatherJwt, qweatherRequestPoint } from "./qweather-client.ts";
 import { createHash, randomUUID } from "node:crypto";
-import { observationNightBounds } from "@starward/miniapp-contracts";
-import type { DataState, SourceSummary } from "@starward/miniapp-contracts";
+import { observationNightBounds, unavailableTotalCloud } from "@starward/miniapp-contracts";
+import type { CloudPointForecast, DataState, SourceSummary, TotalCloudContext } from "@starward/miniapp-contracts";
 import type {
   CanonicalWeatherAlert,
   CanonicalWeatherHour,
@@ -12,8 +12,9 @@ import type {
   WeatherForecastResult,
 } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
-import { WEATHER_DEADLINES, waitForCaller } from "./provider-deadline.ts";
+import { WEATHER_DEADLINES, waitForCaller, withDeadline } from "./provider-deadline.ts";
 import { ComputationCache } from "./computation-cache.ts";
+import { CloudPointWeather, unavailableCloudForecast } from "./cloud-point-weather.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -119,6 +120,7 @@ export function unavailableWeatherResult(
   provider: string,
   errorCode: string,
   extraSources: readonly SourceSummary[] = [],
+  cloudContext?: TotalCloudContext | null,
 ): WeatherEvidenceResult {
   const primary = unavailableSource({
     provider,
@@ -131,11 +133,12 @@ export function unavailableWeatherResult(
     kind: "OFFICIAL_REFERENCE",
     errorCode: "warning_feed_unavailable",
   });
+  const totalCloud = cloudContext ? unavailableCloudForecast(cloudContext, errorCode) : undefined;
   return {
     value: null,
     state: "UNAVAILABLE",
     source: primary,
-    sources: [primary, ...extraSources, warning],
+    sources: [primary, ...extraSources, warning, ...(totalCloud ? [totalCloud.source] : [])],
     errorCode,
     warningState: "UNAVAILABLE",
     warningSource: warning,
@@ -146,6 +149,7 @@ export function unavailableWeatherResult(
       "逐时天气当前不可用。",
       "官方预警当前不可用；正式点出行建议必须保持数据不足。",
     ],
+    ...(totalCloud ? { totalCloud } : {}),
   };
 }
 
@@ -704,4 +708,135 @@ export class QWeatherCompositeAdapter implements WeatherPort {
 
 export function createWeatherPort(config: MiniappRuntimeConfig, transport: typeof fetch = fetch): WeatherPort {
   return new QWeatherCompositeAdapter(config, transport);
+}
+
+/** The primary source retains its real hours and non-cloud fields. New-contract
+ * cloud values live only in the independent result, never inside a QWeather row
+ * without source identity. projectWeatherAt is the one composition reader. */
+export class TotalCloudCompositeAdapter implements WeatherPort {
+  readonly key: string;
+  constructor(private readonly primary: WeatherPort, private readonly cloud: CloudPointWeather,
+    private readonly deadlineMs: number = WEATHER_DEADLINES.overallMs) {
+    this.key = primary.key;
+  }
+
+  selectTotalCloud(signal?: AbortSignal): Promise<TotalCloudContext | null> {
+    return this.cloud.select(undefined, signal);
+  }
+
+  private async totalCloud(input: Parameters<WeatherPort["getHourly"]>[0], selected?: (binding: TotalCloudContext | null) => void): Promise<CloudPointForecast | null> {
+    let binding: TotalCloudContext | null;
+    try { binding = await this.cloud.select(input.totalCloud, input.signal); }
+    catch (error) {
+      input.signal?.throwIfAborted();
+      if (input.totalCloud !== undefined) throw error;
+      binding = unavailableTotalCloud("READ_FAILED");
+    }
+    selected?.(binding);
+    if (binding === null) return null;
+    const window = weatherWindow(input);
+    return this.cloud.getForecast({ binding, point: input.point,
+      windowUtc: { start: new Date(window.start).toISOString(), end: new Date(window.end).toISOString() },
+      ...(input.signal ? { signal: input.signal } : {}) });
+  }
+
+  private composeHourly(primary: WeatherEvidenceResult, totalCloud: CloudPointForecast | null): WeatherEvidenceResult {
+    if (totalCloud === null) return primary;
+    const cloudAvailable = Boolean(totalCloud.value) && !["UNAVAILABLE", "EXPIRED"].includes(totalCloud.state);
+    const state = primary.state === "SAMPLE_DATA" || totalCloud.state === "SAMPLE_DATA" ? "SAMPLE_DATA" : primary.value?.length
+      ? primary.state === "FRESH" && totalCloud.state === "FRESH" ? "FRESH" : "PARTIAL"
+      : cloudAvailable ? "PARTIAL" : primary.state;
+    return { ...primary, state,
+      value: primary.value?.map(row => ({ ...row, cloudPercent: null })) ?? null,
+      sources: [...primary.sources, totalCloud.source].filter((source, index, all) => all.findIndex(item => item.id === source.id) === index),
+      totalCloud, errorCode: primary.errorCode ?? totalCloud.errorCode };
+  }
+
+  private pendingCloud(binding: TotalCloudContext | null | undefined): CloudPointForecast | null {
+    // A contextless selection that has not completed cannot masquerade as an
+    // explicitly disabled lane. No deadline recovery performs a second select.
+    return binding === null ? null : unavailableCloudForecast(
+      binding ?? unavailableTotalCloud("READ_FAILED"), "weather_deadline_exceeded");
+  }
+
+  async getHourly(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherEvidenceResult> {
+    const { onIndependentResult: observeIndependent, ...request } = input;
+    let primary: WeatherEvidenceResult | undefined, totalCloud: CloudPointForecast | null | undefined;
+    let binding = input.totalCloud;
+    const completed = () => this.composeHourly(primary ?? unavailableWeatherResult(this.primary.key, "weather_deadline_exceeded"),
+      totalCloud === undefined ? this.pendingCloud(binding) : totalCloud);
+    let active = true;
+    const publish = () => {
+      if (!active) return;
+      try { observeIndependent?.(completed()); } catch { /* An observer cannot fail acquisition. */ }
+    };
+    try {
+      return await withDeadline(async signal => {
+        const child = { ...request, signal };
+        await Promise.all([
+          this.primary.getHourly({ ...child, totalCloud: null }).catch(error => {
+            signal.throwIfAborted();
+            return unavailableWeatherResult(this.primary.key, error instanceof Error ? error.message : "weather_provider_failed");
+          }).then(value => { if (active && !signal.aborted) { primary = value; publish(); } }),
+          this.totalCloud(child, value => {
+            if (active && !signal.aborted) { binding = value; if (primary) publish(); }
+          }).then(value => { if (active && !signal.aborted) { totalCloud = value; publish(); } }),
+        ]);
+        signal.throwIfAborted();
+        return completed();
+      }, this.deadlineMs, input.signal);
+    } catch (error) {
+      input.signal?.throwIfAborted();
+      if (!(error instanceof Error) || error.message !== "weather_deadline_exceeded") throw error;
+      return completed();
+    } finally {
+      // A transport ignoring cancellation cannot replace a returned snapshot
+      // or keep its completed counterpart through this acquisition's locals.
+      active = false; primary = undefined; totalCloud = undefined; binding = undefined;
+    }
+  }
+
+  private composeForecast(primary: WeatherForecastResult, totalCloud: CloudPointForecast | null): WeatherForecastResult {
+    if (totalCloud === null) return primary;
+    const cloudAvailable = Boolean(totalCloud.value) && !["UNAVAILABLE", "EXPIRED"].includes(totalCloud.state);
+    return { ...primary,
+      value: primary.value?.map(row => ({ ...row, cloudPercent: null })) ?? null,
+      state: primary.state === "SAMPLE_DATA" || totalCloud.state === "SAMPLE_DATA" ? "SAMPLE_DATA"
+        : primary.value?.length ? primary.state === "FRESH" && totalCloud.state === "FRESH" ? "FRESH" : "PARTIAL"
+        : cloudAvailable ? "PARTIAL" : primary.state,
+      totalCloud, sources: [...primary.sources ?? [primary.source], totalCloud.source]
+        .filter((source, index, all) => all.findIndex(item => item.id === source.id) === index),
+      errorCode: primary.errorCode ?? totalCloud.errorCode };
+  }
+
+  async getForecastHourly(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherForecastResult> {
+    const { onIndependentResult: _hourlyObserver, ...request } = input;
+    let primary: WeatherForecastResult | undefined, totalCloud: CloudPointForecast | null | undefined, active = true;
+    let binding = input.totalCloud;
+    const completed = () => this.composeForecast(primary ?? {
+      ...unavailableWeatherResult(this.primary.key, "weather_deadline_exceeded"), modelRun: null,
+    }, totalCloud === undefined ? this.pendingCloud(binding) : totalCloud);
+    try {
+      return await withDeadline(async signal => {
+        const child = { ...request, signal, totalCloud: null };
+        const read = this.primary.getForecastHourly ? this.primary.getForecastHourly(child)
+          : this.primary.getHourly(child).then(value => ({ ...value, modelRun: value.modelRuns[0] ?? null }));
+        await Promise.all([
+          read.catch(error => {
+            signal.throwIfAborted();
+            return { ...unavailableWeatherResult(this.primary.key, error instanceof Error ? error.message : "weather_provider_failed"), modelRun: null };
+          }).then(value => { if (active && !signal.aborted) primary = value; }),
+          this.totalCloud({ ...request, signal }, value => {
+            if (active && !signal.aborted) binding = value;
+          }).then(value => { if (active && !signal.aborted) totalCloud = value; }),
+        ]);
+        signal.throwIfAborted();
+        return completed();
+      }, this.deadlineMs, input.signal);
+    } catch (error) {
+      input.signal?.throwIfAborted();
+      if (!(error instanceof Error) || error.message !== "weather_deadline_exceeded") throw error;
+      return completed();
+    } finally { active = false; primary = undefined; totalCloud = undefined; binding = undefined; }
+  }
 }

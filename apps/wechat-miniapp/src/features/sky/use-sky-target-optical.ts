@@ -26,6 +26,15 @@ export type SkyTargetOpticalPublication<K extends SkyTargetOpticalKind> =
   K extends "sdss-science" ? SdssScienceOpticalManifest :
   K extends "sdss-calibrated" ? SdssCalibratedOpticalManifest : SdssOpticalManifest;
 
+/** Cached metadata requests keep only their identity, not the hook's render graph. */
+function getTargetOpticalManifest(kind: SkyTargetOpticalKind, reference: string | null,
+  opticalPublicationHash: string | undefined, signal?: AbortSignal) {
+  return isPreparedRenderedOpticalVersion(kind) ? getPreparedOpticalResource(reference!, opticalPublicationHash!, signal) :
+    kind === "sdss-calibrated" ? getSdssCalibratedOpticalResource(reference!, opticalPublicationHash!, signal) :
+    kind !== "sdss-legacy" ? getSdssScienceOpticalResource(reference!, opticalPublicationHash!, signal) :
+    getSdssOpticalManifest(signal, reference ?? "M:51");
+}
+
 /** One progressive owner; matching geometry never relabels source meaning.
  * Metadata identity/epoch and the bounded native-image lifecycle stay atomic. */
 export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
@@ -39,10 +48,7 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
   const manifest = useResourceQuery<SdssOpticalManifest | SkyPublicationResource<SdssCalibratedOpticalManifest | PreparedRenderedOpticalManifest>>({
     queryKey: [prepared ? "prepared-optical-manifest" : "sdss-optical-manifest", reference,
       ...(immutable ? [kind, opticalPublicationHash] : [])],
-    queryFn: signal => prepared ? getPreparedOpticalResource(reference!, opticalPublicationHash!, signal) :
-      kind === "sdss-calibrated" ? getSdssCalibratedOpticalResource(reference!, opticalPublicationHash!, signal) :
-      immutable ? getSdssScienceOpticalResource(reference!, opticalPublicationHash!, signal) :
-      getSdssOpticalManifest(signal, reference ?? "M:51"),
+    queryFn: getTargetOpticalManifest.bind(null, kind, reference, opticalPublicationHash),
     enabled: !paused && (immutable ? immutableIntent : legacyIntent), staleTime: 60_000, structuralSharing: false });
   const resource = manifest.data && "publication" in manifest.data ? manifest.data : undefined;
   const metadataRetired = Boolean(immutable && resource && !resource.isCurrent());

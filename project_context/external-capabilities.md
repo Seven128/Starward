@@ -44,9 +44,10 @@ PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原�
 | --- | --- | --- |
 | 地图、定位、选点、导航交接 | 微信默认原生地图与公开平台能力；自有正式点搜索；投稿和计划起点使用平台选点，不买独立全国POI/逆地理/路线接口。底图与自有UI主题分开 | [地图、搜索与计划](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#external-location-and-travel-capabilities) |
 | 自动路线 | 当前不接道路距离、分交通方式时长、道路折线、道路范围筛选和自动倒推出发/到达；保留手动计划、交通偏好、停车/入口事实、直线距离与外部导航 | 同上 |
-| 天气 | 和风唯一主预报，保留未来逐小时总云量及对应时间尺/地图；官方预警、AQ为各自独立类别。移除小程序分层云、多模型和免费非商业源回退 | [天气含义](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#selected-weather-evidence)、[服务组合](architecture/runtime-and-domain.md#mini-program-external-capability-migration) |
+| 云量 | 采用ECMWF IFS 0.1°开放总云量格点，自行加工并经对象存储/CDN分发；地图、地点详情与云观星共享同一版本。当前QWeather点采样尚待迁移 | [选型背景与边界](#全国云量数据方案)、[天气含义](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#selected-weather-evidence) |
+| 其他天气 | 保留和风其他预报、官方预警、AQ及近期天气，各自遵守实际覆盖与时效；不恢复分层云、多模型或非商业源回退 | [服务组合](architecture/runtime-and-domain.md#mini-program-external-capability-migration) |
 | 地形 | Spot保留指定免费许可的Copernicus DEM GLO-30 Public AWS COG 2021及2–50公里查看，覆盖内复用大湾区85km旧发布；Map整幅视窗使用Terrain Tiles Terrarium金字塔，沿同一TerrainService执行/缓存/资产owner，源证明与许可分别保存。未取得或无效像素仍缺测；复杂方向控件继续取消，2026-10-17批准的只读山体轮廓复用同一免费版数值源及内部计算，不新增供应商或街景接口。清单或本机读取不等于每像素完整、部署可达或运行验收 | [地形owner](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)、[来源与运行责任](../data-pipelines/terrain/README.md) |
-| 光污染 | 许可覆盖的EOG年度VIIRS夜光；年度卫星夜光估算，不等于实时天空亮度、精确波特尔等级或实测SQM | [地形与夜光发布](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence) |
+| 光污染 | 继续使用获权EOG年度VIIRS夜光，沿现有发布链扩展全国；年度卫星夜光估算，不等于实时天空亮度、精确波特尔等级或实测SQM。全国覆盖是目标，当前发布范围由数据清单确定 | [数据服务选型](#地形与光污染数据服务选型)、[地形与夜光发布](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence) |
 | 日月行星、晨昏、月相、几何窗口 | 复用Astronomy Engine和现有天文服务；算法计算不保证现场可见性 | [天文架构](architecture/runtime-and-domain.md) |
 | 云观星引擎 | 2026-09-22用户采用扩展现有原生Canvas/WebGL＋TWGL＋Astronomy Engine方案，对齐Stellarium Web能力；保留自主修改和自有业务代码的许可边界 | [选型理由与重评条件](#云观星引擎选型)、[能力目标](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web) |
 | 亮星 | HEASARC具体发布的BSC5P，实际迁移数据、历元/自行/单位及身份；不以函数改名代替受限文件替换 | [目录迁移](architecture/runtime-and-domain.md#mini-program-external-capability-migration) |
@@ -55,9 +56,22 @@ PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原�
 | 场地和内容 | 管理方、现场核验、获权投稿与自有编辑；保存来源、日期、条件与证据，机器内容审核不证明场地事实 | [产品界面](areas/main/product-surfaces/wechat-miniapp.md) |
 | 账号、计划、上传、审核、分享、提醒、设备 | 微信平台与现有后端；私有数据隔离，失败不丢用户输入。提醒意愿、订阅授权、发送和送达分别建模 | [计划与提醒](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md) |
 
-天气最多240小时的公开能力不保证当前账号和旧适配已取得相同范围；第11–15天仍可使用天文和计划，天气按实际覆盖缺失。过去保存的预报、地区历史再分析、现场实测分开。地图云量必须来自真实查询点或网格，不能把少量点伪装成全国连续高清云场。主地图保留地形开关与LIGHT/TOTAL_CLOUD选择，点位地形图保留地形/光污染两个独立开关，不因报告简写取消现有地形入口。
+云量按下述ECMWF方案覆盖未来240小时；其他和风天气仍以账号和适配实际取得的范围为准。第11–15天仍可使用天文和计划，天气按实际覆盖缺失。过去保存的预报、地区历史再分析、现场实测分开。地图云量必须来自真实查询点或网格，不能把少量点伪装成全国连续高清云场。主地图保留地形开关与LIGHT/TOTAL_CLOUD选择，点位地形图保留地形/光污染两个独立开关，不因报告简写取消现有地形入口。
 
 现有地点身份、正式点发布、草稿/提案隔离、安全动作检查、计划版本、来源披露和数据失败恢复继续适用。支付、短信、原生推送、产品内AI、雷达、卫星云动画、科研级视宁度、相机AR和全天无限高清不因云观星引擎选型而新增。2026-09-14合规迁移中对空间站/彗星动态轨道的排除不再作为后续云观星能力对齐的上限；新目标见[云观星对齐Stellarium Web](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)，具体数据覆盖、权益和验证仍须落实。
+
+### 全国云量数据方案
+
+- **选择与原因。** 采用[ECMWF IFS 0.1° Open Data](https://www.ecmwf.int/en/forecasts/datasets/open-data)的总云量`tcc`，按预报批次获取总云量格点、裁剪中国范围并加工，经对象存储/CDN分发，保留微信原生Map。真实格点解决连续云场供给，开放数据与批次更新避免用户拖图不断增加点接口费；CC BY 4.0允许商用、加工与分发，保留署名及修改说明。WeatherAPI/Open-Meteo点方案不作主云图，GFS仅为待验证备选，不自动混源。
+- **时间与范围。** 主线采用00/12 UTC起报，目标覆盖用户查询时刻起未来240小时，按实际有效时刻判定；获取集合须计入run年龄、实际发布延迟及下一批就绪余量，不把起报后240小时当用户未来240小时。原生步长前144小时为3小时、之后为6小时；同一版本相邻有效时刻可线性插值，保现有小时显示及精确选中/连续调时语义、插值两端和权重，不跨缺测、跨run或外推。约9–11公里模式尺度不冒充1公里实测。地图、详情、云观星及既有总云量派生消费者共用同一发布与采样规则，其他和风字段和官方预警独立保留。
+- **批次有效性。** 未来240小时覆盖与更新是否及时分别判定；国内连续批次的发现/获取/加工/发布测量决定延迟与过期规则，旧点接口TTL不直接套用。源更正以新内容修订发布；逐帧摘要记录实际内容，但不自行证明供应商跨更正的一组帧具有一致资格。研究建议的全85帧、固定保留run数不是已采用门槛，实际获取/保留须满足声明范围、活跃引用和回滚需要。具体恢复及完整消费者切换归迁移架构owner。
+- **实现与成本。** 采用批次预制基础图、必要局部有界补图，API与重加工分离，沿[云量/光害迁移职责](architecture/runtime-and-domain.md#云量与光害全国迁移)复用现有发布和native管理。数据免费，下载、加工、上传、存储、回源和用户分发仍分别核算，按[云量成本口径](deployment/decisions-and-verification.md#云量格点处理与分发成本)计算。现有QWeather消费路径尚未替换；真实批次的获取/原生解码与共用采样入口归架构owner，具体证据归任务。国内部署获取稳定性、中国云量质量、完整产品、目标地图配准及资源成本仍须验证，不把报告估算当已完成结果。
+
+### 地形与光污染数据服务选型
+
+- **地形继续公开瓦片按需读取。** Map采用Terrain Tiles Terrarium，原因是已有全球金字塔、可按视野取数，且[AWS开放数据赞助](https://aws.amazon.com/marketplace/pp/prodview-x7vtai3hasf26)支持无需账号的免费访问；全国可取数不等于本机保存全国库或全国已验收。Spot的Copernicus GLO-30来源保持独立。遵守实际来源署名与修改说明；免费访问不承诺无限吞吐或永久可用。
+- **光污染继续获权EOG原件，自行发布全国成品。** 复用[当前锁定的全球原件](../data-pipelines/runtime-data/current.lock.json)及既有数值、质量和发布流程，避免新增按次地图采购与换源校准；现行区域发布不冒充全国完成。[NASA年度Black Marble](https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/VNP46A4/)是后备来源，免费原件仍需加工；已核[GIBS年度图层](https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml)的年份不满足当前数据要求，点位SQM/Bortle服务也不等价于年度夜光地图。仅在获取权益、覆盖、质量或完整成本出现实质变化时重评。
+- **光污染全国扩展优先调整数据组织。** 沿[原发布与分发owner](architecture/runtime-and-domain.md#云量与光害全国迁移)按空间和LOD分片索引、按视野直达读取，优先离线预制所需窗口及最终色标成品，经对象存储/CDN分发；保完整数值/质量规则、缺测和原r6/旧URL，新全国成果另版本发布。上游取数费用与加工、存储、分发、维护分别核算；不因全国总量预设升配，也不把对话中的容量/月费假设当预算或验收。源数据许可和新年度获取费用仍按下方合规表执行，实际容量沿[部署owner](deployment/decisions-and-verification.md#current-capacity-target-200-dau-2026-10-02)验证。
 
 ## 云观星合规图像供给
 
@@ -109,7 +123,7 @@ NXT在已核CLI/model与明确sRGB RGB8工作图上的ICC有/无标签配对数�
 
 - 地形与年度夜光的静态显示采用固定空间单元、LOD与版本化栅格发布，复用既有GroundOverlay、请求/文件生命周期；任意viewport合成可保留兼容和必要fallback，不作为静态资产唯一身份。源数值、显示派生和许可归属分离，Map Terrain Tiles与Spot GLO-30当前来源不因这一决定被冒称同一产品或立即替换。固定资产的图内GCJ变换、halo/有效掩膜和尺度继续由[坐标及地形owner](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence)持有。
 - 年度光污染沿EOG VNL V2.2的合法输入、radiance/cf_cvg与原发布事务，目标是地图/地点/筛选共享dataset、质量和统计版本及固定跨区域色义。现有AOI分位数等级是有声明的旧方法；迁移需新版本，不能原地改旧发布或只换图例。数值聚合先于着色，零与缺测分开，不新增SQM/Bortle推算。
-- 云量继续QWeather点小时预报；增强为有界视窗采样、完整来源快照和实际请求预算，不引入全国连续格点承诺或恢复分层云。供应商返回的整段小时序列跨选定时刻复用，纯云量采样不应附带无消费者的预警请求；预警现有消费者保持独立。自有快照记录每点标识/采集时间/有效时刻与年龄策略，不把tag、取得时间或快照hash解释为模式起报批次。源声明继续按[官方小时接口](https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/)与[元数据](https://dev.qweather.com/docs/resource/metadata/)执行。
+- 云量目标由[全国云量数据方案](#全国云量数据方案)接管。现有QWeather有界点采样及完整小时响应复用只作迁移前基线，不冒充连续云场；预警保持独立，不把供应商tag或取得时间解释为模式起报时间。
 - 优先复用既有rasterio/GDAL生态作离线发布与制图对照，Node保留现有服务责任；不据报告直接采购CDN、部署Python在线集群或引入小程序GIS引擎。固定粒度、样式、缓存/预取和性能参数由有限实际路径决定，技术候选数字不作为新增硬门槛。对象存储/CDN准备不等于实际部署授权，原数据获取、署名与发布条件继续适用。
 
 ## 云观星引擎选型
@@ -193,7 +207,7 @@ NXT在已核CLI/model与明确sRGB RGB8工作图上的ICC有/无标签配对数�
 
 内测采用同一获权来源、明确隔离的固定测试数据和少量真实查询；4/5/10持续测试点在30天算例下天气为0/3.57/42.14元。新增费用可接近零不等于全部验证零成本，也不等于“内测”豁免商业许可。
 
-不含首次数据获取/加工和迁移、开发、人工审核和实地核验、实际主体/域名/平台认证、必要但未报价的地图/专业服务、道路和个性化底图、支付短信、额外高可用与超出用量的资源。**EOG开放数据许可不等于免费程序化下载：当前注册页将2026-06-01后OpenID程序访问限定于付费订阅者；合法人工获取、已有获权文件和更新通道及其实际费用仍须落实，不填零。** 完整经营成本还需把这些项目按实际报价和工作量加入。
+不含首次数据获取/加工和迁移、开发、人工审核和实地核验、实际主体/域名/平台认证、必要但未报价的地图/专业服务、道路和个性化底图、支付短信、额外高可用与超出用量的资源。**EOG开放数据许可不等于免费程序化下载：当前注册页将2026-06-01后OpenID程序访问限定于付费订阅者；既有获权原件按锁复用，新年度获取通道、订阅权益与费用另行核实，不预填零。** 完整经营成本还需把这些项目按实际报价和工作量加入。
 
 ## 具体许可与公开运营条件
 
@@ -205,6 +219,7 @@ NXT在已核CLI/model与明确sRGB RGB8工作图上的ICC有/无标签配对数�
 
 | 外部能力／来源 | 产品需要遵守的主要条件 | 查询入口 |
 | --- | --- | --- |
+| ECMWF IFS开放总云量 | 指定`tcc`数据按CC BY 4.0商用、加工、缓存和分发；保留ECMWF署名、许可链接、原始run/有效时刻及插值/坐标处理声明。开放源不等于国内连通、精度或服务可用性保证，不将数据许可扩大到商标背书 | [开放产品与许可](https://www.ecmwf.int/en/forecasts/datasets/open-data)、[数据时效与获取](https://confluence.ecmwf.int/spaces/DAC/pages/272310539/ECMWF+open+data+real-time+forecasts+from+IFS+and+AIFS) |
 | 微信地图、定位、选点、导航 | 当前仅用已采用的平台能力；保留原生地图标识，落实实际 AppID 的位置隐私／权限和适用地理内容责任。不能由平台接口可调用推导独立地图 API 商用授权 | [地图与旅行 owner](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#external-location-and-travel-capabilities)、[微信地图文档](https://developers.weixin.qq.com/miniprogram/dev/component/map.html)及实际平台后台 |
 | 和风预报、预警、AQ、近期天气 | 使用当前账号获权的服务；清晰署名和风并提供官方入口，保留各源要求的额外归因、原发布信息和真实时间／单位。当前 v1 的 `metadata.attributions` 明确要求与当前数据共同显示；不能只在后端保存或只保留供应商名称。旧接口 `refer.sources` 按其归因规范保留。不得用 GeoAPI 批量建地点索引或暗退非商用源 | [v1 元数据要求](https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/)、[归因规范](https://dev.qweather.com/docs/terms/attribution/)、[使用限制](https://dev.qweather.com/docs/terms/restriction/)、[许可协议入口](https://dev.qweather.com/docs/terms/tos/) |
 | Copernicus GLO-30-F 地形 | 使用指定免费开放版；按许可6(a)/(b)/(c)保留来源／版权、修改产品及责任通知，明确派生。2026-10-12国内按需读取扩展继续使用同一公开AWS COG与免费GLO-30许可，不引入另受访问限制的在线view服务；不得扩大到其它DEM产品。GeoTIFF.js/pngjs以MIT供后端读取及编码，不向小程序加入全国数据包 | [免费许可原文](https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/DEM/resources/license/License-COPDEM-30.pdf)、[AWS数据owner](https://registry.opendata.aws/copernicus-dem/)、[生产及通知责任](../data-pipelines/terrain/README.md) |

@@ -13,7 +13,7 @@ import type {
   SkyGeometryWindowMode,
   SourceSummary,
 } from "@starward/miniapp-contracts";
-import { assertSkyObservationFrames, assertSkyTargetFrames, OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
+import { assertSkyObservationFrames, assertSkyTargetFrames, OBSERVATION_FRAME_FORMAT, totalCloudSupports240Hours } from "@starward/miniapp-contracts";
 import { observationHorizontalFrame } from "@starward/astronomy-core/observation-frame";
 import {
   calculateEquatorialHorizontalAt,
@@ -53,7 +53,7 @@ import type { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog
 import { ComputationCache } from "./computation-cache.ts";
 import { WEATHER_DEADLINES, waitForCaller, withDeadline } from "./provider-deadline.ts";
 import { unavailableWeatherResult } from "./weather-provider.ts";
-import { materialAlertAt, weatherHourAt } from "./weather-hour.ts";
+import { materialAlertAt, projectWeatherAt } from "./weather-hour.ts";
 import { observationFrameTimes } from "./observation-time-axis.ts";
 import { skyJupiterShapeSource, skyPlanetSource, skySaturnRingSource } from "./sky-planet-catalog.ts";
 
@@ -80,7 +80,12 @@ export const ASTRONOMY_CACHE_POLICY = Object.freeze({
 });
 
 function weatherExpiry(weather: WeatherEvidenceResult, now: number, acquiredAfter = now): number {
-  if (!weather.value || ["UNAVAILABLE", "EXPIRED"].includes(weather.state)) return now;
+  const independentCloud = weather.totalCloud?.value && !["UNAVAILABLE", "EXPIRED"].includes(weather.totalCloud.state)
+    && totalCloudSupports240Hours(weather.totalCloud.value.binding, now);
+  const primaryAvailable = weather.value?.length && !["UNAVAILABLE", "EXPIRED"].includes(weather.source.state);
+  if (weather.totalCloud === undefined
+    ? !weather.value || ["UNAVAILABLE", "EXPIRED"].includes(weather.state)
+    : !primaryAvailable && !independentCloud) return now;
   const ttl = weather.state === "PARTIAL" || weather.warningState === "UNAVAILABLE"
     ? ASTRONOMY_CACHE_POLICY.partialWeatherTtlMs
     : ASTRONOMY_CACHE_POLICY.weatherTtlMs;
@@ -88,7 +93,9 @@ function weatherExpiry(weather: WeatherEvidenceResult, now: number, acquiredAfte
     ...weather.sources.map((source) => source.validTo),
     ...weather.modelRuns.map((run) => run.validTo),
     ...weather.alerts.filter((alert) => alert.status === "ACTIVE").map((alert) => alert.expiresAt),
-  ].map((value) => Date.parse(value ?? "")).filter(Number.isFinite);
+    ...(weather.totalCloud?.value ? [weather.totalCloud.value.binding.supports240HoursUntil] : []),
+  ].map((value) => Date.parse(value ?? "")).filter(value => Number.isFinite(value)
+    && (weather.totalCloud === undefined || value >= now));
   return Math.min(now + ttl, ...validity, nextWeatherBoundary(weather, acquiredAfter));
 }
 
@@ -97,11 +104,13 @@ function nextWeatherBoundary(weather: WeatherEvidenceResult, now: number): numbe
     ...(weather.value ?? []).map(row => Date.parse(row.at) + 3_600_000),
     ...weather.sources.map(source => Date.parse(source.validTo ?? "")),
     ...weather.alerts.filter(alert => alert.status === "ACTIVE").map(alert => Date.parse(alert.expiresAt ?? "")),
+    // The 240h-support endpoint is inclusive in the shared pin contract.
+    ...(weather.totalCloud?.value ? [Date.parse(weather.totalCloud.value.binding.supports240HoursUntil) + 1] : []),
   ].filter(end => Number.isFinite(end) && end > now));
 }
 
 // Exact numeric target geometry supersedes the rounded, text-only bearings.
-const SKY_REPORT_TIME_AXIS_CACHE_VERSION = "sky-report-time-axis-v14";
+const SKY_REPORT_TIME_AXIS_CACHE_VERSION = "sky-report-time-axis-v15-cloud-context";
 const PROPOSAL_SKY_WARNING = "该结果只按账号可见的审核中提案坐标计算；场地事实尚未审核，不构成正式点发布或出行建议。";
 
 function digest(value: unknown) {
@@ -265,10 +274,20 @@ function skyProjectionState(decisionState: DataState, complete = true): DataStat
     (decisionState === "FRESH" && !complete) ? "PARTIAL" : decisionState;
 }
 
+type ReceivedWeather = { weather: WeatherEvidenceResult; acquiredAt: number };
+interface WeatherAcquisitionProgress {
+  active: boolean;
+  latest: ReceivedWeather | null;
+  listeners: Set<(value: ReceivedWeather) => void>;
+}
+
 export class AstronomyService implements AstronomyApplicationPort {
   private readonly skyCatalog: SkyCatalogProvider;
   private readonly revisedSkyCatalog = createBsc5pSkyCatalogProvider("bsc5p-bright-stars.v3");
   private readonly weatherCache: ComputationCache<{ weather: WeatherEvidenceResult; acquiredAt: number }>;
+  /** Only live acquisition progress. Final values/TTL remain with weatherCache;
+   * each waiter copies a snapshot and releases its subscription on return. */
+  private readonly weatherProgress = new Map<string, WeatherAcquisitionProgress>();
   private readonly decisionCache: ComputationCache<DecisionComputation>;
   private readonly sceneCache: ComputationCache<SkyReport["skyScene"]>;
   private readonly timeModelCache: ComputationCache<NonNullable<SkyReport["timeModel"]> | null>;
@@ -295,6 +314,10 @@ export class AstronomyService implements AstronomyApplicationPort {
 
   clearCaches() {
     this.generation++;
+    for (const progress of this.weatherProgress.values()) {
+      progress.active = false; progress.latest = null; progress.listeners.clear();
+    }
+    this.weatherProgress.clear();
     this.weatherCache.clear();
     this.decisionCache.clear();
     this.sceneCache.clear();
@@ -331,31 +354,67 @@ export class AstronomyService implements AstronomyApplicationPort {
       throw new Error("formal_spot_not_found");
     signal?.throwIfAborted();
     const weatherKey = digest({ provider: this.weather.key, point: spot.wgs84,
-      localDate: context.localDate, timezone: spot.timezone });
+      localDate: context.localDate, timezone: spot.timezone, totalCloud: context.weatherView.totalCloud ?? null });
     // The acquisition instant belongs to the shared result, not each waiter.
     // A caller joining an in-flight request after an hour boundary must retain
     // the same deadline as the caller that started it.
+    let ownProgress: WeatherAcquisitionProgress | null = null;
     const readWeather = () => this.weatherCache.get(weatherKey,
       async () => {
         const acquiredAt = this.now();
-        const weather = await withDeadline((sharedSignal) => this.weather.getHourly({
-          point: spot.wgs84, localDate: context.localDate, timezone: spot.timezone, signal: sharedSignal,
-        }), WEATHER_DEADLINES.overallMs).catch((error: unknown) => unavailableWeatherResult(
-          this.weather.key, error instanceof Error && error.message === "weather_deadline_exceeded"
-            ? "weather_deadline_exceeded" : "weather_provider_failed"));
-        return { weather, acquiredAt };
+        const progress: WeatherAcquisitionProgress = { active: true, latest: null, listeners: new Set() };
+        ownProgress = progress;
+        // Match the existing active-cache identity bound. Excess uncached work
+        // still has its own local progress; it cannot displace a shared read.
+        if (generation === this.generation && this.weatherProgress.size < ASTRONOMY_CACHE_POLICY.weatherEntries && !this.weatherProgress.has(weatherKey))
+          this.weatherProgress.set(weatherKey, progress);
+        const publish = (weather: WeatherEvidenceResult) => {
+          if (!progress.active || generation !== this.generation) return;
+          const value = { weather, acquiredAt };
+          progress.latest = value;
+          for (const listener of progress.listeners) listener(value);
+        };
+        try {
+          const weather = await withDeadline((sharedSignal) => this.weather.getHourly({
+            point: spot.wgs84, localDate: context.localDate, timezone: spot.timezone, signal: sharedSignal,
+            totalCloud: context.weatherView.totalCloud ?? null, onIndependentResult: publish,
+          }), WEATHER_DEADLINES.overallMs).catch((error: unknown) => {
+            const deadline = error instanceof Error && error.message === "weather_deadline_exceeded";
+            return deadline && progress.latest ? progress.latest.weather : unavailableWeatherResult(
+              this.weather.key, deadline ? "weather_deadline_exceeded" : "weather_provider_failed", [], context.weatherView.totalCloud ?? null);
+          });
+          publish(weather);
+          return { weather, acquiredAt };
+        } finally {
+          progress.active = false; progress.latest = null; progress.listeners.clear();
+          if (this.weatherProgress.get(weatherKey) === progress) this.weatherProgress.delete(weatherKey);
+        }
       },
       (value) => weatherExpiry(value.weather, this.now(), value.acquiredAt));
     const remainingMs = weatherDeadlineAt - this.now();
-    const received = remainingMs <= 0
-      ? { weather: unavailableWeatherResult(this.weather.key, "weather_deadline_exceeded"), acquiredAt: this.now() }
-      : await withDeadline((waiterSignal) => waitForCaller(readWeather(), waiterSignal), remainingMs, signal)
-        .catch((error: unknown) => {
-          signal?.throwIfAborted();
-          return { weather: unavailableWeatherResult(this.weather.key,
-            error instanceof Error && error.message === "weather_deadline_exceeded"
-              ? "weather_deadline_exceeded" : "weather_provider_failed"), acquiredAt: this.now() };
-        });
+    let received: ReceivedWeather;
+    if (remainingMs <= 0) {
+      received = { weather: unavailableWeatherResult(this.weather.key, "weather_deadline_exceeded", [], context.weatherView.totalCloud ?? null), acquiredAt: this.now() };
+    } else {
+      const work = readWeather();
+      // ComputationCache starts its factory in one microtask. Capture the same
+      // acquisition for both its initial waiter and a synchronous JOIN.
+      await Promise.resolve();
+      const progress = ownProgress ?? this.weatherProgress.get(weatherKey);
+      let completedSources = progress?.latest ?? null;
+      const observe = (value: ReceivedWeather) => { completedSources = value; };
+      if (progress?.active) progress.listeners.add(observe);
+      try {
+        received = await withDeadline((waiterSignal) => waitForCaller(work, waiterSignal),
+          Math.max(0, weatherDeadlineAt - this.now()), signal)
+          .catch((error: unknown) => {
+            signal?.throwIfAborted();
+            const deadline = error instanceof Error && error.message === "weather_deadline_exceeded";
+            return deadline && completedSources ? completedSources : { weather: unavailableWeatherResult(this.weather.key,
+              deadline ? "weather_deadline_exceeded" : "weather_provider_failed", [], context.weatherView.totalCloud ?? null), acquiredAt: this.now() };
+          });
+      } finally { progress?.listeners.delete(observe); completedSources = null; }
+    }
     if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
     const { weather, acquiredAt } = received;
     const deliveryBoundary = nextWeatherBoundary(weather, acquiredAt);
@@ -666,14 +725,15 @@ export class AstronomyService implements AstronomyApplicationPort {
           frameTimes.includes(sample.at),
       )
       .map((sample) => {
-        const matchingWeather = weatherHourAt(weatherRows, sample.at);
+        const projected = projectWeatherAt(weather, sample.at, this.now()), matchingWeather = projected.weather;
         return {
           at: sample.at,
           sunAzimuthDeg: sample.sunAzimuthDeg,
           sunAltitudeDeg: sample.sunAltitudeDeg,
           sunAngularDiameterDeg: sample.sunAngularDiameterDeg,
-          weatherAt: matchingWeather?.at ?? null,
-          cloudPercent: matchingWeather?.cloudPercent ?? null,
+          weatherAt: projected.weatherAt,
+          cloudPercent: projected.cloudPercent,
+          ...(projected.cloudEvidence !== undefined ? { cloudEvidence: projected.cloudEvidence } : {}),
           precipitationMm: matchingWeather?.precipitationMm ?? null,
           precipitationProbabilityPercent:
             matchingWeather?.precipitationProbabilityPercent ?? null,
@@ -699,7 +759,7 @@ export class AstronomyService implements AstronomyApplicationPort {
               : sample.sunAltitudeDeg < 0
                 ? "TWILIGHT"
                 : "DAY",
-          state: matchingWeather ? weather.state : "UNAVAILABLE",
+          state: matchingWeather ? weather.state : projected.cloudEvidence ? "PARTIAL" : "UNAVAILABLE",
         };
       });
     const selectedAt = new Date(context.selectedAtUtc);
@@ -894,7 +954,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     );
     const targets = [...eventTargets, ...everydayTargets];
     const catalogCacheKey = this.catalogCacheKey(skyCatalog);
-    const sourceRevision = `${astronomySource.id}:${lunarSource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
+    const sourceRevision = `${astronomySource.id}:${lunarSource.id}:${weather.source.id}${weather.totalCloud ? ":" + weather.totalCloud.source.id : ""}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
     const scoringEvent =
       selectedEvent ??
       (context.targetProfile === "METEOR"
@@ -909,7 +969,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     const baseSamples = new Map(base.samples.map((sample) => [sample.at, sample]));
     const opportunitySlices: OpportunitySliceInput[] = hourlyBase.map((row) => {
       const skySample = baseSamples.get(row.at)!;
-      const matchingWeather = weatherHourAt(weatherRows, row.at);
+      const matchingWeather = projectWeatherAt(weather, row.at, this.now()).weather;
       const profileTargets =
         context.targetProfile === "MILKY_WAY"
           ? (["milky-way-core"] as const)
@@ -1153,6 +1213,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       },
       compass: { state: "UNAVAILABLE", manualOffsetDeg: 0 },
       weatherEvidence: {
+        ...(weather.totalCloud !== undefined ? { totalCloud: weather.totalCloud } : {}),
         timelineRole: weather.timelineRole,
         warningState: weather.warningState,
         ...(weather.warningSource ? { warningSource: weather.warningSource } : {}),

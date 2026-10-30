@@ -35,6 +35,74 @@ test("map cold data failures emit a floating info while inactive and permission 
     body: "观星点数据暂时无法更新，可在页面中重试。", dedupeKey: "map-scene-failed" }));
 });
 
+test("Map raster failures retain only reload recovery and bind it to the offering Map scope", () => {
+  const cases = [
+    { marker: "terrainFailureEpisode.observe", bindings: ["showTerrainFailure"], context: {
+      terrainFailureEpisode: { observe: () => true }, terrainInstallation: { retirementPending: false },
+      terrainRequiresMapRecovery: true, terrainEnabled: true, terrainNativeError: true, mapTerrainLoading: false,
+      mapTerrainFailed: true, terrainFailureHealthy: false, presentedTerrainData: null, terrain: {} } },
+    { marker: "lightFailureEpisode.observe", bindings: ["showLightFailure"], context: {
+      lightFailureEpisode: { observe: () => true }, lightInstallation: { requiresMapRecovery: true, retirementPending: false },
+      lightEnabled: true, lightFailurePending: false, lightReadFailed: true, lightFailureHealthy: false, nightLayer: null } },
+    { marker: "cloudFailureEpisode.observe", bindings: ["showCloudFailure"], context: {
+      cloudFailureEpisode: { observe: () => true }, cloudInstallation: { requiresMapRecovery: true, retirementPending: false },
+      cloudLayerEnabled: true, cloudFailurePending: false, cloudFailed: true, cloudFailureHealthy: false,
+      presentedCloudRaster: null, cloudPresentation: null } },
+  ] as const;
+  for (const item of cases) {
+    const run = effect("../pages/map/index.tsx", item.marker, item.bindings);
+    const notices: any[] = [];
+    const context = { ...item.context, pageVisible: true, rasterFailureScope: "account-A:0:map-old",
+      nativeMap: { pending: false }, nativeViewport: { error: null }, notify: (notice: any) => notices.push(notice) };
+    run(context);
+    assert.equal(notices[0].action.label, "重新加载地图");
+    assert.equal(notices[0].action.scope, "account-A:0:map-old");
+    assert.equal(notices[0].autoDismiss, false, item.marker);
+    run({ ...context, terrainRequiresMapRecovery: false,
+      lightInstallation: { requiresMapRecovery: false }, cloudInstallation: { requiresMapRecovery: false } });
+    assert.equal(notices[1].action.label, "重试");
+    assert.equal(notices[1].autoDismiss, true, "ordinary data retries keep the shared transient feedback rule");
+  }
+});
+
+test("Map scope and visibility cleanup retires raster recovery without removing another task's notice", () => {
+  const run = effect("../pages/map/index.tsx", "clearLayerFailures");
+  let notifications = [
+    { id: "terrain", dedupeKey: "map-terrain-failed" }, { id: "light", dedupeKey: "map-light-failed" },
+    { id: "cloud", dedupeKey: "map-cloud-failed" }, { id: "other", dedupeKey: "map-share-failed" },
+  ];
+  const initial = notifications;
+  const cleanup = run({ useAppStore: { getState: () => ({ notifications,
+    dismissNotification: (id: string) => { notifications = notifications.filter(item => item.id !== id); } }) } });
+  assert.deepEqual(notifications.map(item => item.id), ["other"]);
+  notifications = initial;
+  cleanup();
+  assert.deepEqual(notifications.map(item => item.id), ["other"], "hide, account change and Map replacement retire the old recovery command");
+});
+
+test("a Map raster recovery action rejects hidden, replaced or different-account sessions", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("../pages/map/index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let declaration: ts.VariableDeclaration | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === "layerFailureActionCurrent") declaration = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(declaration);
+  const code = ts.transpileModule(`const ${declaration.getText(source)}; layerFailureActionCurrent(notification);`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const run = (options: { visible?: boolean; account?: string; reset?: number; mapId?: string; pending?: boolean; current?: boolean } = {}) => vm.runInNewContext(code, {
+    notification: { action: { scope: "account-A:0:map-old" } },
+    foregroundLife: { current: { visible: options.visible ?? true } },
+    currentNativeMapRef: { current: { mapId: options.mapId ?? "map-old", pending: options.pending ?? false, isCurrent: () => options.current ?? true } },
+    useAppStore: { getState: () => ({ accountOwnerId: options.account ?? "account-A", mapResetVersion: options.reset ?? 0 }) },
+  });
+  assert.equal(run(), true);
+  for (const options of [{ visible: false }, { account: "account-B" }, { reset: 1 }, { mapId: "map-new" }, { pending: true }, { current: false }])
+    assert.equal(run(options), false, JSON.stringify(options));
+});
+
 test("spot resource notifications stay on the visible owning page and replay on return", () => {
   const run = effect("../features/spot/spot-detail-page.tsx", "spot-detail-resource-failed");
   for (const [segment, overviewError, guidesError, siteError, expected] of [
@@ -226,10 +294,14 @@ test("shared formal spot lookup reports cache fallback only on its visible owner
     /searchState !== "READY" && !\(searchState === "STALE" && staleSearchResource\)/);
 });
 
-test("an open event modal cannot publish a late error from a hidden page", () => {
+test("an open event modal or full page cannot publish a late error from a hidden page", () => {
   const run = effect("./astronomical-event-modal.tsx", 'title: "天文事件数据异常"');
-  const notices: unknown[] = [];
-  const context = { open: true, detailId: "event:1", previewDate: "2026-09-16", detailFailed: true, catalogFailed: false, notify: (notice: unknown) => notices.push(notice) };
-  run({ ...context, pageVisible: false }); assert.equal(notices.length, 0);
-  run({ ...context, pageVisible: true }); assert.equal(notices.length, 1);
+  for (const fullPage of [false, true]) {
+    const notices: Array<{ body: string }> = [];
+    const context = { fullPage, open: true, detailId: "event:1", previewDate: "2026-09-16", detailFailed: true, catalogFailed: false,
+      notify: (notice: { body: string }) => notices.push(notice) };
+    run({ ...context, pageVisible: false }); assert.equal(notices.length, 0);
+    run({ ...context, pageVisible: true }); assert.equal(notices.length, 1);
+    assert.match(notices[0]!.body, fullPage ? /页面中重试/ : /弹窗中重试/);
+  }
 });

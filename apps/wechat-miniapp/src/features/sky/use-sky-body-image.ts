@@ -24,7 +24,8 @@ export function useSkyBodyImage(profile:SkyBodyImageProfile,...[report,at,view,w
     [report?.hourly,at,view?.basis,view?.verticalFovDeg,view?.center?.x,view?.center?.y,width,height,active,profile]);
   const radius=profile.style==='bands'&&disc&&'oblate' in disc?disc.oblate?.majorRadiusPx:disc?.radiusPx;
   const wanted=active&&Boolean(disc?.surfaceOrientation&&radius!==undefined&&radius>=4);
-  const manifest=useResourceQuery({queryKey:profile.queryKey,queryFn:signal=>getBodyImageManifest(profile.kind,signal),
+  // A cached metadata fetch must not keep this render's report and decoded image.
+  const manifest=useResourceQuery({queryKey:profile.queryKey,queryFn:getBodyImageManifest.bind(null,profile.kind),
     enabled:wanted&&!paused,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
   const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,profile.id,

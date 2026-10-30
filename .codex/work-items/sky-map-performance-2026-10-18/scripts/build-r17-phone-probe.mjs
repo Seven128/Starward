@@ -123,8 +123,8 @@ async function instrument(directory,variant){
   });
   await edit('spot-sky-page.tsx',source=>{
     source='import { R17PhoneProbeControls } from "./r17-phone-probe-controls";\n'+source;
-    source=replaceOne(source,'      surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions);\n      attempt.publish(excludedNameKeys);',
-      '      r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions));\n      r17Probe.measure("publishAccepted",()=>attempt.publish!(excludedNameKeys));\n      r17Probe.accepted(frame,paintedSkyObjectsRef.current);','accepted_native_copy');
+    source=replaceOne(source,'      surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive);\n      attempt.publish(excludedNameKeys);',
+      '      r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive));\n      r17Probe.measure("publishAccepted",()=>attempt.publish!(excludedNameKeys));\n      r17Probe.accepted(frame,paintedSkyObjectsRef.current);','accepted_native_copy');
     source=replaceOne(source,'    invalidated: () => {','    invalidated: () => {\n      r17Probe.count("invalidations");','invalidation');
     source=replaceOne(source,'    failed: (error, frame) => {','    failed: (error, frame) => {\n      r17Probe.count("failedFrames");','failed_frame');
     return replaceOne(source,'  </SkyNavigationMenu>;','    <R17PhoneProbeControls onPrepareFov={fov => { if (!skyDisplayCurrent()) return; stopBrowsingAnimation(); setVerticalFovDeg(fov); setSkyControlPanel(null); }} onStart={key => setSkyControlPanel(key.endsWith("-camera") ? null : "time")} />\n  </SkyNavigationMenu>;','probe_controls');

@@ -1,4 +1,4 @@
-import { localParts, observationNightBounds, zonedLocalToUtc } from "@starward/miniapp-contracts";
+import { copyTotalCloudContext, localParts, observationNightBounds, TOTAL_CLOUD_POLICY, unavailableTotalCloud, zonedLocalToUtc } from "@starward/miniapp-contracts";
 export { zonedLocalToUtc } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import type {
@@ -9,6 +9,8 @@ import type {
   SpotId,
   UserId,
   ContributionId,
+  TotalCloudContext,
+  TotalCloudContextOwner,
 } from "@starward/miniapp-contracts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { isHongKongDistrictPoint } from "./hong-kong-boundary.ts";
@@ -100,9 +102,23 @@ export class ObservationContextService {
     private readonly cache: CachePort,
     private readonly config: MiniappRuntimeConfig,
     private readonly eventCatalog: AstronomicalEventCatalogOwner = new AstronomicalEventCatalogOwner(),
+    private readonly totalCloudOwner: TotalCloudContextOwner | null = null,
   ) {}
 
-  async resolve(input: ObservationContextResolveRequest, actor?: UserId | null) {
+  /** The third argument is server-only inheritance from an already admitted
+   * parent Context. Its presence, including undefined totalCloud, forbids a
+   * second latest lookup for another candidate in the same operation. */
+  async resolve(input: ObservationContextResolveRequest, actor?: UserId | null,
+    inherited?: { totalCloud: TotalCloudContext | undefined }) {
+    if (input.totalCloudPolicy !== undefined && input.totalCloudPolicy !== TOTAL_CLOUD_POLICY)
+      throw new Error("observation_cloud_policy_invalid");
+    if (input.restoreTotalCloud !== undefined && (input.totalCloudPolicy !== TOTAL_CLOUD_POLICY || inherited))
+      throw new Error("observation_cloud_binding_invalid");
+    const restoreExpiresAt = input.restoreExpiresAt === undefined ? Infinity : Date.parse(input.restoreExpiresAt);
+    if (!Number.isFinite(restoreExpiresAt) && input.restoreExpiresAt !== undefined)
+      throw new Error("observation_context_recovery_invalid");
+    if (inherited && !Object.prototype.hasOwnProperty.call(inherited, "totalCloud"))
+      throw new Error("observation_cloud_binding_invalid");
     const resolvedLocation =
       input.location.kind === "FORMAL_SPOT"
         ? await this.#formalLocation(input.location.spotId)
@@ -150,7 +166,17 @@ export class ObservationContextService {
         });
     assertSelectedAt(selectedAtUtc, nightStartUtc, nightEndUtc);
     assertEventSelection(input.eventInstanceId, input.localDate, this.eventCatalog);
+    const totalCloud = inherited
+      ? inherited.totalCloud === undefined ? undefined : copyTotalCloudContext(inherited.totalCloud)
+      : input.restoreTotalCloud !== undefined ? await this.#restoreTotalCloud(input.restoreTotalCloud)
+      : input.totalCloudPolicy === TOTAL_CLOUD_POLICY ? await this.#selectTotalCloud() : undefined;
     const now = new Date();
+    // Publication selection is asynchronous. A child cannot borrow that wait
+    // to extend the absolute lifetime of a precise route-origin Context.
+    const expiresAt = Math.min(now.getTime() + ttlSeconds * 1_000,
+      originContext ? Date.parse(originContext.expiresAt) : Infinity,
+      privacyClass === "SESSION_PRECISE" ? restoreExpiresAt : Infinity);
+    if (expiresAt <= now.getTime()) throw new Error("observation_context_expired");
     const fingerprintInput = {
       location: resolvedLocation.location,
       routeOrigin,
@@ -163,6 +189,7 @@ export class ObservationContextService {
         comparisonModels: [] as string[],
         selectedModel: null,
         cloudLayer: "TOTAL" as const,
+        ...(totalCloud === undefined ? {} : { totalCloud }),
       },
       algorithmVersions: {
         astronomy: this.config.astronomyAlgorithmVersion,
@@ -186,15 +213,13 @@ export class ObservationContextService {
       selectedAtUtc,
       privacyClass,
       createdAt: now.toISOString(),
-      expiresAt: new Date(
-        now.getTime() + ttlSeconds * 1_000,
-      ).toISOString(),
+      expiresAt: new Date(expiresAt).toISOString(),
     };
     context.contextFingerprint = fingerprint(context);
     await this.cache.set(
       this.#key(context.contextId),
       context,
-      ttlSeconds,
+      Math.max(1, Math.ceil((expiresAt - now.getTime()) / 1_000)),
     );
     return context.privateProposal ? this.get(context.contextId, actor) : context;
   }
@@ -221,6 +246,10 @@ export class ObservationContextService {
       await this.cache.deleteByPrefix(this.#key(contextId));
       throw new Error("observation_context_expired");
     }
+    // Expired cloud coverage keeps its exact identity and cannot invalidate the
+    // independent place, astronomy or QWeather facts. Consumers own that expiry.
+    // Malformed/newer binding contracts are never dropped into the legacy lane.
+    if (context.weatherView.totalCloud !== undefined) copyTotalCloudContext(context.weatherView.totalCloud);
     if (!context.privateProposal) return context;
     const resolved = await this.#proposalLocation({ kind: "PENDING_PROPOSAL", ...context.privateProposal,
       ...(context.location.kind === "FORMAL_SPOT" ? { formalSpotId: context.location.spotId } : {}) }, actor);
@@ -254,6 +283,10 @@ export class ObservationContextService {
   }
 
   async update(contextId: string, input: ObservationContextUpdateRequest, actor?: UserId | null) {
+    if (input.refreshTotalCloud !== undefined && input.refreshTotalCloud !== true)
+      throw new Error("observation_cloud_refresh_invalid");
+    if (input.totalCloudPolicy !== undefined && (input.totalCloudPolicy !== TOTAL_CLOUD_POLICY || !input.refreshTotalCloud))
+      throw new Error("observation_cloud_policy_invalid");
     const current = await this.get(contextId, actor);
     if (current.revision !== input.expectedRevision)
       throw new Error("observation_context_conflict");
@@ -263,6 +296,21 @@ export class ObservationContextService {
       ? new Date(input.selectedAt).toISOString()
       : current.selectedAtUtc;
     assertSelectedAt(selectedAtUtc, nightStartUtc, nightEndUtc);
+    const previousCloud = current.weatherView.totalCloud;
+    if (input.refreshTotalCloud && previousCloud === undefined && input.totalCloudPolicy !== TOTAL_CLOUD_POLICY)
+      throw new Error("observation_cloud_refresh_requires_policy");
+    let totalCloud = previousCloud === undefined ? undefined : copyTotalCloudContext(previousCloud);
+    if (input.refreshTotalCloud) {
+      const selected = await this.#selectTotalCloud();
+      // A failed attempt to advance the publication is not permission to erase
+      // a previous binding or reset the same Context to QWeather. Keep the
+      // existing durable value/TTL and let the caller retry this CAS intent.
+      // A deliberately unconfigured deployment keeps its explicit legacy
+      // lane. It cannot remove an already committed ECMWF binding.
+      if (selected?.state !== "PINNED" && !(selected === undefined && previousCloud === undefined))
+        throw new Error("observation_cloud_refresh_provider_unavailable");
+      totalCloud = selected;
+    }
     const next: ObservationContext = {
       ...current,
       revision: current.revision + 1,
@@ -279,6 +327,7 @@ export class ObservationContextService {
         comparisonModels: [],
         selectedModel: null,
         cloudLayer: "TOTAL",
+        ...(totalCloud === undefined ? {} : { totalCloud }),
       },
     };
     assertEventSelection(next.eventInstanceId, next.localDate, this.eventCatalog);
@@ -297,6 +346,29 @@ export class ObservationContextService {
       if (Date.parse(saved.expiresAt) <= Date.now()) throw new Error("observation_context_expired");
     }
     return saved;
+  }
+
+  async #selectTotalCloud(): Promise<TotalCloudContext | undefined> {
+    if (!this.totalCloudOwner) return undefined;
+    try {
+      const selected = await this.totalCloudOwner.selectCurrent();
+      return selected === null ? undefined : copyTotalCloudContext(selected);
+    } catch {
+      // The configured lane remains ECMWF even if the publication owner cannot
+      // read or validate it. This does not suppress independent weather facts.
+      return unavailableTotalCloud("READ_FAILED");
+    }
+  }
+
+  async #restoreTotalCloud(value: unknown): Promise<TotalCloudContext> {
+    const binding = copyTotalCloudContext(value);
+    if (binding.state === "UNAVAILABLE") return binding;
+    try {
+      if (!this.totalCloudOwner?.restore) throw new Error("cloud_restore_not_configured");
+      const confirmed = copyTotalCloudContext(await this.totalCloudOwner.restore(binding));
+      if (JSON.stringify(confirmed) !== JSON.stringify(binding)) throw new Error("cloud_restore_mismatch");
+      return confirmed;
+    } catch { throw new Error("observation_cloud_restore_provider_unavailable"); }
   }
 
   #key(contextId: string) {

@@ -31,10 +31,8 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
 
 test("the astronomical event modal keeps its native Back layer outside the visible RootPortal", () => {
   const modal = source("./astronomical-event-modal.tsx");
-  assert.match(modal, /nativeBackBoundary \? <NativeBackBoundary active onBack=\{requestClose\} \/> : null/u);
+  assert.match(modal, /nativeBackBoundary \? <NativeBackBoundary active=\{!fullPage \|\| Boolean\(detailId\)\} onBack=\{requestClose\} \/> : null/u);
   assert.doesNotMatch(modal, /<RootPortal>\s*<NativeBackBoundary/u);
-  const map = source("../pages/map/index.tsx");
-  assert.match(map, /eventModalOpen \|\| eventModalPresent \|\| bottomPresentation === "spot-panel"/u);
-  assert.match(map, /eventModalRef\.current\?\.back\(\)/u);
-  assert.match(map, /nativeBackBoundary=\{false\}/u);
+  // Map now pushes the event page; Plan still embeds this modal. Their actual
+  // two-level Back/selection commands are covered by the event component tests.
 });

@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { retryObservationScene } from "./context-restore";
+import { resourceQueryTestOwner } from "../../hooks/use-resource-query-test-support";
 
 function recovery(privateContext: boolean, status: number, code: string, retained = false, sceneDenied = false) {
   const source = ts.createSourceFile("search.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -22,14 +23,12 @@ function recovery(privateContext: boolean, status: number, code: string, retaine
   });
   const calls: string[] = [];
   const error = new MiniappApiError({ code, message: "服务端拒绝本次读取", recovery: [], retryable: false, requestId: "synthetic" }, status);
-  const querySource = ts.createSourceFile("query.ts", readFileSync(new URL("../../hooks/use-resource-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  const queryFunction = querySource.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useResourceQuery")!;
   const previous = { data: { contextId: "usable" } };
-  const useResourceQuery = vm.runInNewContext(ts.transpileModule(queryFunction.getText(querySource).replace(/^export /, "") + "; useResourceQuery;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+  const useResourceQuery = resourceQueryTestOwner({
     useQuery: () => ({ data: retained ? previous : undefined, error: sceneDenied ? null : error, isFetching: false }), useEffect: () => {}, recordAcceptanceDiagnostic: () => {},
     useQueryClient: () => ({ getQueryState: () => undefined }),
   });
-  const contextQuery = useResourceQuery({ queryKey: ["search-observation-context"], queryFn: () => {} });
+  const contextQuery = useResourceQuery({ queryKey: ["search-observation-context"], queryFn: async () => undefined });
   assert.equal(contextQuery.isError, !retained); assert.equal(contextQuery.refreshError, retained && !sceneDenied ? error : undefined);
   const scope = { MiniappApiError, observationContext: privateContext ? { privateProposal: {} } : {},
     contextQuery,

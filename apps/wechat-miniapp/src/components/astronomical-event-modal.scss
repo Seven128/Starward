@@ -223,3 +223,22 @@
   .event-modal-detail__article > .type-section { margin: 0; font-size: 18Px; font-weight: 600; line-height: 26Px; }
   .event-modal-detail__article > .type-article { font-size: 14Px; line-height: 24Px; }
 }
+
+// Map browsing uses the native page route, while plan selection keeps the modal shell.
+.event-modal.event-modal--page {
+  padding: 0; display: block; background: var(--canvas);
+  --event-page-safe-top: calc(env(safe-area-inset-top) + 56Px);
+  --event-page-title-top: env(safe-area-inset-top);
+  .event-modal__shell {
+    position: absolute; inset: var(--event-page-safe-top) 0 0; width: 100%; max-width: none;
+    height: auto; max-height: none; border: 0; border-radius: 0; box-shadow: none;
+    opacity: 1; transform: none; transition: none;
+  }
+  .event-modal__header { padding-left: 12Px; padding-right: 16Px; }
+  .event-modal__icon-button:first-child { margin-left: 0; }
+  .event-modal__icon-button > .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
+  .event-modal__list .event-modal__content { padding-bottom: max(40Px, env(safe-area-inset-bottom)); }
+  .notification-host { top: calc(var(--event-page-safe-top) + 72Px); }
+}
+.event-page-brand { position: absolute; top: var(--event-page-title-top); left: 16Px; height: 40Px; display: flex; align-items: center; color: var(--text-primary); font-size: 20Px; font-weight: 600; line-height: 24Px; }
+.theme-day .event-page-brand { color: #1b2636; font-size: 18Px; letter-spacing: -.6Px; }

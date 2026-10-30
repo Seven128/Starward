@@ -43,3 +43,22 @@ test("account, reset, selection and context changes invalidate the old reading r
     assert.equal(sourceReadingIdentityMatches(identity, { ...identity, ...changed }), false);
   }
 });
+
+test("native cloud intervals survive the real reading transfer without becoming source hours", () => {
+  const interval = { start: "2026-10-01T00:00:00Z", end: "2026-10-01T03:00:00Z" };
+  const input = { identity, document: { title: "天气来源", sources: [source], sections: [
+    { kind: "forecast", starts: [], cloudIntervals: [interval], timezone: "Asia/Shanghai" },
+    { kind: "forecast", starts: [], cloudIntervals: [], timezone: "Asia/Shanghai" },
+  ] } };
+  const read = readSourceReadingEnvelope(input);
+  assert(read);
+  assert.deepEqual(read.document.sections, input.document.sections);
+  assert.notEqual(read.document.sections?.[0], input.document.sections[0]);
+  interval.end = "2026-10-01T00:00:00Z";
+  const first = read.document.sections?.[0];
+  assert(first?.kind === "forecast"); assert.equal(first.cloudIntervals?.[0]?.end, "2026-10-01T03:00:00Z");
+  for (const end of ["2026-09-30T23:00:00Z", "2026-02-30T00:00:00Z", "bad"]) {
+    input.document.sections[0]!.cloudIntervals = [{ start: "2026-10-01T00:00:00Z", end }];
+    assert.equal(readSourceReadingEnvelope(input), null);
+  }
+});

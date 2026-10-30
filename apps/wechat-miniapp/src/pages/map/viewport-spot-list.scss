@@ -1,0 +1,81 @@
+@use "../../components/spot-identity-card.scss";
+
+.map-viewport-spots {
+  position: absolute;
+  z-index: 31;
+  left: 16Px;
+  bottom: var(--map-viewport-list-bottom, max(16Px, env(safe-area-inset-bottom)));
+  width: 66.666667%;
+  color: var(--text-secondary);
+  // Map supplies the actual banner bottom + spacing and bottom safe boundary.
+  // Keep four readable cards; only their native scroll viewport contracts.
+  --map-viewport-card-height: max(0Px, min(440Px, calc(var(--primary-page-height, 100vh) - var(--map-viewport-list-top, 254Px) - var(--map-viewport-list-bottom, 34Px) - 54Px)));
+}
+.map-viewport-spots__heading {
+  height: 28Px;
+  padding: 0 3Px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8Px;
+  font-size: 12Px;
+  line-height: 18Px;
+  color: var(--text-tertiary);
+}
+.map-viewport-spots__heading > text:last-child { font-size: 11Px; }
+.map-viewport-spots__retry {
+  min-height: 28Px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11Px;
+  line-height: 18Px;
+}
+.map-viewport-spots__retry::after { border: 0; }
+.map-viewport-spots__scroller { width: 100%; }
+.map-viewport-spots__scroller--cards { height: var(--map-viewport-card-height); }
+.map-viewport-spots__cards { display: flex; flex-direction: column; gap: 8Px; min-height: 440Px; }
+.map-viewport-spots__card { min-width: 0; }
+.map-viewport-spots .spot-identity-card { min-height: 104Px; }
+.map-viewport-spots .spot-identity-card[disabled] { opacity: 1; color: inherit; }
+.map-viewport-spots .spot-identity-card__copy { min-height: 104Px; padding: 14Px 16Px; }
+.map-viewport-spots .spot-identity-card__title { letter-spacing: 0; }
+.map-viewport-spots .spot-identity-card--with-media .spot-identity-card__title { max-width: 88%; }
+.map-viewport-spots .spot-identity-card__address { max-width: 100%; margin-top: 7Px; column-gap: 5Px; }
+.map-viewport-spots .spot-identity-card__address-text { line-height: 19Px; }
+.map-viewport-spots__pagination { height: 26Px; display: flex; justify-content: center; align-items: center; gap: 3Px; }
+.map-viewport-spots__page {
+  position: relative;
+  width: 26Px;
+  min-width: 26Px;
+  height: 44Px;
+  min-height: 44Px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.map-viewport-spots__page::after { border: 0; }
+.map-viewport-spots__dot { width: 6Px; height: 6Px; border-radius: 50%; background: var(--border-strong); }
+.map-viewport-spots__page--current .map-viewport-spots__dot { background: var(--text-secondary); }
+.map-viewport-spots__state { background: var(--surface); border-radius: 18Px; overflow: hidden; }
+.map-viewport-spots__state--waiting { min-height: var(--map-viewport-card-height); display: flex; align-items: center; }
+.map-viewport-spots__state .status-panel { margin: 0; }
+.theme-day .map-viewport-spots__heading { color: #60737f; }
+.theme-day .map-viewport-spots__heading > text:last-child { color: #7b8d95; }
+.theme-day .map-viewport-spots__dot { background: #b9c9cf; }
+.theme-day .map-viewport-spots__page--current .map-viewport-spots__dot { background: #547983; }
+
+// Alternating names restart an interrupted phase without remounting its photos.
+@for $run from 0 through 1 {
+  @keyframes viewport-spot-leaving-#{$run} { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-52Px); opacity: 0; } }
+  @keyframes viewport-spot-entering-#{$run} { from { transform: translateX(-52Px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes viewport-spot-paging-#{$run} { from { transform: translateX(var(--viewport-page-from)); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+}

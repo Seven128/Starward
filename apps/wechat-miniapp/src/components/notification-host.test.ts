@@ -53,6 +53,50 @@ test("notification recovery reaches primary pages through their owner and ordina
   } finally { await h.dispose(); }
 });
 
+test("floating recovery calls the current domain handler once and retires the notice", async () => {
+  const { h, owner } = await notificationOwner("map");
+  h.modules["@/components/shared-button-press"].SharedButton = h.leaf("button");
+  // The compiled component reads this visual port at render time; its state
+  // and lifecycle remain the production component.
+  const domainCalls: string[] = [];
+  const { enqueueNotification } = h.load("state/notification.ts");
+  Object.assign(h.taro, { createIntersectionObserver: () => ({ relativeTo() { return this; }, relativeToViewport() { return this; },
+    observe(_selector: string, callback: (result: { intersectionRatio: number }) => void) { callback({ intersectionRatio: 1 }); }, disconnect() {} }) });
+  h.store.setState({ notifications: enqueueNotification([], { owner: "map-cloud", placement: "floating", pageRoute: "pages/map/index",
+    tone: "info", title: "云量预报更新失败", body: "保留仍有效的覆盖。", action: { label: "重试" }, dedupeKey: "map-cloud-failed" }, 1),
+    dismissNotification: (id: string) => h.store.setState({ notifications: h.store.getState().notifications.filter((item: any) => item.id !== id) }) });
+  function Fixture() { return h.create(owner.FloatingNotificationHost, { actionHandlers: { "map-cloud-failed": () => domainCalls.push("cloud") } }); }
+  try {
+    await h.render(Fixture);
+    const button = h.leaves.get("button")?.find(props => props["data-od-id"] === "notification-action");
+    assert.ok(button);
+    await h.update(() => { button.onClick(); button.onClick(); });
+    assert.deepEqual(domainCalls, ["cloud"]); assert.equal(h.calls.length, 0, "domain retry is not a navigation action");
+    await h.update(() => { for (const timer of [...h.timers.values()]) if (timer.delay === 160) timer.callback(); });
+    assert.equal(h.store.getState().notifications.length, 0);
+  } finally { await h.dispose(); }
+});
+
+test("a retired floating recovery cannot dispatch its old action into the successor task", async () => {
+  const { h, owner } = await notificationOwner("map");
+  h.modules["@/components/shared-button-press"].SharedButton = h.leaf("button");
+  const { enqueueNotification } = h.load("state/notification.ts");
+  let retries = 0;
+  h.store.setState({ notifications: enqueueNotification([], { owner: "map-terrain", placement: "floating", pageRoute: "pages/map/index",
+    tone: "info", title: "地形暂不可用。", body: "请重新加载地图。", action: { label: "重新加载地图" },
+    autoDismiss: false, dedupeKey: "map-terrain-failed" }, 1),
+    dismissNotification: (id: string) => h.store.setState({ notifications: h.store.getState().notifications.filter((item: any) => item.id !== id) }) });
+  function Fixture() { return h.create(owner.FloatingNotificationHost, { actionHandlers: { "map-terrain-failed": () => retries++ } }); }
+  try {
+    await h.render(Fixture);
+    const oldAction = h.leaves.get("button")?.find(props => props["data-od-id"] === "notification-action");
+    assert.ok(oldAction);
+    await h.update(() => h.store.setState({ notifications: [] }));
+    await h.update(() => oldAction.onClick());
+    assert.equal(retries, 0, "hide, resolution or a changed Map scope retires the queued command before dispatch");
+  } finally { await h.dispose(); }
+});
+
 test("the production floating host stops rendering on hide, resumes on show, and owns only its effective foreground", async () => {
   let safeTop: number | undefined = 97;
   const h = await pagePresentationForTest({ primary: "map", modules: {
@@ -144,7 +188,8 @@ test("page and event-modal composition keeps one floating host outside scroll co
         for (const eventModalPresent of [false, true]) {
           const conditionalCount = conditionalHosts.reduce((count, child) => {
             const code = ts.transpileModule(child.expression!.getText(ast), { compilerOptions: { jsx: ts.JsxEmit.React } }).outputText;
-            const value = vm.runInNewContext(code, { eventModalPresent, pageVisible: true, FloatingNotificationHost: "Host", React: { createElement: () => 1 } });
+            const value = vm.runInNewContext(code, { eventModalPresent, pageVisible: true, FloatingNotificationHost: "Host", React: { createElement: () => 1 },
+              retryCloudLayer() { throw Error("composition_probe_must_not_retry"); }, retryTemporalFailure() { throw Error("composition_probe_must_not_retry"); } });
             return count + Number(Boolean(value));
           }, 0);
           // Compatibility routes leave after closing; ordinary callers resume their page host.
@@ -259,6 +304,13 @@ test("floating entries expire, animate, preserve close across page hide, and can
   assert.equal(exiting.commits(), 1, "cancelled exit cannot commit twice");
   const actionable = mount({ action: { label: "重试" } }); actionable.render();
   assert.equal(actionable.timers[0]?.delay, 3000, "an actionable floating notice still expires");
+  const recovery = mount({ action: { label: "重新加载地图" }, autoDismiss: false });
+  recovery.render(); recovery.advance(30_000); recovery.render();
+  assert.equal(recovery.timers.length, 0, "an unresolved reload recovery remains reachable without a timeout");
+  recovery.render().children[0].props.onDismiss(); recovery.render();
+  assert.equal(recovery.timers.at(-1)!.delay, 160, "explicit close retains the adopted exit animation");
+  recovery.timers.at(-1)!.callback();
+  assert.equal(recovery.commits(), 1);
   const paused = mount();
   paused.render(); paused.advance(1200);
   paused.render().props.onTouchStart(); paused.render();

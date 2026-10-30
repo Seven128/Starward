@@ -23,6 +23,26 @@ const OPTICAL_HIPS_SOURCE_PRESSURE_BYTES = 20 * 1024 * 1024;
 const EMPTY_CANDIDATES: ReturnType<typeof selectPublishedOpticalCandidates> = [];
 const EMPTY_TILES: readonly SkyHipsCanvasTile[] = [];
 
+/** Disabled queries also remain cached; keep their fetch outside render scope. */
+async function queryOpticalHipsIndexes(publication:Awaited<ReturnType<typeof getOpticalHipsManifest>>|undefined,
+  candidates:ReturnType<typeof selectPublishedOpticalCandidates>,reference:ReturnType<typeof selectSkyHipsTiles>|null,
+  signal?:AbortSignal){
+  const data=[] as Awaited<ReturnType<typeof getOpticalHipsIndex>>[];
+  let failed=false;
+  if(reference?.state!=="SELECTED")return {data,failed};
+  for(const candidate of candidates){
+    if(signal?.aborted)throw new Error("optical_index_aborted");
+    const settled=await Promise.allSettled(candidate.dirs.map(dir=>
+      getOpticalHipsIndex(publication!,candidate.sourceId,candidate.order,dir,signal)));
+    if(signal?.aborted)throw new Error("optical_index_aborted");
+    data.push(...settled.flatMap(result=>result.status==="fulfilled"?[result.value]:[]));
+    failed ||=settled.some(result=>result.status==="rejected");
+    const selected=resolvePublishedOpticalTiles(candidates,data,reference);
+    if(publishedOpticalCoverageComplete(reference,selected))break;
+  }
+  return {data,failed};
+}
+
 /** Optional optical layer. Missing publication or missing coverage never
  * withdraws the independent stars, targets or registered deep-sky image. */
 export function useSkyOpticalHips(report:Pick<SkyGeometryReport,"hourly"|"observationFrames">|undefined,
@@ -49,22 +69,7 @@ export function useSkyOpticalHips(report:Pick<SkyGeometryReport,"hourly"|"observ
   const referenceKey=reference?.state==="SELECTED"?`${reference.order}:${reference.pixels.join(":")}`:"";
   const indexes=useResourceQuery({
     queryKey:["optical-hips-index",publication?.publicationHash,shardKey,referenceKey],
-    queryFn:async signal=>{
-      const data=[] as Awaited<ReturnType<typeof getOpticalHipsIndex>>[];
-      let failed=false;
-      if(reference?.state!=="SELECTED")return {data,failed};
-      for(const candidate of candidates){
-        if(signal?.aborted)throw new Error("optical_index_aborted");
-        const settled=await Promise.allSettled(candidate.dirs.map(dir=>
-          getOpticalHipsIndex(publication!,candidate.sourceId,candidate.order,dir,signal)));
-        if(signal?.aborted)throw new Error("optical_index_aborted");
-        data.push(...settled.flatMap(result=>result.status==="fulfilled"?[result.value]:[]));
-        failed ||=settled.some(result=>result.status==="rejected");
-        const selected=resolvePublishedOpticalTiles(candidates,data,reference);
-        if(publishedOpticalCoverageComplete(reference,selected))break;
-      }
-      return {data,failed};
-    },
+    queryFn:queryOpticalHipsIndexes.bind(null,publication,candidates,reference),
     enabled:!paused&&trialActive&&candidates.length>0&&reference?.state==="SELECTED",
     staleTime:Infinity,structuralSharing:false,
   });

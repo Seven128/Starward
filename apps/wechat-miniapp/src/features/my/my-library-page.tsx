@@ -6,6 +6,7 @@ import { SharedButton as Button } from "@/components/shared-button-press";
 import { useEffect, useRef, useState } from "react";
 import { MyPlanCard } from "./my-plan-card";
 import { CustomNav } from "@/components/custom-nav";
+import { PrimaryBookmark } from "@/components/primary-bookmark";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { useAccountResourceQuery } from "@/hooks/use-account-resource-query";
@@ -113,9 +114,12 @@ export function MyLibraryPage({ onReturnMap = () => openPrimaryPage("/pages/map/
       <FloatingNotificationHost />
       {login.dialog}
       <View data-control="my-account-header">
-        <CustomNav title="" odId="my-account-header" back backPresentation="map"
-          backOdId="my-return-map" backAction={returnMap} />
+        <CustomNav title="" odId="my-account-header" />
       </View>
+      <PrimaryBookmark destination="map" disabled={!page.visible} onClick={() => {
+        void Promise.resolve().then(returnMap).catch(() => notify({ owner: "my", placement: "floating", tone: "warning",
+          title: "地图暂未打开", body: "请重试，当前内容已保留。", dedupeKey: "my-map-navigation-failed" }));
+      }} />
       <ScrollView
         scrollY
         className="my-page__scroll"

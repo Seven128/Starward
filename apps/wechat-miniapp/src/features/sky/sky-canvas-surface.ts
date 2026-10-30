@@ -85,7 +85,8 @@ export interface SkyCanvasSurface<Image = object> {
   readonly gl: WebGLRenderingContext;
   isCurrent(display: SkyDisplayCanvas, size: CanvasSize, pixelRatio: number, selectionDisplay?: SkyDisplayCanvas): boolean;
   /** Publish frame/source/pick identity only after this synchronous copy succeeds. */
-  present(reticle?: SkyCanvasReticle | null, captions?: readonly SkyCanvasCaption[]): void;
+  /** A live selection can temporarily lack a qualified exact-time reticle. */
+  present(reticle?: SkyCanvasReticle | null, captions?: readonly SkyCanvasCaption[], selectionActive?: boolean): void;
   clearSelection(): void;
   disableSelectionLayer(): void;
   measureText(text: string, font: string, lineHeight: number, letterSpacing?:number): SkyCanvasTextMetrics;
@@ -215,7 +216,7 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
         return { width: metrics.width, left: metrics.left, right: metrics.right,
           ascent: metrics.ascent, descent: metrics.descent };
       },
-      present(reticle, captions = []) {
+      present(reticle, captions = [], selectionActive = Boolean(reticle)) {
         if (disposed || ownedGl.isContextLost() || display.width !== width || display.height !== height ||
           ownedNode.width !== width || ownedNode.height !== height)
           throw new Error("sky_canvas_surface_invalidated");
@@ -267,10 +268,10 @@ export function createSkyCanvasSurface<Image>(display: SkyDisplayCanvas, size: C
           } finally { context.restore(); }
         }
         if (selectionLayer) {
-          try { selectionLayer.paint(reticle); }
+          try { selectionLayer.paint(reticle, selectionActive); }
           catch (error) { reportRuntimeError("native", "sky_selection_layer_paint_failed", error); retireSelection(); }
         }
-        if (!selectionLayer && reticle) paintSkySelectionReticle(context, reticle, pixelRatio);
+        if (!selectionLayer && selectionActive && reticle) paintSkySelectionReticle(context, reticle, pixelRatio);
       },
       clearSelection() {
         try { selectionLayer?.clear(); }

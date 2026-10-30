@@ -59,12 +59,27 @@ export interface MiniappRuntimeConfig {
   darkSkyDatasetVersion: string;
   terrainPublicationRoot?: string | null;
   nightLightPublicationRoot?: string | null;
+  /** Development numeric publication, not complete source/display/OSS readiness. */
+  cloudPublicationRoot?: string | null;
   mapStaticPublication?: { directory: string; publicationHash: string } | null;
   skyCatalogVersion: string;
   astronomyAlgorithmVersion: string;
   opportunityRuleVersion: string;
   tripDecisionRuleVersion: string;
   features: FeatureFlags;
+}
+
+export function assertCloudPublicationRuntime(
+  config: Pick<MiniappRuntimeConfig, "releaseProfile" | "cloudPublicationRoot">,
+  injectedRoot?: string | null,
+): void {
+  // The current ready-v1 marker qualifies numeric bytes only. Direct API/worker
+  // construction must retain the same boundary as environment configuration.
+  for (const root of [config.cloudPublicationRoot, injectedRoot]) {
+    if (!root) continue;
+    if (!path.isAbsolute(root)) throw new Error("runtime_config_invalid:MINIAPP_CLOUD_PUBLICATION_ROOT");
+    if (config.releaseProfile !== "LOCAL") throw new Error("cloud_numeric_publication_requires_local");
+  }
 }
 
 function value(name: string): string | null {
@@ -121,6 +136,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   if (terrainPublicationRoot && !path.isAbsolute(terrainPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_TERRAIN_PUBLICATION_ROOT");
   const nightLightPublicationRoot = value("MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
   if (nightLightPublicationRoot && !path.isAbsolute(nightLightPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
+  const cloudPublicationRoot = value("MINIAPP_CLOUD_PUBLICATION_ROOT");
   const mapStaticRoot = value("MINIAPP_MAP_STATIC_PUBLICATION_ROOT"), mapStaticHash = value("MINIAPP_MAP_STATIC_PUBLICATION_HASH");
   if (Boolean(mapStaticRoot) !== Boolean(mapStaticHash) || mapStaticRoot && !path.isAbsolute(mapStaticRoot) ||
       mapStaticHash && !/^[a-f0-9]{64}$/u.test(mapStaticHash)) throw new Error("runtime_config_invalid:MINIAPP_MAP_STATIC_PUBLICATION");
@@ -131,6 +147,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     ["LOCAL", "TRIAL", "COMMERCIAL"] as const,
     "LOCAL",
   );
+  assertCloudPublicationRuntime({ releaseProfile, cloudPublicationRoot });
   const storageMode = oneOf(
     "MINIAPP_STORAGE_MODE",
     value("MINIAPP_STORAGE_MODE"),
@@ -272,6 +289,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     darkSkyDatasetVersion,
     terrainPublicationRoot,
     nightLightPublicationRoot,
+    cloudPublicationRoot,
     mapStaticPublication,
     skyCatalogVersion:
       value("MINIAPP_SKY_CATALOG_VERSION") ?? "iau-bright-targets-2026.1",

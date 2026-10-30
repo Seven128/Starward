@@ -5,6 +5,8 @@ import vm from "node:vm";
 import ts from "typescript";
 import { primaryNavigationLayout } from "@/navigation/primary-navigation";
 import type { MapPanelReturnPosition } from "./sky-return-state";
+import { createMapLayerInspectionTestBoundaries, createMapPageTestBoundaries } from "./map-page-test-support";
+import { createResourceFailureEpisode } from "../../services/resource-failure-episode";
 
 const source = readFileSync(new URL("./map-layer-sheet.tsx", import.meta.url), "utf8");
 function harness(rows: unknown[], input = source) {
@@ -58,7 +60,7 @@ test("long real-data evidence leaves the existing Map tools reachable", () => {
 function panelReturnHarness() {
   const tree = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = new Set(["setBottomPresentation", "openLayerSheet", "closeLayerSheet"]);
+  const names = new Set(["setBottomPresentation", "openLayerSheet", "closeLayerSheet", "showTerrainFailure", "showLightFailure", "showCloudFailure"]);
   const declarations: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && names.has(node.name.text)) {
@@ -69,7 +71,19 @@ function panelReturnHarness() {
   visit(tree); assert.equal(declarations.length, names.size);
   const saved: MapPanelReturnPosition = { identity: "spot:a", top: 760, galleryIdentity: "spot:a:photo", left: 30,
     anchor: { id: "spot-panel-reading-overview", offset: -120 } };
+  const notices: Array<{ owner: string; action: { label: string }; dedupeKey: string }> = [];
+  const retryCalls: string[] = [];
+  const terrainFailureEpisode = createResourceFailureEpisode(), lightFailureEpisode = createResourceFailureEpisode(), cloudFailureEpisode = createResourceFailureEpisode();
   const state = {
+    ...createMapPageTestBoundaries().scope, ...createMapLayerInspectionTestBoundaries(),
+    terrainFailureEpisode, lightFailureEpisode, cloudFailureEpisode,
+    terrainInstallation: { retirementPending: false }, terrainRequiresMapRecovery: false, presentedTerrainData: null,
+    lightInstallation: { error: null as unknown, retirementPending: false, presentedData: null, requiresMapRecovery: false },
+    nativeViewport: { error: null }, cloudPresentation: undefined,
+    notify: (notice: typeof notices[number]) => notices.push(notice),
+    retryTerrainLayer: () => { retryCalls.push("terrain"); terrainFailureEpisode.retry(); },
+    retryLightLayer: () => { retryCalls.push("light"); lightFailureEpisode.retry(); },
+    retryCloudLayer: () => { retryCalls.push("cloud"); cloudFailureEpisode.retry(); },
     bottomPresentation: "spot-panel", panelExtent: "medium", selectedSpotId: "spot:a", analysisOverlay: "TOTAL_CLOUD",
     returnPosition: { current: null as MapPanelReturnPosition | null }, panelPosition: { current: saved },
     extentBeforeLayer: { current: null }, bottomPresentationRef: { current: "spot-panel" },
@@ -86,7 +100,7 @@ function panelReturnHarness() {
     "\n({setBottomPresentation, openLayerSheet, closeLayerSheet});", {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, state) as { setBottomPresentation(value: string): void; openLayerSheet(): void; closeLayerSheet(): void };
-  return { state, owner, saved };
+  return { state, owner, saved, notices, retryCalls };
 }
 
 for (const close of ["back", "trigger"] as const) test(`layer ${close} restores the suspended panel's latest reading position`, () => {
@@ -109,4 +123,65 @@ test("a layer return cannot reopen a replaced selection or fabricate a panel", (
   absent.state.bottomPresentationRef.current = "none";
   absent.owner.openLayerSheet(); absent.owner.closeLayerSheet();
   assert.equal(absent.state.bottomPresentation, "none"); assert.equal(absent.state.returnPosition.current, null);
+});
+
+test("opening and closing the sheet preserves all-off intent", () => {
+  const { state, owner } = panelReturnHarness();
+  state.analysisOverlay = "NONE";
+  owner.openLayerSheet(); assert.equal(state.analysisOverlay, "NONE");
+  owner.closeLayerSheet(); owner.openLayerSheet();
+  assert.equal(state.analysisOverlay, "NONE", "inspection must not silently enable cloud");
+});
+
+test("reopening the layer controls restores current terminal recovery without retrying or resetting failure episodes", () => {
+  const { state, owner, notices, retryCalls } = panelReturnHarness();
+  Object.assign(state, { terrainEnabled: true, mapTerrainFailed: true, lightEnabled: true, lightReadFailed: true,
+    cloudLayerEnabled: true, cloudFailed: true });
+  const episodes = [state.terrainFailureEpisode, state.lightFailureEpisode, state.cloudFailureEpisode];
+  const failure = { scope: "current-map", active: true, pending: false, failed: true, healthy: false };
+  for (const episode of episodes) assert.equal(episode.observe(failure), true, "the original error was already presented");
+  const expected = [["map-terrain", "map-terrain-failed", "重试"], ["map-light", "map-light-failed", "重试"], ["map-cloud", "map-cloud-failed", "重试"]];
+  owner.openLayerSheet();
+  assert.deepEqual(notices.map(notice => [notice.owner, notice.dedupeKey, notice.action.label]), expected);
+  for (const episode of episodes) assert.equal(episode.observe(failure), false, "inspection must not rearm automatic error reporting");
+  assert.deepEqual(retryCalls, [], "inspection must not dispatch transport recovery");
+  notices.length = 0;
+  owner.openLayerSheet();
+  assert.equal(notices.length, 0, "closing the controls does not re-present an error");
+  owner.openLayerSheet();
+  assert.deepEqual(notices.map(notice => [notice.owner, notice.dedupeKey, notice.action.label]), expected,
+    "a later explicit inspection exposes the actions even after the old transient messages disappeared");
+  assert.deepEqual(retryCalls, []);
+});
+
+test("layer inspection waits for terminal failures and preserves removal recovery when a toggle is already off", () => {
+  const { state, owner, notices } = panelReturnHarness();
+  Object.assign(state, { terrainEnabled: true, mapTerrainFailed: true, mapTerrainLoading: true,
+    lightEnabled: true, lightReadFailed: true, lightFailurePending: true,
+    cloudLayerEnabled: true, cloudFailed: true });
+  state.cloud.isFetching = true;
+  owner.openLayerSheet(); assert.equal(notices.length, 0, "pending work has no new terminal recovery to present");
+  owner.closeLayerSheet();
+  Object.assign(state, { terrainEnabled: false, terrainNativeError: Error("remove failed"), mapTerrainLoading: false,
+    lightEnabled: false, lightFailurePending: false, cloudLayerEnabled: false });
+  state.lightInstallation.error = Error("remove failed");
+  owner.openLayerSheet();
+  assert.deepEqual(notices.map(notice => [notice.owner, notice.action.label]),
+    [["map-terrain", "重新加载地图"], ["map-light", "重新加载地图"]], "off intent cannot erase a failed native removal");
+});
+
+test("a hidden, replaced or My-owned map cannot reopen layer controls or re-present errors", () => {
+  for (const retired of ["hidden", "native-map", "my"] as const) {
+    const { state, owner, notices } = panelReturnHarness();
+    state.mapTerrainFailed = state.terrainEnabled = true;
+    if (retired === "hidden") state.pageVisible = false;
+    else if (retired === "native-map") state.nativeMap.isCurrent = () => false;
+    else state.primaryNavigation.controller.openMy();
+    const generation = state.privateTransitionGeneration.current;
+    owner.openLayerSheet();
+    assert.equal(state.bottomPresentation, "spot-panel", retired);
+    assert.equal(state.privateTransitionGeneration.current, generation, "retired input cannot invalidate the current presentation");
+    assert.deepEqual(notices, []);
+    state.primaryNavigation.controller.dispose();
+  }
 });

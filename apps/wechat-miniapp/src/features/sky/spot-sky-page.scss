@@ -2315,14 +2315,18 @@
 .sky-time-retry { margin: 0; padding: 0 8Px; min-height: 44Px; width: auto; display: inline-flex; align-items: center;
   font-size: 14Px; color: var(--text-primary); background: transparent; border: 0; }
 .sky-time-retry::after { border: 0; }
-/* Seven 44px targets, four 4px separators and shell padding need 390px. */
-@media (max-width: 389px) {
+/* Keep the adopted single row by reducing only horizontal whitespace:
+   324px of controls + 40px shell margins + 2px border + 8px minimum padding. */
+@media (min-width: 374px) and (max-width: 390px) {
+  .sky-time-controls { padding-left: calc(50vw - 183Px); padding-right: calc(50vw - 183Px); }
+}
+@media (max-width: 373.99px) {
   .sky-time-controls__grid { grid-template-columns: 1fr; gap: 4Px; }
   .sky-time-center-actions { flex-direction: row; margin: 4Px 0; }
 }
 /* Keep the ruler and cancel action inside short viewports while preserving
    the fixed feedback row and every 44px time-control target. */
-@media (max-width: 389px) and (max-height: 639px) {
+@media (max-width: 373.99px) and (max-height: 639px) {
   .sky-time-controls { padding: 4Px 12Px; }
   .sky-time-controls__grid { gap: 0; }
   .sky-time-center-actions { margin: 1Px 0; }

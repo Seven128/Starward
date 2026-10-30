@@ -33,8 +33,11 @@ function queryHarness(request: (binding: any, signal?: AbortSignal) => Promise<a
     } }, react: { useEffect() {} }, "@/services/acceptance-diagnostics": { recordAcceptanceDiagnostic() {} },
   }).useResourceQuery;
   let ref: { current: unknown } | undefined;
+  let pendingEffect: (() => (() => void)) | undefined, committedEffect: (() => (() => void)) | undefined;
+  let cleanup: (() => void) | undefined;
   const useSkyTimeTargetQuery = moduleValue("./sky-time-target-query.ts", {
-    react: { useRef: (value: unknown) => ref ??= { current: value } },
+    react: { useRef: (value: unknown) => ref ??= { current: value },
+      useEffect: (effect: () => (() => void)) => { pendingEffect = effect; } },
     "../../hooks/use-resource-query": { useResourceQuery },
     "../../services/sky-celestial-client": { getSkyTargetInstant: request },
     "../../services/sky-target-instant-response": { skyTargetInstantQueryKey },
@@ -54,9 +57,15 @@ function queryHarness(request: (binding: any, signal?: AbortSignal) => Promise<a
     ${statements.join("\n")} return fineTarget; });`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
   { useResourceQuery, useSkyTimeTargetQuery, skyTargetInstantQueryKey, getSkyTargetInstant: request });
   return { client, render: build, renderTarget: useSkyTimeTargetQuery,
-    commit() { observer!.setOptions(options); unsubscribe ??= observer!.subscribe(() => {}); },
-    detach() { unsubscribe?.(); unsubscribe = undefined; observer = undefined; },
-    close() { unsubscribe?.(); if (!sharedClient) client.clear(); },
+    commit() {
+      if (pendingEffect) {
+        cleanup?.(); committedEffect = pendingEffect; cleanup = committedEffect(); pendingEffect = undefined;
+      }
+      observer!.setOptions(options); unsubscribe ??= observer!.subscribe(() => {});
+    },
+    replayEffects() { cleanup?.(); cleanup = committedEffect?.(); },
+    detach() { cleanup?.(); cleanup = committedEffect = undefined; unsubscribe?.(); unsubscribe = undefined; observer = undefined; },
+    close() { cleanup?.(); cleanup = committedEffect = undefined; unsubscribe?.(); if (!sharedClient) client.clear(); },
     get options() { return options; }, get result() { return observer?.getCurrentResult(); } };
 }
 
@@ -94,7 +103,7 @@ function pageFieldCallbacks(time: ReturnType<typeof createSkyObservationTime>, p
     skyTimeIntentCurrent: () => permitted() && owns(), skyTimeIntentRetirable: owns,
     setTimeIntent: (value: ReturnType<typeof time.snapshot>) => assert.equal(value, time.snapshot()),
     cancelSkyCalibration() {}, skyTimeInputAllowed, skyContinuousTimeCoverage,
-    timeBinding: expected.binding, committedAt: expected.committedAt, timeModel,
+    timeBinding: expected.binding, committedAt: expected.committedAt, timeModel, timeModelRef: { current: timeModel },
     acceptedTimePresentationFor: () => null, presentedSkyFrameRef: { current: null },
     datePickerOpenRef: { current: false }, reducedMotionRef: { current: false },
   });
@@ -313,4 +322,41 @@ test("shared in-flight Sources work survives page retirement; final owner cancel
     assert.equal(source.result?.data, undefined);
     assert.equal(page.client.getQueryData(skyTargetInstantQueryKey(next, context.dataRevision)), undefined);
   } finally { source.close(); page.close(); }
+});
+
+test("unmount releases one reader without cancelling a Sources request; retired dispatch stays fenced", async () => {
+  const pending: { signal: AbortSignal | undefined; complete: (value: any) => void }[] = [], binding = { ...context, at };
+  const request = (_binding: any, signal?: AbortSignal) => new Promise(resolve => pending.push({ signal, complete: resolve }));
+  const page = queryHarness(request), source = queryHarness(request, page.client);
+  try {
+    page.renderTarget(binding, context.dataRevision, true, () => true); page.commit();
+    const retiredQueryFn = page.options.queryFn;
+    source.renderTarget(binding, context.dataRevision, true, () => true); source.commit();
+    assert.equal(pending.length, 1);
+    page.detach();
+    assert.equal(pending[0]!.signal?.aborted, false, "unmount cannot abort another active reader");
+    await assert.rejects(retiredQueryFn({ signal: new AbortController().signal }), isMiniappRequestCancelled);
+    assert.equal(pending.length, 1, "unmounted cached options cannot dispatch another request");
+    pending[0]!.complete({ data: { ...binding, targets: [{ targetId: "source-after-unmount" }] } }); await waitQuery();
+    assert.equal(source.result?.data.data.targets[0].targetId, "source-after-unmount");
+    const next = { ...binding, at: "2026-10-16T12:00:08.123Z" };
+    source.renderTarget(next, context.dataRevision, true, () => true); source.commit();
+    source.detach();
+    assert.equal(pending[1]!.signal?.aborted, true, "the final unmounted reader still cancels shared Query lifetime");
+    pending[1]!.complete({ data: { ...next, targets: [{ targetId: "retired" }] } }); await waitQuery();
+    assert.equal(page.client.getQueryData(skyTargetInstantQueryKey(next, context.dataRevision)), undefined);
+  } finally { source.close(); page.close(); }
+});
+
+test("effect teardown and setup restores the current reader without reviving retired intent", async () => {
+  let allowed = true;
+  const requested: string[] = [], query = queryHarness(async binding => { requested.push(binding.at); return { data: binding }; });
+  try {
+    query.renderTarget({ ...context, at }, context.dataRevision, true, () => allowed); query.commit(); await waitQuery();
+    query.replayEffects();
+    await query.result!.refetch();
+    assert.deepEqual(requested, [at, at], "a StrictMode effect replay keeps its committed reader usable");
+    allowed = false; query.replayEffects(); await query.result!.refetch();
+    assert.deepEqual(requested, [at, at], "effect setup cannot restore invalid native intent");
+  } finally { query.close(); }
 });

@@ -9,7 +9,7 @@ const mapStyles = new URL("../pages/map/index.scss", import.meta.url);
 test("retained shared icons use main-package assets across owner and top-page routes", () => {
   for (const pagePath of ["/pages/map/index", "/content/plan/detail/index", "/spot/detail/index", "/sky/detail/index"]) {
     const icon = semanticIconRenderer(pagePath);
-    for (const name of ["search", "location", "layers", "meteor", "arrow-left", "info"] as const) {
+    for (const name of ["search", "location", "layers", "arrow-left", "info"] as const) {
       const expected = `/assets/b-icons/${name}--day--default.png`;
       assert.equal(icon.render({ name }).props.src, expected);
       icon.navigate("sky/sources/index");
@@ -18,11 +18,21 @@ test("retained shared icons use main-package assets across owner and top-page ro
       assert.equal(icon.render({ name }).props.src, expected);
     }
   }
+  const main = semanticIconRenderer("/pages/map/index");
+  for (const route of ["sky/sources/index", "content/plan/detail/index", "pages/map/index"]) {
+    main.navigate(route);
+    for (const name of ["cloud", "bulb", "terrain", "moon", "meteor"] as const) {
+      const icon = main.render({ name });
+      assert.equal(icon.type, "packaged-icon");
+      assert.equal(icon.props.kind, name);
+    }
+  }
 });
 
 test("retained subpackage icons keep their own package across child and Back routes", async () => {
-  for (const [path, prefix, name] of [["/sky/detail/index", "/sky", "horizon"],
-    ["/content/plan/detail/index", "/content", "parking"], ["/spot/detail/index", "/spot", "parking"]] as const) {
+  for (const [path, prefix, name] of [["/sky/detail/index", "/sky", "horizon"], ["/sky/detail/index", "/sky", "terrain"],
+    ["/content/plan/detail/index", "/content", "parking"], ["/spot/detail/index", "/spot", "parking"],
+    ["/content/plan/detail/index", "/content", "meteor"], ["/spot/detail/index", "/spot", "meteor"]] as const) {
     const asset = await readFile(new URL(`../../runtime-assets/b-icons/${name}--day--default.png`, import.meta.url));
     assert.equal(asset.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", "use a real retained PNG, not a missing fixture");
     const icon = semanticIconRenderer(path);

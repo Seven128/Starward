@@ -51,3 +51,18 @@ test("a fault without raster files still owns one unknown native instance and ca
   successor.retire();
   const anotherPage = sessions.create(); assert.equal(anotherPage.recover(), null);
 });
+
+test("a direct successor keeps only its own predecessor mounted until real raster retirement", async () => {
+  const sessions = createNativeMapSessions(), first = sessions.create(), raster = resource();
+  first.registerRaster(raster.owner);
+  assert.deepEqual(first.retiringMapIds(), []);
+  const successor = first.recover()!;
+  assert.deepEqual(successor.retiringMapIds(), [first.mapId], "a late native removal still needs the original node");
+  await raster.owner.dispose();
+  assert.deepEqual(successor.retiringMapIds(), [first.mapId], "dispose completion is not a removal acknowledgement");
+  const unrelatedPage = sessions.create();
+  assert.deepEqual(unrelatedPage.retiringMapIds(), [], "page reentry cannot recreate an already detached native identity");
+  raster.confirmNativeRemoval(); await raster.owner.retired; await Promise.resolve();
+  assert.deepEqual(successor.retiringMapIds(), []);
+  assert.equal(successor.recover(), null, "overlay retirement does not certify physical native Map destruction");
+});

@@ -1,5 +1,7 @@
 # 换机继续：代码、数据和证据
 
+接收机更新（2026-10-27）：E:/dev/Starward的main已同步1fd25800并保全部dirty；两份归档已在本机认证解密、完整hash与逐文件校验解压，位置见[接收回执](HANDOFF-RECEIVE-20261027.json)。其后最新任务库已[恢复到独立本机副本](LOCAL-SOURCE-RUNTIME-20261027.md)，尚未启动服务。下文产品/API/候选及vector“尚未修改”等状态保留源机交接时含义；接收机已有后续实现、设计清理和数据恢复，当前进度只沿[本机HANDOFF](HANDOFF.md)及唯一PLAN，不反向覆盖。
+
 仅复制提示词不能完整恢复本轮性能排查。代码/当前Goal/唯一PLAN/交接在Git；发布数据沿Git LFS及`data-pipelines/runtime-data/current.lock.json`恢复；本轮原始诊断和私有环境分别在交接包。Git推送不等于数据库、配置、手机Storage或原始采集已迁移。
 
 ## 当前真实状态

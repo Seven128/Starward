@@ -7,8 +7,10 @@ import { SoftButton } from "./soft-button";
 import "./source-attribution.scss";
 
 /** Required credits beside supplied content; detailed provenance stays with its disclosure. */
-export function SourceAttribution({ sources, compact = false, presentation = "default" }: {
+export function SourceAttribution({ sources, compact = false, presentation = "default", statementsInReading = false }: {
   sources: readonly SourceSummary[]; compact?: boolean; presentation?: "default" | "disclosure" | "credit";
+  /** Credit-only opt-in when this surface's contract keeps complete notices in its source reader. */
+  statementsInReading?: boolean;
 }) {
   const [message, setMessage] = useState("");
   const declared = sourceAttributions(sources).map(credit => ({ ...credit, declared: true }));
@@ -31,7 +33,7 @@ export function SourceAttribution({ sources, compact = false, presentation = "de
   if (presentation === "credit") return <View className="source-attribution source-attribution--credit" aria-label="数据来源声明">
     {credits.map(credit => <View className="source-attribution__credit" key={JSON.stringify([credit.name, credit.url])}>
       <Text className="source-attribution__name" selectable>{credit.name}</Text>
-      {credit.statements.map(statement => <Text className="type-caption" selectable key={statement}>{statement}</Text>)}
+      {!statementsInReading && credit.statements.map(statement => <Text className="type-caption" selectable key={statement}>{statement}</Text>)}
     </View>)}
   </View>;
   return <View className={`source-attribution${presentation === "disclosure" ? " source-attribution--disclosure" : ""}${compact || presentation === "disclosure" ? " source-attribution--rows" : ""}`} aria-label={presentation === "disclosure" ? "资料来源与声明" : "数据来源声明"}>

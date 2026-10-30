@@ -3,6 +3,8 @@ import path from "node:path";
 import vm from "node:vm";
 import { fail, sha256 } from "./release-bundle-request.mjs";
 
+export const REQUIRED_COMPILED_RUNTIME_CHUNKS = Object.freeze(["runtime.js", "common.js"]);
+
 /** Evaluate the compiled pure address owner using this very bundle's webpack
  * runtime, without launching App/pages or supplying native/network APIs. IDs
  * and export names may be minified; the owner is located by its two public
@@ -14,7 +16,7 @@ import { fail, sha256 } from "./release-bundle-request.mjs";
 export async function verifyCompiledSkyOrigin(request, fingerprint, root) {
   const pins = [];
   const sources = [];
-  for (const file of ["runtime.js", "common.js", "sky/sub-vendors.js"]) {
+  for (const file of [...REQUIRED_COMPILED_RUNTIME_CHUNKS, "sky/sub-vendors.js"]) {
     const record = fingerprint.files.find(candidate => candidate.path === file);
     if (!record && file === "sky/sub-vendors.js") continue;
     if (!record) fail("release_bundle_compiled_sky_runtime_missing");

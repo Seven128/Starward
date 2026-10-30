@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { createMapCloudRasterTestBoundaries } from "./map-page-test-support";
 
 const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 function expression(name: string, memo = false) {
@@ -45,10 +46,13 @@ test("the Map discloses the installed terrain rather than a pending metadata sou
 test("the shared map source entry retains timezone and terrain until native retirement", () => {
   const timezone = { id: "timezone", licenseUrl: "https://opendatacommons.org/licenses/odbl/1-0/", sourceVersion: "boundary-current" };
   const light = { id: "light" }, terrain = { source: { id: "terrain", sourceVersion: "installed" } };
-  const state = { activeContext: { timezoneSource: timezone }, visibleLayer: "LIGHT", displayedLightLayer: { source: light },
-    cloudPresentation: null, terrainEnabled: false, presentedTerrainData: terrain as typeof terrain | null,
-    terrainDisclosure: terrain, uniqueSourceRecords: (sources: unknown[]) => sources };
-  const read = () => Array.from(vm.runInNewContext(expression("layerSources"), state));
+  const state = { ...createMapCloudRasterTestBoundaries(), activeContext: { timezoneSource: timezone }, displayedLightLayer: { source: light },
+    cloudLayerEnabled: false, cloudPresentation: null, terrainEnabled: false, presentedTerrainData: terrain as typeof terrain | null,
+    terrainDisclosure: terrain, layerDataSources: [] as unknown[], uniqueSourceRecords: (sources: unknown[]) => sources };
+  const read = () => {
+    state.layerDataSources = vm.runInNewContext(expression("layerDataSources"), state);
+    return Array.from(vm.runInNewContext(expression("layerSources"), state));
+  };
   assert.deepEqual(read(), [timezone, light, terrain.source], "logical off does not withdraw a still-visible native image's source");
   state.presentedTerrainData = null;
   assert.deepEqual(read(), [timezone, light], "retired terrain metadata cannot masquerade as a displayed layer");

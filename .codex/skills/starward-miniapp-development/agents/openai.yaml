@@ -1,4 +1,4 @@
 interface:
-  display_name: "Starward 小程序开发调试与性能分析"
-  short_description: "小程序开发调试与性能分析：按问题选测量工具，复用会话与已有证据"
-  default_prompt: "Use $starward-miniapp-development to develop or debug the current WEAPP issue, choosing scoped measurements for performance questions and reusing valid sessions and evidence."
+  display_name: "Starward 小程序开发与性能维护"
+  short_description: "小程序开发与维护：保护性能和资源所有权，按具体问题选择测量"
+  default_prompt: "Use $starward-miniapp-development to develop, maintain or debug WEAPP, preserving performance and memory ownership at affected boundaries and choosing scoped measurements for unresolved questions while reusing valid evidence."

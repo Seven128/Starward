@@ -6,13 +6,14 @@ import ts from "typescript";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { recentWeatherDetails, recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
 import { calendarDateInTimezone } from "../utils/zoned-date";
+import { createResourceFailureEpisode, type ResourceFailureEpisode } from "../services/resource-failure-episode";
 
 class TestDate extends Date {
   constructor() { super("2026-09-14T20:00:00Z"); }
   static now() { return Date.parse("2026-09-14T20:00:00Z"); }
 }
 
-function harness(queryClient = new QueryClient(), transform = (source: string) => source) {
+function harness(queryClient = new QueryClient(), transform = (source: string) => source, failureEpisode?: ResourceFailureEpisode) {
   const ast = ts.createSourceFile("recent.tsx", readFileSync(new URL("./recent-weather.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const hookAst = ts.createSourceFile("history-hook.ts", transform(readFileSync(new URL("../hooks/use-recent-weather-query.ts", import.meta.url), "utf8")), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const hook = hookAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useRecentWeatherQuery")!;
@@ -21,11 +22,13 @@ function harness(queryClient = new QueryClient(), transform = (source: string) =
   let stateIndex = 0, effectIndex = 0, pending: (() => void)[] = [];
   let query: any, options: any, hide = () => {}, show = () => {};
   const notifications: any[] = []; let retries = 0;
+  let memo: unknown;
   const notify = (value: any) => notifications.push(value);
   const component = vm.runInNewContext(ts.transpileModule(hook.getText(hookAst).replace(/^export /, "") + "; " + fn.getText(ast).replace(/^export /, "") + "; RecentWeather;",
     { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
     useState(value: unknown) { const index = stateIndex++; if (!(index in states)) states[index] = value;
       return [states[index], (value: any) => { states[index] = typeof value === "function" ? value(states[index]) : value; }]; },
+    useMemo: (create: () => unknown) => memo ??= create(), createResourceFailureEpisode,
     useEffect(fn: () => void, deps: unknown[]) { const prev = dependencies[effectIndex];
       if (!prev || deps.some((value, index) => value !== prev[index])) pending.push(fn); dependencies[effectIndex++] = deps; },
     useDidHide(fn: () => void) { hide = fn; }, useDidShow(fn: () => void) { show = fn; },
@@ -39,8 +42,8 @@ function harness(queryClient = new QueryClient(), transform = (source: string) =
   return {
     notifications, get options() { return options; }, get retries() { return retries; }, hide: () => hide(), show: () => show(),
     set(result: any) { query = { isPending: false, isError: false, ...result, refetch: async () => { retries++; } }; },
-    render(spotId = "spot:a", visible = true) { stateIndex = effectIndex = 0; const tree = component({ spotId, timezone: "Asia/Shanghai", visible });
-      if (!pending.length) return tree; pending.splice(0).forEach(fn => fn()); stateIndex = effectIndex = 0; return component({ spotId, timezone: "Asia/Shanghai", visible }); },
+    render(spotId = "spot:a", visible = true) { stateIndex = effectIndex = 0; const tree = component({ spotId, timezone: "Asia/Shanghai", visible, failureEpisode });
+      if (!pending.length) return tree; pending.splice(0).forEach(fn => fn()); stateIndex = effectIndex = 0; return component({ spotId, timezone: "Asia/Shanghai", visible, failureEpisode }); },
   };
 }
 const text = (value: any): string => value == null || typeof value === "boolean" ? "" : Array.isArray(value) ? value.map(text).join("") : typeof value === "object" ? text(value.children) : String(value);
@@ -50,6 +53,29 @@ function find(value: any, predicate: (node: any) => boolean): any {
 }
 const body = { spotId: "spot:a", region: { name: "区域甲", timezone: "Asia/Shanghai" }, asOfLocalDate: "2026-09-15", missingDates: ["2026-09-14"],
   days: [{ localDate: "2026-09-13", precipitationMm: 12, temperatureMinC: 8, temperatureMaxC: null, conditions: ["小雨"] }], unavailableReason: "REQUEST_FAILED" };
+
+test("one regional-history failure survives My hiding and a layer-drawer remount, but accepted retry and recovery rearm it", () => {
+  const episode = createResourceFailureEpisode();
+  const failure = { data: { data: body, dataState: "PARTIAL", sources: [] } };
+  const h = harness(undefined, undefined, episode); h.set(failure); h.render();
+  assert.equal(h.notifications.length, 1);
+  h.render("spot:a", false); h.render();
+  h.set({ ...failure, isFetching: true }); h.render(); h.set(failure); h.render();
+  assert.equal(h.notifications.length, 1, "visibility and automatic refresh are not a new failure");
+
+  const returned = harness(undefined, undefined, episode); returned.set(failure);
+  const tree = returned.render();
+  assert.equal(returned.notifications.length, 0, "replacing the spot document keeps its Map-owned failure episode");
+  assert.ok(find(tree, node => node.type === "SoftButton" && node.props.label === "重试近期天气"));
+  find(tree, node => node.type === "SoftButton").props.onClick();
+  returned.set({ ...failure, isFetching: true }); returned.render(); returned.set(failure); returned.render();
+  assert.equal(returned.retries, 1); assert.equal(returned.notifications.length, 1);
+
+  returned.set({ data: { ...failure.data, data: { ...body, unavailableReason: null }, dataState: "FRESH" } }); returned.render();
+  returned.set(failure); returned.render(); assert.equal(returned.notifications.length, 2, "failure after current positive recovery is new");
+  returned.render("spot:a", false); returned.render();
+  assert.equal(returned.retries, 1); assert.equal(returned.notifications.length, 2, "another visibility cycle cannot rearm");
+});
 
 test("foreign regional date cleanup waits for explicit retry instead of fetching under the spot date", async () => {
   async function exercise(transform?: (source: string) => string) {

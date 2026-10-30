@@ -1,0 +1,136 @@
+{
+  "schema": "starward-cross-machine-receive-v1",
+  "receivedAt": "2026-10-27T13:31:20.795Z",
+  "git": {
+    "status": "FAST_FORWARD_WITH_LOCAL_CHANGES_PRESERVED",
+    "oldHead": "023f3cbcefd091d03ac28613b38a6cebf20f1ef8",
+    "newHead": "1fd25800fb624d39fd98248f1aa3ac1da33c7de2",
+    "originalDirtyFiles": 74,
+    "unchangedDirtyFileBytes": 71,
+    "mergedLocalDocuments": [
+      ".codex/work-items/sky-map-performance-2026-10-18/HANDOFF.md",
+      ".codex/work-items/sky-map-performance-2026-10-18/INDEX.md",
+      ".codex/work-items/sky-map-performance-2026-10-18/NEXT-CHAT-PROMPT.md"
+    ],
+    "backup": "E:/Dev/Starward-data/backups/pre-sync-1fd25800-20261027",
+    "stagedFiles": 0,
+    "newLocalCommits": 0,
+    "pushed": false
+  },
+  "sourceTransferStatus": "COMPLETE_PRIVATE_READBACK_VERIFIED",
+  "transport": {
+    "provider": "GOOGLE_DRIVE_AUTHENTICATED_CONNECTOR",
+    "downloadedCiphertextParts": 20,
+    "evidenceParts": 19,
+    "privateRecoveryParts": 1,
+    "allCiphertextSizesAndSha256Verified": true,
+    "allCiphertextDiskReadbacksVerified": true,
+    "authenticatedDecryption": "STARWARD-ENCRYPTED-PGDUMP-V1",
+    "keyReceived": true,
+    "keyKeptOutsideRepository": true,
+    "keyContentsLogged": false,
+    "sharingChanged": false,
+    "directory": "E:/Dev/Starward-data/transfers/performance-20261027"
+  },
+  "archives": [
+    {
+      "role": "evidence",
+      "path": "Starward-performance-evidence-20261027.zip",
+      "bytes": 314065531,
+      "sha256": "b61c78d924150d3acfa24daf89a7a6299e306680a895266844e51e08e94f17dc",
+      "fullArchiveHashVerified": true,
+      "assemblyDirectory": "E:/Dev/Starward-data/private/performance-handoff-20261027/assembled",
+      "archive": "Starward-performance-evidence-20261027.zip",
+      "destination": "E:\\Dev\\Starward-data\\verification\\sky-map-20261018\\source-received-20261027",
+      "manifestFiles": 4101,
+      "archiveMembers": 4103,
+      "uncompressedBytes": 769123744,
+      "allManifestHashesVerified": true,
+      "allDiskBytesVerified": true,
+      "databaseRestored": false
+    },
+    {
+      "role": "privateRecovery",
+      "path": "Starward-private-recovery-20261027.zip",
+      "bytes": 693458,
+      "sha256": "e1d9b51bada008639c31edc227aa3d17a3a83ba3d6b727bf1f148e1d6f811a4b",
+      "fullArchiveHashVerified": true,
+      "assemblyDirectory": "E:/Dev/Starward-data/private/performance-handoff-20261027/assembled",
+      "archive": "Starward-private-recovery-20261027.zip",
+      "destination": "E:\\Dev\\Starward-data\\private\\performance-handoff-20261027\\unpacked",
+      "manifestFiles": 5,
+      "archiveMembers": 7,
+      "uncompressedBytes": 887794,
+      "allManifestHashesVerified": true,
+      "allDiskBytesVerified": true,
+      "databaseRestored": false
+    }
+  ],
+  "runtime": {
+    "status": "LOCKED_PUBLIC_FILES_VERIFIED",
+    "files": 1544,
+    "bytes": 234624578,
+    "version": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+    "catalogs": {
+      "status": "MATERIALIZED",
+      "files": 1656,
+      "bytes": 116246189
+    },
+    "images": {
+      "status": "MATERIALIZED",
+      "files": 285,
+      "bytes": 29912377
+    },
+    "newDataPreparationRequired": false
+  },
+  "ci": {
+    "head": "1fd25800fb624d39fd98248f1aa3ac1da33c7de2",
+    "context": {
+      "runId": 40508961638,
+      "conclusion": "success",
+      "contextValidationAndHarnessTestsRan": true
+    },
+    "product": {
+      "runId": 40508961666,
+      "conclusion": "success",
+      "affectedClassificationRan": true,
+      "productTestsBuildsAndOciSkipped": true
+    },
+    "staging": {
+      "runId": 40509024612,
+      "conclusion": "success",
+      "qualificationRan": true,
+      "publishAndDeploy": "skipped"
+    },
+    "deployed": false,
+    "localDirtyProductCoveredByRemoteCi": false
+  },
+  "preserved": {
+    "existingDatabasesUnchanged": true,
+    "existingServiceConfigurationsUnchanged": true,
+    "apiStarted": false,
+    "workerStarted": false,
+    "remindersReplayed": false,
+    "phoneStorageTouched": false,
+    "existingFrozenBuildsOverwritten": false,
+    "gen34Rebuilt": false,
+    "independentAppChanged": false,
+    "branch": "main"
+  },
+  "meaning": "Git fast-forward plus authenticated local receipt/extraction only. Source-machine instructions and paths remain historical. Does not restore a database, start services, pass target verification or complete the Goal.",
+  "finalVerification": {
+    "headEqualsOriginMain": true,
+    "stagedFiles": 0,
+    "originalWorkingFiles": 74,
+    "unchangedOriginalFileBytes": 69,
+    "intentionallyUpdatedExistingLocalDocuments": [
+      ".codex/work-items/sky-map-performance-2026-10-18/HANDOFF.md",
+      ".codex/work-items/sky-map-performance-2026-10-18/INDEX.md",
+      ".codex/work-items/sky-map-performance-2026-10-18/NEXT-CHAT-PROMPT.md",
+      ".codex/work-items/sky-map-performance-2026-10-18/PLAN.md",
+      ".codex/work-items/sky-map-performance-2026-10-18/LOCAL-UI-RUNTIME-20261027.md"
+    ],
+    "allOtherOriginalDirtyBytesUnchanged": true,
+    "newProductCodeChangesDuringSync": false
+  }
+}

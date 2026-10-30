@@ -4,6 +4,8 @@ export type NotificationPlacement = "inline" | "floating";
 export interface NotificationAction {
   label: string;
   route?: string;
+  /** Identity of the task/session that offered this recovery command. */
+  scope?: string;
 }
 
 export interface NotificationIntent {
@@ -15,6 +17,8 @@ export interface NotificationIntent {
   body: string;
   // Explicit undefined clears a prior recovery action when a deduped state resolves.
   action?: NotificationAction | undefined;
+  /** Disable expiry only while the owner retains an unresolved recovery action. */
+  autoDismiss?: boolean;
   dismissible?: boolean;
   dedupeKey?: string;
   /** Floating messages belong to the page that produced them. */

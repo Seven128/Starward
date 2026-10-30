@@ -23,7 +23,8 @@ export function useSkyDeepSkyImage(reference: string | null, level: DeepSkyImage
   const requested = active && !!reference && !!level;
   const discovery = useResourceQuery<SkyPublicationResource<DeepSkyImageDiscoveryData>>({
     queryKey: ["deep-sky-image-discovery", reference],
-    queryFn: signal => getDeepSkyImageResource(reference!, signal),
+    // Bind request identity without the render's footprint, Canvas or bitmap.
+    queryFn: getDeepSkyImageResource.bind(null, reference!),
     enabled: requested && !paused, staleTime: 60_000, structuralSharing: false,
   });
   const resource = discovery.data?.publication.objectRef === reference ? discovery.data : undefined;

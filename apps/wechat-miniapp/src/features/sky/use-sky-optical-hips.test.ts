@@ -8,6 +8,12 @@ import {orderPublishedOpticalTilesForView} from "./sky-optical-tile-selection";
 const testFrame={equatorialToEnu:[1,0,0,0,1,0,0,0,1]};
 const testBasis={right:[1,0,0],up:[0,1,0],forward:[0,0,1]};
 
+function opticalHookSource(source:ts.SourceFile){
+  const declarations=source.statements.filter(node=>ts.isVariableStatement(node)||ts.isFunctionDeclaration(node));
+  assert(declarations.some(node=>ts.isFunctionDeclaration(node)&&node.name?.text==="useSkyOpticalHips"));
+  return declarations.map(node=>node.getText(source).replace(/^export\s+/u,"")).join("\n")+"\nuseSkyOpticalHips;";
+}
+
 test("camera motion cannot request another resource draw for disabled or uncovered optical layers",()=>{
   // Execute the full Hook, then observe the same dependency boundary used by
   // the page writer. A real new tile and retirement must still invalidate it.
@@ -75,7 +81,6 @@ test("camera motion cannot request another resource draw for disabled or uncover
 
 test("validated trial tiles use bounded encoded reuse without changing wanted/decoded pressure",()=>{
   const source=ts.createSourceFile("use-sky-optical-hips.ts",readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
-  const declaration=source.statements.find((node):node is ts.FunctionDeclaration=>ts.isFunctionDeclaration(node)&&node.name?.text==="useSkyOpticalHips")!;
   const publication={publicationHash:"a".repeat(64)},asset={id:"ps1:3:166",order:3,pixel:166,sourcePriority:0,format:"jpeg",downloadUrl:"/v2/sky/optical/"+"a".repeat(64)+"/ps1/3/166"};
   let query=0,parameters:any[]=[];
   const runtime={useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,useMemo:(run:()=>unknown)=>run(),useCallback:(run:unknown)=>run,
@@ -85,8 +90,7 @@ test("validated trial tiles use bounded encoded reuse without changing wanted/de
     selectSkyHipsTiles:()=>({state:"SELECTED",order:3,pixels:[166]}),resolvePublishedOpticalTiles:()=>[asset],
     opticalHipsTileUrl:(url:string)=>"https://approved.fixture.invalid"+url,
     useSkyNativeImages(...args:any[]){parameters=args;return {images:new Map(),retainedImages:new Map(),loading:false,failed:false};}};
-  const hook=vm.runInNewContext(ts.transpileModule(source.statements.filter(ts.isVariableStatement).map(n=>n.getText(source)).join("\n")+"\n"+
-    declaration.getText(source).replace(/^export\s+/u,"")+"\nuseSkyOpticalHips;",{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,runtime);
+  const hook=vm.runInNewContext(ts.transpileModule(opticalHookSource(source),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,runtime);
   hook(undefined,undefined,{basis:testBasis,verticalFovDeg:8},390,844,null,1,true);
   assert.equal(parameters[2],publication.publicationHash);assert.equal(parameters[3],true);
   assert.equal(parameters[4][0],asset);assert.equal(parameters[6],20*1024*1024);assert.equal(parameters[8](asset),3);
@@ -98,8 +102,6 @@ test("validated trial tiles use bounded encoded reuse without changing wanted/de
 test("widening keeps already decoded fine descendants through coarse loading and failure",()=>{
   const source=ts.createSourceFile("use-sky-optical-hips.ts",
     readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
-  const declaration=source.statements.find((node):node is ts.FunctionDeclaration=>
-    ts.isFunctionDeclaration(node)&&node.name?.text==="useSkyOpticalHips")!;
   const publication={publicationHash:"a".repeat(64)},fineA={},fineB={},outside={},foreign={},coarse={};
   const retainedImages=new Map([
     ["ps1:8:38558",fineA],["ps1:8:38580",fineB],
@@ -117,8 +119,7 @@ test("widening keeps already decoded fine descendants through coarse loading and
     resolvePublishedOpticalTiles:()=>[],useSkyNativeImages:()=>native,
   };
   const hook=vm.runInNewContext(ts.transpileModule(
-    source.statements.filter(ts.isVariableStatement).map(node=>node.getText(source)).join("\n")+"\n"+
-    declaration.getText(source).replace(/^export\s+/,"")+"\nuseSkyOpticalHips;",
+    opticalHookSource(source),
     {compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,runtime) as
     typeof import("./use-sky-optical-hips").useSkyOpticalHips;
   const view={basis:testBasis,verticalFovDeg:.8} as unknown as import("./sky-artwork-registration").SkyArtworkView;
@@ -141,8 +142,6 @@ test("commercial sky does not request or retry an unpublished optical trial", ()
   const source=ts.createSourceFile("use-sky-optical-hips.ts",
     readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),
     ts.ScriptTarget.Latest,true);
-  const declaration=source.statements.find((node):node is ts.FunctionDeclaration=>
-    ts.isFunctionDeclaration(node)&&node.name?.text==="useSkyOpticalHips")!;
   let enabledQueries=0,refetches=0;
   const useResourceQuery=(options:{enabled:boolean})=>{
     if(options.enabled)enabledQueries++;
@@ -158,8 +157,7 @@ test("commercial sky does not request or retry an unpublished optical trial", ()
       retryImages(){},failedImage(){}}),
   };
   const useSkyOpticalHips=vm.runInNewContext(ts.transpileModule(
-    source.statements.filter(ts.isVariableStatement).map(node=>node.getText(source)).join("\n")+"\n"+
-    declaration.getText(source).replace(/^export\s+/,"")+"\nuseSkyOpticalHips;",
+    opticalHookSource(source),
     {compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,runtime) as
     typeof import("./use-sky-optical-hips").useSkyOpticalHips;
   const result=useSkyOpticalHips(undefined,undefined,null,390,844,null,0,true);
@@ -180,7 +178,6 @@ test("commercial sky does not request or retry an unpublished optical trial", ()
 
 test("live optical snapshot reuses source qualification and stable order before React tiles update",()=>{
   const source=ts.createSourceFile("use-sky-optical-hips.ts",readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
-  const declaration=source.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==="useSkyOpticalHips")!;
   const publication={publicationHash:"a".repeat(64)},empty={images:new Map(),retainedImages:new Map()},fine={},coarse={},foreign={},outside={};let current=empty,query=0;
   const runtime={useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,useMemo:(run:()=>unknown)=>run(),useCallback:(run:unknown)=>run,
     useResourceQuery:()=>({data:query++%2===0?publication:{data:[]},isFetching:false}),getOpticalHipsManifest(){},
@@ -188,7 +185,7 @@ test("live optical snapshot reuses source qualification and stable order before 
     selectPublishedOpticalCandidates:()=>[{sourceId:"ps1",order:6,pixels:[2409],dirs:[0]}],
     selectSkyHipsTiles:()=>({state:"SELECTED",order:6,pixels:[2409]}),resolvePublishedOpticalTiles:()=>[],
     useSkyNativeImages:()=>({...empty,loading:true,failed:false,currentImages:()=>current})};
-  const hook=vm.runInNewContext(ts.transpileModule(source.statements.filter(ts.isVariableStatement).map(n=>n.getText(source)).join("\n")+"\n"+declaration.getText(source).replace(/^export\s+/u,"")+"\nuseSkyOpticalHips;",{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,runtime);
+  const hook=vm.runInNewContext(ts.transpileModule(opticalHookSource(source),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,runtime);
   const result=hook(undefined,undefined,{basis:testBasis,verticalFovDeg:.8},390,844,{},3,true);
   assert.equal(result.currentTiles(),result.tiles,"unchanged native payload keeps the committed tile array identity");
   current={images:new Map([["ps1:6:2409",coarse]]),retainedImages:new Map([["ps1:8:38558",fine],["other:8:38558",foreign],["ps1:8:38602",outside]])};

@@ -1,19 +1,36 @@
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { displayRasterWindowKey, type DisplayRasterWindow, type RasterBounds } from "@starward/coordinate-system";
 import { NIGHT_LIGHT_CONTRAST_DISPLAY, NIGHT_LIGHT_LEGACY_DISPLAY, isNightLightDisplayStyle, nightLightDisplayLegend,
   type NightLightDisplayStyle, type MapLayerData, type Gcj02Point } from "@starward/miniapp-contracts";
 import { ComputationCache } from "./computation-cache.ts";
 import { SharedReadPool } from "./shared-read-pool.ts";
 import type { MiniappRepositoryPort } from "./ports.ts";
-import { fixedNightLightDataset, readFixedNightLightInventory, readFixedNightLightProof,
+import { fixedNightLightDataset, shardedNightLightDataset, readFixedNightLightInventory, readFixedNightLightProof,
   readFixedNightLightImage, readFixedNightLightPixel, type FixedNightLightDataset, type FixedNightLightInventory,
-  type FixedNightLightRaster } from "./night-light-publication.ts";
+  type FixedNightLightRaster, type ShardedNightLightDataset } from "./night-light-publication.ts";
+import { ShardedNightLightPublication } from "./night-light-sharded-publication.ts";
 import { nightLightWindowForBounds, composeNightLightWindow, validateNightLightWindow, type NightLightWindow } from "./night-light-window.ts";
 import { PreparedNightLightWindows, type PreparedNightLightPublication } from "./night-light-prepared-window.ts";
 import { projectNightLightDisplay } from "./night-light-display-image.ts";
 
-type Release = { directory: string; dataset: FixedNightLightDataset; inventory: FixedNightLightInventory; proofs: FixedNightLightRaster[] };
+type FixedRelease = { kind: "FIXED"; directory: string; dataset: FixedNightLightDataset; inventory: FixedNightLightInventory; proofs: FixedNightLightRaster[] };
+type ShardedMetadata = Awaited<ReturnType<ShardedNightLightPublication["metadata"]>>;
+type ShardedRelease = { kind: "SHARDED"; directory: string; dataset: ShardedNightLightDataset;
+  publication: ShardedNightLightPublication; metadata: ShardedMetadata };
+type Release = FixedRelease | ShardedRelease;
 const contains = (outer: RasterBounds, inner: RasterBounds) => outer.west <= inner.west && outer.east >= inner.east && outer.south <= inner.south && outer.north >= inner.north;
+
+function assertShardedBinding(dataset: ShardedNightLightDataset, metadata: ShardedMetadata) {
+  const payload = dataset.payload, reference = payload.shardedIndex;
+  if (metadata.datasetVersion !== dataset.datasetVersion || metadata.indexVersion !== reference.indexVersion
+    || !isDeepStrictEqual(metadata.index, { file: reference.file, bytes: reference.bytes, sha256: reference.sha256 })
+    || !isDeepStrictEqual(metadata.source, dataset.source)
+    || metadata.radianceSha256 !== dataset.radianceSha256 || metadata.coverageSha256 !== dataset.coverageSha256
+    || metadata.methodVersion !== payload.methodVersion || metadata.styleVersion !== payload.styleVersion
+    || metadata.policySha256 !== payload.policySha256 || metadata.minimumCloudFreeObservations !== payload.minimumCloudFreeObservations
+    || metadata.coverage !== payload.coverage) throw new Error("nightlight_sharded_database_root_mismatch");
+}
 
 export function nightLightUnavailable(datasetVersion: string, failed = false): MapLayerData {
   return { kind: "LIGHT_POLLUTION", cloudLayer: null, polygons: [], legend: [], validAt: null, datasetVersion,
@@ -31,6 +48,10 @@ export class NightLightService {
   private readonly windows = new Map<string, NightLightWindow>();
   private readonly windowReads = new SharedReadPool<NightLightWindow | null>(() => new Error("nightlight_request_cancelled"));
   private readonly prepared: PreparedNightLightWindows | null;
+  /** Only pending root discovery owns uncancelled shared metadata I/O. Once
+   * cached, a prepared reader holds no handle/subscription; its calls receive
+   * this service's existing shutdown/binary-read signal. */
+  private readonly shardedDiscovery = new Set<ShardedNightLightPublication>();
   private cachedImageBytes = 0;
   private activeReads = 0;
 
@@ -49,6 +70,28 @@ export class NightLightService {
     const record = await this.repository.getPublishedDarkSkyDataset(version);
     this.shutdown.signal.throwIfAborted(); signal?.throwIfAborted();
     if (!record) return null;
+    if ((record.payload as { schemaVersion?: unknown } | null)?.schemaVersion === 3) {
+      const dataset = shardedNightLightDataset(record);
+      if (!this.root) throw new Error("nightlight_publication_unconfigured");
+      const directory = path.join(this.root, dataset.datasetVersion), reference = dataset.payload.shardedIndex;
+      const pin = { file: reference.file, bytes: reference.bytes, sha256: reference.sha256 };
+      const result = await this.cache.get(`${version}:sharded:${reference.sha256}`, async () => {
+        const publication = new ShardedNightLightPublication(directory, pin);
+        this.shardedDiscovery.add(publication);
+        try {
+          const metadata = await this.binaryRead(this.shutdown.signal, combined => publication.metadata(combined));
+          assertShardedBinding(dataset, metadata);
+          return { kind: "SHARDED" as const, directory, dataset, publication, metadata };
+        } catch (error) { publication.close(); throw error; }
+        finally { this.shardedDiscovery.delete(publication); }
+      }, () => Infinity);
+      this.shutdown.signal.throwIfAborted(); signal?.throwIfAborted();
+      // The root is immutable, but every call must still agree with its current
+      // DB authority. A cache hit cannot hide a drifted publication record.
+      if (result.kind !== "SHARDED") throw new Error("nightlight_sharded_database_root_mismatch");
+      assertShardedBinding(dataset, result.metadata);
+      return result;
+    }
     const dataset = fixedNightLightDataset(record);
     if (!dataset) return null;
     if (!this.root) throw new Error("nightlight_publication_unconfigured");
@@ -73,7 +116,7 @@ export class NightLightService {
       };
       await Promise.allSettled([readProofs(), readProofs()]);
       proofSignal.throwIfAborted();
-      return { directory, dataset, inventory, proofs };
+      return { kind: "FIXED" as const, directory, dataset, inventory, proofs };
     }, () => Infinity);
     this.shutdown.signal.throwIfAborted(); signal?.throwIfAborted();
     return result;
@@ -87,7 +130,7 @@ export class NightLightService {
     finally { this.activeReads--; }
   }
 
-  private async window(release: Release, window: DisplayRasterWindow, signal?: AbortSignal,
+  private async window(release: FixedRelease, window: DisplayRasterWindow, signal?: AbortSignal,
     displayStyle: NightLightDisplayStyle = NIGHT_LIGHT_LEGACY_DISPLAY) {
     this.shutdown.signal.throwIfAborted(); signal?.throwIfAborted(); validateNightLightWindow(window);
     if (!isNightLightDisplayStyle(displayStyle)) throw new Error("nightlight_display_style_invalid");
@@ -120,6 +163,7 @@ export class NightLightService {
     if (!isNightLightDisplayStyle(displayStyle)) throw new Error("nightlight_display_style_invalid");
     const release = await this.release(version, signal);
     if (!release) return null; // schema 1 continues through the original owner.
+    if (release.kind === "SHARDED") throw new Error("nightlight_sharded_static_delivery_capability_not_ready");
     if (!bounds) return { ...nightLightUnavailable(version), precision: "正在读取地图实际范围。" };
     const window = nightLightWindowForBounds(release.proofs, bounds);
     if (!window) return nightLightUnavailable(version);
@@ -153,6 +197,7 @@ export class NightLightService {
     if (!fixed && !composed && !contrast) return null;
     const release = await this.release(version, signal);
     if (!release) return null;
+    if (release.kind === "SHARDED") throw new Error("nightlight_sharded_static_delivery_capability_not_ready");
     const parsedWindow = contrast ?? composed;
     if (parsedWindow) {
       if (parsedWindow[6] !== release.dataset.payload.rasterInventory.sha256) return null;
@@ -175,15 +220,50 @@ export class NightLightService {
   async pixel(version: string, point: Gcj02Point, signal?: AbortSignal) {
     const release = await this.release(version, signal);
     if (!release) return null;
+    if (release.kind === "SHARDED") return this.binaryRead(signal, combined => release.publication.pixel(point, combined));
     const proof = [...release.proofs].sort((a, b) => b.grid.window.zoom - a.grid.window.zoom || a.grid.width * a.grid.height - b.grid.width * b.grid.height)
       .find(value => contains(value.grid.boundsGcj02, { west: point.longitude, east: point.longitude, south: point.latitude, north: point.latitude }));
     if (!proof) return null;
     return this.binaryRead(signal, combined => readFixedNightLightPixel(release.directory, proof, point, combined));
   }
 
+  /** Internal discovery, not an HTTP/static publication. A selected DB record
+   * must match the pinned root; the result still has no URL or image bytes. */
+  async preparedWindow(version: string, key: string, signal?: AbortSignal) {
+    const release = await this.release(version, signal);
+    if (!release || release.kind !== "SHARDED") return null;
+    return this.binaryRead(signal, combined => release.publication.window(key, combined));
+  }
+
+  /** Same DB authority and bounded read owner as exact discovery. The selected
+   * cover keeps its actual bounds/LOD; this does not make a public layer ready. */
+  async preparedCoveringWindow(version: string, key: string, signal?: AbortSignal) {
+    const release = await this.release(version, signal);
+    if (!release || release.kind !== "SHARDED") return null;
+    return this.binaryRead(signal, combined => release.publication.coveringWindow(key, combined));
+  }
+
+  /** Internal prepared pixels only. A sealed static window may span parts;
+   * public layer/asset readiness and URL authority remain unchanged. */
+  async preparedDisplayWindow(version: string, window: DisplayRasterWindow, signal?: AbortSignal) {
+    validateNightLightWindow(window);
+    const release = await this.release(version, signal);
+    if (!release || release.kind !== "SHARDED") return null;
+    return this.binaryRead(signal, async combined => {
+      const prepared = await this.prepared?.readSharded(release.publication, window, combined);
+      if (prepared) return { authority: "PREPARED_ONLY" as const, indexVersion: release.metadata.indexVersion,
+        indexSha256: release.metadata.index.sha256, ...prepared };
+      const original = await release.publication.coveringDisplay(displayRasterWindowKey(window), combined);
+      return original ? { authority: "PREPARED_ONLY" as const, indexVersion: original.prepared.indexVersion,
+        indexSha256: original.prepared.indexSha256, proof: original.prepared.displayProof, bytes: original.bytes } : null;
+    });
+  }
+
   close() {
     const reason = new Error("nightlight_service_closed");
     this.shutdown.abort(reason); this.windowReads.close(reason);
+    for (const publication of this.shardedDiscovery) publication.close();
+    this.shardedDiscovery.clear();
     this.cache.clear(); this.windows.clear(); this.cachedImageBytes = 0; this.prepared?.close();
   }
 }

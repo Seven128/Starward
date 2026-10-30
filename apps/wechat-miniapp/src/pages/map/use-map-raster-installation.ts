@@ -15,12 +15,15 @@ interface NativeMapHandle {
 
 /** Keep the rendered source with the actual native installation. A new
  * metadata response or downloaded image cannot advance that source on its own.
- * The two raster consumers retain their independent enabled/failure states.
+ * Raster consumers retain their independent enabled/failure states.
  */
 export function useMapRasterInstallation<T>(input: {
   id: number; label: string; nativeMap: NativeMapHandle; visible: boolean; enabled: boolean; unavailable: boolean;
   identity: string; runtimeError: unknown; retry: number;
   src: string | null; bounds: Bounds | null | undefined; data: T | null; opacity: number; zIndex: number;
+  /** Incompatible time/source pixels must be actually removed before the next
+   * identity is admitted. Omitted for the existing annual/terrain retention. */
+  retentionKey?: string;
   /** A parent may fill an empty surface, or an actual viewport gap through
    * same-id update. It cannot downgrade covering or already queued fine data. */
   preview?: { viewport: Bounds | null } | undefined;
@@ -44,6 +47,14 @@ export function useMapRasterInstallation<T>(input: {
       result => { if (nativeMap.isCurrent()) resultHandler.current(result); }, mapRasterFiles, input.label);
   }, [nativeMap.mapId, input.id, input.label]);
   const canReplace = coordinator.canReplace();
+  const [, retentionWake] = useState(0);
+  type Clearance = { coordinator: typeof coordinator; key: string | undefined; ready: boolean };
+  const clearance = useRef<Clearance | null>(null);
+  const clearRequested = useRef<Clearance | null>(null);
+  if (!clearance.current || clearance.current.coordinator !== coordinator || clearance.current.key !== input.retentionKey)
+    clearance.current = { coordinator, key: input.retentionKey, ready: input.retentionKey === undefined };
+  const currentClearance = clearance.current;
+  const clearingPriorIdentity = !currentClearance.ready;
   const canPreview = (nextIdentity: string, viewport: Bounds | null) => {
     const previous = retained.current;
     if (!nativeMap.isCurrent()) return false;
@@ -61,7 +72,7 @@ export function useMapRasterInstallation<T>(input: {
     if (retained.current.mapId !== nativeMap.mapId) {
       retained.current = { mapId: nativeMap.mapId, target: null, identity: null, previewIdentity: null, replacement: "compatible" }; candidates.current.clear();
     }
-    if (!visible || !enabled || unavailable) {
+    if (!visible || !enabled || unavailable || clearingPriorIdentity) {
       retained.current.target = null; retained.current.identity = retained.current.previewIdentity = null;
       retained.current.replacement = "compatible"; return null;
     }
@@ -82,7 +93,7 @@ export function useMapRasterInstallation<T>(input: {
     candidates.current.set(key, data);
     while (candidates.current.size > 3) candidates.current.delete(candidates.current.keys().next().value!);
     return retained.current.target;
-  }, [nativeMap.mapId, visible, enabled, unavailable, src, bounds, data, opacity, zIndex, Boolean(input.preview), input.preview?.viewport, identity, canReplace]);
+  }, [nativeMap.mapId, visible, enabled, unavailable, clearingPriorIdentity, src, bounds, data, opacity, zIndex, Boolean(input.preview), input.preview?.viewport, identity, canReplace]);
   const replacement = retained.current.replacement;
   const desiredKey = `${nativeMap.mapId}:${mapGroundOverlayKey(target)}`;
   resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, presentationUnknown, requiresMapRecovery: needsRecovery }) => {
@@ -95,6 +106,10 @@ export function useMapRasterInstallation<T>(input: {
       const actualData = key ? candidates.current.get(key) : null;
       if (!actual) setPresented(null);
       else if (actualData) setPresented({ mapId: nativeMap.mapId, key: key!, data: actualData });
+      if (!actual && isCurrent() && clearance.current === currentClearance
+        && clearRequested.current === currentClearance && !currentClearance.ready) {
+        currentClearance.ready = true; retentionWake(value => value + 1);
+      }
       return;
     }
     const resource = input.label === "地形" ? "terrain" : input.label === "光污染" ? "night_light" : "map_raster";
@@ -120,6 +135,7 @@ export function useMapRasterInstallation<T>(input: {
   }, [coordinator]);
   useEffect(() => {
     if (suspension.current?.coordinator === coordinator) return;
+    if (clearingPriorIdentity) clearRequested.current = currentClearance;
     if (!nativeMap.canInstallRasters()) {
       void coordinator.apply(null, "suspend");
       setInstalled(null); setPresented(null); setRequiresMapRecovery(false);
@@ -127,7 +143,7 @@ export function useMapRasterInstallation<T>(input: {
       return;
     }
     void coordinator.apply(nativeMap.pending || input.runtimeError ? null : target, visible ? "display" : "suspend", replacement);
-  }, [coordinator, target, replacement, input.retry, nativeMap.pending, nativeMap.rastersBlocked, input.runtimeError, visible]);
+  }, [coordinator, target, replacement, currentClearance, clearingPriorIdentity, input.retry, nativeMap.pending, nativeMap.rastersBlocked, input.runtimeError, visible]);
   const suspendForExit = () => {
     const request = { coordinator };
     suspension.current = request;
@@ -150,11 +166,14 @@ export function useMapRasterInstallation<T>(input: {
       if (!nativeMap.isCurrent() || current.coordinator !== coordinator) return;
       // React may have received a newer source, visibility or failure while
       // native removal was pending. Resume that intent, never the old capture.
+      const pendingClearance = clearance.current;
+      if (pendingClearance?.coordinator === coordinator && !pendingClearance.ready)
+        clearRequested.current = pendingClearance;
       void coordinator.apply(current.pending || current.runtimeError || !nativeMap.canInstallRasters() ? null : current.target,
         current.visible ? "display" : "suspend", current.replacement);
     } };
   };
-  return { error, requiresMapRecovery, target, canPreview, suspendForExit,
+  return { error, requiresMapRecovery, target, canPreview, suspendForExit, clearingPriorIdentity,
     settled: installed === desiredKey,
     retirementPending: nativeMap.rastersBlocked && enabled && Boolean(target),
     pending: Boolean(target) && installed !== desiredKey,

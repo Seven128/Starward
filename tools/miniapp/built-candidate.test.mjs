@@ -53,6 +53,7 @@ test("built production candidate follows registered routes and package limits", 
     "content/settings/index",
   ];
   const inspection = await inspectCandidate({ bundleDirectory: path.relative(repositoryRoot, root).replaceAll("\\", "/") });
+  assert.equal(inspection.passed, true, "the complete candidate inspection must pass, including compiled runtime availability");
   assert.deepEqual(inspection.routes, expectedRoutes);
   assert.equal(inspection.checks.native_project, true);
   assert.equal(inspection.checks.filter_population, true);
@@ -109,11 +110,11 @@ test("async bitmap consumers share original spot-package assets", () => {
   for (const extension of ["js", "json", "wxml", "wxss"])
     assert.equal(existsSync(path.join(root, `spot/native/packaged-icon/index.${extension}`)), true);
   const originals = path.resolve("apps/wechat-miniapp/runtime-assets/b-icons");
-  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share"]) {
+  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share", "place-pin"]) {
     const filename = `${name}--day--default.png`;
     assert.deepEqual(readFileSync(path.join(root, "spot/assets/b-icons", filename)), readFileSync(path.join(originals, filename)));
   }
-  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share"])
+  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share", "place-pin"])
     assert.equal(existsSync(path.join(root, `assets/b-icons/${name}--day--default.png`)), false);
   assert.deepEqual(readFileSync(path.join(root, "assets/b-icons/settings--day--default.png")),
     readFileSync(path.join(originals, "settings--day--default.png")));

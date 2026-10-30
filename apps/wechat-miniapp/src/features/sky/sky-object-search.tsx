@@ -1,4 +1,4 @@
-import { Input, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
 import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro from "@tarojs/taro";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -9,6 +9,7 @@ import { searchCelestialObjects } from "@/services/sky-celestial-client";
 import { SKY_LUMINARY_CATALOG_VERSION } from "@starward/miniapp-contracts";
 import { skyObjectKindLabel, type SkyObjectIdentity } from "./sky-object-picking";
 import { SkySearchRow } from "./sky-search-row";
+import { SkyControlledInput } from "./sky-controlled-input";
 
 /** The retained search owns its text debounce and query cancellation; covering
  * or closing it revokes active work without losing the native scroll subtree. */
@@ -44,7 +45,7 @@ export function SkyObjectSearch({ children, footer, onSelect, query, onQueryChan
   return <View className="sky-object-search">
     <View className="sky-object-search__field">
     <SemanticIcon name="sky-search" />
-    <Input className="sky-object-search__input" value={query} maxlength={80}
+    <SkyControlledInput active={active} className="sky-object-search__input" value={query} maxlength={80}
       ariaLabel="搜索天体名称或编号"
       placeholder="名称或编号，如织女星、M31" confirmType="search"
       onInput={event => updateQuery(event.detail.value)}
@@ -80,7 +81,7 @@ function SkySearchResults({ query, onSelect, active }: {
 }) {
   const result = useResourceQuery({
     queryKey: ["celestial-search", SKY_LUMINARY_CATALOG_VERSION, query],
-    queryFn: signal => searchCelestialObjects(query, signal),
+    queryFn: searchCelestialObjects.bind(null, query),
     enabled: active,
     staleTime: 60_000,
     gcTime: 60_000,

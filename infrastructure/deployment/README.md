@@ -181,6 +181,66 @@ terrain inventory. The existing light-window owner selects its own admitted
 LOD/coverage and prepares the same composed PNG URLs that Map metadata returns.
 No new numerical publication or missing-area fill is invented. Omit it for
 original inventory assets only. No national/global window enumeration occurs.
+Cloud display has a separate, currently **DEVELOPMENT_ONLY** preparation input:
+`--cloud-display /absolute/prepared-display --cloud-source /absolute/numeric-batch
+--cloud-source-manifest-sha256 <actual-64-hex-manifest-digest>`. It copies the
+original finite inventory, proofs, source-manifest control bytes and PNGs using
+the shared cloud validators; publication admission additionally checks PNG CRC,
+dimensions and actual alpha counts. It neither creates images nor establishes
+a source group, nationwide display coverage or map readiness. Its content-bound
+records use `/v2/cloud/assets/<numericManifestSHA>/cloud-<identity>.png` and the
+independent cloud publication header. These are local object descriptors, not
+an API URL response. Cloud control material remains outside `files/`, numerical
+frames are not copied, and cloud gets **no business-host Caddy route**.
+
+The original OSS/ESA package owner can prepare an exact local cloud object and
+header plan, marked `DEVELOPMENT_ONLY_NOT_UPLOADABLE`. The original uploader
+re-admits the actual sealed source set and rejects any cloud source with
+`map_object_store_cloud_source_qualification_not_ready` before creating a client,
+journal or remote request. There is no qualified boolean, override or accepted
+formal-ready file. Deleting plan presentation fields cannot change admission.
+Real source-group qualification, required display coverage, OSS readback and
+the complete ready/current transaction remain separate unfinished owners. A
+delivery-protocol-only check retains DEVELOPMENT_ONLY and formal-ready false;
+it is not permission to upload or serve these prepared images.
+
+Prepared sharded EOG has a separate, also **DEVELOPMENT_ONLY**, input on the
+same owner: `--night-light-sharded /absolute/prepared-sharded-eog
+--night-light-index-sha256 <actual-root-SHA> --night-light-index-bytes <bytes>`.
+It requires the original `index.json` pin and complete declared shards/parts,
+then reuses the scientific proof, original part inventory and contrast owners.
+Every existing final PNG is checked against its original source PNG for full
+RGBA/CRC identity; no source original, numerical TIFF or image producer is read
+or run. Original root/shard/part/proof and PNG controls remain in `publications/`
+so isolated restore repeats pixel validation. Only final contrast PNGs become
+public object descriptors; no PUBLISHED DB-record export is fabricated.
+
+This source seals `nightlight-sharded:<indexVersion>` and
+`admission: DEVELOPMENT_ONLY`. Its existing contrast URL syntax and
+`nightlight-display:<identity>` header receive **no business-host Caddy route**.
+The OSS plan declares `DEVELOPMENT_ONLY_NOT_UPLOADABLE`; the original uploader
+re-admits the real source and throws
+`map_object_store_sharded_nightlight_publication_not_ready` before a journal,
+client or request. Removing display fields or rehashing `QUALIFIED` cannot
+open it. Real source/full-publication qualification, nationwide display specs,
+OSS/ESA target/readback, complete consumer switch and schema3 DB publishing
+remain unfinished. Local preparation does not change the configured API root;
+schema3 scientific discovery keeps its original coordinate-shard owner.
+
+New cloud/sharded-EOG bundles use `starward-map-static-export-v2`. The root
+contains sealed source identities and sorted range/page pins; `catalog/` holds
+source metadata pages and `records/` holds public asset records. Each page has
+a 2-MiB ceiling and the root declaration a 4-MiB ceiling. Terrain and existing
+fixed-night-light consumers share bounded page lookup through
+`map-static-index.ts`; they do not load the other families' complete lists.
+The exporter, recovery and OSS package still verify every original proof and
+asset offline. These bounds are format limits, not a capacity qualification.
+Legacy v1 packages and URL/PNG/proof bytes remain valid. Exact restoration
+preserves the original format/publication hash; a new export containing cloud
+or sharded EOG uses v2, including when its inputs are previous v1 bundles.
+The programmatic `indexLayout` option selects an explicit legacy recovery or
+partitioned export; it never changes source admission or upload eligibility.
+
 The sealed artifact may include only a measured finite area; unknown window
 URLs still require the compatibility API. Serving prepared bytes alone does
 not remove API metadata's image-composition work. The API's own prepared-window

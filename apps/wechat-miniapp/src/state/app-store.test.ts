@@ -4,10 +4,12 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { create } from "zustand";
-import { DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE, cloneFilterState } from "@starward/miniapp-contracts";
+import { DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE, cloneFilterState, copyTotalCloudContext, unavailableTotalCloud } from "@starward/miniapp-contracts";
+import { totalCloudClientFixture } from "../services/total-cloud-test-support";
 import * as transitions from "./app-transitions";
 import * as notifications from "./notification";
 import type { useAppStore } from "./app-store";
+import { normalizeAnalysisOverlay, toggleAnalysisLayer } from "./map-layer-state";
 import { createAccountOperationOwner } from "../hooks/account-operation";
 
 const validObservationContext = {
@@ -58,7 +60,7 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   const scheduled: (() => void)[] = [];
   const exports: Record<string, unknown> = {};
   vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText, {
-    exports, create, ...transitions, cloneFilterState, DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE,
+    exports, create, ...transitions, cloneFilterState, copyTotalCloudContext, DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE, normalizeAnalysisOverlay,
     ...notifications, removeNotification: notifications.dismissNotification,
     currentNotificationPageRoute: () => "pages/spot-night/index",
     acceptanceBootstrapJson: {}, __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: false,
@@ -82,6 +84,48 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   }, { timeout: 1000 });
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
+
+test("persisted Context keeps the immutable cloud binding or explicit gap and rejects corrupt new bindings", () => {
+  for (const totalCloud of [totalCloudClientFixture().binding, unavailableTotalCloud("NOT_READY")]) {
+    const context = { ...validObservationContext, weatherView: { ...validObservationContext.weatherView, totalCloud } };
+    const first = loadStore({ value: { accountOwnerId: "user:test", observationContext: context } });
+    first.store.getState().hydrate();
+    assert.equal(JSON.stringify(first.store.getState().observationContext?.weatherView.totalCloud), JSON.stringify(copyTotalCloudContext(totalCloud)));
+    first.store.getState().setObservationContext(first.store.getState().observationContext!); first.flush();
+    const restored = loadStore(first.storage); restored.store.getState().hydrate();
+    assert.equal(JSON.stringify(restored.store.getState().observationContext?.weatherView.totalCloud), JSON.stringify(copyTotalCloudContext(totalCloud)));
+  }
+  for (const totalCloud of [null, { ...totalCloudClientFixture().binding, publicationId: "bad" },
+    { ...unavailableTotalCloud("READ_FAILED"), extra: true }]) {
+    const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: {
+      ...validObservationContext, weatherView: { ...validObservationContext.weatherView, totalCloud } } } });
+    store.getState().hydrate();
+    assert.equal(store.getState().observationContext, null, "corrupt new source must not be reinterpreted as legacy");
+  }
+});
+
+test("layer composition restores old intent and persists independent selection per account", () => {
+  for (const [old, expected] of [["NONE", "NONE"], ["LIGHT", "LIGHT"], ["TOTAL_CLOUD", "TOTAL_CLOUD"], ["OPPORTUNITY", "TOTAL_CLOUD"]]) {
+    const { store } = loadStore({ value: { accountOwnerId: "user:test", analysisOverlay: old, terrainEnabled: true } });
+    store.getState().hydrate();
+    assert.equal(store.getState().analysisOverlay, expected);
+    assert.equal(store.getState().terrainEnabled, true, "migration does not alter terrain");
+  }
+  const first = loadStore({ value: { accountOwnerId: "user:test", analysisOverlay: "LIGHT", terrainEnabled: true } });
+  first.store.getState().hydrate();
+  first.store.getState().setAnalysisOverlay(toggleAnalysisLayer(first.store.getState().analysisOverlay, "TOTAL_CLOUD"));
+  first.flush();
+  const restored = loadStore(first.storage); restored.store.getState().hydrate();
+  assert.equal(restored.store.getState().analysisOverlay, "LIGHT_AND_CLOUD");
+  restored.store.getState().setAnalysisOverlay(toggleAnalysisLayer(restored.store.getState().analysisOverlay, "LIGHT"));
+  assert.equal(restored.store.getState().analysisOverlay, "TOTAL_CLOUD");
+  restored.store.getState().setAnalysisOverlay(toggleAnalysisLayer(restored.store.getState().analysisOverlay, "TOTAL_CLOUD"));
+  restored.store.getState().setTerrainEnabled(false); restored.flush();
+  const off = loadStore(restored.storage); off.store.getState().hydrate();
+  assert.equal(off.store.getState().analysisOverlay, "NONE"); assert.equal(off.store.getState().terrainEnabled, false);
+  off.store.getState().bindAccount("user:other");
+  assert.equal(off.store.getState().analysisOverlay, "NONE");
+});
 
 test("real account binding publishes one verified identity so an explicit login can resume its task", () => {
   const storage = { value: {}, session: null as null | { userId: string } };

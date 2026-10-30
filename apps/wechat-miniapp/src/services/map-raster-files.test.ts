@@ -8,7 +8,9 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 
-test("same-origin raster paths retain terrain compatibility and bind night-light URLs to a dataset", () => {
+const eogContrastPath = `/v2/night-light/assets/eog-fixed-2025/nightlight-contrast-v1-window-6-52-25-1-1-${"c".repeat(64)}-${"d".repeat(64)}.png`;
+
+test("Map files preserve legacy API paths and admit immutable HTTPS cloud and final EOG objects", () => {
   const ast = ts.createSourceFile("files.ts", readFileSync(new URL("./map-raster-files.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "mapRasterAssetUrl")!;
   const url = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";mapRasterAssetUrl;", {
@@ -16,7 +18,25 @@ test("same-origin raster paths retain terrain compatibility and bind night-light
   }).outputText, { __MINIAPP_API_BASE__: "https://example.invalid/" });
   assert.equal(url("/v2/terrain/assets/legacy.png"), "https://example.invalid/v2/terrain/assets/legacy.png");
   assert.equal(url("/v2/night-light/assets/eog-fixed-2025/nightlight.png"), "https://example.invalid/v2/night-light/assets/eog-fixed-2025/nightlight.png");
+  const cloudPath = `/v2/cloud/assets/${"a".repeat(64)}/cloud-${"b".repeat(64)}.png`;
+  for (const objectPath of [cloudPath, eogContrastPath]) {
+    assert.equal(url(`https://assets.example.invalid${objectPath}`), `https://assets.example.invalid${objectPath}`);
+    assert.equal(url(`https://assets.example.invalid:8443${objectPath}`), `https://assets.example.invalid:8443${objectPath}`);
+    for (const invalid of [`http://assets.example.invalid${objectPath}`, `https://example.invalid${objectPath}`,
+      `https://user:secret@assets.example.invalid${objectPath}`, `https://assets.example.invalid${objectPath}?token=private`,
+      `https://assets.example.invalid${objectPath}#fragment`, `https://assets.example.invalid/before/..${objectPath}`,
+      `https://assets.example.invalid${objectPath.replace("/assets/", "/%61ssets/")}`,
+      `https://assets.example.invalid:443${objectPath}`, `https://assets.example.invalid:65536${objectPath}`,
+      `https://127.0.0.1${objectPath}`, `https://assets.local${objectPath}`])
+      assert.throws(() => url(invalid), /map_raster_asset_path_invalid/u);
+  }
   for (const invalid of ["https://other.invalid/image.png", "/v2/night-light/assets/../image.png", "/v2/night-light/assets/image.png"])
+    assert.throws(() => url(invalid), /map_raster_asset_path_invalid/u);
+  for (const invalid of [cloudPath, `https://assets.example.invalid${cloudPath.replace("/cloud-", "/%63loud-")}`,
+    `https://assets.example.invalid${eogContrastPath.replace("-1-1-", "-4-1-")}`,
+    `https://assets.example.invalid${eogContrastPath.replace("d".repeat(64), "d".repeat(63))}`,
+    `https://assets.example.invalid${eogContrastPath.replace("contrast-v1-", "v2-")}`,
+    "https://assets.example.invalid/v2/night-light/assets/eog-fixed-2025/nightlight.png"])
     assert.throws(() => url(invalid), /map_raster_asset_path_invalid/u);
 });
 
@@ -29,7 +49,7 @@ function nativeHarness(options: { holdDownloads?: boolean; holdListing?: boolean
   const hash = createHash("sha256").update(bytes).digest("hex");
   const files = new Map<string, Uint8Array>(), blocked = new Set<string>();
   const removals: string[] = [], stats: { path: string; hash: boolean }[] = [];
-  const jobs: { path: string; success(status?: number): void; fail(): void; aborts: number }[] = [];
+  const jobs: { path: string; url: string; success(status?: number): void; fail(): void; aborts: number }[] = [];
   let listings = 0, finishListing: (() => void) | undefined, failListing = false;
   const missing = { errMsg: "no such file or directory", errno: 1300002 };
   const native = {
@@ -59,7 +79,7 @@ function nativeHarness(options: { holdDownloads?: boolean; holdListing?: boolean
     downloadFile(o: Parameters<RasterFilePlatform["download"]>[0]) {
       const path = o.filePath || `wxfile://tmp/native-${jobs.length + 1}.png`;
       files.set(path, bytes.slice());
-      const job = { path, aborts: 0,
+      const job = { path, url: o.url, aborts: 0,
         success: (status = 200) => o.success({ statusCode: status,
           ...(o.filePath ? { filePath: path, tempFilePath: "" } : { tempFilePath: path }) }),
         fail: () => o.fail({ errno: 600005, errMsg: "downloadFile:fail interrupted" }),
@@ -89,14 +109,16 @@ const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 const input = (key: string, hash?: string) => ({ key, url: `/v2/terrain/assets/${key}.png`, expectedBytes: 3,
   ...(hash ? { expectedSha256: hash } : {}) });
 
-test("Map terrain/night-light admissions pass the old eight-file wall using writable destinations and keep native pins", async () => {
+test("all three Map consumers share the old eight-file wall and keep native pins", async () => {
   const h = nativeHarness();
   const first = h.owner.acquire(input("first", h.hash)), initial = await first.promise;
   const unpin = h.owner.retainPath(initial.path); first.release();
   for (let i = 0; i < 12; i++) {
     const key = `viewport-${i}`, descriptor = input(key, h.hash);
-    if (i % 2) descriptor.url = `/v2/night-light/assets/eog-fixed-2025/${key}.png`;
+    if (i % 3 === 1) descriptor.url = i % 2 ? `https://assets.fixture.invalid${eogContrastPath}` : `/v2/night-light/assets/eog-fixed-2025/${key}.png`;
+    if (i % 3 === 2) descriptor.url = `https://assets.fixture.invalid/v2/cloud/assets/${"a".repeat(64)}/cloud-${i.toString(16).padStart(64, "0")}.png`;
     const read = h.owner.acquire(descriptor), file = await read.promise;
+    assert.equal(h.jobs.at(-1)!.url, descriptor.url.startsWith("https://") ? descriptor.url : `https://fixture.invalid${descriptor.url}`);
     assert.match(file.path, /^wxfile:\/\/usr\/map-raster-v1\/raster-[a-z0-9_]+-[1-9]\d*\.png$/u);
     assert.equal(file.sha256, h.hash);
     read.release(); await tick();

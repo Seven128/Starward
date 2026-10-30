@@ -1,11 +1,17 @@
 ---
 name: starward-miniapp-development
-description: Develop, debug and investigate performance in Starward WEAPP (小程序开发、调试与性能分析), including required runtime-data preparation after code synchronization and recovery of missing local inputs. Use for slow launch, interaction/rendering delays, memory growth, WXML/style/state or request failures, and development-tool maintenance. Match the official WeChat DevTools skill and reuse the existing session; device operation and release have separate project skills.
+description: Develop and maintain Starward WEAPP with performance and memory ownership (小程序开发、维护、调试与性能分析), including ordinary feature/refactor changes, runtime-data recovery, slow launch, interaction/rendering delays, memory growth and request failures. Match the official WeChat DevTools skill when operating the runtime; device operation and release have separate project skills.
 ---
 
 # Starward Mini Program development
 
 Read `project_context/global.md`, [development feedback](../../../project_context/development-workflow/development-feedback.md), and the affected owner. For UI, follow the adopted Screen Contract and `starward-interaction-design`; this skill does not select a new design or renderer. Acceptance/device obligations remain with `project_context/development-workflow.md`.
+
+## Preserve performance during development
+
+For feature or refactor changes involving cached callbacks, shared asynchronous work, page/native lifetimes, frequent state/render updates, large collections or imagery, read [performance and memory maintenance](references/performance-maintenance.md) before extending that boundary. Apply its affected ownership and invalidation rules during implementation, without waiting for a performance complaint. Trace shared changes through their real consumers; preserve independent business state and existing budgets.
+
+This development guidance does not require a new audit, profiler session or optimization experiment for every edit. When a concrete cost or retention question remains, use the investigation reference below; existing adopted decisions and reopening conditions stay with their Context owner.
 
 ## Synchronize required data and recover missing inputs
 
@@ -46,7 +52,7 @@ For tool-result failures, startup/SDK timeouts or unavailable observations, read
 
 For slow launch, requests, data updates, interactions, rendering or memory growth, read the [performance investigation method](references/performance-investigation.md) before choosing measurements, diagnostic changes or substitute observations. It owns measurement selection, metric interpretation, capability checks and recovery of blocked investigations. Project requirements and adopted decisions stay with the linked Context owners; current sessions, samples and unfinished observations stay with the task. A performance question does not require every profiling tool or a new acceptance suite.
 
-The adopted primary solution is **真机调试开发者工具（主用）**: the separate phone-attached developer window's Performance and Memory panels, including high-memory Sky. Use its [primary profiler workflow](references/performance-investigation.md#primary-profiler) directly for the pending question; the successful high-memory connection and usable Heap export settle route selection, without a separate validation matrix for every feature. For a new computer or an actual network failure, read [VPN/TUN LAN setup](references/true-debug-lan.md), retaining the required VPN and selecting the phone-reachable host interface.
+The adopted primary solution is **真机调试开发者工具（主用）**: the separate phone-attached developer window's Performance and Memory panels, including high-memory Sky. Use its [primary profiler workflow](references/performance-investigation.md#primary-profiler) directly for the pending question; the successful high-memory connection and usable Heap export settle route selection, without a separate validation matrix for every feature. New attachments default to **automatic true-debug over LAN**, following the [Context default](../../../project_context/development-workflow/development-feedback.md#true-debug-defaults) and [LAN/IP procedure](references/true-debug-lan.md). Check the phone-reachable IP before launch through the question mark beside LAN mode in the automatic-debug panel; do not wait for a disconnect or switch to QR merely to choose the IP. Retain the required VPN/TUN and reuse a working session.
 
 **普通预览与 Android 系统观测（备用）** is the [targeted fallback](references/performance-investigation.md#fallback-observations), used for a concrete collection failure, a relevant coverage gap or an ordinary-execution comparison. Preserve its core identity, timing, ownership and early-export logic; do not activate a second full profiling stack by default. Both routes follow the same [capture/interpretation loop](references/performance-investigation.md#collect-and-qualify-a-target-profile) and [scope limits](references/performance-investigation.md#capability-ceiling-and-escalation).
 

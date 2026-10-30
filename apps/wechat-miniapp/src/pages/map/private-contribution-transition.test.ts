@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import ts from "typescript";
 import type { ContributionSubmission, SpotId, ObservationContext } from "@starward/miniapp-contracts";
 import { privateContributionSelectionTransition, samePendingProposalIntent } from "./private-contribution-transition.ts";
 
@@ -41,6 +42,17 @@ test("later map intent invalidates an in-flight private-to-formal transition", (
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   assert.match(source, /const openDetail = async[\s\S]*?privateTransitionGeneration\.current \+= 1;[\s\S]*?const requestGeneration/);
   assert.match(source, /const closeSpotPanel = \(\) => \{\s*privateTransitionGeneration\.current \+= 1;/);
-  assert.match(source, /const openLayerSheet = \(\) => \{\s*privateTransitionGeneration\.current \+= 1;/);
+  const tree = ts.createSourceFile("map.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let openLayerSheet: ts.ArrowFunction | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(tree) === "openLayerSheet" && node.initializer && ts.isArrowFunction(node.initializer))
+      openLayerSheet = node.initializer;
+    ts.forEachChild(node, visit);
+  };
+  visit(tree); assert.ok(openLayerSheet && ts.isBlock(openLayerSheet.body));
+  const statements = openLayerSheet.body.statements;
+  const retire = statements.findIndex(node => node.getText(tree) === "privateTransitionGeneration.current += 1;");
+  const presentation = statements.findIndex(node => node.getText(tree) === 'setBottomPresentation("layer-sheet");');
+  assert.ok(retire >= 0 && retire < presentation, "an admitted layer intent retires the prior private transition before changing presentation");
   assert.match(source, /if \(!entry\) return;[\s\S]*?confirmEditorLeave\(\)[\s\S]*?privateTransitionGeneration\.current \+= 1;/);
 });

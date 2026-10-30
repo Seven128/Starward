@@ -11,7 +11,7 @@ const app = 'apps/wechat-miniapp/src/';
 export const terrainWaitSourceFiles = [
   `${app}hooks/use-terrain-overlay.ts`, `${app}hooks/use-raster-image.ts`,
   `${app}services/raster-image-resources.ts`, `${app}services/raster-file-adapter.ts`,
-  `${app}pages/map/use-map-raster-installation.ts`, `${app}pages/map/index.tsx`,
+  `${app}pages/map/use-map-raster-installation.ts`, `${app}pages/map/map-ground-overlay.ts`, `${app}pages/map/index.tsx`,
 ];
 const sha = value => createHash('sha256').update(value).digest('hex');
 const importTrace = 'import { terrainWait } from "@/services/terrain-wait-observer";\n';
@@ -26,20 +26,20 @@ export function transformTerrainWaitSources(input) {
     if (typeof source !== 'string' || source.includes('terrain-wait-observer')) throw Error('terrain_wait_original_sources_required');
     source = source.replaceAll('\r\n', '\n');
     if (file.endsWith('/use-terrain-overlay.ts')) {
-      source = once(source,
-        'queryFn: async (signal) => ({ ...await getTerrainOverlay(input, signal), request: input }),',
+      for (const [method, kind] of [['getTerrainOverlay', 'fine'], ['getTerrainOverlayPreview', 'preview']]) source = once(source,
+        `queryFn: async (signal) => ({ ...await ${method}(input, signal), request: input }),`,
         `queryFn: async (signal) => {
-      const attempt = input.purpose === "MAP" ? terrainWait.metadataStart(identity) : null;
+      const attempt = input.purpose === "MAP" ? terrainWait.metadataStart(identity, "${kind}") : null;
       try {
-        const response = await getTerrainOverlay(input, signal);
+        const response = await ${method}(input, signal);
         if (input.purpose === "MAP") terrainWait.metadataEnd(attempt, identity,
-          response.data.imageUrl ? \`\${response.data.publicationId ?? ""}:\${response.data.imageUrl}\` : null, true);
+          response.data.imageUrl ? \`\${response.data.publicationId ?? ""}:\${response.data.imageUrl}\` : null, true, "${kind}");
         return { ...response, request: input };
       } catch (error) {
-        if (input.purpose === "MAP") terrainWait.metadataEnd(attempt, identity, null, false);
+        if (input.purpose === "MAP") terrainWait.metadataEnd(attempt, identity, null, false, "${kind}");
         throw error;
       }
-    },`, 'metadata');
+    },`, `metadata_${kind}`);
     } else if (file.endsWith('/use-raster-image.ts')) {
       source = once(source, 'void read.promise.then(({ path }) => {',
         'void read.promise.then(({ path, bytes, sha256 }) => {', 'admitted_file_facts');
@@ -52,29 +52,62 @@ export function transformTerrainWaitSources(input) {
       source = once(source, '      if (!entry) {\n        await makeRoom(1, 0);',
         '      if (input.url.startsWith("/v2/terrain/assets/")) terrainWait.cacheAcquire(input.key, entry?.state ?? "miss");\n      if (!entry) {\n        await makeRoom(1, 0);', 'actual_file_cache');
     } else if (file.endsWith('/raster-file-adapter.ts')) {
-      source = once(source, '        success(result) {\n          terminal = true;',
-        '        success(result) {\n          if (input.url.startsWith("/v2/terrain/assets/")) terrainWait.downloadReturned(input.key, result.statusCode);\n          terminal = true;', 'download_callback');
+      source = once(source, '        success(result) {\n',
+        '        success(result) {\n          if (input.url.startsWith("/v2/terrain/assets/")) terrainWait.downloadReturned(input.key, result.statusCode);\n', 'download_callback');
     } else if (file.endsWith('/use-map-raster-installation.ts')) {
       source = once(source,
         '  resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, presentationUnknown, requiresMapRecovery: needsRecovery }) => {',
         '  resultHandler.current = ({ error: failure, target: actual, isCurrent, phase, presentationUnknown, requiresMapRecovery: needsRecovery }) => {\n    if (input.label === "地形") terrainWait.nativeResult(nativeMap.mapId, actual?.src ?? null, !failure, isCurrent(), phase ?? "display", Boolean(presentationUnknown));', 'native_result');
+    } else if (file.endsWith('/map-ground-overlay.ts')) {
+      source = once(source, 'label: string) {\n  let timer:', 'label: string, observed?: () => number | null) {\n  let timer:', 'native_command_signature');
+      source = once(source, 'finished = true; clearTimeout(timer); settled(ok, timedOut);',
+        'finished = true; clearTimeout(timer); settled(ok, timedOut);\n      terrainWait.nativeReturned(observed?.(), ok, timedOut);', 'native_command_return');
+      source = once(source, 'timer = setTimeout(() => { timedOut = true; fail(',
+        'timer = setTimeout(() => { timedOut = true; terrainWait.nativeTimeout(observed?.()); fail(', 'native_command_timeout');
+      source = once(source, '  type File = { target:',
+        '  const terrainWaitOwner = label === "地形" ? terrainWait.nativeOwner() : null;\n  type File = { target:', 'native_owner');
+      source = once(source, '    try {\n      await nativeCommand(callbacks => context().removeGroundOverlay({ id: slot.id, ...callbacks }), (ok) => {',
+        `    let terrainWaitRemove: number | null = null;
+    try {
+      await nativeCommand(callbacks => {
+        const nativeContext = context();
+        if (terrainWaitOwner !== null) terrainWaitRemove = terrainWait.nativeDispatch(terrainWaitOwner, slot.id, "remove", slot.file?.target.src ?? null);
+        return nativeContext.removeGroundOverlay({ id: slot.id, ...callbacks });
+      }, (ok) => {`, 'native_remove_dispatch');
+      source = once(source, '      }, label);\n    } catch (error) {', '      }, label, () => terrainWaitRemove);\n    } catch (error) {', 'native_remove_receipt');
+      source = once(source, '            try {\n              await nativeCommand(callbacks => currentContext.updateGroundOverlay!({ id: current.id, ...target!, visible: true, ...callbacks }), (ok, late) => {',
+        `            let terrainWaitUpdate: number | null = null;
+            try {
+              await nativeCommand(callbacks => {
+                if (terrainWaitOwner !== null) terrainWaitUpdate = terrainWait.nativeDispatch(terrainWaitOwner, current.id, "update", target!.src);
+                return currentContext.updateGroundOverlay!({ id: current.id, ...target!, visible: true, ...callbacks });
+              }, (ok, late) => {`, 'native_update_dispatch');
+      source = once(source, '              }, label);\n            } catch (error) {', '              }, label, () => terrainWaitUpdate);\n            } catch (error) {', 'native_update_receipt');
+      source = once(source, '        await nativeCommand(callbacks => context().addGroundOverlay({ id: next.id, ...target!, visible: true, ...callbacks }), (_ok, late) => {',
+        `        let terrainWaitAdd: number | null = null;
+        await nativeCommand(callbacks => {
+          const nativeContext = context();
+          if (terrainWaitOwner !== null) terrainWaitAdd = terrainWait.nativeDispatch(terrainWaitOwner, next.id, "add", target!.src);
+          return nativeContext.addGroundOverlay({ id: next.id, ...target!, visible: true, ...callbacks });
+        }, (_ok, late) => {`, 'native_add_dispatch');
+      source = once(source, '        }, label);\n        if (currentGeneration !== generation || disposed) {',
+        '        }, label, () => terrainWaitAdd);\n        if (currentGeneration !== generation || disposed) {', 'native_add_receipt');
     } else if (file.endsWith('/pages/map/index.tsx')) {
       const start = action => `terrainWait.start("${action}", terrain.identity,
         terrain.data?.data.imageUrl ? \`\${terrain.data.data.publicationId ?? ""}:\${terrain.data.data.imageUrl}\` : null,
         terrain.imagePath, { metadataAvailable: Boolean(terrain.data), fetching: terrain.isFetching,
           imageReady: Boolean(terrain.imagePath), imagePending: terrain.imagePending });`;
       source = 'import { TerrainWaitMarker } from "./terrain-wait-marker";\n' + source;
-      source = once(source, '    if (userMapRegionStarted(event)) spotMapFocus.cancel();',
+      source = once(source, '    if (userMapRegionStarted(event)) {\n      spotMapFocus.cancel();',
         `    if (userMapRegionStarted(event)) {
       if (terrainEnabled) ${start('gesture')}
-      spotMapFocus.cancel();
-    }`, 'real_gesture');
-      source = once(source, '                      const next = !terrainEnabled;\n                      setTerrainEnabled(next);',
-        `                      const next = !terrainEnabled;
+      spotMapFocus.cancel();`, 'real_gesture');
+      source = once(source, '                      const next = !useAppStore.getState().terrainEnabled;\n                      if (next) terrainFailureEpisode.retry();',
+        `                      const next = !useAppStore.getState().terrainEnabled;
                       if (next) ${start('enable')}
-                      setTerrainEnabled(next);`, 'real_enable');
-      source = once(source, '      {pageVisible && !eventModalPresent ? <FloatingNotificationHost /> : null}',
-        '      <TerrainWaitMarker visible={pageVisible} />\n      {pageVisible && !eventModalPresent ? <FloatingNotificationHost /> : null}', 'temporal_marker');
+                      if (next) terrainFailureEpisode.retry();`, 'real_enable');
+      source = once(source, '      {pageVisible ? <FloatingNotificationHost actionHandlers={{',
+        '      <TerrainWaitMarker visible={pageVisible} />\n      {pageVisible ? <FloatingNotificationHost actionHandlers={{', 'temporal_marker');
     }
     out.set(file, importTrace + source);
   }

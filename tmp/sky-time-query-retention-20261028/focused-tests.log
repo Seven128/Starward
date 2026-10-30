@@ -1,0 +1,22 @@
+✔ precise target cache releases the retired page callback on hide (579.0009ms)
+✔ precise target cache releases the retired page callback on unmount (694.2661ms)
+✔ the public page wires ruler and civil controls into the existing time owner with its Context fences (268.6078ms)
+✔ all held-arrow stop paths release continuous editing and ordinary click stays a single preview (386.6713ms)
+✔ a held field cannot adopt replacement Context callbacks or revive after A to B to A (1521.776ms)
+✔ six-field hold previews every exact instant but settles one target query at release (536.3828ms)
+✔ page and actual Sources options reuse the same result, expire inactive instants and reopen with fresh exact data (138.6307ms)
+✔ queued old intent, permission loss and A to B to A cannot dispatch an obsolete target (52.4794ms)
+✔ shared in-flight Sources work survives page retirement; final owner cancellation rejects its late completion (124.8319ms)
+✔ unmount releases one reader without cancelling a Sources request; retired dispatch stays fenced (139.8307ms)
+✔ effect teardown and setup restores the current reader without reviving retired intent (62.8309ms)
+✔ report source route retains event identity, exact public time and the existing target-query owner (6.5271ms)
+✔ missing or mixed source-route identities do not enable a different publication family (1.7818ms)
+✔ actual target source page keeps the selected credit, rejects replacement identities and fences queued retry (169.1343ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5080.6051

@@ -48,6 +48,10 @@ export function useRecentWeatherQuery({ spotId, timezone, visible = true }: { sp
   const data = outdatedDay ? undefined : envelope?.data;
   const failed = liveFailed || query.isError || Boolean(query.refreshError) || rejectedStale || outdatedDay || data?.unavailableReason === "REQUEST_FAILED";
   const stale = Boolean(query.refreshError) || rejectedStale;
-  const retry = () => liveFailed ? setFailedSpot(null) : void query.refetch();
+  const retry = () => {
+    if (!active || query.isFetching) return false;
+    if (liveFailed) setFailedSpot(null); else void query.refetch();
+    return true;
+  };
   return { active, enabled, liveFailed, query, envelope: outdatedDay ? undefined : envelope, data, failed, stale, retry };
 }

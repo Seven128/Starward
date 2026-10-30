@@ -11,7 +11,7 @@ test("the content-page poster decodes its actual package-local and shared icons 
   const paths: string[] = [];
   const available = new Set([
     "/assets/b-icons/favorite-star--day--default.png",
-    "/assets/b-icons/meteor--day--default.png",
+    "/content/assets/b-icons/meteor--day--default.png",
     "/content/assets/b-icons/place-pin--day--default.png",
   ]);
   // The built-candidate owner checks emitted package bytes. Here the actual

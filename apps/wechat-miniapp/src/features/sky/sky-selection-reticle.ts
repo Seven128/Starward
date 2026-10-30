@@ -45,9 +45,13 @@ export function createSkySelectionLayer(display: SkyDisplayCanvas, width: number
     isCurrent(node: SkyDisplayCanvas | undefined) {
       return !disposed && display === node && display.width === (context ? width : 0) && display.height === (context ? height : 0);
     },
-    paint(reticle?: SkyCanvasReticle | null) {
+    paint(reticle?: SkyCanvasReticle | null, selectionActive = Boolean(reticle)) {
       if (disposed) return;
-      if (!reticle) { this.clear(); return; }
+      if (!selectionActive) { this.clear(); return; }
+      // A new exact-time sky can precede its selected object's position.
+      // Hide the old strokes without retiring the live selection's backing;
+      // the next qualified position reuses it. No backing is allocated early.
+      if (!reticle) { clear(); return; }
       if (!context) {
         display.width = width; display.height = height;
         context = display.getContext("2d");

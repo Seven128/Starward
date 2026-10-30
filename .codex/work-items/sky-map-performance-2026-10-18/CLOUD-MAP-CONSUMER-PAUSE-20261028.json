@@ -1,0 +1,47 @@
+{
+  "status": "USER_PAUSED_WIP_NOT_ACCEPTED",
+  "recordedAt": "2026-10-28T07:40:36.1909713+00:00",
+  "head": "1fd25800fb624d39fd98248f1aa3ac1da33c7de2",
+  "branch": "main",
+  "wholeConsumerChecks": "NOT_RECEIVED",
+  "wholeConsumerIndependentReview": "NOT_RUN",
+  "newBuild": "NOT_RUN",
+  "deviceOrNetworkActivation": "NOT_PERFORMED",
+  "files": [
+    {
+      "path": "apps/wechat-miniapp/src/services/map-raster-files.ts",
+      "bytes": 4344,
+      "sha256": "5bec15b3e569a7d77ed48bae0550c4e35e4168cfb1185ae81846d77079f9d9bb"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/map-raster-files.test.ts",
+      "bytes": 12168,
+      "sha256": "c83e5ed19bffbdd7f326e9c1f28208f162e12bd254daec4f6788888f493849e6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/map-cloud-raster-presentation.ts",
+      "bytes": 6329,
+      "sha256": "f6f6adc8be983bc94805322386a785099ee573cb57a33ff64d8f536a6e0c9589"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/hooks/use-map-cloud-raster.ts",
+      "bytes": 2798,
+      "sha256": "dd40148c972d873b6a51abeb9a76dd5ca2f6390bd3447d8d7b20066cff280e32"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/hooks/use-map-cloud-presentation.ts",
+      "bytes": 3740,
+      "sha256": "91ed52b6487289ed2b5d59bfde84d92135ff8150f14dc3b647a0d7ffceb95be7"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/use-map-raster-installation.ts",
+      "bytes": 11597,
+      "sha256": "2269497c7cca62bf379179e0371490b64f87d79025906299eac6b8fbfabed2ef"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+      "bytes": 181973,
+      "sha256": "d887403e8ca5112274524dc1c508ffc4738385954955fb67b45c728daaa4d19e"
+    }
+  ]
+}

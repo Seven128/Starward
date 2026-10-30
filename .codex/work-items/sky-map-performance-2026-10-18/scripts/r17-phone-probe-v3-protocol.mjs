@@ -113,6 +113,16 @@ function linkage(value) {
     Array.isArray(value.links) && value.links.length <= LINK_LIMIT && value.links.every(link) &&
     new Set(value.links.map(item => item.prepareToken)).size === value.links.length;
 }
+// A current task may reuse only these observed v3 responsibilities. No Scene,
+// Page, GPU or workload-population zero is synthesized for unobserved owners.
+export function validateR17TimeObservationCore(value) {
+  const w = value?.window;
+  return object(value, ['variant','runId','binding','clock','window','linkage','acceptedGap']) &&
+    withinBudget(value) && run(value) && binding(value.binding) && value.binding.mode === 'normal' && clock(value.clock) &&
+    object(w, ['startDelayMs','durationLimitMs','elapsedMs','elapsedStatus','reason']) &&
+    w.startDelayMs === 0 && w.durationLimitMs === 45000 && ['manual','limit'].includes(w.reason) &&
+    validInterval(w.elapsedMs,w.elapsedStatus) && linkage(value.linkage) && samples(value.acceptedGap);
+}
 export function validateR17PhoneProbeV3Metrics(value) {
   if (!withinBudget(value) || !object(value,['schemaVersion','variant','runId','caseKey','clock','window','sampleLimit','counters','stageElapsed','timing','time','scene','viewport','binding','controls','observations','linkage']) || value.schemaVersion !== R17_PHONE_PROBE_V3_SCHEMA) return false;
   const { binding: b, controls: c, observations: o, linkage: l, window: w } = value;

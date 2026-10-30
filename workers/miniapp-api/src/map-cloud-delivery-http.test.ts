@@ -16,6 +16,7 @@ import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts"
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import type { SpotId } from "@starward/miniapp-contracts";
 import { waitForCaller } from "./provider-deadline.ts";
+import { ApiExceptionFilter } from "./api-exception.filter.ts";
 
 test("independent cloud HTTP completes with the selected real sample hour while a legacy Scene decision is held", { timeout: 15_000 }, async t => {
   t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-09-15T11:00:00Z") });
@@ -42,6 +43,7 @@ test("independent cloud HTTP completes with the selected real sample hour while 
   class TestModule {}
   Module({ controllers: [MiniappController], providers: [{ provide: MiniappService, useValue: service }] })(TestModule);
   const app = await NestFactory.create(TestModule, new FastifyAdapter(), { logger: false });
+  app.useGlobalFilters(new ApiExceptionFilter());
   let scene: Promise<Response> | undefined;
   try {
     await app.listen(0, "127.0.0.1");
@@ -65,6 +67,12 @@ test("independent cloud HTTP completes with the selected real sample hour while 
     assert.ok(later.dynamicLayer.polygons.every((row: { value: number }) => row.value === 80));
     assert.deepEqual(later.spotSignals, {}, "cloud data cannot manufacture marker decisions");
     assert.equal(result.data.spots, undefined);
+    const samplesBeforePreview = samples, contextBeforePreview = await service.observationContexts.get(context.contextId);
+    const endpoint = `${base}/v2/map/cloud?contextId=${encodeURIComponent(context.contextId)}&centerLat=22.5&centerLng=114.5&zoom=12&viewportBounds=114.48,22.48,114.52,22.52`;
+    assert.equal((await fetch(endpoint + "&selectedAt=2026-02-30T12%3A00%3A00Z")).status, 400);
+    assert.equal((await fetch(endpoint + "&selectedAt=" + encodeURIComponent("2026-09-15T20:45:00+08:00"))).status, 400);
+    assert.equal(samples, samplesBeforePreview);
+    assert.deepEqual(await service.observationContexts.get(context.contextId), contextBeforePreview);
   } finally {
     release();
     if (scene) assert.equal((await scene).status, 200, "old supported Scene remains available");

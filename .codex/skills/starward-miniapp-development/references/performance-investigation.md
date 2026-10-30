@@ -13,7 +13,7 @@ Use this reference for latency, rendering, allocation and memory investigations.
 
 The decision is settled: usable debugging in the required high-memory scene plus a complete, parseable Heap export are sufficient to establish this route. Reuse the successful session and evidence. Do not commission every profiler mode, repeat a tool-selection comparison, or require a new validation matrix before investigating the next problem. Use the needed feature directly and check the resulting data. A feature not yet exercised is not thereby verified, unsupported, or a new prerequisite.
 
-For another computer or a real connection failure, use [VPN/TUN LAN setup and recovery](true-debug-lan.md). Restore the necessary environment and phone connection, then collect the result needed for the current question. Historical disconnections do not override the adopted route or justify restarting version/build/reconnection loops.
+For a new or re-established attachment, apply the adopted **automatic true-debug + LAN** default and the [LAN/IP setup procedure](true-debug-lan.md) before launch. The automatic-debug panel supports IP selection directly; check the actual phone-reachable address before a high-memory recording, and resolve a WAN fallback first. Reuse a working session. Historical disconnections do not override the adopted profiler route or justify restarting version/build/reconnection loops.
 
 | Pending question | Primary observation | What it establishes |
 | --- | --- | --- |

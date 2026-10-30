@@ -102,6 +102,38 @@ function dimensionWrites(display: SkyDisplayCanvas) {
   return writes;
 }
 
+test("a selected object's pending exact-time position clears old strokes without reallocating its backing", () => {
+  const h = fixture(), overlay = fixture(), writes = dimensionWrites(overlay.display);
+  const surface = createSkyCanvasSurface(h.display, { width: 360, height: 747 }, 3, h.create, overlay.display);
+  const reticle = { x: 180, y: 370, radiusPx: 12, shape: "cross" as const, color: "#DCE4EF" };
+  writes.length = 0;
+  // A newer requested sky is painted before the selected object's position
+  // effect catches up to that accepted exact time. The selection itself lives.
+  surface.present(null, [], true);
+  assert.equal(writes.length, 0, "pending selection does not eagerly allocate a backing");
+  surface.present(reticle, [], true);
+  for (let frame = 0; frame < 60; frame++) {
+    const strokes = overlay.lines.length;
+    surface.present(null, [], true);
+    assert.equal(overlay.lines.length, strokes, "no stale marker during the position gap");
+    surface.present({ ...reticle, x: reticle.x + frame / 10 }, [], true);
+  }
+  assert.equal(writes.filter(([, value]) => value > 0).length, 2, "position gaps cannot recreate a full-screen backing");
+  assert.equal(overlay.clears.length, 180, "each gap clears the previous three stroke regions");
+  assert.deepEqual(writes, [["width", 1080], ["height", 2241]], "one backing for one live selection");
+  assert(surface.isCurrent(h.display, { width: 360, height: 747 }, 3, overlay.display));
+  surface.present(null, [], false);
+  assert.deepEqual(writes.slice(-2), [["width", 0], ["height", 0]], "deselection releases the backing");
+  writes.length = 0;
+  surface.present(null, [], true);
+  assert.equal(writes.length, 0, "a new pending selection remains lazy");
+  surface.present(reticle, [], true);
+  surface.clearSelection();
+  assert.deepEqual(writes, [["width", 1080], ["height", 2241], ["width", 0], ["height", 0]],
+    "hide or invalidation still retires the selected backing");
+  surface.dispose();
+});
+
 test("inactive selection backing stays released across presents, hide and retirement, then lazily reactivates", () => {
   const h = fixture(), overlay = fixture(), writes = dimensionWrites(overlay.display);
   const surface = createSkyCanvasSurface(h.display, { width: 390, height: 844 }, 3, h.create, overlay.display);

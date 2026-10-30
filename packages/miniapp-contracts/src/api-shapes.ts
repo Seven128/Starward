@@ -1,5 +1,7 @@
 import type { AccountAvatarData, AccountAvatarSaveRequest, AccountProfileRecord } from "./account-profile.ts";
 import type { MapCloudSnapshot } from "./map-cloud-snapshot.ts";
+import type { MapCloudRaster } from "./cloud-display.ts";
+import type { MapCloudGridTimeline } from "./map-cloud-grid-timeline.ts";
 import type { NightLightDisplayStyle } from "./night-light-display.ts";
 import type { FeatureFlags } from "./feature-flags.ts";
 import type { FilterGroupKey, FilterState } from "./filters.ts";
@@ -262,6 +264,8 @@ export interface MapLayerData {
   source: SourceSummary | null;
   /** Schema-2 annual data; polygons remain for historical publications. */
   raster?: MapLayerRaster;
+  /** ECMWF total cloud has separate units, native-time and publication facts. */
+  cloudRaster?: MapCloudRaster;
   failureCode?: "LIGHT_READ_FAILED";
 }
 
@@ -406,6 +410,7 @@ export interface MapSpotTimeSignal {
   spotId: SpotSummary["spotId"];
   weatherAt: string | null;
   cloudPercent: number | null;
+  cloudEvidence?: import("./cloud-point-series.ts").CloudForecastEvidence | null;
   moonImpact: "LOW" | "MEDIUM" | "HIGH" | "UNKNOWN";
   opportunityScore: number | null;
   opportunityConfidence: number | null;
@@ -491,9 +496,15 @@ export interface MapNightLightRequest {
 export interface MapCloudRequest {
   contextId: string;
   viewport: NonNullable<MapSceneRequest["viewport"]> & { bounds: TerrainBounds };
+  /** New grid lane only: a precise read intent, never a Context update. */
+  selectedAt?: string;
 }
 
-export type MapCloudData = Pick<MapSceneData, "context" | "forecastValidUntil" | "layer" | "cloudSnapshot" | "timeFrames">;
+export type MapCloudData = Pick<MapSceneData, "context" | "forecastValidUntil" | "layer" | "cloudSnapshot" | "timeFrames"> & {
+  /** Absent in the legacy point-snapshot lane. Context remains committed. */
+  requestedAt?: string;
+  gridTimeline?: MapCloudGridTimeline;
+};
 
 export interface RouteEstimateRequest {
   contextId: ObservationContext["contextId"];

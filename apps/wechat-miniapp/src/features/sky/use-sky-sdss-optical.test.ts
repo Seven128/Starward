@@ -39,10 +39,9 @@ function opticalTestSource(name: string): string {
 function progressiveDeclaration(): string {
   const source = ts.createSourceFile("use-sky-target-optical.ts",
     opticalTestSource("use-sky-target-optical.ts"), ts.ScriptTarget.Latest, true);
-  const declaration = source.statements.find((node): node is ts.FunctionDeclaration =>
-    ts.isFunctionDeclaration(node) && node.name?.text === "useSkyTargetOptical");
-  assert(declaration);
-  return declaration.getText(source).replace(/^export\s+/u, "") + "\n";
+  const declarations = source.statements.filter((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node));
+  assert(declarations.some(node => node.name?.text === "useSkyTargetOptical"));
+  return declarations.map(node => node.getText(source).replace(/^export\s+/u, "")).join("\n") + "\n";
 }
 
 test("a selected optical family outside the actual view starts no image jobs and retires ready images", () => {

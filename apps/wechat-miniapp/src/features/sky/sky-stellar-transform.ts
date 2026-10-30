@@ -30,6 +30,10 @@ export function createSkyStellarTransform(count:number,motionAt:SkyStellarMotion
   const displayDirection=(index:number)=>{
     if(directions[index]===undefined){
       const at=position(index);directions[index]=prepareSkyDirection(at.azimuthDeg,at.altitudeDeg);
+      // Position and prepared direction now own every later read. Keep the
+      // immutable input intact for a projector that retained it, but release
+      // this frame's redundant reference; unseen/rejected rays stay cached.
+      vectors[index]=undefined;
     }
     return directions[index]!;
   };

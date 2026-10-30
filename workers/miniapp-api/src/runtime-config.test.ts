@@ -69,6 +69,24 @@ test("prepared Map publication is disabled by default and requires an explicit a
   ]) assert.throws(() => withEnvironment({ ...environment, ...input }, loadRuntimeConfig), /runtime_config_invalid:MINIAPP_MAP_STATIC_PUBLICATION/u);
 });
 
+test("numeric cloud publications remain LOCAL until complete publication admission exists", () => {
+  const directory = path.resolve("runtime-cloud-numeric-fixture");
+  for (const profile of ["TRIAL", "COMMERCIAL"] as const) {
+    const environment = releaseEnvironment(profile, "OPEN_METEO_COMMERCIAL");
+    assert.equal(withEnvironment(environment, loadRuntimeConfig).cloudPublicationRoot, null);
+    assert.throws(() => withEnvironment({ ...environment, MINIAPP_CLOUD_PUBLICATION_ROOT: directory }, loadRuntimeConfig),
+      /^Error: cloud_numeric_publication_requires_local$/u);
+  }
+  for (const storageMode of ["MEMORY_TEST", "POSTGRES"] as const) {
+    const environment = { MINIAPP_RELEASE_PROFILE: "LOCAL", MINIAPP_STORAGE_MODE: storageMode,
+      MINIAPP_AUTH_MODE: "LOCAL_TEST", MINIAPP_DEVELOPMENT_FIXTURE_MODE: storageMode === "MEMORY_TEST" ? "1" : "0",
+      DATABASE_URL: "postgresql://local:test@localhost:5432/starward", MINIAPP_CLOUD_PUBLICATION_ROOT: directory };
+    assert.equal(withEnvironment(environment, loadRuntimeConfig).cloudPublicationRoot, directory);
+    assert.throws(() => withEnvironment({ ...environment, MINIAPP_CLOUD_PUBLICATION_ROOT: "relative/cloud" }, loadRuntimeConfig),
+      /^Error: runtime_config_invalid:MINIAPP_CLOUD_PUBLICATION_ROOT$/u);
+  }
+});
+
 test("delivery identity encryption requires a distinct valid key and defaults to disabled", () => {
   const environment = releaseEnvironment("TRIAL", "OPEN_METEO_COMMERCIAL");
   const key = "17".repeat(32);

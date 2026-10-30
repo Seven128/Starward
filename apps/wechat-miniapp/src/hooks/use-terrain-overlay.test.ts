@@ -94,6 +94,25 @@ function harness(liveMetadata = false) {
 }
 const settle = () => new Promise<void>(resolve => setImmediate(resolve));
 
+test("closing terrain retires pending metadata and images; a late reply cannot restore the closed layer", async () => {
+  const h = harness(true);
+  try {
+    const input = viewport();
+    h.render(true, true, input);
+    const first = h.metadataRequests[0]!;
+    assert.equal(first.signal.aborted, false);
+    const off = h.render(false, false, input);
+    assert.equal(first.signal.aborted, true);
+    assert.equal(off.candidate, null);
+    first.resolve(publication(input, "late-closed")); await settle();
+    assert.equal(h.render(false, false, input).candidate, null);
+    assert.equal(h.requests.length, 0, "closed metadata must not start an image download");
+    h.render(true, true, input);
+    assert.equal(h.metadataRequests.length, 2, "reopening retains a usable real demand");
+    assert.equal(h.metadataRequests[1]!.signal.aborted, false);
+  } finally { h.unmount(); }
+});
+
 const workingBounds = displayRasterWindowBounds({ grid: DISPLAY_RASTER_GRID, zoom: 10, x: 836, y: 425,
   columns: 3, rows: 3, tilePixels: 256 });
 function viewport(inset = .2, shift = 0): TerrainOverlayRequest {

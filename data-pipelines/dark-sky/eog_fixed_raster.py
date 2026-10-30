@@ -8,6 +8,8 @@ Publication and the database transaction remain with publish_eog_viirs.
 from __future__ import annotations
 
 import dataclasses
+from bisect import bisect_left, insort
+from collections.abc import Iterable
 import hashlib
 import json
 from pathlib import Path
@@ -20,24 +22,27 @@ from rasterio.io import MemoryFile
 
 import eog_fixed_method as fixed
 from eog_area_intersection import intersect_area_masses, engine_identity
-from eog_raster import PipelineError, PublicationManifest, RasterSelection, canonical_json
+from eog_raster import PipelineError, PublicationManifest, RasterGrid, RasterSelection, canonical_json
 
 
-def warp_numeric(values: np.ma.MaskedArray, coverages: np.ma.MaskedArray, source_areas: np.ndarray,
-                 source_x: np.ndarray, source_y: np.ndarray, target_areas: np.ndarray,
-                 affine: Affine, minimum_coverage: int, *, identity_x: np.ndarray | None = None,
-                 identity_y: np.ndarray | None = None, target_branches: np.ndarray | None = None) -> dict[str, np.ndarray]:
+def _warp_area_masses(values: np.ma.MaskedArray, coverages: np.ma.MaskedArray, source_areas: np.ndarray,
+                      source_x: np.ndarray, source_y: np.ndarray, target_areas: np.ndarray,
+                      affine: Affine, minimum_coverage: int, *, identity_x: np.ndarray | None = None,
+                      identity_y: np.ndarray | None = None, target_branches: np.ndarray | None = None,
+                      source_core: tuple[int, int, int, int] | None = None) -> np.ndarray:
     radiance = np.asarray(values.data, dtype="float64")
     coverage = np.asarray(coverages.data, dtype="float64")
     if (radiance.shape != coverage.shape or radiance.shape != source_areas.shape
             or radiance.shape != source_x.shape or radiance.shape != source_y.shape
-            or target_areas.ndim != 2 or not np.all(np.isfinite(target_areas) & (target_areas > 0))):
+            or not np.all(np.isfinite(source_areas) & (source_areas > 0))
+            or target_areas.ndim != 2 or target_areas.size == 0
+            or not np.all(np.isfinite(target_areas) & (target_areas > 0))):
         raise PipelineError("nightlight_numeric_warp_shape_invalid")
     missing, insufficient, valid = fixed.quality_masks(values, coverages, minimum_coverage)
     source = np.stack([np.where(valid, radiance, 0) * source_areas, valid * source_areas,
                        missing * source_areas, insufficient * source_areas, source_areas])
     if target_branches is None:
-        mass = intersect_area_masses(source, source_x, source_y, affine, np.ones(target_areas.shape, dtype=bool))
+        mass = intersect_area_masses(source, source_x, source_y, affine, np.ones(target_areas.shape, dtype=bool), source_core=source_core)
     else:
         if (identity_x is None or identity_y is None or identity_x.shape != source_x.shape
                 or identity_y.shape != source_y.shape or target_branches.shape != target_areas.shape
@@ -49,8 +54,13 @@ def warp_numeric(values: np.ma.MaskedArray, coverages: np.ma.MaskedArray, source
         for selected, x, y in [(0, identity_x, identity_y), (1, source_x, source_y)]:
             chosen = target_branches == selected
             if np.any(chosen):
-                projected = intersect_area_masses(source, x, y, affine, chosen)
+                projected = intersect_area_masses(source, x, y, affine, chosen, source_core=source_core)
                 mass[:, chosen] = projected[:, chosen]
+    return mass
+
+
+def _numbers_from_masses(mass: np.ndarray, target_areas: np.ndarray) -> dict[str, np.ndarray]:
+    """Normalize once against the complete target, after all source cores."""
     area_excess = np.maximum(mass[4] / target_areas - 1, 0)
     tolerance = fixed.POLICY["qualityPolicy"]["areaFractionNumericalTolerance"]
     if float(np.max(area_excess)) > tolerance:
@@ -73,6 +83,103 @@ def warp_numeric(values: np.ma.MaskedArray, coverages: np.ma.MaskedArray, source
             "insufficientCoverageAreaFraction": np.clip(mass[3] / target_areas, 0, 1),
             "publishedAreaFraction": published_fraction, "qualityMask": quality,
             "areaExcessFraction": area_excess}
+
+
+def warp_numeric(values: np.ma.MaskedArray, coverages: np.ma.MaskedArray, source_areas: np.ndarray,
+                 source_x: np.ndarray, source_y: np.ndarray, target_areas: np.ndarray,
+                 affine: Affine, minimum_coverage: int, *, identity_x: np.ndarray | None = None,
+                 identity_y: np.ndarray | None = None, target_branches: np.ndarray | None = None) -> dict[str, np.ndarray]:
+    mass = _warp_area_masses(values, coverages, source_areas, source_x, source_y, target_areas, affine,
+                            minimum_coverage, identity_x=identity_x, identity_y=identity_y, target_branches=target_branches)
+    return _numbers_from_masses(mass, target_areas)
+
+
+@dataclasses.dataclass(frozen=True)
+class NumericWarpChunk:
+    """One bounded dense source window, with halo excluded from its core.
+
+    origin is the supplied window's (row, column) in the complete dense source
+    grid. core is its local half-open (top, left, bottom, right) rectangle.
+    All numeric and geolocation arrays include the same halo window.
+    """
+    origin: tuple[int, int]
+    core: tuple[int, int, int, int]
+    values: np.ma.MaskedArray
+    coverages: np.ma.MaskedArray
+    source_areas: np.ndarray
+    source_x: np.ndarray
+    source_y: np.ndarray
+    identity_x: np.ndarray | None = None
+    identity_y: np.ndarray | None = None
+
+
+def _validate_source_partition(cores: list[tuple[int, int, int, int]], source_shape: tuple[int, int]) -> None:
+    """A rectangle sweep proves no duplicated core; equal area then proves cover.
+
+    Only rectangle metadata is retained, never a source-sized coverage bitmap.
+    Shared y edges retire before new rectangles enter, so adjacency is legal.
+    """
+    if sum((bottom - top) * (right - left) for top, left, bottom, right in cores) != source_shape[0] * source_shape[1]:
+        raise PipelineError("nightlight_source_partition_incomplete")
+    events = sorted((y, kind, left, right, index) for index, (top, left, bottom, right) in enumerate(cores)
+                    for y, kind in ((top, 1), (bottom, -1)))
+    active: list[tuple[int, int, int]] = []
+    for _, kind, left, right, index in events:
+        item = (left, right, index)
+        position = bisect_left(active, item)
+        if kind == -1:
+            if position >= len(active) or active[position] != item:
+                raise PipelineError("nightlight_source_partition_invalid")
+            active.pop(position)
+        else:
+            if position and active[position - 1][1] > left or position < len(active) and right > active[position][0]:
+                raise PipelineError("nightlight_source_partition_overlap")
+            insort(active, item)
+
+
+def warp_numeric_chunks(chunks: Iterable[NumericWarpChunk], source_shape: tuple[int, int],
+                        target_areas: np.ndarray, affine: Affine, minimum_coverage: int, *,
+                        target_branches: np.ndarray | None = None) -> dict[str, np.ndarray]:
+    """Accumulate disjoint source-core masses while retaining one chunk at a time.
+
+    source_shape describes the entire published dense source rectangle. Missing
+    source values belong in its masks; omitting a core cannot turn a hole into
+    unpublished data. Each window keeps the existing 2402² geometry budget.
+    """
+    if (len(source_shape) != 2 or any(isinstance(value, bool) or not isinstance(value, int) or value < 2 for value in source_shape)
+            or target_areas.ndim != 2 or target_areas.size == 0 or target_areas.size > 256 ** 2
+            or not np.all(np.isfinite(target_areas) & (target_areas > 0))):
+        raise PipelineError("nightlight_chunked_warp_shape_invalid")
+    mass = np.zeros((5, *target_areas.shape), dtype="float64")
+    compensation = np.zeros_like(mass)
+    cores: list[tuple[int, int, int, int]] = []
+    for chunk in chunks:
+        shape, origin, core = chunk.values.shape, chunk.origin, chunk.core
+        if (len(shape) != 2 or min(shape) < 2 or shape[0] * shape[1] > 2402 ** 2
+                or len(origin) != 2 or len(core) != 4
+                or any(isinstance(value, bool) or not isinstance(value, int) for value in (*origin, *core))
+                or min(origin) < 0 or origin[0] + shape[0] > source_shape[0] or origin[1] + shape[1] > source_shape[1]
+                or not 0 <= core[0] < core[2] <= shape[0] or not 0 <= core[1] < core[3] <= shape[1]):
+            raise PipelineError("nightlight_chunk_source_core_invalid")
+        global_core = (origin[0] + core[0], origin[1] + core[1], origin[0] + core[2], origin[1] + core[3])
+        if ((global_core[2] < source_shape[0] and core[2] == shape[0])
+                or (global_core[3] < source_shape[1] and core[3] == shape[1])):
+            raise PipelineError("nightlight_chunk_interior_halo_required")
+        cores.append(global_core)
+        projected = _warp_area_masses(chunk.values, chunk.coverages, chunk.source_areas, chunk.source_x, chunk.source_y,
+                                      target_areas, affine, minimum_coverage, identity_x=chunk.identity_x,
+                                      identity_y=chunk.identity_y, target_branches=target_branches, source_core=core)
+        # Kahan accumulation bounds partition-order rounding without retaining
+        # per-chunk arrays or normalizing incomplete quality fractions.
+        corrected = projected - compensation
+        combined = mass + corrected
+        compensation = (combined - mass) - corrected
+        mass = combined
+        # Do not hold the previous source window while its generator prepares
+        # the next one; only the bounded target masses survive this iteration.
+        del chunk
+    _validate_source_partition(cores, source_shape)
+    return _numbers_from_masses(mass, target_areas)
 
 
 def colour_png(numbers: dict[str, np.ndarray]) -> bytes:
@@ -189,7 +296,7 @@ def compose_fixed_numbers(geometry: dict[str, Any], cells: list[dict[str, Any]] 
     return numbers
 
 
-def write_prepared_raster(manifest: PublicationManifest, selection: RasterSelection, dataset_version: str,
+def write_prepared_raster(manifest: PublicationManifest, selection: RasterSelection | RasterGrid, dataset_version: str,
                           geometry_directory: Path, geometry: dict[str, Any], numbers: dict[str, np.ndarray],
                           output: Path, cells: list[dict[str, Any]] | None) -> dict[str, Any]:
     png = colour_png(numbers)
@@ -198,6 +305,10 @@ def write_prepared_raster(manifest: PublicationManifest, selection: RasterSelect
                   "coverageSha256": manifest.coverage.sha256, "policySha256": fixed.POLICY_SHA256,
                   "geometrySha256": hashlib.sha256((geometry_directory / "warp-grid.json").read_bytes()).hexdigest(),
                   "numericalEngine": engine_identity()}
+    partitioned = geometry.get("schemaVersion") == "starward-nightlight-warp-grid-v3"
+    chunked = partitioned or geometry.get("schemaVersion") == "starward-nightlight-warp-grid-v2"
+    if chunked:
+        source_set["preparation"] = geometry["preparation"]
     identity = hashlib.sha256(canonical_json(source_set).encode()).hexdigest()
     numeric_bytes = numeric_geotiff(numbers, Affine(*geometry["affine"]))
     numeric_hash = hashlib.sha256(numeric_bytes).hexdigest()
@@ -210,11 +321,11 @@ def write_prepared_raster(manifest: PublicationManifest, selection: RasterSelect
                "coordinates": "derived-GCJ-Mercator-metres", "pixelInterpretation": "AREA"}
     source = fixed.source_summary(dataclasses.replace(manifest, dataset_version=dataset_version), selection.resolution_degrees)
     valid = np.isfinite(numbers["radianceMean"])
-    proof = {"schemaVersion": "starward-fixed-nightlight-raster-v2", "releaseState": "PREPARED",
+    proof = {"schemaVersion": "starward-fixed-nightlight-raster-v4" if partitioned else "starward-fixed-nightlight-raster-v3" if chunked else "starward-fixed-nightlight-raster-v2", "releaseState": "PREPARED",
              "publicationId": f"nightlight:{identity}:{image_hash}:{numeric_hash}", "datasetVersion": dataset_version,
              "methodVersion": fixed.POLICY["methodVersion"], "styleVersion": fixed.POLICY["styleVersion"],
              "policy": fixed.POLICY, "sourceSet": source_set, "source": source,
-             "derivation": "NUMERIC_FIXED_CELL_COMPOSITION" if cells else "GEOS_PHYSICAL_AREA_INTERSECTION",
+             "derivation": "NUMERIC_FIXED_CELL_COMPOSITION" if cells else "GEOS_PHYSICAL_AREA_PARTITIONED_INTERSECTION" if partitioned else "GEOS_PHYSICAL_AREA_CHUNKED_INTERSECTION" if chunked else "GEOS_PHYSICAL_AREA_INTERSECTION",
              "cells": [{"x": cell["grid"]["window"]["x"], "y": cell["grid"]["window"]["y"],
                         "file": cell["image"]["file"], "publicationId": cell["publicationId"], "numericSha256": cell["numeric"]["sha256"]}
                        for cell in (cells or [])],

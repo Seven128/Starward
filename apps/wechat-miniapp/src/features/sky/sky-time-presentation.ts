@@ -1,4 +1,5 @@
 import { assertSkyObservationFrames, assertSkyTimeModel, assertStellarGeometryFrame, skyGeometryWindow,
+  cloudPointSeriesAt,
   STELLAR_GEOMETRY_FORMAT, STELLAR_GEOMETRY_REFERENCE_AT,
   type SkyReport, type SkyGeometryReport, type SkyGeometryRow, type SkyTimeModel,
   type DeepSkyScenePoint, type HourlySkyRow, type SourceSummary } from "@starward/miniapp-contracts";
@@ -67,19 +68,40 @@ export function skyPresentationTimeModel(report: SkyReport | undefined): SkyTime
   return model;
 }
 
-const WEATHER_FIELDS = ["cloudPercent", "precipitationMm", "precipitationProbabilityPercent", "windKph", "windGustKph",
+const WEATHER_FIELDS = ["precipitationMm", "precipitationProbabilityPercent", "windKph", "windGustKph",
   "windDirectionDeg", "temperatureC", "relativeHumidityPercent", "dewPointC", "visibilityKm"] as const;
 
 /** Follow the existing provider-hour coverage, never a nearest astronomy row.
  * Conflicting copies of the same source hour are unusable rather than picked. */
-function weatherAt(rows: SkyReport["hourly"], at: string): HourlySkyRow | null {
+function weatherAt(rows: SkyReport["hourly"], at: string, independentCloud: boolean): HourlySkyRow | null {
   const instant = Date.parse(at);
   const rowsInHour = rows.filter(row => row.weatherAt && Date.parse(row.weatherAt) <= instant &&
     instant < Date.parse(row.weatherAt) + 3_600_000);
   const latest = rowsInHour.reduce<HourlySkyRow | null>((value, row) => !value ||
     Date.parse(row.weatherAt!) > Date.parse(value.weatherAt!) ? row : value, null);
   return latest && rowsInHour.filter(row => row.weatherAt === latest.weatherAt).every(row =>
-    WEATHER_FIELDS.every(field => row[field] === latest[field]) && row.state === latest.state) ? latest : null;
+    WEATHER_FIELDS.every(field => row[field] === latest[field]) &&
+    (independentCloud || row.cloudPercent === latest.cloudPercent && row.state === latest.state)) ? latest : null;
+}
+
+type SkyTimeWeather = Pick<HourlySkyRow, "at" | "weatherAt" | "cloudPercent" | "cloudEvidence" | "state" | typeof WEATHER_FIELDS[number]>;
+
+/** Geometry can move at every Play tick while the total cloud is sampled from
+ * this report's one pinned native series. Other fields keep their source hour. */
+function presentWeather(report: SkyReport, at: string, now: number, exact?: HourlySkyRow | null): SkyTimeWeather | null {
+  const totalCloud = report.weatherEvidence?.totalCloud;
+  const independentCloud = totalCloud !== undefined || report.hourly.some(row => row.cloudEvidence !== undefined);
+  if (!independentCloud) return exact ? exact.weatherAt ? exact : null : weatherAt(report.hourly, at, false);
+  const source = weatherAt(report.hourly, at, true);
+  const weather = source?.weatherAt && now < Date.parse(source.weatherAt) + 3_600_000 ? source : null;
+  const cloudEvidence = totalCloud?.value ? cloudPointSeriesAt(totalCloud.value, at, now) : null;
+  if (!weather && !cloudEvidence) return null;
+  return { at, weatherAt: weather?.weatherAt ?? null, cloudPercent: cloudEvidence?.cloudPercent ?? null, cloudEvidence,
+    precipitationMm: weather?.precipitationMm ?? null, precipitationProbabilityPercent: weather?.precipitationProbabilityPercent ?? null,
+    windKph: weather?.windKph ?? null, windGustKph: weather?.windGustKph ?? null, windDirectionDeg: weather?.windDirectionDeg ?? null,
+    temperatureC: weather?.temperatureC ?? null, relativeHumidityPercent: weather?.relativeHumidityPercent ?? null,
+    dewPointC: weather?.dewPointC ?? null, visibilityKm: weather?.visibilityKm ?? null,
+    state: weather && cloudEvidence ? weather.state : "PARTIAL" };
 }
 
 export interface SkyTimePresentation {
@@ -87,7 +109,7 @@ export interface SkyTimePresentation {
   model: SkyTimeModel | null;
   report: SkyGeometryReport;
   row: SkyGeometryRow;
-  weather: HourlySkyRow | null;
+  weather: SkyTimeWeather | null;
   mode: "EXACT" | "MODEL";
 }
 
@@ -108,10 +130,10 @@ export function selectSkyTimePresentation(report: SkyReport | undefined, request
  * response storage or the committed Context. Advice/event activity is not
  * evaluated by the geometry model and is never relabeled to this instant. */
 export function presentSkyTime(report: SkyReport | undefined, at: string,
-  suppliedModel?: SkyTimeModel | null, geometrySources?: readonly SourceSummary[]): SkyTimePresentation | null {
+  suppliedModel?: SkyTimeModel | null, geometrySources?: readonly SourceSummary[], now = Date.now()): SkyTimePresentation | null {
   if (!report) return null;
   const exact = exactSkyTimeFrame(report.hourly, at);
-  if (exact) return { source: report, model: null, report, row: exact, weather: exact.weatherAt ? exact : null, mode: "EXACT" };
+  if (exact) return { source: report, model: null, report, row: exact, weather: presentWeather(report, at, now, exact), mode: "EXACT" };
   const originalModel = skyPresentationTimeModel(report);
   const model = suppliedModel ?? originalModel;
   const anchorAt = originalModel?.startAt ?? report.observationFrames?.[0]?.at;
@@ -120,7 +142,7 @@ export function presentSkyTime(report: SkyReport | undefined, at: string,
     model.observer.longitude !== observer.longitude || model.observer.elevationM !== observer.elevationM)) return null;
   const geometry = model ? evaluateSkyTimeModel(model, at) : null;
   if (!geometry) return null;
-  const weather = weatherAt(report.hourly, at);
+  const weather = presentWeather(report, at, now);
   const row = geometry.hourly;
   const scene = report.skyScene;
   const stellarAnchor = exactSkyTimeFrame(scene.frames, anchorAt);

@@ -16,7 +16,7 @@ import publish_eog_viirs as pipeline
 from prepare_fixed_eog import prepare_release
 
 
-def prepare_fixture(root: Path, dataset_version: str = "eog-fixed-test-v2") -> tuple[Path, Path]:
+def prepare_source_fixture(root: Path, *, aoi: dict[str, float] | None = None) -> Path:
     radiance, coverage = np.zeros((64, 64), dtype="float32"), np.full((64, 64), 12, dtype="uint16")
     radiance[:, 32:] = 50
     radiance[:, 16:32] = .5
@@ -28,12 +28,18 @@ def prepare_fixture(root: Path, dataset_version: str = "eog-fixed-test-v2") -> t
     raw = {"schemaVersion": 1, "datasetVersion": "eog-legacy-test-v1",
            "productName": "Synthetic numerical publication fixture", "dataYear": 2025,
            "sourceUrl": pipeline.SOURCE_PAGE, "licenseUrl": pipeline.LICENSE_URL,
-           "acquiredAt": "2026-10-01T00:00:00Z", "aoi": {"west": 113.68, "south": 22.68, "east": 114.32, "north": 23.32},
+           "acquiredAt": "2026-10-01T00:00:00Z", "aoi": aoi or {"west": 113.68, "south": 22.68, "east": 114.32, "north": 23.32},
            "minimumCloudFreeObservations": 3, "gridStridePixels": 16,
            "radiance": {"file": "radiance.tif", "sha256": pipeline.sha256_file(root / "radiance.tif"), "band": 1},
            "cloudFreeCoverage": {"file": "coverage.tif", "sha256": pipeline.sha256_file(root / "coverage.tif"), "band": 1}}
     legacy = root / "legacy.json"
     legacy.write_text(json.dumps(raw), encoding="utf-8")
+    return legacy
+
+
+def prepare_fixture(root: Path, dataset_version: str = "eog-fixed-test-v2", *,
+                    aoi: dict[str, float] | None = None) -> tuple[Path, Path]:
+    legacy = prepare_source_fixture(root, aoi=aoi)
     output = root / dataset_version
     prepare_release(legacy, dataset_version, [{"grid": "gcj02-mercator-pixel-centres-v1", "tilePixels": 256,
                                               "zoom": 9, "x": 418, "y": 222, "columns": 1, "rows": 1}], output)

@@ -21,3 +21,5 @@ export function createResourceFailureEpisode() {
     retry() { reported = false; },
   };
 }
+
+export type ResourceFailureEpisode = ReturnType<typeof createResourceFailureEpisode>;

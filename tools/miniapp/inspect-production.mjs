@@ -1,6 +1,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { REQUIRED_COMPILED_RUNTIME_CHUNKS } from './compiled-sky-origin.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const WEAPP_PACKAGE_BYTE_LIMIT = 2 * 1024 * 1024;
 export const WEAPP_AGGREGATE_BYTE_LIMIT = 20 * 1024 * 1024;
@@ -212,6 +213,13 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     response_cache_entity_identity:
       cachePolicy.includes("responseCacheKey") && cachePolicy.includes("path"),
     package_budget: packageBudgetPassed,
+    // Taro can emit every route wrapper while an entry-cache failure removes
+    // the actual application modules. Reuse the release owner's required
+    // shared chunks; route filenames alone cannot qualify that output.
+    compiled_runtime_files: ["app.js", ...REQUIRED_COMPILED_RUNTIME_CHUNKS].every((name) =>
+      sizes.some(({ file, size }) => size > 0 &&
+        path.relative(repositoryPath(bundleDirectory), repositoryPath(file)).replaceAll("\\", "/") === name),
+    ),
     route_files:
       routeTopologyMatches &&
       expectedRoutes.every((route) =>

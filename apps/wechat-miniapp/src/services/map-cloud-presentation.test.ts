@@ -164,3 +164,17 @@ test("a new missing response replaces retained coverage; account/night reset and
     assert.equal(host.render(), undefined);
   } finally { host.dispose(); }
 });
+
+test("the legacy hourly projector neither retimes nor retains a precise grid image", t => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: noon });
+  const host = mountedCloud(), input = scene([frame(at, [])], null);
+  const raster = { selectedAt: at, publicationId: "cloud-display:precise" };
+  Object.assign(input, { gridTimeline: { schemaVersion: "map-cloud-grid-timeline-v1" } });
+  Object.assign(input.layer, { validAt: at, cloudRaster: raster });
+  try {
+    const displayed = host.render(input, "account:night", true, "2026-10-18T13:30:00Z");
+    assert.equal(displayed.layer, input.layer);
+    assert.equal(displayed.layer.validAt, at); assert.equal(displayed.layer.cloudRaster, raster);
+    assert.equal(host.render(), undefined, "grid retention belongs exclusively to its pin/instant raster owner");
+  } finally { host.dispose(); }
+});

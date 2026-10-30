@@ -11,7 +11,7 @@ import type { SkyTimeRulerRow } from "./sky-time-presentation";
 type Element = { type: string; props: Record<string, any>; children: Element[] };
 type Props = { rows: readonly SkyTimeRulerRow[]; activeIndex: number; committedIndex: number;
   presentedAt: string; isPreviewing: boolean; saving?: boolean; playing?: boolean; layoutReady?: boolean; selectionReady?: boolean;
-  preparing?: boolean; interactionLocked?: boolean; reducedMotion?: boolean; onEntryReady?: (ready: boolean) => void };
+  preparing?: boolean; interactionLocked?: boolean; reducedMotion?: boolean; timezone?: string; onEntryReady?: (ready: boolean) => void };
 
 // Run the production component through successive renders. Hook slots persist;
 // changed passive effects run in declaration order before their state updates
@@ -32,7 +32,7 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
   const slots: any[] = [], positions: number[] = [], previews: number[] = [], commits: number[] = [], scrubs: boolean[] = [];
   const nextTicks: Array<() => void> = [], layoutReads: Array<(values: readonly unknown[]) => void> = [];
   const nodeReads: Array<(values: readonly unknown[]) => void> = [], offsetReads: Array<(values: readonly unknown[]) => void> = [];
-  let measurementCount = 0, nextTickCount = 0;
+  let measurementCount = 0, nextTickCount = 0, formatCount = 0;
   const createSelectorQuery = () => {
     let kind = "offset";
     const query = { select() { return query; }, boundingClientRect() { kind = "layout"; return query; },
@@ -67,7 +67,9 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
     React: { createElement: (type: string, elementProps: object, ...children: unknown[]) =>
       ({ type, props: elementProps, children: children.flat() }) },
     View: "view", Text: "text", Button: "button", ScrollView: "scroll", SoftButton: "soft",
-    Taro: platform, clockTimeInTimezone, createOrientationRulerLayout,
+    Taro: platform, clockTimeInTimezone: (...args: Parameters<typeof clockTimeInTimezone>) => {
+      formatCount++; return clockTimeInTimezone(...args);
+    }, createOrientationRulerLayout,
     createSkyTimeRulerSettlement, createRulerScrollPosition,
     useState: (initialValue: unknown) => {
       const index = cursor++;
@@ -79,7 +81,7 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
       return [slots[index].value, slots[index].set];
     },
     useRef: (value: unknown) => slots[cursor++] ??= { current: value },
-    useCallback: (callback: () => unknown, deps: readonly unknown[]) => memo(() => callback, deps),
+    useMemo: memo, useCallback: (callback: () => unknown, deps: readonly unknown[]) => memo(() => callback, deps),
     useEffect: (create: () => void | (() => void), deps?: readonly unknown[]) => {
       const index = cursor++, old = slots[index];
       if (!old || changed(old.deps, deps)) {
@@ -123,7 +125,7 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
   };
   const renderComponent = () => {
     cursor = 0; dirty = false; effects = [];
-    tree = component({ ...props, timezone: "Asia/Shanghai", saving: props.saving ?? false, reducedMotion: props.reducedMotion ?? false,
+    tree = component({ ...props, timezone: props.timezone ?? "Asia/Shanghai", saving: props.saving ?? false, reducedMotion: props.reducedMotion ?? false,
       onPreview: (index: number) => previews.push(index), onCommit: (index: number) => commits.push(index),
       onCancel: () => { cancels++; }, onScrubChange: (active: boolean) => scrubs.push(active) });
   };
@@ -149,6 +151,9 @@ function rulerFixture(initial: Props, windowWidth = 750, deferNative = false, de
     get nativeLeft() { return nativeLeft; },
     get nativeAnimationTarget() { return nativeAnimationTarget; },
     get measurementCount() { return measurementCount; },
+    get formatCount() { return formatCount; },
+    get currentLabel() { return tree.children.find(child => child?.props.className === "sky-orientation-time-ruler__current")!.children[0]!.children[0]; },
+    get ticks() { return tree.children.find(child => child?.type === "scroll")!.children[0]!.children; },
     get nextTickCount() { return nextTickCount; },
     get scroll() { return tree.children.find(child => child?.type === "scroll")!.props; },
     get track() { return tree.children.find(child => child?.type === "scroll")!.children[0]!.props; },
@@ -191,6 +196,25 @@ const windowProps = (rows: readonly SkyTimeRulerRow[], at: string, committed = c
 };
 const stepPx = 34;
 const one = { touches: [{ identifier: 1 }] };
+
+test("stable ruler rows reuse formatted ticks while exact presented seconds, timezone and replacement rows stay current", () => {
+  const props = { ...windowProps(original, "2026-10-18T13:00:17.123Z"), playing: true };
+  const r = rulerFixture(props);
+  assert.equal(r.currentLabel, "21:00:17");
+  assert.match(r.ticks[0]!.props.ariaLabel, /^12:00，/);
+  const before = r.formatCount;
+  r.render({ ...props, presentedAt: "2026-10-18T13:00:18.456Z" });
+  assert.equal(r.currentLabel, "21:00:18", "accepted seconds continue to advance");
+  assert.equal(r.formatCount - before, 1, "an accepted-frame render only formats its current time, not all unchanged ticks");
+  r.render({ ...props, timezone: "UTC" });
+  assert.equal(r.currentLabel, "13:00:17");
+  assert.match(r.ticks[0]!.props.ariaLabel, /^04:00，/, "timezone changes refresh every accessible tick");
+  const shifted = rowsFor("2026-10-19T05:00:00.000Z");
+  r.render({ ...windowProps(shifted, shifted[4]!.at), timezone: "UTC" });
+  assert.match(r.ticks[0]!.props.ariaLabel, /^05:00，/, "new row inputs cannot reuse prior formatted times");
+  assert.equal(r.currentLabel, "07:00:00");
+  r.unmount();
+});
 
 test("a held full-day ruler continues across pending short-window supply without cancelling or seizing the drag", t => {
   t.mock.timers.enable({ apis: ["setTimeout"] });

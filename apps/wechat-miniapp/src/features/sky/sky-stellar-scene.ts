@@ -75,6 +75,18 @@ export function skySceneHasContent(report: ResolvedSkyReport | undefined, at: st
     skySolarLightAt(report.hourly, at) || exactSkyObservationFrame(report, at));
 }
 
+// The publication cache outlives a render. Keep this callback on a module
+// prototype even when attachSkyCatalog is inlined into a page's useMemo.
+class SkyCatalogMotionReader {
+  constructor(private readonly rows: StellarCatalogPublication["rows"]) {}
+
+  read(index: number, output: SkyStellarMotionBuffer = [0,0,0,0,0,0]): StellarMotion {
+    const row = this.rows[index]!;
+    output[0]=row[4];output[1]=row[5];output[2]=row[6];
+    output[3]=row[7];output[4]=row[8];output[5]=row[9];return output;
+  }
+}
+
 /** Local render model only. Never put expanded stars into the shared report query/cache. */
 export function attachSkyCatalog(report: SkyGeometryReport, publication: StellarCatalogPublication | undefined): ResolvedSkyReport {
   const scene = report.skyScene;
@@ -83,17 +95,14 @@ export function attachSkyCatalog(report: SkyGeometryReport, publication: Stellar
       assertRetainedStellarCatalogPublication(publication, scene.catalog);
       let catalog = catalogs.get(publication);
       if (!catalog) {
+        const motion = isAdmittedStellarCatalogPublication(publication) ? new SkyCatalogMotionReader(publication.rows) : null;
         catalog = Object.freeze({ catalogVersion: publication.catalogVersion, catalogHash: publication.catalogHash,
           magnitudeLimit: publication.magnitudeLimit, rowCount: publication.rows.length, sources: publication.sources,
           // Preserve wire order. Only this immutable model can certify a
           // brightness prefix; legacy/non-monotonic inputs keep a full scan.
           magnitudeOrdered: publication.rows.every((row,index)=>index===0 || row[2]>=publication.rows[index-1]![2]),
           displayColors: Object.freeze(publication.rows.map(row => skyStarDisplayColor(row[3]))),
-          ...(isAdmittedStellarCatalogPublication(publication)?{motionAt: (index: number, output: SkyStellarMotionBuffer = [0,0,0,0,0,0]): StellarMotion => {
-            const row=publication.rows[index]!;
-            output[0]=row[4];output[1]=row[5];output[2]=row[6];
-            output[3]=row[7];output[4]=row[8];output[5]=row[9];return output;
-          }}:{}),
+          ...(motion ? { motionAt: motion.read.bind(motion) } : {}),
           entries: Object.freeze(publication.rows.map(([sourceId, displayName, magnitude, colorIndex]) => Object.freeze({
             sourceId, objectRef: sourceId, displayName, magnitude, colorIndex, magnitudeBand: "V" as const, colorIndexBand: "B-V" as const,
           }))) });
@@ -107,8 +116,12 @@ export function attachSkyCatalog(report: SkyGeometryReport, publication: Stellar
       unavailableReason: scene.unavailableReason ?? "STELLAR_CATALOG_UNAVAILABLE" } };
 }
 
-/** Resolve only the exact selected instant, from the same publication used for labels and picking. */
-export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at: string | undefined): ResolvedStellarFrame | undefined {
+/** Resolve only the exact selected instant, from the same publication used for labels and picking.
+ * Cached frame accessors must close over this call, never a render that a
+ * downstream compiler inlines it into. Keep the factory's module boundary. */
+export const resolveSkySceneFrame = Object.freeze(function resolveSkySceneFrame(
+  scene: ResolvedStellarScene | undefined, at: string | undefined,
+): ResolvedStellarFrame | undefined {
   if (!scene || scene.state !== "AVAILABLE" || !scene.catalog || !scene.publication || !scene.observer) return undefined;
   const frame = exactSkyTimeFrame(scene.frames, at);
   if (!frame || frame.state !== "AVAILABLE" || !frame.geometry) return undefined;
@@ -175,4 +188,4 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
       displayTransmission, displayDirection });
     return retain(resolved);
   } catch { return undefined; }
-}
+});

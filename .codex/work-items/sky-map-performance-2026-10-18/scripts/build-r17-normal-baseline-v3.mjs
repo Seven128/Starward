@@ -17,46 +17,58 @@ import { addR17RulerEntry } from './r17-ruler-entry-instrumentation.mjs';
 import { addR17RulerEntryV2 } from './r17-ruler-entry-v2-instrumentation.mjs';
 import { addR17NormalInput, addR17GeometryStages, addR19DrawReasons, addR20DrawCosts } from './r17-normal-input-instrumentation.mjs';
 import { addR28FirstAcceptedCosts } from './r28-first-accepted-instrumentation.mjs';
-import { instrumentNativeRegionProbe } from '../tmp/r17-native-region-probe-instrumentation.mjs';
+import { addD2DecodeCheckpoint } from './d2-decode-checkpoint-instrumentation.mjs';
 import { terrainWaitSourceFiles, transformTerrainWaitSources } from './inject-terrain-wait-observer.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), work = path.resolve(here, '..'), root = path.resolve(here, '../../../..');
-const revisionArgs = process.argv.slice(3), observationA1 = revisionArgs.includes('--observe-a1');
+const revisionArgs = process.argv.slice(3), d2GpuResources = revisionArgs.includes('--d2-gpu-resources');
+const d2TimeObservation = revisionArgs.includes('--d2-time-observation');
+const d1TerrainWait = revisionArgs.includes('--d1-terrain-wait');
+const d2Current = d2GpuResources || revisionArgs.includes('--d2-current');
+const observationA1 = !d2Current && !d2TimeObservation && !d1TerrainWait && revisionArgs.includes('--observe-a1');
 const usbReverse = revisionArgs.includes('--usb-reverse');
-const currentUi = revisionArgs.includes('--current-ui');
+const currentUi = d2Current || d2TimeObservation || d1TerrainWait || revisionArgs.includes('--current-ui');
 const skyPackage = revisionArgs.includes('--r27-sky-package');
 const firstAcceptedCosts = revisionArgs.includes('--first-accepted-costs');
-const skyOnly = skyPackage || firstAcceptedCosts;
+const skyOnly = skyPackage || firstAcceptedCosts || d2Current || d2TimeObservation;
 const reviewFlags = Array.from({ length: 26 }, (_, index) => `--review-r${index + 2}`);
 const selectedReviews = revisionArgs.filter(value => reviewFlags.includes(value));
-const reviewRevision = selectedReviews.length ? Number(selectedReviews[0].slice('--review-r'.length)) : 1;
-const rulerEntry = reviewRevision >= 5, nativeAdmission = reviewRevision >= 6, retirementReceipt = reviewRevision >= 9;
-const geometryStages = reviewRevision >= 17, nativeRegion = reviewRevision >= 14 && !skyOnly;
-const terrainWait = observationA1 && !skyOnly;
-const drawReasons = reviewRevision >= 19;
-const drawCosts = reviewRevision >= 20;
+const reviewRevision = d2Current ? 25 : selectedReviews.length ? Number(selectedReviews[0].slice('--review-r'.length)) : 1;
+const rulerEntry = !d2Current && reviewRevision >= 5, nativeAdmission = !d2Current && reviewRevision >= 6, retirementReceipt = d2Current || reviewRevision >= 9;
+const geometryStages = d2TimeObservation || !d2Current && reviewRevision >= 17, nativeRegion = reviewRevision >= 14 && !skyOnly;
+const terrainWait = d1TerrainWait || observationA1 && !skyOnly;
+const drawReasons = !d2Current && reviewRevision >= 19;
+const drawCosts = !d2Current && reviewRevision >= 20;
 const memoryLifetime = reviewRevision >= 24 && !firstAcceptedCosts;
 const memoryCheckpoints = reviewRevision >= 25 && !firstAcceptedCosts;
 const memoryOwnerLinks = reviewRevision >= 26 && !firstAcceptedCosts;
 const queryCallbackLinks = reviewRevision >= 27 && !firstAcceptedCosts;
-const normalPlayTrialMs = memoryCheckpoints ? 20000 : retirementReceipt ? 60000 : 20000;
-if (revisionArgs.some(value => ![...reviewFlags, '--observe-a1', '--usb-reverse', '--current-ui', '--r27-sky-package', '--first-accepted-costs'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
+const normalPlayTrialMs = d2Current || d2TimeObservation || d1TerrainWait ? null : memoryCheckpoints ? 20000 : retirementReceipt ? 60000 : 20000;
+const probeVersion = d1TerrainWait ? 'terrain-wait-v3' : d2TimeObservation ? 'd2-time-observation-v1' : d2GpuResources ? 'd2-gpu-resources-v1' : d2Current ? 'd2-decode-v1' : 3;
+if (d2Current || d2TimeObservation || d1TerrainWait ? revisionArgs.length !== 1 : revisionArgs.some(value => ![...reviewFlags, '--observe-a1', '--usb-reverse', '--current-ui', '--r27-sky-package', '--first-accepted-costs'].includes(value)) || new Set(revisionArgs).size !== revisionArgs.length ||
     selectedReviews.length > 1 || reviewRevision >= 3 && !observationA1 || reviewRevision >= 14 && !usbReverse ||
     currentUi && (reviewRevision !== 27 || !observationA1 || !usbReverse) ||
     skyPackage && (!currentUi || reviewRevision !== 27 || !observationA1 || !usbReverse) ||
     firstAcceptedCosts && (!currentUi || reviewRevision !== 27 || !observationA1 || !usbReverse || skyPackage))
   throw Error('finite_normal_revision_required');
 const reviewSuffix = reviewRevision > 1 ? '-review-r' + reviewRevision : '';
-const trialName = (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix + (usbReverse ? '-usb' : '') + (firstAcceptedCosts ? '-first-accepted-costs' : skyPackage ? '-sky-package' : currentUi ? '-current-ui' : '');
+const trialName = d1TerrainWait ? 'r17-d1-terrain-wait-20261029' : d2TimeObservation ? 'r17-d2-time-observation-20261029' : d2GpuResources ? 'r17-d2-gpu-resources-20261029' : d2Current ? 'r17-d2-current' : (observationA1 ? 'r17-normal-a1' : 'r17-normal-baseline-v3') + reviewSuffix + (usbReverse ? '-usb' : '') + (firstAcceptedCosts ? '-first-accepted-costs' : skyPackage ? '-sky-package' : currentUi ? '-current-ui' : '');
 const trial = path.join(work, 'tmp/' + trialName), sourceRoot = path.join(trial, 'source'), projectRoot = path.join(trial, 'project');
 const feature = 'apps/wechat-miniapp/src/features/sky/', pagePath = feature + 'spot-sky-page.tsx';
-const slot = firstAcceptedCosts ? 'r17-a1-first-accepted-usb' : skyPackage ? 'r17-a1-r27-sky-usb' : currentUi ? 'r17-a1-r27-ui-usb' : observationA1 ? trialName : reviewRevision === 2 ? 'r17-normal-v3-r2' : trialName;
-const buildGeneration = firstAcceptedCosts ? 34 : skyPackage ? 33 : currentUi ? 32 : observationA1 ? (queryCallbackLinks ? 31 : memoryOwnerLinks ? 30 : memoryCheckpoints ? 29 : memoryLifetime ? 28 : 27) : 25, bridgePort = 8798;
-const normalLabel = (observationA1 ? '正常Sky关联 A1' + (firstAcceptedCosts ? ' 首响应成本' : reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3') + (usbReverse ? ' USB' : '') + (currentUi ? ' 当前UI' : '');
-const protocolName = nativeAdmission ? 'r17-normal-input-protocol.mjs' : rulerEntry ? 'r17-ruler-entry-protocol.mjs' : observationA1 ? 'r17-a-correlation-protocol.mjs' : 'r17-phone-probe-v3-protocol.mjs';
-const preparationName = observationA1 ? 'R17-NORMAL-A1-PREPARATION.json' : 'R17-NORMAL-BASELINE-V3-PREPARATION.json';
+const slot = d1TerrainWait ? 'd1-terrain-wait-20261029' : d2TimeObservation ? 'd2-time-observation-20261029' : d2GpuResources ? 'd2-gpu-resources-20261029' : d2Current ? 'd2-current-20261028' : firstAcceptedCosts ? 'r17-a1-first-accepted-usb' : skyPackage ? 'r17-a1-r27-sky-usb' : currentUi ? 'r17-a1-r27-ui-usb' : observationA1 ? trialName : reviewRevision === 2 ? 'r17-normal-v3-r2' : trialName;
+const buildGeneration = d1TerrainWait ? 38 : d2TimeObservation ? 37 : d2GpuResources ? 36 : d2Current ? 35 : firstAcceptedCosts ? 34 : skyPackage ? 33 : currentUi ? 32 : observationA1 ? (queryCallbackLinks ? 31 : memoryOwnerLinks ? 30 : memoryCheckpoints ? 29 : memoryLifetime ? 28 : 27) : 25;
+const explicitBridgePort = d1TerrainWait ? process.env.STARWARD_D1_TERRAIN_BRIDGE_PORT : process.env.STARWARD_D2_TIME_BRIDGE_PORT;
+const bridgePort = d1TerrainWait || d2TimeObservation ? (explicitBridgePort ? Number(explicitBridgePort) : null) : 8798;
+const normalLabel = d1TerrainWait ? '当前地形输入与覆盖' : d2TimeObservation ? '当前Sky 时间输入与呈现' : d2GpuResources ? '当前Sky GPU资源逻辑账' : d2Current ? '当前Sky 解码逻辑账' : (observationA1 ? '正常Sky关联 A1' + (firstAcceptedCosts ? ' 首响应成本' : reviewRevision > 1 ? ' r' + reviewRevision : '') : '正常Sky基线 v3') + (usbReverse ? ' USB' : '') + (currentUi ? ' 当前UI' : '');
+const protocolName = d1TerrainWait ? 'terrain-wait-protocol.mjs' : d2TimeObservation ? 'd2-time-observation-protocol.mjs' : nativeAdmission ? 'r17-normal-input-protocol.mjs' : rulerEntry ? 'r17-ruler-entry-protocol.mjs' : observationA1 ? 'r17-a-correlation-protocol.mjs' : 'r17-phone-probe-v3-protocol.mjs';
+const preparationName = d1TerrainWait ? 'TERRAIN-WAIT-PREPARATION-20261029.json' : d2TimeObservation ? 'D2-TIME-OBSERVATION-PREPARATION.json' : d2GpuResources ? 'D2-GPU-RESOURCE-PREPARATION.json' : d2Current ? 'D2-CURRENT-RESOURCES-PREPARATION.json' : observationA1 ? 'R17-NORMAL-A1-PREPARATION.json' : 'R17-NORMAL-BASELINE-V3-PREPARATION.json';
 const bundleRoot = path.join(sourceRoot, 'apps/wechat-miniapp/dist/weapp-check-' + slot), manifestPath = path.join(trial, 'manifest.json');
-const scope = firstAcceptedCosts ? 'TASK_ONLY_NORMAL_SKY_A1_FIRST_ACCEPTED_COSTS_NOT_PRODUCT_ACCEPTANCE' : skyPackage ? 'TASK_ONLY_NORMAL_SKY_A1_R27_SKY_PACKAGE_NOT_PRODUCT_ACCEPTANCE' : observationA1 ? 'TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : 'TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE';
+const scope = d1TerrainWait ? 'TASK_ONLY_D1_CURRENT_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : d2TimeObservation ? 'TASK_ONLY_D2_CURRENT_TIME_CHAIN_NOT_PRODUCT_ACCEPTANCE' : d2GpuResources ? 'TASK_ONLY_D2_CURRENT_GPU_RESOURCE_RECEIPT_NOT_PRODUCT_ACCEPTANCE' : d2Current ? 'TASK_ONLY_D2_CURRENT_DECODE_CHECKPOINTS_NOT_PRODUCT_ACCEPTANCE' : firstAcceptedCosts ? 'TASK_ONLY_NORMAL_SKY_A1_FIRST_ACCEPTED_COSTS_NOT_PRODUCT_ACCEPTANCE' : skyPackage ? 'TASK_ONLY_NORMAL_SKY_A1_R27_SKY_PACKAGE_NOT_PRODUCT_ACCEPTANCE' : observationA1 ? 'TASK_ONLY_NORMAL_SKY_A1_TERRAIN_WAIT_NOT_PRODUCT_ACCEPTANCE' : 'TASK_ONLY_NORMAL_SKY_BASELINE_V3_NOT_PRODUCT_ACCEPTANCE';
+export function describeNormalPreparationProfile() {
+  return { d2Current, d2GpuResources, d2TimeObservation, d1TerrainWait, trialName, slot, buildGeneration, scope, observationA1, currentUi, usbReverse,
+    terrainWait, nativeRegion, memoryLifetime, memoryCheckpoints, memoryOwnerLinks, queryCallbackLinks,
+    firstAcceptedCosts, geometryStages, normalPlayTrialMs };
+}
 const sha = value => createHash('sha256').update(value).digest('hex');
 const relative = value => path.relative(root, value).replaceAll('\\', '/');
 const historicalOwnerArchive = reviewRevision === 10
@@ -75,22 +87,41 @@ const sourceFiles = ['package.json', 'package-lock.json', 'apps/wechat-miniapp/p
   'tools/miniapp/release-bundle-location.cjs', 'tools/miniapp/release-bundle-location.d.cts',
   'workers/miniapp-api/src/sao-catalog-source.ts', 'workers/miniapp-api/src/terrain-request.ts', 'workers/miniapp-api/src/terrain-publication.ts',
   ...['synthetic-optical-png.ts', 'sdss-science-publication.ts', 'sdss-display-publication.ts', 'prepared-optical-publication.ts'].map(name => 'workers/miniapp-api/src/test-fixtures/' + name)];
-const templateNames = ['r17-phone-probe-v3-runtime.ts', 'r17-phone-probe-v3-protocol.mjs', 'r17-phone-probe-v3.test.mjs',
+const templateNames = d1TerrainWait ? ['inject-terrain-wait-observer.mjs', 'terrain-wait-observer.ts',
+  'terrain-wait-marker.tsx', 'terrain-wait-observer.test.mjs', 'terrain-wait-protocol.mjs', 'terrain-wait-collector.mjs'] : d2TimeObservation ? ['d2-time-observation.ts', 'd2-time-observation-controls.tsx',
+  'd2-time-observation-instrumentation.mjs', 'd2-time-observation-protocol.mjs', 'd2-time-observation.test.mjs',
+  'r17-phone-probe-v3-runtime.ts', 'r17-geometry-stage-runtime.ts', 'r17-ruler-entry-runtime.ts',
+  'r17-phone-probe-v3-protocol.mjs', 'r17-phone-probe-v2-protocol.mjs', 'r17-phone-probe-protocol.mjs',
+  'r17-normal-input-protocol.mjs', 'r17-ruler-entry-protocol.mjs', 'r17-a-correlation-protocol.mjs', 'r28-first-accepted-protocol.mjs',
+  'r17-phone-probe-collector.mjs', 'r17-phone-probe-http.mjs',
+  'r25-memory-lifetime-protocol.mjs', 'r25-memory-checkpoint-protocol.mjs', 'd2-decode-checkpoint-protocol.mjs',
+  'r26-memory-checkpoint-protocol.mjs', 'r27-memory-checkpoint-protocol.mjs'] : d2Current ? ['d2-decode-observation.ts', 'd2-decode-checkpoint-instrumentation.mjs',
+  'd2-decode-checkpoint-protocol.mjs', 'd2-decode-checkpoint.test.mjs', 'd2-current-preparation.test.mjs',
+  'd2-normal-lifecycle-controls.tsx', 'd2-normal-lifecycle.ts', 'd2-normal-lifecycle-instrumentation.mjs', 'd2-normal-lifecycle.test.mjs',
+  'r17-normal-observations.ts', 'r25-memory-lifetime-observer.ts', 'r25-memory-lifetime-adapter.ts',
+  'r17-ruler-entry-runtime.ts',
+  'r25-stellar-owner-observer.ts', 'r25-memory-lifetime-protocol.mjs', 'r25-memory-checkpoint-protocol.mjs',
+  'r17-phone-probe-collector.mjs', 'r26-memory-checkpoint-protocol.mjs', 'r27-memory-checkpoint-protocol.mjs',
+  'r17-normal-input-protocol.mjs', 'r17-ruler-entry-protocol.mjs', 'r17-a-correlation-protocol.mjs',
+  'r17-phone-probe-v3-protocol.mjs', 'r17-phone-probe-v2-protocol.mjs', 'r17-phone-probe-protocol.mjs',
+  'r28-first-accepted-protocol.mjs', 'memory-checkpoint-test-support.mjs'] : ['r17-phone-probe-v3-runtime.ts', 'r17-phone-probe-v3-protocol.mjs', 'r17-phone-probe-v3.test.mjs',
   'r17-phone-probe-v2-protocol.mjs', 'r17-phone-probe-protocol.mjs', 'r17-accepted-action-controls.tsx',
   'r17-page-bridge-observer.ts', 'r17-normal-observations.ts', 'r17-normal-baseline-v3-fixture.mjs'];
 if (observationA1) templateNames.push('r17-a-correlation-runtime.ts', 'r17-a-correlation-instrumentation.mjs',
   'r17-a-correlation-protocol.mjs', 'r17-a-correlation.test.mjs');
-if (terrainWait) templateNames.push('inject-terrain-wait-observer.mjs',
+if (d2GpuResources) templateNames.push('d2-gpu-resource-instrumentation.mjs', 'd2-gpu-resource-instrumentation.test.mjs',
+  'd2-gpu-resource-receipt.ts', 'd2-gpu-lifecycle-instrumentation.mjs', 'd2-gpu-lifecycle.test.mjs');
+if (terrainWait && !d1TerrainWait) templateNames.push('inject-terrain-wait-observer.mjs',
   'terrain-wait-observer.ts', 'terrain-wait-marker.tsx', 'terrain-wait-observer.test.mjs');
 if (rulerEntry) templateNames.push('r17-ruler-entry-runtime.ts', 'r17-ruler-entry-instrumentation.mjs',
   'r17-ruler-entry-protocol.mjs', 'r17-ruler-entry.test.mjs');
 if (nativeAdmission) templateNames.push('r17-ruler-entry-v2-instrumentation.mjs', 'r17-normal-input-instrumentation.mjs',
   'r17-normal-input-protocol.mjs', 'r17-normal-input.test.mjs');
-if (geometryStages) templateNames.push('r17-geometry-stage-runtime.ts');
-if (memoryLifetime) templateNames.push('r25-memory-lifetime-observer.ts', 'r25-memory-lifetime-adapter.ts',
+if (geometryStages && !d2TimeObservation) templateNames.push('r17-geometry-stage-runtime.ts');
+if (memoryLifetime && !d2Current) templateNames.push('r25-memory-lifetime-observer.ts', 'r25-memory-lifetime-adapter.ts',
   'r25-memory-lifetime-protocol.mjs', 'r25-memory-lifetime-instrumentation.mjs', 'r25-memory-lifetime.test.mjs',
   'r25-memory-lifetime-adapter.test.mjs');
-if (memoryCheckpoints) templateNames.push('r25-stellar-owner-observer.ts', 'r25-stellar-owner-instrumentation.mjs',
+if (memoryCheckpoints && !d2Current) templateNames.push('r25-stellar-owner-observer.ts', 'r25-stellar-owner-instrumentation.mjs',
   'r25-stellar-owner.test.mjs', 'r25-memory-checkpoint-protocol.mjs', 'r25-memory-checkpoint.test.mjs');
 if (memoryOwnerLinks) templateNames.push('r26-fiber-owner-observer.ts', 'r26-fiber-owner.test.mjs',
   'r26-aggregate-use-observer.ts', 'r26-aggregate-use-instrumentation.mjs', 'r26-aggregate-use.test.mjs',
@@ -231,8 +262,8 @@ export function normalPage(source, requestedPreparation = source.includes('  con
     'import { r17NormalCopyReturned } from "./r17-normal-observations";\n' + source;
   source = one(source, 'export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions }: SpotSkyPageProps = {}) {',
     'export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions }: SpotSkyPageProps = {}) {\n  useR17NormalLifecycle();', 'page_lifecycle_observation');
-  source = one(source, '      surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions);\n      attempt.publish(excludedNameKeys);',
-    '      r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions));\n' +
+  source = one(source, '      surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive);\n      attempt.publish(excludedNameKeys);',
+    '      r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive));\n' +
     '      r17NormalCopyReturned(frame.sceneReady);\n      r17Probe.measure("publishAccepted",()=>attempt.publish!(excludedNameKeys));\n' +
     '      r17Probe.accepted(frame,paintedSkyObjectsRef.current);', 'normal_real_copy_and_complete_publication');
   source = one(source, '    invalidated: () => {', '    invalidated: () => {\n      r17Probe.count("invalidations");', 'invalidations');
@@ -302,12 +333,119 @@ export function normalLifecycle(source) {
   return 'import { r17Probe } from "./r17-phone-probe-runtime";\n' + wrapCalls(source, value => value === 'port.paint',
     call => 'r17Probe.measure("nativePaintOwner",()=>'+call.replace('port.paint(context,', 'port.paint(context!,')+')', 'normal_paint_span').source;
 }
+function hiddenSourceMaps(output, instrumentation) {
+  const configPath = 'apps/wechat-miniapp/config/index.ts', configBefore = output[configPath];
+  let config = configBefore.toString('utf8').replaceAll('\r\n', '\n');
+  config = one(config, '        resolve: { symlinks(value: boolean): void };', '        resolve: { symlinks(value: boolean): void };\n        devtool(value: string): void;', 'hidden_maps_type');
+  config = one(config, '        chain.resolve.symlinks(false);', '        chain.resolve.symlinks(false);\n        chain.devtool("hidden-source-map");', 'hidden_maps');
+  output[configPath] = config;
+  instrumentation[configPath] = { beforeSha256: sha(configBefore), afterSha256: sha(config) };
+}
+async function prepareD2TimeSources(output, template, binding) {
+  const { addD2TimeObservation } = await import('./d2-time-observation-instrumentation.mjs');
+  const instrumentation = {}, text = name => output[feature + name].toString('utf8').replaceAll('\r\n', '\n');
+  const observed = addD2TimeObservation({ page: text('spot-sky-page.tsx'), time: text('sky-observation-time.ts'),
+    geometry: text('use-sky-time-geometry.ts'), lifecycle: text('sky-canvas-lifecycle.ts'), runtime: template['r17-phone-probe-v3-runtime.ts'] });
+  const additions = { 'spot-sky-page.tsx': observed.page, 'sky-observation-time.ts': observed.time,
+    'use-sky-time-geometry.ts': observed.geometry, 'sky-canvas-lifecycle.ts': observed.lifecycle,
+    'r17-phone-probe-runtime.ts': observed.runtime, 'd2-time-observation.ts': template['d2-time-observation.ts'],
+    'r17-geometry-stage-runtime.ts': template['r17-geometry-stage-runtime.ts'], 'r17-ruler-entry-runtime.ts': template['r17-ruler-entry-runtime.ts'],
+    'd2-time-observation-controls.tsx': template['d2-time-observation-controls.tsx']
+      .replaceAll('__D2_TIME_GENERATION__', String(buildGeneration)).replaceAll('__D2_TIME_SOURCE_HASH__', binding) };
+  for (const [name, bytes] of Object.entries(additions)) {
+    const file = feature + name;
+    instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+    output[file] = bytes;
+  }
+  hiddenSourceMaps(output, instrumentation);
+  instrumentation.timeObservation = { schemaVersion: 'starward-d2-time-observation-v1',
+    boundaries: ['legal-preview-after-bind', 'current-presentation-memo', 'actual-request', 'successful-copy-and-publish', 'geometry-dispatch-and-admit'],
+    diagnosticDeadlineMs: 45000, chainCapacity: 256, identityCapacity: 256, packetBudgetBytes: 32768,
+    automaticProductPause: false, productStateWrites: false, strongProductReferences: false,
+    pageGpuMemoryScenePopulationObservation: false, physicalPresentation: 'UNVERIFIED' };
+  return { output, instrumentation };
+}
+function prepareD1TerrainSources(output, template, binding) {
+  const instrumentation = {};
+  const input = new Map(terrainWaitSourceFiles.map(file => [file, output[file].toString('utf8')]));
+  const additions = transformTerrainWaitSources(input);
+  additions.set('apps/wechat-miniapp/src/services/terrain-wait-observer.ts', template['terrain-wait-observer.ts']
+    .replaceAll('__TERRAIN_WAIT_ACTION__', 'gesture').replaceAll('__TERRAIN_WAIT_SOURCE_SHA256__', binding));
+  additions.set('apps/wechat-miniapp/src/pages/map/terrain-wait-marker.tsx', template['terrain-wait-marker.tsx']);
+  for (const [file, bytes] of additions) {
+    instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+    output[file] = bytes;
+  }
+  hiddenSourceMaps(output, instrumentation);
+  instrumentation.terrainWait = { schemaVersion: 'starward-terrain-wait-v3', action: 'gesture',
+    eventLimit: 80, identityLimit: 64, diagnosticDeadlineMs: 15000,
+    skyObservation: false, productStateWrites: false, sourceSha256: binding,
+    nativeAcknowledgmentIsPhysicalPresentation: false, physicalResourceRelease: 'UNVERIFIED' };
+  return { output, instrumentation };
+}
+async function prepareD2CurrentSources(output, template, binding) {
+  const { addD2NormalLifecycle } = await import('./d2-normal-lifecycle-instrumentation.mjs');
+  const instrumentation = {}, text = name => output[feature + name].toString('utf8').replaceAll('\r\n', '\n');
+  const lifecycle = addD2NormalLifecycle({ page: text('spot-sky-page.tsx'), time: text('sky-observation-time.ts'),
+    observation: template['r17-normal-observations.ts'] });
+  const adapter = template['r25-memory-lifetime-adapter.ts'].replace('__R25_BUILD_GENERATION__', String(buildGeneration))
+    .replace('__R25_BUILD_SOURCE_HASH__', binding);
+  const decoded = addD2DecodeCheckpoint({ request: text('sky-artwork-request.ts'), adapter });
+  const additions = { 'spot-sky-page.tsx': lifecycle.page, 'sky-observation-time.ts': lifecycle.time,
+    'r17-normal-observations.ts': lifecycle.observation, 'sky-artwork-request.ts': decoded.request,
+    'r25-memory-lifetime-adapter.ts': decoded.adapter, 'sky-canvas-surface.ts': normalSurface(text('sky-canvas-surface.ts'), true).source,
+    'd2-normal-lifecycle-controls.tsx': template['d2-normal-lifecycle-controls.tsx']
+      .replaceAll('__D2_BUILD_GENERATION__', String(buildGeneration)).replaceAll('__D2_BUILD_SOURCE_HASH__', binding) };
+  for (const name of ['d2-decode-observation.ts', 'd2-normal-lifecycle.ts', 'r25-memory-lifetime-observer.ts', 'r25-stellar-owner-observer.ts',
+    'r17-ruler-entry-runtime.ts']) additions[name] = template[name];
+  if (d2GpuResources) {
+    const { addD2GpuResourceOwners } = await import('./d2-gpu-resource-instrumentation.mjs');
+    const { addD2GpuResourceLifecycle } = await import('./d2-gpu-lifecycle-instrumentation.mjs');
+    const owners = addD2GpuResourceOwners({ textures: text('sky-gpu-textures.ts'),
+      contributions: text('sky-gpu-artwork-contributions.ts'), renderer: text('sky-gpu-renderer.ts') });
+    additions['sky-gpu-textures.ts'] = owners.textures;
+    additions['sky-gpu-artwork-contributions.ts'] = owners.contributions;
+    additions['sky-gpu-renderer.ts'] = owners.renderer;
+    const observed = addD2GpuResourceLifecycle({ page: additions['spot-sky-page.tsx'],
+      observation: additions['r17-normal-observations.ts'], lifecycle: additions['d2-normal-lifecycle.ts'],
+      controls: additions['d2-normal-lifecycle-controls.tsx'], receipt: template['d2-gpu-resource-receipt.ts'] });
+    additions['spot-sky-page.tsx'] = observed.page;
+    additions['r17-normal-observations.ts'] = observed.observation;
+    additions['d2-normal-lifecycle.ts'] = observed.lifecycle;
+    additions['d2-normal-lifecycle-controls.tsx'] = observed.controls;
+    instrumentation.gpuResources = { schemaVersion: 'starward-r17-normal-surface-retirement-v2',
+      source: 'existing-texture-contribution-renderer-owners', storage: 'same-receipt-owner-new-exact-key',
+      phaseSlots: ['ready', 'play-start', 'active-30', 'paused', 'before-retire', 'after-retire'],
+      packetBudgetBytes: 32768, globalProductReferences: false, nativeMethodReplacement: false,
+      physicalReleaseOrGpuCompletion: false };
+  }
+  for (const [name, bytes] of Object.entries(additions)) {
+    const file = feature + name;
+    instrumentation[file] = { beforeSha256: output[file] === undefined ? null : sha(output[file]), afterSha256: sha(bytes) };
+    output[file] = bytes;
+  }
+  hiddenSourceMaps(output, instrumentation);
+  instrumentation.decodeObservation = { schemaVersion: 'starward-d2-decode-logical-v1', checkpointSchema: 'starward-r25-memory-checkpoint-v2',
+    coverage: 'instrumented-artwork-request-since-module-load', resetOnPlay: false,
+    nativeInFlightOrPhysicalBytes: false, strongProductReferences: false, productStateWrites: false,
+    automaticProductPause: false, diagnosticDeadlineMs: 90000, checkpointLimit: 10,
+    sampledStellarUploadSites: 'not-instrumented-in-decode-only-scope-zero-calls-not-a-population-count',
+    timeOrSceneCostMetrics: 'not-instrumented-in-this-scope', collectorRouteUnchanged: true,
+    optionalNativeRegionInput: 'not-selected-missing-original-input-remains-unverified' };
+  instrumentation.surfaceRetirement = { schemaVersion: d2GpuResources ? 'starward-r17-normal-surface-retirement-v2' : 'starward-r17-normal-surface-retirement-v1',
+    ownKey: `starward.r17.normal-surface-retirement.v${d2GpuResources ? 2 : 1}.${binding}`, lastSurfaceOnly: true,
+    nativeObjectsRetained: false, perFrameSerialization: false, physicalRelease: 'UNVERIFIED' };
+  return { output, instrumentation };
+}
 export async function preparedSources(normal, template, binding) {
   // Keep manifest hashes on the exact checked-out template bytes; normalize only
   // the transformation input so Windows CRLF checkouts use the same boundaries.
   template = Object.fromEntries(Object.entries(template).map(([name, value]) => [name, value.replaceAll('\r\n', '\n')]));
   const output = {}, instrumentation = {};
   for (const file of Object.keys(normal)) output[file] = await fs.readFile(path.join(root, file));
+  if (d1TerrainWait) return prepareD1TerrainSources(output, template, binding);
+  if (d2TimeObservation) return prepareD2TimeSources(output, template, binding);
+  if (d2Current) return prepareD2CurrentSources(output, template, binding);
   const edit = (name, transform) => { const file = feature + name, original = output[file]; const result = transform(original.toString('utf8').replaceAll('\r\n', '\n')); output[file] = result; instrumentation[file] = { beforeSha256: sha(original), afterSha256: sha(result) }; };
   const probeImport = source => 'import { r17Probe } from "./r17-phone-probe-runtime";\n' + source;
   for (const [name, fn, stage] of [['sky-time-presentation.ts', 'presentSkyTime', 'presentation'], ['sky-stellar-scene.ts', 'resolveSkySceneFrame', 'base'],
@@ -343,12 +481,7 @@ export async function preparedSources(normal, template, binding) {
   edit('spot-sky-page.tsx', source => normalPage(source, reviewRevision >= 10));
   // Hidden maps preserve exact emitted positions without shipping map payloads
   // or adding sourceMappingURL loads to the phone bundle.
-  const configPath = 'apps/wechat-miniapp/config/index.ts';
-  const configBefore = output[configPath];
-  let config = configBefore.toString('utf8').replaceAll('\r\n', '\n');
-  config = one(config, '        resolve: { symlinks(value: boolean): void };', '        resolve: { symlinks(value: boolean): void };\n        devtool(value: string): void;', 'hidden_maps_type');
-  config = one(config, '        chain.resolve.symlinks(false);', '        chain.resolve.symlinks(false);\n        chain.devtool("hidden-source-map");', 'hidden_maps');
-  output[configPath] = config; instrumentation[configPath] = { beforeSha256: sha(configBefore), afterSha256: sha(config) };
+  hiddenSourceMaps(output, instrumentation);
   output[feature + 'r17-phone-probe-runtime.ts'] = template['r17-phone-probe-v3-runtime.ts'].replaceAll('__VARIANT__', 'baseline');
   output[feature + 'r17-phone-probe-controls.tsx'] = controls(template['r17-accepted-action-controls.tsx'], binding);
   output[feature + 'r17-page-bridge-observer.ts'] = template['r17-page-bridge-observer.ts'];
@@ -529,6 +662,9 @@ export async function preparedSources(normal, template, binding) {
         sharedRuntimeImports: 0, trackingAndReleaseOwnerUnchanged: true } : {}) };
   }
   if (nativeRegion) {
+    // This historical optional input is not part of a Sky-only preparation.
+    // Do not fabricate it or make unrelated current D2 templates unimportable.
+    const { instrumentNativeRegionProbe } = await import('../tmp/r17-native-region-probe-instrumentation.mjs');
     const mapPage = 'apps/wechat-miniapp/src/pages/map/index.tsx';
     const markerPath = 'apps/wechat-miniapp/src/pages/map/terrain-wait-marker.tsx';
     const observeNativeUpdates = reviewRevision >= 15;
@@ -569,10 +705,12 @@ async function origin() {
   if (!runtimeFile || !path.isAbsolute(runtimeFile)) throw Error('absolute_private_runtime_config_required');
   const runtime = await readJson(runtimeFile);
   const selected = new URL(runtime.apiOrigin);
+  if ((d2TimeObservation || d1TerrainWait) && (!Number.isSafeInteger(bridgePort) || bridgePort < 1024 || bridgePort > 65535 || [8787,8798].includes(bridgePort)))
+    throw Error(d1TerrainWait ? 'd1_terrain_distinct_bridge_port_required' : 'd2_time_distinct_bridge_port_required');
   const hostAllowed = usbReverse
     ? runtime.transport === 'usb-reverse' && selected.hostname === '127.0.0.1' && selected.port === '8798'
     : runtime.transport !== 'usb-reverse' && !selected.hostname.startsWith('127.') && selected.hostname !== '0.0.0.0';
-  if (selected.protocol !== 'http:' || !['8797', '8798'].includes(selected.port) || !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(selected.hostname) || !hostAllowed || selected.username || selected.password || selected.search || selected.hash || selected.pathname !== '/') throw Error('physical_runtime_origin_boundary_changed');
+  if (selected.protocol !== 'http:' || !(d2TimeObservation || d1TerrainWait ? selected.port === String(bridgePort) : ['8797', '8798'].includes(selected.port)) || !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(selected.hostname) || !hostAllowed || selected.username || selected.password || selected.search || selected.hash || selected.pathname !== '/') throw Error('physical_runtime_origin_boundary_changed');
   const inherited = selected.origin; selected.port = String(bridgePort);
   return { value: selected.origin, inheritedSha256: sha(inherited), sha256: sha(selected.origin) };
 }
@@ -586,6 +724,12 @@ async function verifyCurrent(manifest, template) {
   for (const link of ['node_modules', 'apps/wechat-miniapp/node_modules'])
     if (!(await fs.lstat(path.join(sourceRoot, link))).isSymbolicLink() || (await fs.realpath(path.join(sourceRoot, link))).toLowerCase() !== (await fs.realpath(path.join(root, link))).toLowerCase()) throw Error('dependency_link_changed');
   if (manifest.checks) return manifest.checks;
+  if (d1TerrainWait) return { scope: 'CURRENT_TERRAIN_WAIT_SOURCE_BINDINGS_READ_BACK', sourceBindingsReadBack: true,
+    skyObservation: 'NOT_INSTRUMENTED', nativePresentationAndPhysicalRelease: 'UNVERIFIED', targetRuntime: 'UNVERIFIED' };
+  if (d2TimeObservation) return { scope: 'CURRENT_TIME_CHAIN_SOURCE_BINDINGS_READ_BACK', sourceBindingsReadBack: true,
+    fullSceneCpuGpuMemoryObservation: 'NOT_INSTRUMENTED', targetRuntime: 'UNVERIFIED' };
+  if (d2Current) return { scope: d2GpuResources ? 'GPU_RESOURCE_SOURCE_BINDINGS_READ_BACK' : 'DECODE_ONLY_SOURCE_BINDINGS_READ_BACK', sourceBindingsReadBack: true,
+    fullTimeSceneCostMetrics: 'NOT_INSTRUMENTED', targetRuntime: 'UNVERIFIED' };
   const { verifyNormalBaselineV3Fixture } = await import(pathToFileURL(path.join(here, 'r17-normal-baseline-v3-fixture.mjs')));
   return verifyNormalBaselineV3Fixture({ sourceRoot, productionRoot: root, feature, ts, buildGeneration,
     protocolPath: path.join(here, protocolName), allowACorrelation: observationA1, allowRulerEntry: rulerEntry,
@@ -666,12 +810,16 @@ async function main() {
     const selectedOrigin = await origin(), builderSha256 = sha(await fs.readFile(fileURLToPath(import.meta.url)));
     const templateBindings = Object.fromEntries(Object.entries(template).map(([name, value]) => [name, sha(value)]));
     const { stdout } = await run('git', ['rev-parse', 'HEAD'], { cwd: root, windowsHide: true });
-    const bindingInput = { meaning: 'pre-build-current-production-source-and-task-template-binding-not-bundle-bytes', mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
+    const bindingInput = { meaning: 'pre-build-current-production-source-and-task-template-binding-not-bundle-bytes', mode: 'normal', variant: d1TerrainWait ? 'terrain-wait' : 'baseline', buildGeneration, probeVersion,
       productionHead: stdout.trim(), productionSourceSha256: sha(JSON.stringify(productionSourceBindings)), builderSha256, templateBindings,
       bridgePort, transport: usbReverse ? 'usb-reverse' : 'lan', compiledBridgeOriginSha256: selectedOrigin.sha256,
       ...(currentUi ? { uiSource: 'current-production-source' } : {}),
       ...(skyPackage ? { r27SkyPackage: 'shared-query-ports-without-map-task-observers' } : {}),
       ...(firstAcceptedCosts ? { firstAcceptedCosts: 'same-accepted-identity-existing-spans-v1-without-memory-or-map-observers' } : {}),
+      ...(d2Current ? { d2Decode: 'module-load-logical-claims-checkpoint-v2-no-r26-r27-or-map-observers' } : {}),
+      ...(d2GpuResources ? { d2GpuResources: 'owner-scalars-fixed-phases-surface-retirement-v2' } : {}),
+      ...(d2TimeObservation ? { d2TimeObservation: 'current-input-preparation-accepted-chain-with-geometry-v1' } : {}),
+      ...(d1TerrainWait ? { terrainWait: 'current-gesture-file-native-boundaries-v3' } : {}),
       ...(observationA1 ? { observationRevision: 'observe-a1', ...(terrainWait ? { terrainWaitAction: 'gesture' } : {}), ...(rulerEntry ? { rulerEntry: nativeAdmission ? 'immediate-wide-time-v2' : 'immediate-wide-time-v1' } : {}),
         ...(nativeAdmission ? { manualInput: 'legal-onPreview-start-delay-0-v1' } : {}),
         ...(nativeRegion ? { nativeRegionProbe: reviewRevision >= 15
@@ -680,7 +828,7 @@ async function main() {
         ...(retirementReceipt ? { surfaceRetirement: 'single-source-bound-ready-retire-v1', normalPlayTrialMs } : {}),
         ...(reviewRevision > 1 ? { reviewRevision } : {}) } : {}) };
     const buildSourceSha256 = sha(JSON.stringify(bindingInput)), prepared = await preparedSources(productionSourceBindings, template, buildSourceSha256);
-    const manifest = { scope, createdAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3, bridgePort,
+    const manifest = { scope, createdAt: new Date().toISOString(), mode: 'normal', variant: d1TerrainWait ? 'terrain-wait' : 'baseline', buildGeneration, probeVersion, bridgePort,
       trialDirectory: relative(trial), sourceDirectory: relative(sourceRoot), builderSha256, templateBindings, bindingInput, buildSourceSha256,
       productionSourceBindings, sourceBindings: {}, instrumentation: prepared.instrumentation, result: null };
     await fs.mkdir(trial, { recursive: true });
@@ -688,7 +836,7 @@ async function main() {
     if (!refreshing) for (const link of ['node_modules', 'apps/wechat-miniapp/node_modules']) await fs.symlink(await fs.realpath(path.join(root, link)), path.join(sourceRoot, link), 'junction');
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n', { flag: refreshing ? 'w' : 'wx' });
     manifest.checks = await verifyCurrent(manifest, template); await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-    console.log(JSON.stringify({ prepared: true, buildGeneration, probeVersion: 3, files: Object.keys(manifest.sourceBindings).length, buildSourceSha256, checks: manifest.checks })); return;
+    console.log(JSON.stringify({ prepared: true, buildGeneration, probeVersion, files: Object.keys(manifest.sourceBindings).length, buildSourceSha256, checks: manifest.checks })); return;
   }
   const manifest = await readJson(manifestPath), checks = await verifyCurrent(manifest, template);
   if (operation === 'typecheck') { console.log(JSON.stringify(await deltaTypecheck())); return; }
@@ -698,7 +846,7 @@ async function main() {
     const selectedOrigin = await origin(); if (selectedOrigin.sha256 !== manifest.bindingInput.compiledBridgeOriginSha256) throw Error('origin_binding_changed');
     const env = { ...process.env, MINIAPP_ISOLATED_CHECK_BUILD: '1', MINIAPP_ISOLATED_CHECK_BUILD_SLOT: slot, MINIAPP_API_BASE: selectedOrigin.value, MINIAPP_SKY_RESOURCE_BASE: selectedOrigin.value };
     for (const key of ['MINIAPP_DEVELOPMENT_FIXTURE_MODE', 'MINIAPP_ISOLATED_FIXTURE_BUILD', 'MINIAPP_ACCEPTANCE_DIAGNOSTICS', 'MINIAPP_DEVICE_REQUEST_DIAGNOSTICS', 'MINIAPP_OPERATOR_PREVIEW_TOKEN', 'MINIAPP_RELEASE_BUNDLE_ID', 'MINIAPP_SKY_FEEDBACK_ID']) delete env[key];
-    const redact = value => String(value ?? '').replaceAll(selectedOrigin.value, '[physical-local-bridge-8798]').replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[ip-redacted]').replace(/\bwx[a-f0-9]{16}\b/gi, '[appid-redacted]');
+    const redact = value => String(value ?? '').replaceAll(selectedOrigin.value, '[physical-local-bridge]').replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[ip-redacted]').replace(/\bwx[a-f0-9]{16}\b/gi, '[appid-redacted]');
     try { const result = await run(process.execPath, [path.join(root, 'tools/run-node.cjs'), '--bin', '@tarojs/cli', 'taro', 'build', '--type', 'weapp'], { cwd: path.join(sourceRoot, 'apps/wechat-miniapp'), env, windowsHide: true, maxBuffer: 40 * 1024 * 1024 }); await fs.writeFile(path.join(trial, 'build-redacted.log'), redact(result.stdout) + '\n' + redact(result.stderr)); }
     catch (error) { await fs.writeFile(path.join(trial, 'build-redacted.log'), redact(error.stdout) + '\n' + redact(error.stderr)); throw Error('complete_source_build_failed_see_task_log'); }
     const sourceMaps = await separateMaps(); await assertPhysicalDeviceBundleSafe(bundleRoot);
@@ -707,7 +855,7 @@ async function main() {
     if (Object.values(inspection.checks).some(value => value !== true)) throw Error('static_inspection_failed');
     await fs.mkdir(projectRoot); const config = await readJson(path.join(sourceRoot, 'apps/wechat-miniapp/project.config.json'));
     config.miniprogramRoot = 'weapp/'; delete config.srcMiniprogramRoot;
-    config.projectname = observationA1 ? 'starward-r17-normal-a1' + reviewSuffix + '-gen' + buildGeneration : 'starward-r17-normal-baseline-v3-gen25';
+    config.projectname = d1TerrainWait ? 'starward-d1-terrain-wait-gen38' : d2TimeObservation ? 'starward-d2-time-observation-gen37' : d2GpuResources ? 'starward-d2-gpu-resources-gen36' : d2Current ? 'starward-d2-current-gen35' : observationA1 ? 'starward-r17-normal-a1' + reviewSuffix + '-gen' + buildGeneration : 'starward-r17-normal-baseline-v3-gen25';
     if (config.setting) delete config.setting.useCompilerPlugins;
     await fs.writeFile(path.join(projectRoot, 'project.config.json'), JSON.stringify(config, null, 2) + '\n', { flag: 'wx' });
     await fs.cp(bundleRoot, path.join(projectRoot, 'weapp'), { recursive: true, errorOnExist: true, force: false });
@@ -716,7 +864,7 @@ async function main() {
       packages: budget.packages, mainHeadroomBytes: budget.limits.perPackageBytes - budget.packages.main.bytes, staticChecks: inspection.checks,
       compiledBridgeOriginSha256: selectedOrigin.sha256, inheritedOriginSha256: selectedOrigin.inheritedSha256, bridgePort, originReadback, sourceMaps };
     manifest.checks = checks; await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-    console.log(JSON.stringify({ buildReady: true, buildGeneration, probeVersion: 3, ...manifest.result, sourceMaps: { count: sourceMaps.count, bytes: sourceMaps.bytes, directory: sourceMaps.directory } })); return;
+    console.log(JSON.stringify({ buildReady: true, buildGeneration, probeVersion, ...manifest.result, sourceMaps: { count: sourceMaps.count, bytes: sourceMaps.bytes, directory: sourceMaps.directory } })); return;
   }
   if (!manifest.result) throw Error('full_source_build_required');
   await assertPhysicalDeviceBundleSafe(bundleRoot); const bothBundleCopiesReadback = {};
@@ -724,23 +872,42 @@ async function main() {
   const inspection = await inspectCandidate({ bundleDirectory: relative(bundleRoot) }); if (Object.values(inspection.checks).some(value => value !== true)) throw Error('static_inspection_failed');
   for (const row of manifest.result.sourceMaps.records) if (sha(await fs.readFile(path.join(trial, 'source-maps', row.file))) !== row.sha256) throw Error('external_source_map_changed');
   const sourceDeltas = Object.keys(manifest.sourceBindings).filter(file => manifest.sourceBindings[file] !== manifest.productionSourceBindings[file]).map(file => ({ file, productionSha256: manifest.productionSourceBindings[file] ?? null, diagnosticSha256: manifest.sourceBindings[file] }));
-  const evidence = { scope, status: observationA1 ? 'BUILD_READY_NORMAL_A1_UNACTIVATED_PHONE_UNVERIFIED' : 'BUILD_READY_NORMAL_BASELINE_V3_UNACTIVATED_PHONE_UNVERIFIED',
+  const evidence = { scope, status: d1TerrainWait ? 'BUILD_READY_D1_TERRAIN_WAIT_UNACTIVATED_PHONE_UNVERIFIED' : d2TimeObservation ? 'BUILD_READY_D2_TIME_OBSERVATION_UNACTIVATED_PHONE_UNVERIFIED' : d2GpuResources ? 'BUILD_READY_D2_GPU_RESOURCES_UNACTIVATED_PHONE_UNVERIFIED' : d2Current ? 'BUILD_READY_D2_DECODE_UNACTIVATED_PHONE_UNVERIFIED' : observationA1 ? 'BUILD_READY_NORMAL_A1_UNACTIVATED_PHONE_UNVERIFIED' : 'BUILD_READY_NORMAL_BASELINE_V3_UNACTIVATED_PHONE_UNVERIFIED',
     ...(observationA1 ? { observationRevision: 'observe-a1', diagnosticLabel: normalLabel, ...(terrainWait ? { terrainWaitAction: 'gesture' } : {}), protocol: protocolName,
-      ...(reviewRevision > 1 ? { reviewRevision,
+      ...(reviewRevision > 1 && !d2Current ? { reviewRevision,
         historicalA1OwnerArchive: historicalOwnerArchive,
         historicalA1Manifest: relative(path.join(work, reviewRevision >= 3 ? `tmp/r17-normal-a1-review-r${reviewRevision - 1}/manifest.json` : 'tmp/r17-normal-a1/manifest.json')) } : {}),
-      historicalGen25OwnerArchive: relative(path.join(work, 'tmp/r17-normal-gen25-owner-before-a1-20261019/archive-bindings.json')) } : {}),
-    preparedAt: new Date().toISOString(), mode: 'normal', variant: 'baseline', buildGeneration, probeVersion: 3,
+      ...(!d2Current ? { historicalGen25OwnerArchive: relative(path.join(work, 'tmp/r17-normal-gen25-owner-before-a1-20261019/archive-bindings.json')) } : {}) } : {}),
+    preparedAt: new Date().toISOString(), mode: 'normal', variant: d1TerrainWait ? 'terrain-wait' : 'baseline', buildGeneration, probeVersion,
     selection: 'UNACTIVATED_PREPARATION', sourceManifest: relative(manifestPath), sourceManifestSha256: sha(await fs.readFile(manifestPath)), sourceDirectory: relative(sourceRoot),
     sourceFiles: Object.keys(manifest.sourceBindings).length, sourceSnapshotSha256: sha(JSON.stringify(manifest.sourceBindings)), buildSourceSha256: manifest.buildSourceSha256,
     bindingInput: manifest.bindingInput, sourceDeltas, templateBindings: manifest.templateBindings, productionSourceReadback: { files: Object.keys(manifest.productionSourceBindings).length, bindingsSha256: sha(JSON.stringify(manifest.productionSourceBindings)), unchanged: true },
     completeSourceBuildNotGeneratedPatch: true, currentSourceReadback: true, bothBundleCopiesReadback, checks, deltaTypecheck: manifest.deltaTypecheck, result: manifest.result,
-    limitations: ['No phone, DevTools, feedback, service, account, database, private configuration or active candidate was changed.',
+    limitations: d1TerrainWait ? [
+      'Current-source task-only gesture/metadata/file/native-operation association, not physical presentation or product acceptance.',
+      'Manual arm, bounded 15-second observation and sealed immutable export; no product camera/time/layer writes.',
+      'Native callbacks and file-owner scalars cannot establish physical resource release; correct visible coverage requires the matching phone frames.',
+      'No Sky/R17 timing, Page sampling, GPU or memory-lifetime probes are injected.',
+      'A separately declared non-8787/non-8798 bridge is required. Existing API, GPU collector, old evidence and frozen generations remain untouched.'
+    ] : d2TimeObservation ? [
+      'Current-source task-only input/preparation/request/copy-and-publish chain, not physical presentation or product acceptance.',
+      'R17 v3 wall clock, weak identities, 45-second diagnostic cutoff and 32-KiB immutable single-flight export are reused; diagnostics never start or pause product Play.',
+      'Unobserved Page, GPU, memory, BSC/SAO population and image workload facts are omitted, not synthesized as zero.',
+      'Explicit chain truncation, unknown links and clock intervals remain unverified. Geometry client validation is distinct from current hook admission.',
+      'A separately declared non-8787/non-8798 bridge port is required; old GPU collector/evidence are not restarted or reused.',
+      'No phone, service, database, account, firewall, active candidate or frozen generation is changed by preparation. Hidden source maps stay outside the phone package.'
+    ] : d2Current ? [d2GpuResources ? 'This is an unactivated task-only GPU logical-owner observation using the existing decode/lifecycle branch, not product acceptance or a complete R17 timing/Scene probe.' : 'This is an unactivated task-only decode/lifecycle preparation, not product acceptance or a complete R17 timing/Scene probe.',
+      'No phone, DevTools, feedback binding, service, account, database, firewall or active candidate was changed.',
+      'Only current artwork-request callbacks and explicit image claims are counted from module load; cancellation without callback is cumulative unconfirmed work, not current native in-flight work.',
+      'Weak image identity and logical pixels do not establish native/GPU bytes or physical release. Stellar/upload witness sites are not instrumented; zero calls are not a population count.',
+      'The user arms the existing bounded checkpoints before normal product Play; diagnostics never start or pause product playback. Pause/drain/exit, ordinary sustained Play and OOM still need target evidence.',
+      'The existing collector route, 32768-byte and 32-file limits remain. Historical NativeRegion validator input is missing locally and that packet family fails explicitly with 503 until the original input is restored.',
+      'The future LAN origin and collector/HTTP readback remain unverified. Hidden source maps stay outside the phone bundle.' ] : ['No phone, DevTools, feedback, service, account, database, private configuration or active candidate was changed.',
       'Normal product math, memo, full accepted setter/state, GPU/copy/caption/resource demand and retirement remain; observation adds bounded counts/spans, preparation identities and a task menu.',
       'v3 Date.now intervals are approximate wall elapsed, not thread CPU or physical presentation; unknown and sub-resolution coverage stay null.',
       'Page observer latency retains its legacy producer clock semantics and is not calibrated by probe v3; key count is not payload bytes; 16 bounded serialization samples add observer cost.',
       'Native measureText and returned-copy counters add numeric call-site overhead, no native method replacement/cache/history/context retention; unobserved scalar fields stay null.',
-      skyPackage ? 'R27 retains 15s metrics, the 20s guarded same-run product Pause and the 90s seal. Original active-5/first-drain-10 observations, eight aggregate IDs and bounded exports remain; no Map task observer is injected. This does not establish official package admission or a retaining root.' : retirementReceipt ? '15s metrics retain their historical window; r9 and r10 use a 60s guarded same-run Pause. Pause relative timestamps beyond the existing 60s clock range stay null. Root owns at least 30s paused drain and source-bound own-key readback; no full-B or GPU-retention claim follows from this receipt.' : '15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.',
+      d2Current ? 'Current-source decode observation retains 15s metrics, the original 20s guarded same-run Pause and bounded drain/retirement checkpoints. Logical callbacks/claims do not establish native in-flight work, physical residency, sustained Play acceptance or an OOM cause; no Map/R26/R27 observer or USB reverse is selected.' : skyPackage ? 'R27 retains 15s metrics, the 20s guarded same-run product Pause and the 90s seal. Original active-5/first-drain-10 observations, eight aggregate IDs and bounded exports remain; no Map task observer is injected. This does not establish official package admission or a retaining root.' : retirementReceipt ? '15s metrics retain their historical window; r9 and r10 use a 60s guarded same-run Pause. Pause relative timestamps beyond the existing 60s clock range stay null. Root owns at least 30s paused drain and source-bound own-key readback; no full-B or GPU-retention claim follows from this receipt.' : '15s metrics and 20s guarded same-run Pause/terminal remain separate windows; profiling/memory windows must be aligned by root.',
       'Hidden source maps are external diagnostic artifacts, absent from both phone bundle copies.',
       'Static budget/inspection and portable fixtures do not establish official upload size, current bridge admission, real nonempty Sky, target clock coverage, sustainable playback or R17 A/B acceptance.'] };
   await fs.writeFile(path.join(work, preparationName), JSON.stringify(evidence, null, 2) + '\n');

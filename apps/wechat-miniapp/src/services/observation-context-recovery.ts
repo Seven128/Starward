@@ -5,7 +5,7 @@ import type {
   ObservationContextUpdateRequest,
   Wgs84Point,
 } from "@starward/miniapp-contracts";
-import { observationNightBounds } from "@starward/miniapp-contracts";
+import { copyTotalCloudContext, observationNightBounds, TOTAL_CLOUD_POLICY } from "@starward/miniapp-contracts";
 
 declare const confirmedContextReply: unique symbol;
 /** Only updateObservationContext returns this after its existing full edit
@@ -40,6 +40,41 @@ export function samePrivateProposal(left: ObservationContext, right: Observation
 export function observationLocationContinues(current: ObservationContext, latest: ObservationContext) {
   return samePrivateProposal(current, latest) && (sameLocation(current.location, latest.location) ||
     Boolean(current.privateProposal && current.location.kind === "PENDING_PROPOSAL" && latest.location.kind === "FORMAL_SPOT"));
+}
+
+/** Public identity comparison only; the server validates immutable readiness. */
+export function sameObservationCloudBinding(current: ObservationContext, latest: ObservationContext) {
+  try {
+    const prior = current.weatherView?.totalCloud, next = latest.weatherView?.totalCloud;
+    return JSON.stringify(prior === undefined ? undefined : copyTotalCloudContext(prior)) ===
+      JSON.stringify(next === undefined ? undefined : copyTotalCloudContext(next));
+  } catch { return false; }
+}
+
+export function observationContextRecoveryBindings(context: ObservationContext) {
+  const totalCloud = context.weatherView?.totalCloud;
+  return { ...(totalCloud === undefined ? {} : { totalCloudPolicy: TOTAL_CLOUD_POLICY, restoreTotalCloud: copyTotalCloudContext(totalCloud) }),
+    ...(context.privacyClass === "SESSION_PRECISE" ? { restoreExpiresAt: context.expiresAt } : {}) };
+}
+
+export function confirmedObservationContextRecovery(current: ObservationContext, latest: ObservationContext) {
+  if (current.weatherView?.totalCloud !== undefined && !sameObservationCloudBinding(current, latest)) return false;
+  return current.privacyClass !== "SESSION_PRECISE" || latest.privacyClass === "SESSION_PRECISE" &&
+    Number.isFinite(Date.parse(latest.expiresAt)) && Date.parse(latest.expiresAt) <= Date.parse(current.expiresAt);
+}
+
+/** GET may reveal a later server CAS, but cannot erase the enabled contract or
+ * change a pin without advancing the shared revision. */
+export function confirmedObservationCloudRead(current: ObservationContext, latest: ObservationContext) {
+  try {
+    if (latest.contextId !== current.contextId || !Number.isSafeInteger(current.revision) || current.revision < 1 ||
+      !Number.isSafeInteger(latest.revision) || latest.revision < current.revision) return false;
+    const prior = current.weatherView?.totalCloud, next = latest.weatherView?.totalCloud;
+    if (next !== undefined) copyTotalCloudContext(next);
+    if (prior !== undefined && (next === undefined || latest.revision <= current.revision && !sameObservationCloudBinding(current, latest))) return false;
+    return current.privacyClass !== "SESSION_PRECISE" || latest.privacyClass === "SESSION_PRECISE" &&
+      Number.isFinite(Date.parse(latest.expiresAt)) && Date.parse(latest.expiresAt) <= Date.parse(current.expiresAt);
+  } catch { return false; }
 }
 
 /** Normal replies and fresh readback must establish the complete requested
@@ -79,8 +114,19 @@ export function confirmedObservationContextEdit(
   // Current Context updates normalize retired weather-view fields. A legacy
   // cloudLayer edit cannot acknowledge or revive a retired supplier/layer.
   const weather = latest.weatherView;
-  return Boolean(weather && weather.primaryPolicy === "QWEATHER" && weather.cloudLayer === "TOTAL" &&
-    weather.selectedModel === null && Array.isArray(weather.comparisonModels) && weather.comparisonModels.length === 0);
+  if (!(weather && weather.primaryPolicy === "QWEATHER" && weather.cloudLayer === "TOTAL" &&
+    weather.selectedModel === null && Array.isArray(weather.comparisonModels) && weather.comparisonModels.length === 0)) return false;
+  try {
+    const priorCloud = current.weatherView.totalCloud === undefined ? undefined : copyTotalCloudContext(current.weatherView.totalCloud);
+    const nextCloud = weather.totalCloud === undefined ? undefined : copyTotalCloudContext(weather.totalCloud);
+    // Time/event edits retain one publication. Only the explicit CAS refresh
+    // may acknowledge a newly selected, qualified publication.
+    return input.refreshTotalCloud === true
+      ? priorCloud === undefined
+        ? input.totalCloudPolicy === TOTAL_CLOUD_POLICY && (nextCloud === undefined || nextCloud.state === "PINNED")
+        : nextCloud?.state === "PINNED"
+      : JSON.stringify(priorCloud) === JSON.stringify(nextCloud);
+  } catch { return false; }
 }
 
 export function observationContextRecoveryInput(
@@ -114,5 +160,6 @@ export function observationContextRecoveryInput(
     selectedAt: context.selectedAtUtc,
     eventInstanceId: context.eventInstanceId,
     targetProfile: context.targetProfile,
+    ...observationContextRecoveryBindings(context),
   };
 }

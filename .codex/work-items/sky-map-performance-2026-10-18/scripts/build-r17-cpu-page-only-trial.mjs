@@ -91,11 +91,11 @@ function trialPage(source) {
   if (source.split('surface: context,').length !== 4) throw Error('three_optical_prepared_scene_ports_required');
   source = source.replaceAll('surface: context,', 'surface: sceneContext,');
   source = replaceOne(source,
-    '      r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions));\n' +
+    '      r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive));\n' +
     '      r17Probe.measure("publishAccepted",()=>attempt.publish!(excludedNameKeys));\n' +
     '      r17Probe.accepted(frame,paintedSkyObjectsRef.current);',
     '      if (!attempt.synthetic) {\n' +
-    '        r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions));\n' +
+    '        r17Probe.measure("displayCopy",()=>surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive));\n' +
     '        r17CpuPageOnlyNativeCopyReturned(surface);\n' +
     '      }\n' +
     '      r17Probe.measure("publishAccepted",()=>attempt.publish!(excludedNameKeys));\n' +

@@ -6,9 +6,12 @@ import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { planReference } from "./plan-reference-model";
+import { weatherCreditSources, weatherSourceSections } from "@/components/weather-source-presentation";
 
-export function PlanReference({ plan, report, loading, failed, stale = false, onRetry }: { plan: ObservationPlan; report: SkyReport | null; loading: boolean; failed: boolean; stale?: boolean; onRetry: () => void }) {
-  const facts = planReference(plan, report);
+export function PlanReference({ plan, report, loading, failed, stale = false, forecastClockOffsetMs = 0, onRetry }: { plan: ObservationPlan; report: SkyReport | null; loading: boolean; failed: boolean; stale?: boolean; forecastClockOffsetMs?: number; onRetry: () => void }) {
+  const now = Date.now() + forecastClockOffsetMs;
+  const facts = planReference(plan, report, now);
+  const credits = report ? weatherCreditSources(report, facts.weatherStarts.length > 0, facts.hasCloud) : [];
   return <View className="plan-section plan-reference" data-od-id="plan-reference">
     <View className="plan-section-heading"><View className="plan-reference__heading"><SemanticIcon name="telescope" /><Text className="type-section">观测参考</Text></View><Text className="plan-reference__scope plan-section-caption">所选时间段</Text></View>
     {failed ? <StatusPanel state="ERROR" detail="天气与夜空动态条件暂未获取；计划和出发安排仍可查看。"
@@ -20,9 +23,12 @@ export function PlanReference({ plan, report, loading, failed, stale = false, on
         <View><View className="plan-reference__label"><SemanticIcon name="cloud" /><Text>云量变化</Text></View><Text>{facts.cloud}</Text></View>
         <View><View className="plan-reference__label"><SemanticIcon name="wind" /><Text>风与气温</Text></View><Text>风速 {facts.wind}</Text><Text>气温 {facts.temperature}</Text></View>
       </View>
-      <ForecastCoverageNote starts={facts.weatherStarts} timezone={plan.contextSnapshot.timezone} scopeKey={`${plan.planId}:${plan.revision}`} stale={stale} />
-      {facts.weatherStarts.length ? <SourceAttribution presentation="credit" sources={report?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
-      <SourceEntry id="plan-reference-source" label="观测参考来源" sources={report?.sources ?? []} />
+      <ForecastCoverageNote starts={facts.weatherStarts} {...(facts.cloudIntervals === undefined ? {} : { cloudIntervals: facts.cloudIntervals })}
+        timezone={plan.contextSnapshot.timezone} scopeKey={`${plan.planId}:${plan.revision}`} stale={stale} />
+      {credits.length ? <SourceAttribution presentation="credit" sources={credits} /> : null}
+      <SourceEntry id="plan-reference-source" label="观测参考来源" sources={report?.sources ?? []}
+        {...(report && facts.cloudIntervals !== undefined ? { sections: weatherSourceSections(report, plan.contextSnapshot.selectedAtUtc,
+          plan.contextSnapshot.timezone, stale, now, facts.cloudIntervals) } : {})} />
     </>}
   </View>;
 }

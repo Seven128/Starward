@@ -5,7 +5,9 @@ import type {
   ObservationContextId,
   SpotId,
 } from "@starward/miniapp-contracts";
-import { observationContextRecoveryInput } from "./observation-context-recovery";
+import { confirmedObservationContextEdit, observationContextRecoveryInput } from "./observation-context-recovery";
+import { totalCloudClientFixture } from "./total-cloud-test-support";
+import { TOTAL_CLOUD_POLICY } from "@starward/miniapp-contracts";
 
 const base: Omit<ObservationContext, "location" | "routeOrigin"> = {
   schemaVersion: "observation-context-v2",
@@ -98,4 +100,29 @@ test("map context recovery preserves the exact map point and route-origin bindin
     ).routeOriginContextId,
     "ctx:recovered-origin",
   );
+});
+
+test("ordinary Context edits cannot change, erase or corrupt a committed cloud publication", () => {
+  const totalCloud = totalCloudClientFixture("2026-08-23T00:00:00.000Z").binding;
+  const current: ObservationContext = { ...base, location: { kind: "FORMAL_SPOT", spotId: "spot:published" as SpotId, locationVersion: 4 },
+    routeOrigin: null, weatherView: { primaryPolicy: "QWEATHER", comparisonModels: [], selectedModel: null, cloudLayer: "TOTAL", totalCloud } };
+  const latest = { ...current, revision: current.revision + 1, contextFingerprint: "edited" };
+  const response = (data: ObservationContext) => ({ dataState: "FRESH", data }) as Parameters<typeof confirmedObservationContextEdit>[2];
+  assert(confirmedObservationContextEdit(current, {}, response(latest)));
+  for (const changed of [undefined, { ...totalCloud, publicationId: `ecmwf-tcc:${"c".repeat(64)}` },
+    { ...totalCloud, samplingPolicy: "wrong" }]) {
+    assert.equal(confirmedObservationContextEdit(current, {}, response({ ...latest,
+      weatherView: { ...latest.weatherView, totalCloud: changed as typeof totalCloud } })), false);
+  }
+  const replacement = { ...latest, weatherView: { ...latest.weatherView,
+    totalCloud: { ...totalCloud, publicationId: `ecmwf-tcc:${"c".repeat(64)}` } } };
+  assert(confirmedObservationContextEdit(current, { refreshTotalCloud: true }, response(replacement)));
+  const legacyWeather = { ...current.weatherView }; delete legacyWeather.totalCloud;
+  assert.equal(confirmedObservationContextEdit(current, { refreshTotalCloud: true }, response({ ...latest,
+    weatherView: legacyWeather })), false);
+  const legacy = { ...current, weatherView: legacyWeather };
+  assert.equal(confirmedObservationContextEdit(legacy, { refreshTotalCloud: true }, response(replacement)), false);
+  assert(confirmedObservationContextEdit(legacy, { refreshTotalCloud: true, totalCloudPolicy: TOTAL_CLOUD_POLICY }, response(replacement)));
+  assert(confirmedObservationContextEdit(legacy, { refreshTotalCloud: true, totalCloudPolicy: TOTAL_CLOUD_POLICY },
+    response({ ...latest, weatherView: legacyWeather })), "explicit unconfigured compatibility acknowledgement");
 });

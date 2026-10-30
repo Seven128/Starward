@@ -1004,3 +1004,68 @@ test("a held field can copy a real completed frame after the next same-direction
   assert.equal(canvas.presentedSkyFrameRef.current.frameAt, stepAt(3));
   assert.equal(current().timePreviewStatus.ready, true);
 });
+
+test("a held page callback follows replaced geometry through forward release and reverse release", async () => {
+  const { source, prior, geometryWindow } = skyTimeTestFixture(), time = createSkyObservationTime();
+  const committedAt = prior.data.selectedAtUtc, original = skyPresentationTimeModel(source.data)!;
+  time.bind("current", committedAt, original);
+  const canvas = timePreviewCanvas(time), renderPage = createPageTimePresentation();
+  const requests: { binding: any; complete(value: unknown): void }[] = [];
+  const h = geometryHarness(source.data, { time, request: binding => new Promise(complete => requests.push({ binding, complete })) });
+  let geometry: any = { model: original, sources: undefined, heldSample: null, failed: false }, elapsedAt = 1000, allowed = true;
+  const page = () => renderPage({ observationTime: time, rawReportData: source.data, committedAt,
+    timeModel: geometry.model, timeGeometrySources: geometry.sources, previewGeometry: geometry,
+    timeIntent: time.snapshot(), requestedAt: time.snapshot().at, report: { isError: false, data: source },
+    presentedSkyFrame: canvas.presentedSkyFrameRef.current, presentedSkyFrameRef: canvas.presentedSkyFrameRef,
+    acceptedClockAt: canvas.presentedSkyFrameRef.current?.frameAt });
+  const ast = ts.createSourceFile("page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const component = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
+  const statements = component.body!.statements;
+  const declared = (statement: ts.Statement, name: string) => ts.isVariableStatement(statement) &&
+    statement.declarationList.declarations.some(node => node.name.getText(ast) === name);
+  // Run the actual model publication and callback declarations for each render.
+  // A touch retains the returned callback while later renders replace supply.
+  const first = statements.findIndex(node => declared(node, "timeModel"));
+  const last = statements.findIndex(node => declared(node, "preparedTimeSample"));
+  const callback = statements.find(node => declared(node, "previewSkyTime"))!;
+  const code = ts.transpileModule(statements.slice(first, last).map(node => node.getText(ast)).join("\n") +
+    `\n${callback.getText(ast)}\npreviewSkyTime;`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const refs: any[] = [];
+  const renderCallback = () => {
+    let cursor = 0;
+    return vm.runInNewContext(code, { observationTime: time, committedAt, timeBinding: "current", previewGeometry: geometry,
+      carriedReport: null, skyTimeIntentCurrent: () => allowed, datePickerOpenRef: { current: false },
+      skyTimeInputAllowed: (at: string) => Number.isFinite(Date.parse(at)), cancelSkyCalibration() {},
+      acceptedTimePresentationFor: (frame: any) => frame?.timePresentation ?? null,
+      presentedSkyFrameRef: canvas.presentedSkyFrameRef, skyContinuousTimeCoverage,
+      reducedMotionRef: { current: false }, setTimeIntent() {}, Date: { now: () => elapsedAt },
+      useRef: (value: unknown) => refs[cursor++] ??= { current: value } }) as (at: string) => boolean;
+  };
+  const render = () => { geometry = h.render(time.snapshot().at); h.commit(); renderCallback(); return page(); };
+  const bindSupply = () => time.bind("current", committedAt, geometry.model, {
+    coverage: skyContinuousTimeCoverage(geometry.model, canvas.presentedSkyFrameRef.current?.timePresentation?.model ?? null), elapsedAt });
+  const completeLatest = async () => {
+    const request = requests.at(-1)!;
+    request.complete(shortWindow(geometryWindow, request.binding.at, prior.data.timezone)); await settleQuery();
+    render(); bindSupply(); time.tick(elapsedAt + 160); canvas.prepare(render()).complete(); bindSupply(); render();
+  };
+  try {
+    time.preview("2026-09-29T11:00:17.123Z"); render(); await completeLatest();
+    for (const [target, final] of [["2026-09-29T13:00:17.123Z", "2026-09-29T13:01:17.123Z"],
+      ["2026-09-29T11:00:17.123Z", "2026-09-29T10:59:17.123Z"]]) {
+      time.edit("fields", true); const heldPreview = renderCallback();
+      elapsedAt += 1000; assert(heldPreview(target!)); render(); await completeLatest();
+      const model = geometry.model, requestCount = requests.length;
+      elapsedAt += 1000; assert(heldPreview(final!)); render();
+      assert.strictEqual(geometry.model, model); assert.equal(requests.length, requestCount);
+      time.edit("fields", false); time.tick(elapsedAt + 160); canvas.prepare(render()).complete();
+      assert.equal(time.snapshot().previewMotion, null, "current supplied geometry cannot leave a released touch waiting on its old model");
+      assert.equal(canvas.presentedSkyFrameRef.current.frameAt, final);
+      assert.equal(page().timePreviewStatus.ready, true);
+      assert.equal(time.snapshot().committedAt, committedAt);
+      allowed = false; const before = time.snapshot(); assert.equal(heldPreview(target!), false); assert.strictEqual(time.snapshot(), before);
+      allowed = true;
+    }
+  } finally { h.close(); }
+});

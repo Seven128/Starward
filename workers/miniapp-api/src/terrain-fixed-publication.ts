@@ -38,7 +38,13 @@ export function terrainInventoryVersion(inventory: Pick<TerrainFixedInventory, "
 export async function readTerrainFixedInventory(directory: string): Promise<TerrainFixedInventory> {
   const file = path.join(directory, "inventory.json");
   if ((await stat(file)).size > 2 * 1024 * 1024) throw new Error("terrain_inventory_invalid");
-  const value = JSON.parse(await readFile(file, "utf8")) as TerrainFixedInventory;
+  return validateTerrainFixedInventory(JSON.parse(await readFile(file, "utf8")));
+}
+
+/** The sealed Map consumer validates the same inventory from hash-bound bytes. */
+export function validateTerrainFixedInventory(input: unknown): TerrainFixedInventory {
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("terrain_inventory_invalid");
+  const value = input as TerrainFixedInventory;
   const all = [...(Array.isArray(value.assets) ? value.assets : []), ...(Array.isArray(value.retainedAssets) ? value.retainedAssets : [])];
   if (value.schemaVersion !== "starward-fixed-terrain-inventory-v1" || !Array.isArray(value.targets) || !value.targets.length
     || !Array.isArray(value.assets) || !value.assets.length || all.length > 4096
@@ -56,10 +62,16 @@ export async function readTerrainFixedInventory(directory: string): Promise<Terr
  * Immutable published bytes do not acquire a 24-hour cache expiry. */
 export async function readTerrainFixedAsset(directory: string, entry: TerrainFixedInventory["assets"][number]): Promise<RenderedTerrain> {
   const proof = await readFile(path.join(directory, entry.file + ".json"));
+  const publication = validateTerrainFixedProof(entry, proof);
+  const bytes = validateTerrainAsset(await readFile(path.join(directory, entry.file)), publication);
+  return { publication, bytes };
+}
+
+/** Keep file/manifest selection separate from the common publication owner. */
+export function validateTerrainFixedProof(entry: TerrainFixedInventory["assets"][number], proof: Buffer) {
   if (proof.length > 1024 * 1024 || sha256(proof) !== entry.publicationSha256) throw new Error("terrain_publication_hash_mismatch");
   const publication = validateTerrainPublication(JSON.parse(proof.toString("utf8")));
   if (publication.schemaVersion !== "starward-terrain-publication-v4" || publication.image.file !== entry.file
     || publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND")) throw new Error("terrain_fixed_publication_invalid");
-  const bytes = validateTerrainAsset(await readFile(path.join(directory, entry.file)), publication);
-  return { publication, bytes };
+  return publication;
 }

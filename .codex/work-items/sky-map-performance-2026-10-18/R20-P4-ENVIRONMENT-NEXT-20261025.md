@@ -22,3 +22,9 @@ Root本轮提供的现用服务只读结果为 PG已登记023–026、POSTGRES/L
 真正云媒体闭环的下一必要准备是沿既有 owner 明确用户媒体目标、隐私/合规和地域、bucket/prefix、最小IAM、加密、删除/恢复与成本条件，再核当前账户实际权益和可用服务端访问方式；供应商目标未明确时不另起采购或adapter实现。之后才可能沿现有 port 进行合格窄适配及真实读写/清理恢复，现有 LOCAL_FILESYSTEM或 MEMORY 不能冒其结果。
 
 `worker.ts --once` 和 `--replay`不是只读资格探针：`runOutboxOnce`会 enqueue operational/event/reminder sweeps、派发并等待实际工作，replay会恢复指定死信。不要在现用共享库/队列用它们“看是否可用”，也不以手机API阻塞为由启动第二套同条件本地复验。真实长期环境资格仍归唯一PLAN P4。
+
+## 2026-10-28 当前恢复 API 的管理入口读回
+
+Root 沿当前已恢复的 observed-batch 配置核对：8787唯一listener仍为17496、只绑定127.0.0.1。指定私有 runtime 的键中没有管理配置，当前终端也没有 `MINIAPP_ADMIN_TOKEN`；这两项不被推成所有账号或服务环境均无凭据。随后只读 `GET /v2/admin/session`，2026-10-28T11:26:40Z 实际HTTP **503**、`CAPABILITY_DISABLED`、`retryable=false`，未取得principal/operations/commandContracts。
+
+首次读回错误地从嵌套 `error` 取字段，输出null只属读回脚本不匹配真实顶层错误形状；第二次只读请求正确取顶层字段得到上述结果，没有更改服务或制造身份。当前不能沿该环境完成真实管理凭据/API-client配对，不新造OWNER、启用能力、执行写命令或worker。当前未选定的用户媒体云目标和正式环境资格继续保留，既有隔离恢复证据不重跑。

@@ -5,7 +5,7 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 from affine import Affine
@@ -13,19 +13,20 @@ from rasterio.io import MemoryFile
 
 import eog_fixed_method as fixed
 from eog_fixed_raster import NUMERIC_BANDS, colour_png
-from eog_raster import PipelineError, PublicationManifest, RasterSelection, canonical_json, sha256_bytes
+from eog_raster import PipelineError, PublicationManifest, RasterGrid, RasterSelection, canonical_json, sha256_bytes, read_native_point_selection
 
 INVENTORY_SCHEMA = "starward-fixed-nightlight-inventory-v1"
 ASSET_PATTERN = re.compile(r"nightlight-v2-[0-9a-f]{64}\.png")
 
 
-def validate_aoi_alignment(manifest: PublicationManifest, selection: RasterSelection) -> None:
+def validate_aoi_alignment(manifest: PublicationManifest, selection: RasterSelection | RasterGrid) -> None:
     # Schema 2 declares whole original pixels as its numerical publication
     # footprint. Reject fractional boundaries instead of silently expanding or
     # losing their area. The operator can declare the exact source-grid edges.
     transform = selection.transform
     west, north = transform * (0, 0)
-    east, south = transform * (selection.radiance.shape[1], selection.radiance.shape[0])
+    shape = (selection.width, selection.height) if isinstance(selection, RasterGrid) else (selection.radiance.shape[1], selection.radiance.shape[0])
+    east, south = transform * shape
     if any(abs(actual - expected) > 1e-8 for actual, expected in
            zip((west, south, east, north), (manifest.aoi.west, manifest.aoi.south, manifest.aoi.east, manifest.aoi.north))):
         raise PipelineError("fixed_aoi_requires_declared_source_pixel_edges")
@@ -50,7 +51,7 @@ def validate_asset(directory: Path, entry: Mapping[str, Any], manifest: Publicat
                              {"bytes": entry.get("proofBytes"), "sha256": entry.get("proofSha256")}, 1024 * 1024)
     proof = json.loads(proof_raw)
     source_set = proof.get("sourceSet", {})
-    if (proof.get("schemaVersion") != "starward-fixed-nightlight-raster-v2"
+    if (proof.get("schemaVersion") not in {"starward-fixed-nightlight-raster-v2", "starward-fixed-nightlight-raster-v3"}
             or proof.get("datasetVersion") != manifest.dataset_version or proof.get("releaseState") != "PREPARED"
             or proof.get("methodVersion") != fixed.POLICY["methodVersion"]
             or proof.get("styleVersion") != fixed.POLICY["styleVersion"] or proof.get("policy") != fixed.POLICY
@@ -75,12 +76,28 @@ def validate_asset(directory: Path, entry: Mapping[str, Any], manifest: Publicat
             or proof["image"]["width"] != grid["width"] or proof["image"]["height"] != grid["height"]):
         raise PipelineError("nightlight_asset_grid_invalid")
     is_composition = window["columns"] * window["rows"] > 1
+    chunked = proof["schemaVersion"] == "starward-fixed-nightlight-raster-v3"
+    if chunked:
+        from eog_chunk_preparation import validate_chunk_grid
+        validate_chunk_grid(grid)
+        original = grid["originalSource"]
+        if (source_set.get("preparation") != grid["preparation"]
+                or source_set.get("geometrySha256") != sha256_bytes((canonical_json(grid) + "\n").encode())
+                or any(abs(actual - expected) > 1e-8 for actual, expected in
+                       ((original["west"], manifest.aoi.west), (original["north"], manifest.aoi.north),
+                        (original["west"] + original["width"] * original["longitudeStep"], manifest.aoi.east),
+                        (original["north"] + original["height"] * original["latitudeStep"], manifest.aoi.south),
+                        (original["longitudeStep"], resolution[0]), (original["latitudeStep"], -resolution[1])))):
+            raise PipelineError("nightlight_chunked_geometry_identity_invalid")
+    elif grid.get("schemaVersion") != "starward-nightlight-warp-grid-v1" or "preparation" in source_set or "sourceChunks" in grid:
+        raise PipelineError("nightlight_asset_grid_invalid")
     children = proof.get("cells")
-    if (proof.get("derivation") not in (["NUMERIC_FIXED_CELL_COMPOSITION"] if is_composition else ["GDAL_PHYSICAL_AREA_SUM", "GEOS_PHYSICAL_AREA_INTERSECTION"])
+    if (proof.get("derivation") not in (["NUMERIC_FIXED_CELL_COMPOSITION"] if is_composition else
+                                      ["GEOS_PHYSICAL_AREA_CHUNKED_INTERSECTION"] if chunked else ["GDAL_PHYSICAL_AREA_SUM", "GEOS_PHYSICAL_AREA_INTERSECTION"])
             or not isinstance(children, list) or len(children) != (window["columns"] * window["rows"] if is_composition else 0)):
         raise PipelineError("nightlight_fixed_cell_derivation_invalid")
     engine = source_set.get("numericalEngine")
-    if proof.get("derivation") == "GEOS_PHYSICAL_AREA_INTERSECTION" or engine is not None:
+    if proof.get("derivation") in {"GEOS_PHYSICAL_AREA_INTERSECTION", "GEOS_PHYSICAL_AREA_CHUNKED_INTERSECTION"} or engine is not None:
         if (not isinstance(engine, dict) or engine.get("algorithm") != "geos-dense-physical-area-intersection-v1"
                 or any(not isinstance(engine.get(key), str) or re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", engine[key]) is None
                        for key in ("shapelyVersion", "geosVersion"))
@@ -132,7 +149,7 @@ def inventory_version(value: Mapping[str, Any]) -> str:
     return "nightlight-fixed:" + sha256_bytes(canonical_json(core).encode())
 
 
-def read_inventory(manifest: PublicationManifest, resolution: tuple[float, float]) -> dict[str, Any]:
+def read_inventory_with_proofs(manifest: PublicationManifest, resolution: tuple[float, float]) -> tuple[dict[str, Any], dict[str, Any]]:
     reference = manifest.fixed_raster
     if reference is None or reference["policySha256"] != fixed.POLICY_SHA256:
         raise PipelineError("nightlight_fixed_policy_mismatch")
@@ -169,7 +186,11 @@ def read_inventory(manifest: PublicationManifest, resolution: tuple[float, float
                     or not window["y"] <= cell["y"] < window["y"] + window["rows"]):
                 raise PipelineError("nightlight_fixed_cell_reference_invalid")
             seen.add((cell["x"], cell["y"]))
-    return value
+    return value, proofs
+
+
+def read_inventory(manifest: PublicationManifest, resolution: tuple[float, float]) -> dict[str, Any]:
+    return read_inventory_with_proofs(manifest, resolution)[0]
 
 
 def sample_point(selection: RasterSelection, manifest: PublicationManifest, source: Mapping[str, Any],
@@ -187,6 +208,37 @@ def sample_point(selection: RasterSelection, manifest: PublicationManifest, sour
                 values[dy, dx], coverages[dy, dx] = selection.radiance[y, x], selection.coverage[y, x]
                 published[dy, dx] = True
     transform = selection.transform * Affine.translation(column - 1, row - 1)
+    return _spot_estimate(values, coverages, published, transform, selection.resolution_degrees, manifest, source)
+
+
+def sample_source_point(manifest: PublicationManifest, source: Mapping[str, Any], grids: Sequence[RasterGrid],
+                        longitude: float, latitude: float) -> dict[str, Any]:
+    """Sample one native neighbourhood over the published part union, once."""
+    if not grids or any(grid.raster_transform != grids[0].raster_transform
+                        or grid.resolution_degrees != grids[0].resolution_degrees for grid in grids):
+        raise PipelineError("nightlight_sharded_source_grid_mismatch")
+    column_float, row_float = ~grids[0].raster_transform * (longitude, latitude)
+    row, column = math.floor(row_float), math.floor(column_float)
+    contains = lambda window, y, x: (window.col_off <= x < window.col_off + window.width
+                                     and window.row_off <= y < window.row_off + window.height)
+    if not any(contains(grid.window, row, column) for grid in grids):
+        raise PipelineError("spot_outside_published_aoi")
+    selection = read_native_point_selection(manifest, longitude, latitude)
+    if (selection.window.col_off != column - 1 or selection.window.row_off != row - 1
+            or selection.resolution_degrees != grids[0].resolution_degrees
+            or selection.transform != grids[0].transform_for_window(selection.window)):
+        raise PipelineError("nightlight_sharded_source_grid_changed")
+    published = np.zeros((3, 3), dtype="bool")
+    for dy in range(3):
+        for dx in range(3):
+            published[dy, dx] = any(contains(grid.window, row + dy - 1, column + dx - 1) for grid in grids)
+    return _spot_estimate(selection.radiance, selection.coverage, published, selection.transform,
+                          selection.resolution_degrees, manifest, source)
+
+
+def _spot_estimate(values: np.ma.MaskedArray, coverages: np.ma.MaskedArray, published: np.ndarray,
+                   transform: Affine, resolution: tuple[float, float], manifest: PublicationManifest,
+                   source: Mapping[str, Any]) -> dict[str, Any]:
     result = fixed.aggregate(values, coverages, fixed.pixel_areas(transform, 3, 3),
                              manifest.minimum_coverage, published=published)
     statistics = result["statistics"]
@@ -199,7 +251,7 @@ def sample_point(selection: RasterSelection, manifest: PublicationManifest, sour
             "minimumCloudFreeObservations": statistics["minimumCloudFreeObservations"] if statistics else None,
             "calibratedSkyClass": False, "label": label, "method": fixed.POLICY["methodVersion"],
             "datasetVersion": manifest.dataset_version, "dataDate": str(manifest.data_year),
-            "precision": f"年度 {selection.resolution_degrees[0]:.8g}°×{selection.resolution_degrees[1]:.8g}° 原始像元；3×3 邻域按有效物理面积加权分位数，固定辐亮度分级；不是天空实测",
+            "precision": f"年度 {resolution[0]:.8g}°×{resolution[1]:.8g}° 原始像元；3×3 邻域按有效物理面积加权分位数，固定辐亮度分级；不是天空实测",
             "state": "ESTIMATED" if statistics else "UNAVAILABLE", "source": dict(source),
             "statistic": fixed.POLICY["statistics"]["spot"],
             "quality": {**result["quality"], "state": result["state"], "reason": result["reason"]}}

@@ -25,7 +25,6 @@ function backRuntime(presentation: "layer-sheet" | "spot-panel", busy: "none" | 
     ...createMapPageTestBoundaries().scope,
     photoHandoff: { active: false, cancel: () => effects.push("photo-warning") },
     navigationHandoff: { active: false, cancel: () => effects.push("navigation-warning") },
-    eventModalOpenRef: { current: false }, eventModalRef: { current: { back: () => effects.push("event") } },
     imageViewerBack: { current: null as (() => void) | null },
     bottomPresentationRef: { current: presentation }, bottomPresentation: presentation,
     panelExtentRef: { current: "large" }, datePickerVisible: true,
@@ -60,12 +59,47 @@ test("busy calendars consume Back while higher visible disclosures retain their 
     }
   }
   const map = backRuntime("spot-panel");
-  map.scope.eventModalOpenRef.current = true;
-  await map.back(); assert.deepEqual(map.effects, ["event"]);
-  map.scope.eventModalOpenRef.current = false;
+  map.scope.photoHandoff.active = true;
+  await map.back(); assert.deepEqual(map.effects, ["photo-warning"]);
+  map.scope.photoHandoff.active = false;
+  map.scope.navigationHandoff.active = true;
+  await map.back(); assert.deepEqual(map.effects, ["photo-warning", "navigation-warning"]);
+  map.scope.navigationHandoff.active = false;
   map.scope.imageViewerBack.current = () => map.effects.push("image");
-  await map.back(); assert.deepEqual(map.effects, ["event", "image"]);
+  await map.back(); assert.deepEqual(map.effects, ["photo-warning", "navigation-warning", "image"]);
   assert.equal(map.scope.datePickerVisible, true);
+});
+
+test("the actual event banner closes the calendar and opens the full event route with its selected month", async () => {
+  let onOpen: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(mapSource) === "AstronomicalEventBanner") {
+      const prop = node.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(mapSource) === "onOpen") as ts.JsxAttribute;
+      onOpen = (prop.initializer as ts.JsxExpression).expression;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(mapSource); assert.ok(onOpen);
+  for (const month of [undefined, "2026-12"]) {
+    const order: string[] = [], notices: unknown[] = [];
+    let rejectNavigation = false;
+    const open = vm.runInNewContext(ts.transpileModule(declaration("openMapPage") + `\n(${onOpen.getText(mapSource)});`, {
+      compilerOptions: { target: ts.ScriptTarget.ES2022 },
+    }).outputText, {
+      setDatePickerOpen: (value: boolean) => order.push(`calendar:${value}`),
+      Taro: { navigateTo: async ({ url }: { url: string }) => {
+        order.push(url); if (rejectNavigation) throw Error("navigation unavailable");
+      } },
+      useAppStore: { getState: () => ({ notifications: [] }) }, notify: (notice: unknown) => notices.push(notice),
+    }) as (month?: string) => void;
+    open(month); await new Promise<void>(resolve => setImmediate(resolve));
+    assert.deepEqual(order, ["calendar:false", `/content/event/list/index${month ? `?month=${month}` : ""}`]);
+    assert.equal(notices.length, 0);
+    order.length = 0; rejectNavigation = true;
+    open(month); await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal((notices[0] as { dedupeKey: string }).dedupeKey, "map-events-navigation-failed",
+      "a failed child route reports owned recovery while Map remains in place");
+  }
 });
 
 test("both Map date consumers hand native Back to the page's single owner", () => {
@@ -96,7 +130,7 @@ test("a post-render navigation effect cannot invalidate a current calendar opene
     accountOwnerId: "account:A", mapResetVersion: 1, navigationEpoch: { current: 3 },
     bottomPresentation: "layer-sheet", panelGeometryIdentity: "formal:A", retiredObservationContextId: null as string | null,
     timeReference: { contextId: "context:A", revision: 1, contextFingerprint: "first" },
-    pageVisible: true, visibleLayer: "TOTAL_CLOUD", selectedProposal: null, spotTimeContext: {},
+    pageVisible: true, cloudLayerEnabled: true, selectedProposal: null, spotTimeContext: {},
     calendarOwner: null as string | null, setCalendarOwner: (value: string | null) => { scope.calendarOwner = value; },
   };
   const render = () => vm.runInNewContext(ts.transpileModule(
@@ -153,7 +187,7 @@ test("calendar notification space uses current native geometry and retires late 
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, {
     datePickerVisible: visible, calendarLayoutIdentity: identity, calendarBounds: { identity: "calendar:A", top: 371.4 },
-    mapStatusBarHeight: undefined, mapCapsuleBottom: undefined, mapSafeTop: undefined,
+    mapStatusBarHeight: undefined, mapCapsuleBottom: undefined, mapSafeTop: undefined, eventBannerHeight: 70,
     primaryNavigation: primaryNavigationLayout("pages/map/index"),
     spotEditorPhase: "open", SPOT_EDITOR_ENTER_MS: 180, SPOT_EDITOR_EXIT_MS: 180, panelCssMotion: null,
   });

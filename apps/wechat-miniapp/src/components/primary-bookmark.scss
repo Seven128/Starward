@@ -1,0 +1,12 @@
+.primary-bookmark {
+  position: absolute; z-index: 40; top: var(--primary-bookmark-top, calc(env(safe-area-inset-top) + 68Px));
+  box-sizing: border-box; width: 90Px; height: 44Px; min-height: 44Px;
+  margin: 0; padding: 0 14Px 0 8Px; display: flex; align-items: center; justify-content: center; gap: 7Px;
+  border: 0; border-radius: 0; background: var(--surface); color: var(--text-secondary); box-shadow: none;
+  font-size: 14Px; font-weight: 500; line-height: 20Px;
+}
+.primary-bookmark::after { border: 0; }
+.primary-bookmark--left { left: 0; clip-path: polygon(0 0, 100% 0, 90% 50%, 100% 100%, 0 100%); }
+.primary-bookmark--right { right: 0; padding: 0 7Px 0 15Px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10% 50%); }
+.primary-bookmark .semantic-icon { width: 25Px; height: 25Px; flex: 0 0 25Px; }
+.theme-day .primary-bookmark { background: #fffffff5; color: #526474; }

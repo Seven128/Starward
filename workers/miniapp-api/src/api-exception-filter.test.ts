@@ -41,6 +41,14 @@ test("ordinary malformed product input remains an input error", () => {
   });
 });
 
+test("cloud contract negotiation errors are input failures and capacity exhaustion has bounded retry semantics", () => {
+  for (const message of ["observation_cloud_policy_invalid", "observation_cloud_binding_invalid", "observation_cloud_refresh_invalid",
+    "observation_cloud_refresh_requires_policy"])
+    assert.deepEqual(classifyExceptionMessage(message), { status: 400, code: "INVALID_INPUT", retryable: false });
+  assert.deepEqual(classifyExceptionMessage("observation_cloud_refresh_provider_unavailable"), { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true });
+  assert.deepEqual(classifyExceptionMessage("cloud_publication_read_queue_full"), { status: 429, code: "BUDGET_EXCEEDED", retryable: true });
+});
+
 test("invalid plan wall times are input errors rather than provider outages", () => {
   for (const message of ["plan_end_must_follow_start", "plan_departure_must_precede_start", "plan_timing_invalid",
     "observation_local_date_invalid", "observation_local_time_invalid", "observation_local_time_nonexistent_or_ambiguous"])

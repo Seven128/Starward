@@ -614,7 +614,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](https://stitch.google.com/projects/7144519510537620825)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](https://stitch.google.com/projects/7144519510537620825)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的192/224px页面派生和192px原生Tab派生；2026-10-11用户仅批准停车/洗手间两份主包专用96px派生，显示24px，其余源和派生尺寸保持，实际包预算仍须构建核验。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
 - 当前完整页面资源中的局部例外优先于通用 B 图标基线：最新 My 日间计划卡头和计划行保留源中的两种 16px 线性 chevron，由同一 `SemanticIcon` 的计划角色分发精确 SVG 提取；其他页面的 B chevron 以及 NIGHT/OBSERVATION 原主题素材不改。
-- 2026-10-22采用[局部导航修订](project_context/areas/main/screen-contracts/wechat-miniapp.md#stitch-design-authority)：移除Map/My底栏与其占高，默认地图，地图左上我的图标，My左上地图图标+文字返回；原渐变/玻璃卡/内容位置保持。Map右侧搜索改为同族圆按钮，工具顺序与来源/紧凑布局沿该源；未涉及图标、配色、材质和内容维持原样。可见面与至少44px命中区分离，真实系统安全区由原geometry owner提供，资源示意home indicator不作为产品绘制内容。其他主题保留已有调色/资产，不重画夜间拟物。
+- 2026-10-22采用资源保留无底栏、默认Map及Map/My/Search方向转场。2026-10-27确认的[局部新要求](project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#current-map-revision)将Map左侧/My右侧入口改为同高同尺寸水平书签，并修改事件入口、视野列表与层叠；视觉已采用上方banner与共用设计，My设置按钮的必要左移避让也已确认；未涉及的渐变、玻璃卡、图标、内容位置与主题保持。可见面与至少44px命中区分离，安全区由原geometry owner提供，资源示意home indicator不是产品绘制内容。
 - 当前 Plan 日间完整源的详情／编辑文档保留灰蓝文字与 `#526f7d` 主操作。详情分享入口位于 hero，B share 保留源中的 256px 逻辑画布；观测参考先于出行安排，底部固定删除／编辑两操作，编辑页固定取消／保存。两种文档由同一 Plan 页面与滚动／footer 空间责任维护；时段、当地时区、恢复、通知状态和公开分享字段继续由既有业务 owner 提供。字段54px、标签13.5px、输入14.5px，辅助说明13px/1.65，不能把这些局部参数推广到未覆盖主题或其他页面。
 
 ### 4. 间距、密度、占用率与几何
@@ -735,7 +735,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.1 Map 主体与悬浮 Search
 
-- 地图连续铺满route的可用内容区，是唯一地图对象。2026-10-22采用稿删除Map搜索长框和底栏：左上为My图标入口，右侧同族竖排搜索、定位、天文事件、添加、层叠；底部抽屉入口在末。Search按钮只进入原专用页面，不嵌入filters/results或查询摘要。Search页内原输入框继续保留左右16px、可见高44px、文字15px、pill/浅边/白色90%及52px独立命中区；精确级联值沿原完整源，顶部以实际系统/微信安全区映射。未改配色、图标、材质和内容保持，不把示例设备坐标硬编码到所有机型。
+- 地图连续铺满route可用内容区，是唯一地图对象。当前[Map局部需求](project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#current-map-revision)规定左侧My书签、右侧搜索/定位/添加/层叠、可轮播事件banner和左下2/3宽的视野列表；具体视觉采用地图上方banner（A）及已展示共用页面。Search仍是专用页面，原输入/筛选/结果保持；其输入框沿原完整源的左右16px、44px可见高、15px文字、pill/浅边/白色90%和52px独立命中区。视野列表复用Search卡片，不承接Search查询/筛选，不把示例设备坐标硬编码到所有机型。
 - Location/layer edge actions 日间当前尺度为44px可见面、52px target、8px间距，glyph 22px；未覆盖主题沿用原 `52–56rpx` 可见面、`88rpx` target、`8rpx` 间距，glyph `24–28rpx`。Layer trigger 只打开第 5A.4 节的随内容伸缩 bottom sheet；原独立`观测条件`卡片并入sheet，不在地图右侧展开文字rail。普通底图、默认marker、卫星、交通、雷达、风、温度不得被补成choice。
 - Formal marker 默认 `32rpx` neutral core + `2rpx border-strong` + 下锚点；selected 使用 `40rpx`、`sky-soft` core、`2rpx sky` boundary 和 panel-visible/programmatic state。禁止 glow、pulse、particle。真实 hit geometry 由 native adapter 另证，Search result list/semantic list 是完整非手势替代。
 - Marker 直接以`medium`打开 `map-spot-information-panel`，不保留 selected callout、Finder Sheet 或独立 detail route。非 marker map tap 从 panel 当前 live position 执行 `220ms exit` 向下离场，完成后才移除 hit/semantics，不得瞬间消失。
@@ -765,13 +765,13 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.4 图层、观测摘要、状态与模式
 
-- 原独立`观测条件`Bar/Control已退休；`map-layer-selector` sheet表达整个地图的图层、图例与必要来源/覆盖范围，不显示观星点名称、单点值或虚构地图汇总值，不在Map左下另占surface。日期与时间由全小程序共用的日期选择+Curved Time Ruler组件呈现，沿用已采用观星点天文组件，总云量场景只省略月相图标；光污染是年度夜光数据，不显示整个日期时间区，不保留空位、不使用disabled状态；摘要不再复制日期/时间。
+- 原独立`观测条件`Bar/Control已退休；`map-layer-selector` sheet表达整个地图的图层、图例与必要来源/覆盖范围，不显示观星点名称、单点值或虚构地图汇总值，不另建观测条件surface；Map左下的当前视野地点列表由5A.1及Map owner单独定义。日期与时间由全小程序共用的日期选择+Curved Time Ruler组件呈现，沿用已采用观星点天文组件，总云量场景只省略月相图标；光污染是年度夜光数据，不显示整个日期时间区，不保留空位、不使用disabled状态；摘要不再复制日期/时间。
 - Map analytical layer 使用 solid canvas/surface 与 dividers，不用 glass/card wall。Sheet overlay不remount或移动地图；同一物理地图、camera、selection与scroll coordinates保持连续。
-- App-owned legend 只随 active analytical overlay 出现，使用 `radius-band` solid strip、`1rpx border` 与 label/value/shape；一次只有一个 layer legend。
+- App-owned legend 只随实际开启且显示的图层出现；多项开启时分别识别各自图例与来源，不把不同单位或数据含义合并。全关时不残留图例。样式沿原已采用图例家族，具体组合沿当前Map采用源。
 - Day/Night 使用当前 roles；Night 不用 glow/neon。Observation 中 app-owned Search、marker、panel、rail、legend、loading、focus 和过渡只用 closed black/warm-red roles。不能主题化的 native/provider surface 必须在进入前提供 safe cancel/return 或 non-field alternative。
-- `map-layer-selector`由紧凑Map-edge trigger与内容驱动高度bottom-sheet presentation组成，不新增第二Control key。Trigger active与地图定位/新增加号统一使用亮色边框和微弱柔雾阴影，缓慢呼吸且几何不变；减少动态效果时保持静态。无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/云量`两张等宽、整卡可点的abstract image-backed单选卡；selected用极浅fill、inner boundary和checked state。有效选择即时切层，无额外确认；重复选择当前项保持选中，不产生全未选或叠加两层状态。“观测机会”已从小程序地图图层选择和对应摘要/图例中移除，原因是此处保留可直接理解的客观图层。原`332rpx + safe-bottom`主体不能裁切新共用日期时间组件；总云量高度须容纳正常字级、日期栏和独立44px触控区域；光污染使用紧凑高度及年度数据说明。底部选择卡与导航保持原位，顶边从当前呈现高度平滑伸缩，快速反向直接重定向，减少动态效果时直接切换；圆角由外层裁切保证白色子组件不溢出。2026-09-13本轮图层修订为全宽方角单一外壳，取代历史顶角18px，不在圆角背后叠白色方框；高度基线仍由Map ADOPTED的layer-selector包给出，390×844视口下云量/光污染高度分别276px/134px，内容字号放大时按内容扩展，不硬裁切。
+- `map-layer-selector`保持紧凑Map-edge trigger与内容驱动高度的单一全宽方角bottom sheet。按2026-10-27需求，第一行光害/云量、第二行地形，三项同族整卡独立启闭并允许全部关闭；不再使用radio或点击已选仍强制保留的规则，也不另加“无叠加”卡或关闭行。云量开时保共享日期/时间尺，年度夜光与地形不随小时更新；关闭云量移除时间区且不留空位。底部锚定、从当前高度平滑伸缩、中途接管及减少动态效果保留；内容按正常字级和真实安全区布局，旧276px/134px样例不再约束新增第二行。无drag handle、x或多extent暗示；来源与错误分别沿Map owner和共享信息组件，不把错误文案留在抽屉内。本局部视觉已采用，生产能力与真机效果另证。
 - Map只有一个`bottomPresentation = none | spot-panel | layer-sheet | spot-editor` coordinator。打开layer直接把spot presentation retarget为layer；panel hit/semantics/active在所有权切换时清除，只有旧视觉可完成退出，selected identity与previous extent保留为恢复历史。Layer open时marker/result intent直接把同一owner retarget为新spot medium，不先恢复旧panel。关闭layer只在没有更新intent时恢复prior extent。Editor未保存离开遵循Screen Contract的先确认后提交；取消保留输入、媒体、候选位置、相机和原上下文。任一时刻只有一个底部交互owner，不以并列active flag绕过协调器。
-- Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
+- Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/selection 的局部正常状态已是反馈，不另弹 floating notification；图层错误按2026-10-27要求由共享信息组件展示并去除抽屉内重复错误，也不展示操作教程或实现说明。
 - `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
 
 云观星旧整页设计稿于2026-09-23撤销，2026-10-17仅采用下段菜单范围；旧稿不再决定星图构图或视觉验收。已独立确认的全屏天空、真实星表与投影、共享日期时间及传感器恢复等功能和交互要求仍按 Screen Contract 执行，具体呈现以目标运行时迭代。
@@ -1064,7 +1064,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 ### 8. 运动系统
 
-所有运动均由明确操作或数据因果触发，可中断、可反向，除明确授权的按钮夜空星点明暗外无环境循环；normal motion下material route/surface/state不得突然出现或消失。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，direct-manipulation panel沿用可中断物理收敛；2026-09-22弹性修订的参数、上端内容安全边界与验证状态由[共享弹性抽屉资源](https://stitch.google.com/projects/7144519510537620825)拥有，候选不受旧280ms硬截止限制。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
+所有运动均由明确操作或数据因果触发，可中断、可反向，除明确授权的按钮夜空星点明暗及Map事件banner的内容轮播外无环境循环；normal motion下material route/surface/state不得突然出现或消失。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，direct-manipulation panel沿用可中断物理收敛；2026-09-22弹性修订的参数、上端内容安全边界与验证状态由[共享弹性抽屉资源](https://stitch.google.com/projects/7144519510537620825)拥有，候选不受旧280ms硬截止限制。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
 
 | Recipe | Trigger / current → target | Timing | Interruption / reverse | Reduced motion | Haptic | Observation |
 |---|---|---|---|---|---|---|

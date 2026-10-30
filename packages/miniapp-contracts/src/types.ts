@@ -150,6 +150,8 @@ export interface ObservationContext {
     comparisonModels: readonly string[];
     selectedModel: string | null;
     cloudLayer: "TOTAL" | "LOW" | "MID" | "HIGH";
+    /** Explicitly negotiated total-cloud source; absent is the legacy QWeather contract. */
+    totalCloud?: import("./cloud-context.ts").TotalCloudContext;
   };
   algorithmVersions: {
     astronomy: string;
@@ -186,6 +188,12 @@ export interface ObservationContextResolveRequest {
   selectedAt?: string | null;
   eventInstanceId?: string | null;
   targetProfile?: ObservationContext["targetProfile"];
+  totalCloudPolicy?: "ECMWF_IFS_TCC_V1";
+  /** Recovery hint only. The server re-admits this public identity against its
+   * immutable ready publication; this never authorizes a client-selected source. */
+  restoreTotalCloud?: import("./cloud-context.ts").TotalCloudContext;
+  /** Recovery may shorten, never renew, the original precise-location lifetime. */
+  restoreExpiresAt?: string;
 }
 
 export interface ObservationContextUpdateRequest {
@@ -194,6 +202,10 @@ export interface ObservationContextUpdateRequest {
   selectedAt?: string;
   cloudLayer?: ObservationContext["weatherView"]["cloudLayer"];
   eventInstanceId?: string | null;
+  /** One Context CAS changes the shared cloud publication for every consumer. */
+  refreshTotalCloud?: true;
+  /** An explicit CAS may adopt the new contract for a legacy Context. */
+  totalCloudPolicy?: "ECMWF_IFS_TCC_V1";
 }
 
 export interface WechatLoginRequest {
@@ -684,6 +696,8 @@ export interface HourlySkyRow {
   /** Actual provider hour used here; astronomy at stays independent. Null means no matching source hour. */
   weatherAt: string | null;
   cloudPercent: number | null;
+  /** Absent is legacy QWeather; null is an explicitly unavailable ECMWF sample. */
+  cloudEvidence?: import("./cloud-point-series.ts").CloudForecastEvidence | null;
   precipitationMm: number | null;
   precipitationProbabilityPercent: number | null;
   windKph: number | null;
@@ -755,6 +769,8 @@ export interface WeatherModelRunEvidence {
 }
 
 export interface WeatherEvidenceSummary {
+  /** Independent total-cloud native series; never relabels the other weather source hours. */
+  totalCloud?: import("./cloud-point-series.ts").CloudPointForecast;
   timelineRole: "PRIMARY" | "PRIMARY_FALLBACK" | "UNAVAILABLE";
   warningState: DataState;
   /** Feed freshness, independently of forecast hours and individual alert expiry. */

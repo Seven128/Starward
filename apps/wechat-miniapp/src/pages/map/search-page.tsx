@@ -31,7 +31,8 @@ import { StatusPanel } from "@/components/status-panel";
 import { SourceAttribution } from "@/components/source-attribution";
 import { SourceEntry } from "@/components/source-entry";
 import { SelectedCardStar } from "@/components/selected-card-star";
-import { SpotIdentityContent } from "@/components/spot-identity-content";
+import { SpotIdentityCard } from "@/components/spot-identity-card";
+import { mediaIsRenderable } from "@/utils/spot-media";
 import { FilterSheet } from "@/components/filter-sheet";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
@@ -65,19 +66,9 @@ function localDateForNow(timezone = "Asia/Shanghai") {
 function partitionContentRevision(spots: readonly SpotSummary[], showEmpty: boolean, groups: readonly FilterGroupKey[], evidence?: Record<string, SpotFilterEvidence>) {
   return JSON.stringify([showEmpty, spots.map(spot => [
     spot.spotId, spot.name, spot.region, spot.address,
-    mediaSource(spot.media.filter(isRenderableMedia)[0]?.thumbnailPath || ""),
+    mediaSource(spot.media.find(item => mediaIsRenderable(item))?.thumbnailPath || ""),
     groups.filter(group => evidence?.[spot.spotId]?.[group].state === "UNKNOWN"),
   ])]);
-}
-
-function isRenderableMedia(media: SpotSummary["media"][number]) {
-  return Boolean(
-    media.state !== "EXPIRED" &&
-      media.state !== "UNAVAILABLE" &&
-      media.state !== "SAMPLE_DATA" &&
-      media.license.trim() &&
-      (media.thumbnailPath.trim() || media.localPath.trim()),
-  );
 }
 
 function isPermissionError(error: unknown) {
@@ -94,7 +85,8 @@ function isOfflineError(error: unknown) {
   return /network|offline|timeout|超时|网络/i.test(value);
 }
 
-function layerForOverlay(overlay: "NONE" | "LIGHT" | "TOTAL_CLOUD" | "OPPORTUNITY") {
+function layerForOverlay(overlay: "NONE" | "LIGHT" | "TOTAL_CLOUD" | "LIGHT_AND_CLOUD" | "OPPORTUNITY") {
+  if (overlay === "LIGHT_AND_CLOUD") return "NORMAL" as const;
   if (overlay === "LIGHT") return "LIGHT_POLLUTION" as const;
   if (overlay === "TOTAL_CLOUD") return "CLOUD" as const;
   if (overlay === "OPPORTUNITY") return "OPPORTUNITY" as const;
@@ -732,14 +724,9 @@ export function MapSearchSurface() {
 }
 
 function SearchResultCard({ spot, evidence, activeGroups, onSelect }: { spot: SpotSummary; evidence: SpotFilterEvidence | undefined; activeGroups: readonly FilterGroupKey[]; onSelect: () => void }) {
-  const media = spot.media.filter(isRenderableMedia)[0];
-  const mediaSrc = media ? mediaSource(media.thumbnailPath || media.localPath) : null;
-  const address = spot.address;
   const unknown = activeGroups.filter((group) => evidence?.[group].state === "UNKNOWN");
   return <View className="spot-search-result-entry">
-    <Button className={`spot-identity-card${mediaSrc ? " spot-identity-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} ariaLabel={`选择${spot.name}${unknown.length ? `，${unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}资料待核验` : ""}`}>
-      <SpotIdentityContent region={spot.region || "区域暂无数据"} name={spot.name} address={address} mediaSrc={mediaSrc} mediaAlt={media?.alt || `${spot.name}现场照片`} />
-    </Button>
+    <SpotIdentityCard spot={spot} onSelect={onSelect} label={`选择${spot.name}${unknown.length ? `，${unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}资料待核验` : ""}`} />
     {unknown.length ? <Text className="spot-search-result-entry__evidence type-caption">待核验：{unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}</Text> : null}
   </View>;
 }

@@ -6,7 +6,7 @@ import { semanticIconRenderer } from "./semantic-asset-test-support";
 
 test("main-page adopted bitmaps keep geometry and accessible names through the shared native loader", () => {
   const { render } = semanticIconRenderer("pages/my/index");
-  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share"] as const) {
+  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share", "place-pin", "cloud", "bulb", "terrain", "moon", "meteor"] as const) {
     const icon = render({ name, decorative: false, label: "进入资料", className: "owner-size" });
     assert.equal(icon.type, "packaged-icon");
     assert.equal(icon.props.kind, name);
@@ -46,6 +46,13 @@ test("subpackage consumers share main bitmaps while retaining package variants a
   assert.equal(semanticIconRenderer("content/article/detail/index").render({ name: "parking" }).props.src, "/content/assets/b-icons/parking--day--default.png");
   assert.equal(semanticIconRenderer("spot/field/index").render({ name: "parking" }).props.src, "/spot/assets/b-icons/parking--day--default.png");
   assert.equal(semanticIconRenderer("sky/detail/index").render({ name: "horizon" }).props.src, "/sky/assets/b-icons/horizon--day--default.png");
+  for (const name of ["cloud", "bulb", "terrain", "moon", "meteor"] as const) {
+    assert.equal(semanticIconRenderer("spot/field/index").render({ name }).props.src, `/spot/assets/b-icons/${name}--day--default.png`);
+  }
+  for (const name of ["cloud", "moon", "meteor"] as const) {
+    assert.equal(semanticIconRenderer("content/plan/index").render({ name }).props.src, `/content/assets/b-icons/${name}--day--default.png`);
+  }
+  assert.equal(semanticIconRenderer("sky/detail/index").render({ name: "terrain" }).props.src, "/sky/assets/b-icons/terrain--day--default.png");
   const selected = semanticIconRenderer("pages/map/index").render({ name: "favorite-star", state: "selected" });
   assert.equal(selected.type, "image");
   assert.equal(selected.props.src, "/assets/b-icons/favorite-star--day--selected.png");
@@ -63,7 +70,7 @@ test("native bitmap input admits only packaged roles and withdraws an invalid pr
   });
   let src = "";
   const host = { setData: (value: { src: string }) => { src = value.src; } };
-  for (const kind of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share"]) {
+  for (const kind of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share", "place-pin", "cloud", "bulb", "terrain", "moon", "meteor"]) {
     definition.properties.kind.observer.call(host, kind);
     assert.equal(src, `/spot/assets/b-icons/${kind}--day--default.png`);
   }

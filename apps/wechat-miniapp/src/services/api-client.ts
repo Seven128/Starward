@@ -19,6 +19,8 @@ import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo 
 import {
   CURRENT_DEEP_SKY_CATALOG_VERSION,
   NIGHT_LIGHT_CONTRAST_DISPLAY,
+  TOTAL_CLOUD_POLICY,
+  mapCloudReadInstant,
   type ApiEnvelope,
   type ApiError,
   type AuthSessionData,
@@ -51,7 +53,8 @@ import {
   type UserPreferences,
 } from "@starward/miniapp-contracts";
 import { localFailureMessage } from "@/utils/presentation";
-import { confirmedObservationContextEdit, observationContextRecoveryInput, type ConfirmedObservationContextReply } from "./observation-context-recovery";
+import { confirmedObservationCloudRead, confirmedObservationContextEdit, confirmedObservationContextRecovery, observationContextRecoveryBindings, observationContextRecoveryInput,
+  type ConfirmedObservationContextReply } from "./observation-context-recovery";
 import {
   invalidationPolicy,
   isTemporaryCacheKey,
@@ -715,7 +718,7 @@ export function resolveObservationContext(
     "observation-context:resolve",
     "observationContextPost",
     {
-      body: input,
+      body: { ...input, totalCloudPolicy: TOTAL_CLOUD_POLICY },
       auth: input.location.kind === "PENDING_PROPOSAL" ? "REQUIRED" : "OPTIONAL",
       cache: false,
       ...(signal ? { signal } : {}),
@@ -733,6 +736,8 @@ export function getObservationContext(
   signal?: AbortSignal,
   expectedUserId?: string,
 ) {
+  const selected = useAppStore.getState().observationContext;
+  const known = selected?.contextId === contextId ? selected : null;
   const owner = expectedUserId ?? currentDraftUserId();
   const ownerReset = owner ? useAppStore.getState().mapResetVersion : null;
   if (expectedUserId && currentDraftUserId() !== expectedUserId) throw new Error("账户已变化，请回到原账号核对待审点。");
@@ -745,11 +750,17 @@ export function getObservationContext(
       ...(signal ? { signal } : {}),
     }, false, owner ?? undefined,
   ).then(response => {
+    if (response.data.contextId !== contextId) throw new Error("bff_observation_context_restore_invalid");
     if (response.data.schemaVersion === "observation-context-v3" && !response.data.privateProposal)
       throw new Error("observation_proposal_identity_invalid");
     if (response.data.privateProposal && (!owner || currentDraftUserId() !== owner || useAppStore.getState().mapResetVersion !== ownerReset ||
         response.data.schemaVersion !== "observation-context-v3" || response.data.privacyClass !== "ACCOUNT_PRIVATE" || response.data.privateProposal.ownerId !== owner))
       throw new Error("账户已变化，请回到原账号核对待审点。");
+    // Sky polling and plan reads also use this owner directly. Validate a
+    // known binding here, before any page/session can commit the response.
+    if ((known || response.data.weatherView?.totalCloud !== undefined) &&
+      !confirmedObservationCloudRead(known ?? response.data, response.data))
+      throw new Error("bff_observation_context_restore_invalid");
     return response;
   });
 }
@@ -760,6 +771,7 @@ export function getObservationContext(
  * rebuild the same product context. Transport failures keep normal offline
  * cache semantics and never silently create a different location or date.
  */
+let legacyCloudAdoption: { contextId: string; revision: number } | null = null;
 export async function restoreObservationContext(
   context: ObservationContext,
   signal?: AbortSignal,
@@ -769,7 +781,15 @@ export async function restoreObservationContext(
     throw new Error("账户已变化，请回到原账号核对待审点。");
   if (context.privateProposal && context.routeOrigin !== null) throw new Error("observation_proposal_identity_invalid");
   try {
-    return await getObservationContext(context.contextId, signal, context.privateProposal?.ownerId);
+    const response = await getObservationContext(context.contextId, signal, context.privateProposal?.ownerId);
+    if (!confirmedObservationCloudRead(context, response.data)) throw new Error("bff_observation_context_restore_invalid");
+    if (response.data.weatherView?.totalCloud !== undefined || legacyCloudAdoption?.contextId === response.data.contextId &&
+      legacyCloudAdoption.revision === response.data.revision) return response;
+    // Adopt once at the common restore boundary. Every page receives this same
+    // CAS result; a failed selection never overwrites its committed Context.
+    const adopted = await updateObservationContext(response.data, { totalCloudPolicy: TOTAL_CLOUD_POLICY, refreshTotalCloud: true }, signal);
+    legacyCloudAdoption = { contextId: adopted.data.contextId, revision: adopted.data.revision };
+    return adopted;
   } catch (error) {
     if (
       !(error instanceof MiniappApiError) ||
@@ -791,6 +811,8 @@ async function rebuildObservationContext(context: ObservationContext, signal: Ab
     if (context.privateProposal && (currentDraftUserId() !== context.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
       throw new Error("账户已变化，请回到原账号核对待审点。");
     if (context.privateProposal && context.routeOrigin !== null) throw new Error("observation_proposal_identity_invalid");
+    if (context.privacyClass === "SESSION_PRECISE" && !(Date.now() < Date.parse(context.expiresAt)))
+      throw new Error("observation_context_expired");
     let routeOriginContextId: string | null = null;
     let recoveredRouteOrigin: Awaited<ReturnType<typeof resolveObservationContext>> | null = null;
     if (context.routeOrigin) {
@@ -811,17 +833,23 @@ async function rebuildObservationContext(context: ObservationContext, signal: Ab
           selectedAt: context.selectedAtUtc,
           eventInstanceId: context.eventInstanceId,
           targetProfile: context.targetProfile,
+          ...observationContextRecoveryBindings(context),
         },
         signal,
       );
+      if (!confirmedObservationContextRecovery(context, recoveredRouteOrigin.data))
+        throw new Error("bff_observation_context_restore_invalid");
       routeOriginContextId = recoveredRouteOrigin.data.contextId;
     }
     try {
-      return await resolveObservationContext(
+      const recovered = await resolveObservationContext(
         observationContextRecoveryInput(context, routeOriginContextId),
         signal,
         context.privateProposal?.ownerId,
       );
+      if (!confirmedObservationContextRecovery(context, recovered.data))
+        throw new Error("bff_observation_context_restore_invalid");
+      return recovered;
     } catch (recoveryError) {
       if (!context.privateProposal && context.location.kind === "FORMAL_SPOT" && recoveredRouteOrigin &&
         recoveryError instanceof MiniappApiError && recoveryError.code === "NOT_FOUND")
@@ -987,10 +1015,12 @@ export function getMapNightLight(viewport: import("@starward/miniapp-contracts")
   });
 }
 
-export function getMapCloud(contextId: string, viewport: import("@starward/miniapp-contracts").MapCloudRequest["viewport"], signal?: AbortSignal) {
+export function getMapCloud(contextId: string, viewport: import("@starward/miniapp-contracts").MapCloudRequest["viewport"], signal?: AbortSignal, selectedAt?: string) {
   return requestOperation("map-cloud", "mapCloudGet", {
     auth: "OPTIONAL", cache: false,
-    query: [`contextId=${encodeURIComponent(contextId)}`, `centerLat=${viewport.center.latitude.toFixed(6)}`,
+    query: [`contextId=${encodeURIComponent(contextId)}`,
+      ...(selectedAt === undefined ? [] : [`selectedAt=${encodeURIComponent(mapCloudReadInstant(selectedAt))}`]),
+      `centerLat=${viewport.center.latitude.toFixed(6)}`,
       `centerLng=${viewport.center.longitude.toFixed(6)}`, `zoom=${viewport.zoom}`,
       `viewportBounds=${[viewport.bounds.west, viewport.bounds.south, viewport.bounds.east, viewport.bounds.north]
         .map(value => value.toFixed(7)).join(",")}`].join("&"),
@@ -1093,7 +1123,7 @@ export function getSkyReport(
 ) {
   if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
     throw new Error("night_location_identity_invalid");
-  return requestOperation("spot-sky:v4:extended:" + spotId, "spotSkyGet", {
+  return requestOperation("spot-sky:v5:total-cloud:" + spotId, "spotSkyGet", {
     auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION +

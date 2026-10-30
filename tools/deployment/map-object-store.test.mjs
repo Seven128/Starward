@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import http from "node:http";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { tmpdir } from "node:os";
-import { terrainFixture, nightLightFixture } from "./map-static-test-support.mjs";
+import { terrainFixture, nightLightFixture, cloudFixture, shardedNightLightFixture } from "./map-static-test-support.mjs";
 import { prepareMapStaticBundle } from "./map-static-bundle.mjs";
 import { prepareMapObjectStorePackage, readMapObjectStorePackage } from "./map-object-store-package.mjs";
 import { verifyMapObjectStoreDelivery } from "./map-object-store-verification.mjs";
@@ -84,4 +84,91 @@ test("Map upload uses the actual pinned SDK and shared immutable recovery withou
   oracle.setVersionStatus("Suspended");
   const versioned = await uploadMapObjectStore(args);
   assert.equal(versioned.status, "FAILED"); assert.equal(versioned.code, "map_object_store_versioning_invalid"); assert.equal(versioned.putAttempts, 0);
+});
+
+test("sharded EOG OSS preparation remains local and rejects before journal or client", async t => {
+  const root = await mkdtemp(path.join(tmpdir(), "starward-map-eog-oss-test-"));
+  t.after(async () => { assert.equal(path.dirname(root), path.resolve(tmpdir())); await rm(root, { recursive: true, force: true }); });
+  const sharded = await shardedNightLightFixture(root);
+  const bundle = await prepareMapStaticBundle({ publications: [sharded], outputDirectory: path.join(root, "sealed") });
+  const origin = "https://map-assets.example.test";
+  const prepared = await prepareMapObjectStorePackage({ bundleDirectory: bundle.directory, outputDirectory: path.join(root, "oss"), publicationHash: bundle.publicationHash, resourceOrigin: origin });
+  const args = { bundleDirectory: bundle.directory, packageDirectory: prepared.directory, publicationHash: bundle.publicationHash, resourceOrigin: origin };
+  const { plan, sourceAdmissions } = await readMapObjectStorePackage(args);
+  assert.equal(sourceAdmissions[0].admission, "DEVELOPMENT_ONLY");
+  assert.equal(plan.requirements.shardedNightLightSourceAdmission, "DEVELOPMENT_ONLY_NOT_UPLOADABLE");
+  assert.equal(plan.requirements.shardedNightLightFormalReady, false);
+  assert.equal(plan.objects.length, 1);
+  assert.match(plan.objects[0].objectKey, /^v2\/night-light\/assets\/.+\/nightlight-contrast-v1-window-/u);
+  assert.match(plan.objects[0].uploadHeaders["x-oss-meta-x-starward-night-light-publication"], /^nightlight-display:[a-f0-9]{64}$/u);
+  assert.ok(plan.objects.every(object => !object.objectKey.endsWith(".json")));
+  let clientCalls = 0;
+  const uploadArgs = { ...args, receiptDirectory: path.join(root, "must-not-exist"), bucket: "starward-map-test", region: "oss-cn-shenzhen",
+    credentials: ossFixtureCredentials, clientFactory() { clientCalls++; throw new Error("client_must_not_be_created"); } };
+  await assert.rejects(uploadMapObjectStore(uploadArgs), /sharded_nightlight_publication_not_ready/u);
+  assert.equal(clientCalls, 0); await assert.rejects(stat(uploadArgs.receiptDirectory), { code: "ENOENT" });
+  const raw = JSON.parse(await readFile(path.join(prepared.directory, "plan.json"), "utf8"));
+  delete raw.requirements.shardedNightLightSourceAdmission; delete raw.requirements.shardedNightLightFormalReady;
+  await writeFile(path.join(prepared.directory, "plan.json"), JSON.stringify(raw));
+  await assert.rejects(uploadMapObjectStore(uploadArgs), /package_changed/u);
+  assert.equal(clientCalls, 0);
+});
+
+test("cloud OSS preparation retains local admission and cannot reach a client or journal", async t => {
+  const root = await mkdtemp(path.join(tmpdir(), "starward-map-cloud-oss-test-"));
+  t.after(async () => { assert.equal(path.dirname(root), path.resolve(tmpdir())); await rm(root, { recursive: true, force: true }); });
+  const cloud = await cloudFixture(root); t.after(() => cloud.dispose());
+  const terrain = await terrainFixture(root), light = await nightLightFixture(root);
+  const bundle = await prepareMapStaticBundle({ publications: [terrain, light, cloud], outputDirectory: path.join(root, "sealed") });
+  const origin = "https://map-assets.example.test";
+  const prepared = await prepareMapObjectStorePackage({ bundleDirectory: bundle.directory, outputDirectory: path.join(root, "oss"), publicationHash: bundle.publicationHash, resourceOrigin: origin });
+  const args = { bundleDirectory: bundle.directory, packageDirectory: prepared.directory, publicationHash: bundle.publicationHash, resourceOrigin: origin };
+  const { plan, sourceAdmissions } = await readMapObjectStorePackage(args);
+  assert.equal(sourceAdmissions.find(source => source.family === "cloud").admission, "DEVELOPMENT_ONLY");
+  assert.equal(plan.requirements.totalCloudSourceAdmission, "DEVELOPMENT_ONLY_NOT_UPLOADABLE");
+  assert.equal(plan.requirements.totalCloudFormalReady, false);
+  const cloudObjects = plan.objects.filter(object => object.objectKey.startsWith("v2/cloud/"));
+  assert.equal(cloudObjects.length, 2);
+  assert.ok(cloudObjects.every(object => object.uploadHeaders["x-oss-meta-x-starward-cloud-publication"].startsWith("cloud-display:")));
+  assert.ok(plan.esaRules.some(rule => rule.condition.includes('starts_with(http.request.uri.path, "/v2/cloud/assets/")')));
+  assert.ok(plan.objects.every(object => !object.objectKey.endsWith(".json")));
+  let clientCalls = 0;
+  const uploadArgs = { ...args, receiptDirectory: path.join(root, "must-not-exist"), bucket: "starward-map-test", region: "oss-cn-shenzhen",
+    credentials: ossFixtureCredentials, clientFactory() { clientCalls++; throw new Error("client_must_not_be_created"); } };
+  await assert.rejects(uploadMapObjectStore(uploadArgs), /cloud_source_qualification_not_ready/u);
+  assert.equal(clientCalls, 0);
+  await assert.rejects(stat(uploadArgs.receiptDirectory), { code: "ENOENT" });
+  const originalPlan = await readFile(path.join(prepared.directory, "plan.json"));
+  const deletedDisplayGate = JSON.parse(originalPlan.toString("utf8"));
+  delete deletedDisplayGate.requirements.totalCloudSourceAdmission;
+  delete deletedDisplayGate.requirements.totalCloudFormalReady;
+  await writeFile(path.join(prepared.directory, "plan.json"), JSON.stringify(deletedDisplayGate));
+  await assert.rejects(uploadMapObjectStore(uploadArgs), /package_changed/u);
+  assert.equal(clientCalls, 0);
+  await writeFile(path.join(prepared.directory, "plan.json"), originalPlan);
+
+  // A local in-memory HTTP oracle proves the existing delivery protocol's new
+  // family grouping only. It performs no external request and cannot upload.
+  const objects = new Map(bundle.records.map(record => [record.route, record]));
+  const fetchImpl = async (url, options) => {
+    const parsed = new URL(url); assert.equal(parsed.origin, origin);
+    const record = objects.get(parsed.pathname); assert.ok(record);
+    const bytes = await readFile(path.join(bundle.directory, `files${record.route}`)), etag = `"${record.sha256}"`;
+    const requestHeaders = new Headers(options.headers);
+    if (requestHeaders.get("if-none-match") === etag) return new Response(null, { status: 304, headers: { etag } });
+    const headers = { ...record.headers, etag, "x-starward-map-delivery": "oss", "content-length": String(bytes.length) };
+    if (options.method === "HEAD") return new Response(null, { headers });
+    const range = requestHeaders.get("range");
+    if (range) {
+      const end = Number(/^bytes=0-(\d+)$/u.exec(range)[1]), body = bytes.subarray(0, end + 1);
+      return new Response(body, { status: 206, headers: { ...headers, "content-length": String(body.length), "content-range": `bytes 0-${end}/${bytes.length}` } });
+    }
+    return new Response(bytes, { headers });
+  };
+  const verified = await verifyMapObjectStoreDelivery({ ...args, fetchImpl });
+  assert.equal(verified.checkedFiles, bundle.files);
+  assert.equal(verified.checkedHeads, 3); assert.equal(verified.checkedRanges, 3); assert.equal(verified.checkedConditionals, 3);
+  assert.equal(verified.totalCloudSourceAdmission, "DEVELOPMENT_ONLY"); assert.equal(verified.totalCloudFormalReady, false);
+  await assert.rejects(uploadMapObjectStore(uploadArgs), /cloud_source_qualification_not_ready/u);
+  assert.equal(clientCalls, 0);
 });

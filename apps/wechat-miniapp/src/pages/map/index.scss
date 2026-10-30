@@ -6,18 +6,11 @@ page { background: #000; }
 .map-page {
   --map-search-top: calc(env(safe-area-inset-top) + 56Px);
   --map-search-height: max(var(--target-min), calc(var(--type-search-line) + 16Px));
+  --map-viewport-list-bottom: max(34Px, env(safe-area-inset-bottom));
   height: var(--primary-page-height, 100vh);
   display: flex;
   flex-direction: column;
 }
-// This independent control must keep its placement and face size when the
-// shared tool rail rules below set relative positioning and a larger hit area.
-.map-page .map-my-entry {
-  position: absolute; left: 16Px; top: var(--map-search-top); z-index: 30;
-  width: 44Px; min-width: 44Px; height: 44Px; min-height: 44Px;
-}
-.map-page .map-my-entry::before { inset: 0; }
-.map-page .map-my-entry > .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
 .map-page--my-background .map-workspace { pointer-events: none; }
 .map-my-presentation {
   position: fixed; inset: 0; z-index: 1400; overflow: hidden;
@@ -89,6 +82,8 @@ page { background: #000; }
   background: var(--surface-subtle);
 }
 .native-map {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
@@ -118,6 +113,15 @@ page { background: #000; }
   flex-direction: column;
   gap: 8rpx;
 }
+// The adopted list occupies the left two thirds. Keep the existing complete
+// credits readable in the remaining column instead of covering its cards/dots.
+.map-page--discovery .map-source-attributions {
+  left: calc(66.666667% + 24Px);
+  right: 12Px;
+  bottom: max(34Px, env(safe-area-inset-bottom));
+}
+.map-page--discovery .map-source-attribution { margin-right: 0; }
+.map-page--discovery .map-source-attribution--terrain { flex-wrap: wrap; overflow-wrap: anywhere; }
 .map-feedback-column {
   position: absolute;
   z-index: 34;
@@ -1432,57 +1436,6 @@ page { background: #000; }
   gap: 12rpx;
   padding-top: 18rpx;
 }
-.map-layer-sheet__terrain-choice {
-  flex: 0 0 auto;
-  border-top: 1rpx solid var(--border);
-}
-.map-layer-sheet__terrain-row {
-  width: 100%;
-  min-height: 128rpx;
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  padding: 16rpx 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  text-align: left;
-}
-.map-layer-sheet__terrain-row > .semantic-icon {
-  flex: 0 0 50rpx;
-  width: 50rpx;
-  height: 50rpx;
-}
-.map-layer-sheet__terrain-check {
-  flex: 0 0 36rpx;
-  width: 36rpx;
-  height: 36rpx;
-  margin-right: 24rpx;
-  border: 1rpx solid var(--border);
-  border-radius: 2rpx;
-  background: var(--surface);
-}
-.map-layer-sheet__terrain-row--active .map-layer-sheet__terrain-check {
-  border-color: var(--choice-selected-label);
-  background: var(--choice-selected-label);
-  color: var(--surface);
-}
-.map-layer-sheet__terrain-check .semantic-icon {
-  width: 100%;
-  height: 100%;
-  color: var(--surface);
-}
-.map-layer-sheet__terrain-state {
-  display: block;
-  padding: 8rpx 4rpx 0;
-  color: var(--text-tertiary);
-  font-size: var(--type-caption-size);
-  line-height: var(--type-caption-line);
-}
-.map-layer-sheet__terrain-state--error {
-  color: var(--danger);
-}
 .map-layer-sheet__choice {
   position: relative;
   min-width: 0;
@@ -1951,9 +1904,8 @@ page { background: #000; }
 }
 .theme-day.map-page .map-context-time-summary { color: #627288; }
 .theme-day.map-page .map-layer-sheet__choice--ready .map-layer-sheet__choice-copy .type-caption { color: #6f737b; }
-.theme-day.map-page .map-layer-sheet__terrain-row--ready .map-layer-sheet__choice-copy .type-caption { color: #70777d; }
 .theme-day.map-page .map-layer-sheet--cloud .map-layer-sheet__source-note--ready { color: #72777f; }
-// Current comfortable-scale layers.html + interaction.css: DAY radio cards.
+// Current comfortable-scale layer-card family; selection is independent.
 // The tiny texture derivatives preserve the source SVG circles/curves.
 .theme-day.map-page {
   .map-layer-sheet__footer { padding: 0 18Px 14Px; }

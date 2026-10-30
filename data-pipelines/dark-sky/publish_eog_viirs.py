@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -33,6 +34,7 @@ from eog_raster import (
     Aoi,
     PublicationManifest,
     RasterSelection,
+    RasterGrid,
     canonical_json,
     sha256_bytes,
     sha256_file,
@@ -63,6 +65,97 @@ from eog_raster import (
 )
 import eog_fixed_method as fixed
 import eog_fixed_publication as fixed_publication
+import eog_sharded_inventory as sharded
+
+
+@dataclass(frozen=True)
+class ShardedSelection:
+    """A local, fully checked candidate; never a grant to publish or activate."""
+    manifests: tuple[PublicationManifest, ...]
+    grids: tuple[RasterGrid, ...]
+    index: Mapping[str, Any]
+    index_descriptor: Mapping[str, Any]
+    source_files: tuple[tuple[Path, tuple[int, int, int, int]], ...]
+
+    @property
+    def resolution_degrees(self) -> tuple[float, float]:
+        return self.grids[0].resolution_degrees
+
+
+def _file_identity(path: Path) -> tuple[int, int, int, int]:
+    info = path.stat()
+    return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns
+
+
+def _assert_candidate_files(selection: ShardedSelection) -> None:
+    if any(_file_identity(path) != identity for path, identity in selection.source_files):
+        raise PipelineError("nightlight_sharded_candidate_input_changed")
+
+
+def prepare_sharded(paths: Sequence[Path], index_path: Path, index_sha256: str, *, node: str = "node"
+                    ) -> tuple[PublicationManifest, ShardedSelection, tuple[float, ...], list[dict[str, Any]]]:
+    if not paths or len(paths) > 4096 or not isinstance(index_sha256, str) or sharded.HASH_PATTERN.fullmatch(index_sha256) is None:
+        raise PipelineError("nightlight_sharded_publication_input_invalid")
+    index_path = index_path.absolute()
+    if index_path.name != "index.json" or index_path.stat().st_size > sharded.MAX_ROOT_BYTES:
+        raise PipelineError("nightlight_sharded_root_descriptor_invalid")
+    pin = {"file": "index.json", "bytes": index_path.stat().st_size, "sha256": index_sha256}
+    root = sharded.read_publication_index(index_path.parent, pin)
+    manifests = tuple(load_manifest(path) for path in paths)
+    if len(root["parts"]) != len(manifests):
+        raise PipelineError("nightlight_sharded_part_set_mismatch")
+    source_files: dict[Path, tuple[int, int, int, int]] = {index_path: _file_identity(index_path)}
+    originals: dict[Path, str] = {}
+    first = manifests[0]
+    seen_parts = set()
+    for manifest in manifests:
+        if (manifest.fixed_raster is None or manifest.dataset_version != root.get("datasetVersion")
+                or manifest.radiance.sha256 != root.get("radianceSha256") or manifest.coverage.sha256 != root.get("coverageSha256")
+                or manifest.radiance.band != first.radiance.band or manifest.coverage.band != first.coverage.band
+                or manifest.data_year != first.data_year or manifest.product_name != first.product_name
+                or manifest.acquired_at != first.acquired_at or manifest.minimum_coverage != first.minimum_coverage):
+            raise PipelineError("nightlight_sharded_source_identity_mismatch")
+        part = manifest.fixed_raster["inventory"]["sha256"]
+        declaration = root["parts"].get(part)
+        if (part in seen_parts or not isinstance(declaration, dict)
+                or declaration.get("sourceManifestSha256") != sha256_bytes(manifest.path.read_bytes())):
+            raise PipelineError("nightlight_sharded_part_set_mismatch")
+        seen_parts.add(part)
+        source_files[manifest.path] = _file_identity(manifest.path)
+        for item in (manifest.radiance, manifest.coverage):
+            previous = originals.get(item.path)
+            if previous is not None and previous != item.sha256:
+                raise PipelineError("nightlight_sharded_source_identity_mismatch")
+            originals[item.path] = item.sha256
+    # Each distinct actual input file is hashed once, not once per prepared
+    # part. A different path with the same claimed digest is not silently trusted.
+    for path, expected in originals.items():
+        before = _file_identity(path)
+        if sha256_file(path) != expected:
+            raise PipelineError("nightlight_sharded_source_sha256_mismatch")
+        if _file_identity(path) != before:
+            raise PipelineError("nightlight_sharded_candidate_input_changed")
+        source_files[path] = before
+    admitted = sharded.validate_publication(index_path.parent, pin, manifests, node=node)
+    grids = admitted["grids"]
+    if any(grid.raster_transform != grids[0].raster_transform or grid.resolution_degrees != grids[0].resolution_degrees for grid in grids):
+        raise PipelineError("nightlight_sharded_source_grid_mismatch")
+    identity = {"schemaVersion": 3, "datasetVersion": first.dataset_version,
+                "shardedIndex": {**pin, "indexVersion": root["indexVersion"]}}
+    manifest = replace(first, digest=sha256_bytes(canonical_json(identity).encode()))
+    selection = ShardedSelection(manifests, grids, root, pin, tuple(source_files.items()))
+    _assert_candidate_files(selection)
+    return manifest, selection, fixed.THRESHOLDS, []
+
+
+def sharded_publication_payload(manifest: PublicationManifest, selection: ShardedSelection) -> dict[str, Any]:
+    return {"schemaVersion": 3, "datasetVersion": manifest.dataset_version, "productName": manifest.product_name,
+            "dataYear": manifest.data_year, "source": selection.index["source"],
+            "minimumCloudFreeObservations": manifest.minimum_coverage,
+            "methodVersion": fixed.POLICY["methodVersion"], "styleVersion": fixed.POLICY["styleVersion"],
+            "policy": fixed.POLICY, "policySha256": fixed.POLICY_SHA256,
+            "shardedIndex": {**selection.index_descriptor, "indexVersion": selection.index["indexVersion"]},
+            "coverage": selection.index["coverage"], "radianceUnit": RADIANCE_UNIT, "calibratedSkyClass": False}
 
 
 def prepare(path: Path) -> tuple[PublicationManifest, RasterSelection, tuple[float, ...], list[dict[str, Any]]]:
@@ -101,6 +194,35 @@ def _spot_rows(connection: psycopg.Connection[Any], aoi: Aoi) -> list[dict[str, 
         """,
         (aoi.west, aoi.south, aoi.east, aoi.north),
     ).fetchall()
+    return _spot_records(rows)
+
+
+def _spot_rows_for_parts(connection: psycopg.Connection[Any], manifests: Sequence[PublicationManifest]) -> list[dict[str, Any]]:
+    # EXISTS returns each spot once even for overlapping source parts. Native
+    # AREA footprints are west/north inclusive and east/south exclusive, the
+    # same floor-based ownership as the source sampler; no gap is published by
+    # taking an envelope over the entire collection.
+    rows = connection.execute(
+        """
+        SELECT s.spot_id, ST_X(s.geom_wgs84::geometry), ST_Y(s.geom_wgs84::geometry), s.payload
+          FROM spots s
+         WHERE s.visibility_policy <> 'HIDDEN'
+           AND EXISTS (
+             SELECT 1 FROM jsonb_to_recordset(%s::jsonb)
+               AS a(west double precision, south double precision, east double precision, north double precision)
+             WHERE ST_Intersects(s.geom_wgs84::geometry, ST_MakeEnvelope(a.west, a.south, a.east, a.north, 4326))
+               AND ST_X(s.geom_wgs84::geometry) >= a.west AND ST_X(s.geom_wgs84::geometry) < a.east
+               AND ST_Y(s.geom_wgs84::geometry) <= a.north AND ST_Y(s.geom_wgs84::geometry) > a.south
+           )
+         ORDER BY s.spot_id
+         FOR UPDATE OF s
+        """,
+        (Jsonb([dict(manifest.raw["aoi"]) for manifest in manifests]),),
+    ).fetchall()
+    return _spot_records(rows)
+
+
+def _spot_records(rows: Sequence[Any]) -> list[dict[str, Any]]:
     return [
         {
             "spot_id": row[0],
@@ -183,16 +305,35 @@ def _replace_disclosure(
 
 def publish(
     manifest: PublicationManifest,
-    selection: RasterSelection,
+    selection: RasterSelection | ShardedSelection,
     thresholds: Sequence[float],
     cells: Sequence[Mapping[str, Any]],
     database_url: str,
 ) -> dict[str, Any]:
+    # A prepared schema-3 root proves local source/numeric/display facts only.
+    # Formal static readback and coordinated consumers are not established.
+    # There is deliberately no flag, receipt file or alternate CLI to override
+    # this boundary; legacy schema-1/2 publication keeps its existing path.
+    if isinstance(selection, ShardedSelection):
+        raise PipelineError("nightlight_sharded_publication_not_ready")
+    return _publish_transaction(manifest, selection, thresholds, cells, database_url)
+
+
+def _publish_transaction(
+    manifest: PublicationManifest,
+    selection: RasterSelection | ShardedSelection,
+    thresholds: Sequence[float],
+    cells: Sequence[Mapping[str, Any]],
+    database_url: str,
+) -> dict[str, Any]:
+    is_sharded = isinstance(selection, ShardedSelection)
+    if is_sharded:
+        _assert_candidate_files(selection)
     is_fixed = manifest.fixed_raster is not None
     if is_fixed and (tuple(thresholds) != fixed.THRESHOLDS or cells):
         raise PipelineError("fixed_publication_requires_fixed_statistics_and_rasters")
-    source = (fixed.source_summary if is_fixed else _source_summary)(manifest, selection.resolution_degrees)
-    fixed_payload = fixed_publication.publication_payload(manifest, selection) if is_fixed else None
+    source = selection.index["source"] if is_sharded else (fixed.source_summary if is_fixed else _source_summary)(manifest, selection.resolution_degrees)
+    fixed_payload = sharded_publication_payload(manifest, selection) if is_sharded else fixed_publication.publication_payload(manifest, selection) if is_fixed else None
     with psycopg.connect(database_url) as connection:
         connection.execute(
             "SELECT pg_advisory_xact_lock(hashtextextended('starward-dark-sky-publication', 0))"
@@ -296,11 +437,11 @@ def publish(
                 ),
             )
 
-        spots = _spot_rows(connection, manifest.aoi)
+        spots = _spot_rows_for_parts(connection, selection.manifests) if is_sharded else _spot_rows(connection, manifest.aoi)
         changed_spot_count = 0
         sample_count = 0
         for row in spots:
-            estimate = fixed_publication.sample_point(selection, manifest, source, row["longitude"], row["latitude"]) if is_fixed else sample_point(
+            estimate = fixed_publication.sample_source_point(manifest, source, selection.grids, row["longitude"], row["latitude"]) if is_sharded else fixed_publication.sample_point(selection, manifest, source, row["longitude"], row["latitude"]) if is_fixed else sample_point(
                 selection,
                 manifest,
                 source,
@@ -375,6 +516,8 @@ def publish(
                 )
             changed_spot_count += 1
 
+        if is_sharded:
+            _assert_candidate_files(selection)
         connection.execute(
             "DELETE FROM map_layer_snapshots WHERE layer_kind = 'LIGHT_POLLUTION'"
         )
@@ -410,13 +553,26 @@ def publish(
 
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, required=True, action="append")
+    parser.add_argument("--sharded-index", type=Path)
+    parser.add_argument("--sharded-index-sha256")
+    parser.add_argument("--prepare-only", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
-        manifest, selection, thresholds, cells = prepare(args.manifest)
-        result = publish(
-            manifest, selection, thresholds, cells, _read_database_url()
-        )
+        if args.sharded_index is not None or args.sharded_index_sha256 is not None:
+            if args.sharded_index is None or args.sharded_index_sha256 is None:
+                raise PipelineError("nightlight_sharded_publication_input_invalid")
+            if not args.prepare_only:
+                raise PipelineError("nightlight_sharded_publication_not_ready")
+            manifest, selection, _, _ = prepare_sharded(args.manifest, args.sharded_index, args.sharded_index_sha256)
+            result = {"status": "prepared", "authority": "PREPARED_ONLY", "datasetVersion": manifest.dataset_version,
+                      "manifestSha256": manifest.digest, "candidate": sharded_publication_payload(manifest, selection),
+                      "databasePublication": False, "formalReady": False}
+        else:
+            if len(args.manifest) != 1 or args.prepare_only:
+                raise PipelineError("nightlight_publication_arguments_invalid")
+            manifest, selection, thresholds, cells = prepare(args.manifest[0])
+            result = publish(manifest, selection, thresholds, cells, _read_database_url())
     except PipelineError as error:
         print(canonical_json({"status": "failed", "error": str(error)}), file=sys.stderr)
         return 1

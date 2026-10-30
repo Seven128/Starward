@@ -5,19 +5,22 @@ import vm from "node:vm";
 import ts from "typescript";
 import { airQualityState } from "./air-quality-state";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../utils/zoned-date";
+import { createResourceFailureEpisode, type ResourceFailureEpisode } from "../services/resource-failure-episode";
 
-function harness() {
+function harness(failureEpisode?: ResourceFailureEpisode) {
   const ast = ts.createSourceFile("air.tsx", readFileSync(new URL("./air-quality.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations = ast.statements.filter(ts.isFunctionDeclaration).map(fn => fn.getText(ast).replace(/^export /, "")).join("\n");
   let active = true, query: any, options: any, hide = () => {}, show = () => {}, retries = 0;
   const effects: unknown[][] = [];
   let effectIndex = 0;
   const notifications: any[] = [], notify = (value: any) => notifications.push(value);
+  let memo: unknown;
   class TestDate extends Date { static now() { return Date.parse("2026-09-15T00:00:00Z"); } }
   const component = vm.runInNewContext(ts.transpileModule(declarations + "; AirQuality;", {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, {
     useState: () => [active, (value: boolean) => { active = value; }],
+    useMemo: (create: () => unknown) => memo ??= create(), createResourceFailureEpisode,
     useEffect(fn: () => void, dependencies: unknown[]) {
       const index = effectIndex++, previous = effects[index];
       effects[index] = dependencies;
@@ -31,7 +34,7 @@ function harness() {
   });
   return { notifications, get options() { return options; }, get retries() { return retries; }, hide: () => hide(), show: () => show(),
     set(data: any, extra = {}) { query = { data, isPending: false, isError: false, ...extra, refetch: async () => { retries++; } }; },
-    render(spotId = "spot:a", visible = true) { effectIndex = 0; return component({ spotId, visible, selectedAt: "2026-09-15T01:30:00Z", timezone: "Asia/Shanghai" }); },
+    render(spotId = "spot:a", visible = true) { effectIndex = 0; return component({ spotId, visible, selectedAt: "2026-09-15T01:30:00Z", timezone: "Asia/Shanghai", failureEpisode }); },
   };
 }
 const text = (value: any): string => value == null || typeof value === "boolean" ? "" : Array.isArray(value) ? value.map(text).join("") : typeof value === "object" ? text(value.children) : String(value);
@@ -42,6 +45,25 @@ const typesInReadingOrder = (value: any): string[] => Array.isArray(value) ? val
 const source = { retrievedAt: "2026-09-15T00:00:00Z" };
 const body = { spotId: "spot:a", current: { value: null, state: "UNAVAILABLE", unavailableReason: "REQUEST_FAILED", source },
   forecast: { value: [{ at: "2026-09-15T01:00:00Z", indexes: [{ code: "cn-mee", name: "中国 AQI", display: "32", category: "优" }], pollutants: [] }], state: "FRESH", source } };
+
+test("one AQ failure survives visibility and layer-drawer remount; retry, recovered failure and a new spot remain reportable", () => {
+  const episode = createResourceFailureEpisode(), failed = { data: body, dataState: "PARTIAL", sources: [] };
+  const h = harness(episode); h.set(failed); h.render();
+  h.render("spot:a", false); h.render(); h.hide(); h.render(); h.show(); h.render();
+  h.set(failed, { isFetching: true }); h.render(); h.set(failed); h.render();
+  assert.equal(h.notifications.length, 1);
+  const returned = harness(episode); returned.set(failed); const tree = returned.render();
+  assert.equal(returned.notifications.length, 0);
+  find(tree, node => node.type === "SoftButton").props.onClick();
+  returned.set(failed, { isFetching: true }); returned.render(); returned.set(failed); returned.render();
+  assert.equal(returned.retries, 1); assert.equal(returned.notifications.length, 1);
+  returned.set({ ...failed, data: { ...body, current: { ...body.current, unavailableReason: "NO_DATA" } } }); returned.render();
+  returned.set(failed); returned.render(); assert.equal(returned.notifications.length, 2);
+  const hidden = returned.render("spot:a", false); find(hidden, node => node.type === "SoftButton").props.onClick();
+  returned.render(); assert.equal(returned.retries, 1); assert.equal(returned.notifications.length, 2);
+  returned.set({ ...failed, data: { ...body, spotId: "spot:b" } }); returned.render("spot:b");
+  assert.equal(returned.notifications.length, 3);
+});
 
 test("visible AQ retains forecast on current error, offers persistent retry and suspends hidden queries", () => {
   const h = harness(); h.set({ data: body, dataState: "PARTIAL", sources: [] });

@@ -55,7 +55,7 @@ test("Map system Back asks the embedded editor guard before requesting Close", a
   let requested = 0, closed = 0;
   const back = actualMapCommand("handleMapPresentationSystemBack", {
     setMapPresentationBackBoundaryVisible: () => undefined,
-    navigationHandoff: {active: false}, eventModalOpenRef: {current: false},
+    navigationHandoff: {active: false},
     imageViewerBack: {current: null}, editorHandoffBack: {current: null},
     bottomPresentationRef: {current: "spot-editor"},
     editorPresentation: {isClosing: () => false},
@@ -73,7 +73,7 @@ test("embedded warning, busy/declined leave and an in-progress exit never close 
   for (const scenario of ["warning", "blocked", "closing"]) {
     let confirms = 0, cancelledWarning = 0, closed = 0;
     const back = actualMapCommand("handleMapPresentationSystemBack", {
-      navigationHandoff: {active: false}, eventModalOpenRef: {current: false},
+      navigationHandoff: {active: false},
       imageViewerBack: {current: null}, bottomPresentationRef: {current: "spot-editor"},
       editorHandoffBack: {current: scenario === "warning" ? () => {cancelledWarning++;} : null},
       editorPresentation: {isClosing: () => scenario === "closing"},
@@ -134,12 +134,11 @@ test("a successful Map submission exits before centering its proposal and openin
   assert.deepEqual(effects, [], "an old receipt never selects a private proposal on a new account");
 });
 
-test("Map system Back preserves event, viewer, layer and three-stage panel priority", async () => {
-  for (const mode of ["event", "viewer", "layer", "large", "medium", "small"]) {
+test("Map system Back preserves viewer, layer and three-stage panel priority", async () => {
+  for (const mode of ["viewer", "layer", "large", "medium", "small"]) {
     const effects: string[] = [];
     const back = actualMapCommand("handleMapPresentationSystemBack", {
-      navigationHandoff: {active:false}, eventModalOpenRef:{current:mode==="event"},
-      eventModalRef:{current:{back:()=>{effects.push("event");return true;}}},
+      navigationHandoff: {active:false},
       imageViewerBack:{current:mode==="viewer"?()=>effects.push("viewer"):null},
       bottomPresentationRef:{current:mode==="layer"?"layer-sheet":"spot-panel"},
       closeLayerSheet:()=>effects.push("layer"), panelExtentRef:{current:mode},

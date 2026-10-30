@@ -38,12 +38,11 @@ test("the Map root gives My and its bottom presentations one native Back boundar
     ts.forEachChild(node, visit);
   };
   visit(tree); assert.ok(active);
-  for (const kind of ["none", "spot-panel", "layer-sheet", "spot-editor", "event-open", "event-exit", "sky-entry"]) {
+  for (const kind of ["none", "spot-panel", "layer-sheet", "spot-editor", "sky-entry"]) {
     for (const visible of [false, true]) {
       const owner = createMapPageTestBoundaries();
       if (!visible) owner.scope.primaryNavigation.controller.hide();
       assert.equal(vm.runInNewContext(active, {...owner.scope, pageVisible: !visible, bottomPresentation: kind,
-        eventModalOpen: kind === "event-open", eventModalPresent: kind === "event-exit",
         skyEntryPresentation: kind === "sky-entry" ? 1 : null}), visible && kind !== "none",
         `${kind}/${visible}: native foreground owns Back even while Map content visibility lags`);
       owner.scope.primaryNavigation.controller.dispose();
@@ -69,7 +68,7 @@ test("the Map root gives My and its bottom presentations one native Back boundar
     assert.equal(controller.getSnapshot().route, "pages/my/index", "one Back closes the active My task before leaving My");
     consumed = false;
     await back(); assert.equal(auxiliary, 2); assert.equal(controller.getSnapshot().phase, "closing");
-    const retainedPanel = { ...boundaries.scope, bottomPresentation: "spot-panel", eventModalOpen: false, eventModalPresent: false };
+    const retainedPanel = { ...boundaries.scope, bottomPresentation: "spot-panel" };
     assert.equal(vm.runInNewContext(active, retainedPanel), false, "My's programmatic exit retires the native Back generation");
     await back(); assert.equal(auxiliary, 2); assert.equal(mapBack, 1, "My's exit cannot also close Map's retained panel");
     controller.finishTransition(controller.getSnapshot().transitionTicket!);
@@ -80,7 +79,7 @@ test("the Map root gives My and its bottom presentations one native Back boundar
     assert.equal(vm.runInNewContext(active, retainedPanel), false, "native child hide retires Back while the panel is retained");
   } finally { detach(); controller.dispose(); }
   assert.match(source, /nativeMapContent=\{/u);
-  assert.doesNotMatch(source, /<PageContainer\b/u, "the shared owner also carries Map's event modal instead of installing a second container");
+  assert.doesNotMatch(source, /<PageContainer\b/u, "Map's retained presentations share the same native Back owner");
   assert.doesNotMatch(source, /map-presentation-back-\$\{/u);
 });
 

@@ -13,10 +13,14 @@ import { retireExpiredAccountAvatarWrites } from "./account-avatar-persistence.t
 import { cleanupExpiredContributionUploads, MEDIA_MAINTENANCE_BATCH_SIZE } from "./contribution-media-maintenance.ts";
 import { OutboxDispatchRecovery, OutboxQueueHandleProbe } from "./outbox-dispatch-recovery.ts";
 import {
+  assertCloudPublicationRuntime,
   loadRuntimeConfig,
   type MiniappRuntimeConfig,
 } from "./runtime-config.ts";
-import { createWeatherPort } from "./weather-provider.ts";
+import { createWeatherPort, TotalCloudCompositeAdapter } from "./weather-provider.ts";
+import { CloudPublicationRegistry } from "./cloud-publication-registry.ts";
+import { CloudPointWeather } from "./cloud-point-weather.ts";
+import { weatherSnapshotHours } from "./weather-hour.ts";
 import { createVendorUsageTransport } from "./vendor-usage.ts";
 import { PostgresVendorUsageStore, readVendorUsageBudget } from "./postgres-vendor-usage.ts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
@@ -127,6 +131,7 @@ export class OutboxWorkerRuntime {
   readonly repository: PostgresMiniappRepository;
   readonly cache = new MemoryCache();
   readonly weather: WeatherPort;
+  private readonly cloudPublications: CloudPublicationRegistry;
   readonly mediaStore: MediaObjectStorePort;
   readonly observationContexts: ObservationContextService;
   readonly astronomy: AstronomyService;
@@ -137,10 +142,13 @@ export class OutboxWorkerRuntime {
 
   constructor(options: OutboxWorkerOptions) {
     this.config = options.runtimeConfig ?? loadRuntimeConfig();
+    assertCloudPublicationRuntime(this.config);
     this.repository = new PostgresMiniappRepository(options.databaseUrl);
     this.usageStore = new PostgresVendorUsageStore(options.databaseUrl);
-    this.weather = options.weather ?? createWeatherPort(this.config,
-      createVendorUsageTransport(this.usageStore));
+    this.cloudPublications = new CloudPublicationRegistry(this.config.cloudPublicationRoot ?? null);
+    const primaryWeather = options.weather ?? createWeatherPort(this.config, createVendorUsageTransport(this.usageStore));
+    this.weather = primaryWeather instanceof TotalCloudCompositeAdapter ? primaryWeather
+      : new TotalCloudCompositeAdapter(primaryWeather, new CloudPointWeather(this.cloudPublications));
     this.mediaStore = createMediaObjectStore(this.config);
     this.eventCatalog = new AstronomicalEventCatalogOwner(
       new PostgresAstronomicalEventCatalogStore(this.repository.pool),
@@ -150,6 +158,7 @@ export class OutboxWorkerRuntime {
       this.cache,
       this.config,
       this.eventCatalog,
+      this.cloudPublications,
     );
     this.astronomy = new AstronomyService(
       this.weather,
@@ -437,6 +446,7 @@ export class OutboxWorkerRuntime {
 
   async close() {
     await Promise.all([this.worker.close(),this.reminderWorker.close()]);
+    await this.cloudPublications.close();
     await this.usageStore.close();
     await Promise.all([this.queue.close(),this.reminderQueue.close()]);
     await this.pool.end();
@@ -506,6 +516,8 @@ export class OutboxWorkerRuntime {
         const weatherStart = Math.floor(Date.now() / 3_600_000) * 3_600_000;
         const windowUtc = { start: new Date(weatherStart).toISOString(),
           end: new Date(weatherStart + 24 * 3_600_000).toISOString() };
+        // One batch never follows current separately for each formal point.
+        const totalCloud = await this.weather.selectTotalCloud?.() ?? null;
         for (const spot of spots.rows) {
           const date = localDate(spot.timezone);
           const weather = await this.weather.getHourly({
@@ -517,11 +529,13 @@ export class OutboxWorkerRuntime {
             localDate: date,
             timezone: spot.timezone,
             windowUtc,
+            totalCloud,
           });
-          const rows = weather.value ?? [];
+          const rows = weatherSnapshotHours(weather, windowUtc, Date.now());
           const validFrom = rows[0]?.at ?? new Date().toISOString();
           const validTo =
-            rows.at(-1)?.at ??
+            (rows.at(-1) ? weather.totalCloud === undefined ? rows.at(-1)!.at
+              : new Date(Math.min(Date.parse(windowUtc.end), Date.parse(rows.at(-1)!.at) + 3_600_000)).toISOString() : null) ??
             new Date(Date.now() + 60 * 60 * 1_000).toISOString();
           const runId =
             "weather:" +
@@ -547,6 +561,7 @@ export class OutboxWorkerRuntime {
               weather.state,
               {
                 sources: weather.sources,
+                ...(weather.totalCloud ? { schemaVersion: "weather-run-v2-total-cloud", totalCloud: weather.totalCloud } : {}),
                 errorCode: weather.errorCode,
                 providerKey: this.weather.key,
                 windowUtc,
@@ -585,12 +600,14 @@ export class OutboxWorkerRuntime {
                payload = EXCLUDED.payload`,
             [
               this.weather.key,
-              rows.length ? "READY" : "UNAVAILABLE",
-              weather.errorCode,
+              weather.value?.length ? "READY" : "UNAVAILABLE",
+              ["UNAVAILABLE", "EXPIRED"].includes(weather.source.state) ? weather.errorCode : null,
               {
                 sourceId: weather.source.id,
                 state: weather.state,
-                rowCount: rows.length,
+                rowCount: weather.value?.length ?? 0,
+                ...(weather.totalCloud ? { totalCloudState: weather.totalCloud.state, totalCloudSourceId: weather.totalCloud.source.id,
+                  snapshotRowCount: rows.length } : {}),
               },
             ],
           );
@@ -614,6 +631,7 @@ export class OutboxWorkerRuntime {
         break;
       }
       case "ASTRONOMY": {
+        const totalCloud = await this.weather.selectTotalCloud?.() ?? null;
         const spots = await client.query<{ spot_id: string; timezone: string }>(
           `SELECT s.spot_id, s.timezone
              FROM spots s
@@ -632,7 +650,7 @@ export class OutboxWorkerRuntime {
             location: { kind: "FORMAL_SPOT", spotId: spot.spot_id },
             localDate: date,
             targetProfile: "DAILY",
-          });
+          }, undefined, { totalCloud: totalCloud ?? undefined });
           const report = await this.astronomy.compute(context);
           const algorithm = report.data.context.algorithmVersion;
           const nightId = `night:${digest({ spotId: spot.spot_id, date, algorithm }).slice(0, 32)}`;

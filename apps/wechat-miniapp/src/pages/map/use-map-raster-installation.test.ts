@@ -3,14 +3,21 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { mapGroundOverlayKey } from "./map-ground-overlay.ts";
+import { createMapGroundOverlayCoordinator, mapGroundOverlayKey, type MapGroundOverlayContext } from "./map-ground-overlay.ts";
 import { rasterImageDiagnostic } from "../../services/raster-image-diagnostic";
 
-function harness(supportsUpdates = false) {
+function harness(supportsUpdates = false, realNative = false) {
   const ast = ts.createSourceFile("hook.ts", readFileSync(new URL("./use-map-raster-installation.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useMapRasterInstallation")!;
   const states: any[] = [], memos: any[] = [], effects: any[] = [];
   const diagnostics: unknown[][] = [];
+  const nativeCalls: { kind: "add" | "update" | "remove"; options: any; finished: boolean }[] = [];
+  const pins = new Map<string, number>();
+  const nativeContext: MapGroundOverlayContext = {
+    addGroundOverlay(options) { nativeCalls.push({ kind: "add", options, finished: false }); },
+    ...(supportsUpdates ? { updateGroundOverlay(options: any) { nativeCalls.push({ kind: "update" as const, options, finished: false }); } } : {}),
+    removeGroundOverlay(options) { nativeCalls.push({ kind: "remove", options, finished: false }); },
+  };
   let stateIndex = 0, memoIndex = 0, effectIndex = 0;
   let pending: (() => void)[] = [];
   const coordinators: { callback: (result: any) => void; calls: { target: any; intent: string; replacement: string }[]; disposed: boolean; replaceReady: boolean;
@@ -27,7 +34,12 @@ function harness(supportsUpdates = false) {
   const equal = (a: any[], b: any[]) => a?.length === b.length && b.every((item, i) => Object.is(item, a[i]));
   const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";useMapRasterInstallation;",
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-    Taro: { createMapContext() {}, getImageInfo: async () => ({}) }, mapRasterFiles: {}, mapGroundOverlayKey,
+    Taro: { createMapContext: () => nativeContext, getImageInfo: async () => ({}) }, mapRasterFiles: {
+      retainPath(path: string) { pins.set(path, (pins.get(path) ?? 0) + 1); return () => {
+        const count = pins.get(path)! - 1;
+        if (count) pins.set(path, count); else pins.delete(path);
+      }; },
+    }, mapGroundOverlayKey,
     reportRuntimeError: (...args: unknown[]) => diagnostics.push(args),
     rasterImageDiagnostic,
     useState(initial: any) { const index = stateIndex++; if (!(index in states)) states[index] = initial;
@@ -39,10 +51,19 @@ function harness(supportsUpdates = false) {
       if (!effects[index] || !equal(effects[index].deps, deps)) pending.push(() => {
         effects[index]?.cleanup?.(); effects[index] = { deps, cleanup: effect() };
       }); },
-    createMapGroundOverlayCoordinator(_id: number, _create: any, callback: any) {
+    createMapGroundOverlayCoordinator(_id: number, _create: any, callback: any, resources: any, label: string) {
       const owner = { callback, calls: [] as { target: any; intent: string; replacement: string }[], disposed: false, replaceReady: false,
         suspensions: [] as ((result: { complete: boolean; remainingIds: number[] }) => void)[] };
       coordinators.push(owner);
+      if (realNative) {
+        const actual = createMapGroundOverlayCoordinator(_id, _create, callback, resources, label);
+        return { ...actual,
+          apply(target: any, intent: "display" | "suspend", replacement: "compatible" | "same-id-only") {
+            owner.calls.push({ target, intent, replacement }); return actual.apply(target, intent, replacement);
+          },
+          dispose() { owner.disposed = true; return actual.dispose(); },
+        };
+      }
       return { apply(target: any, intent: string, replacement: string) {
           owner.replaceReady = false; owner.calls.push({ target, intent, replacement }); return Promise.resolve(); },
         canReplace() { return supportsUpdates && owner.replaceReady && !owner.disposed; },
@@ -55,7 +76,13 @@ function harness(supportsUpdates = false) {
     stateIndex = memoIndex = effectIndex = 0; hook(input); pending.splice(0).forEach(effect => effect());
     stateIndex = memoIndex = effectIndex = 0; return hook(input);
   };
-  return { render, coordinators, diagnostics, set(value: any) { input = { ...input, ...value }; },
+  return { render, coordinators, diagnostics, pins, nativeCalls, set(value: any) { input = { ...input, ...value }; },
+    nativeReply(kind: "add" | "update" | "remove", error: unknown = null) {
+      const call = nativeCalls.find(value => !value.finished);
+      assert.ok(call, `expected pending native ${kind}`); assert.equal(call.kind, kind);
+      call.finished = true;
+      if (error) call.options.fail(error); else call.options.success();
+    },
     ack(owner = coordinators.at(-1)!, error: unknown = null, state: any = {}) { const call = owner.calls.at(-1)!;
       owner.replaceReady = !error && Boolean(call.target) && !state.presentationUnknown;
       owner.callback({ target: call.target, error, isCurrent: () => true, ...state }); },
@@ -94,6 +121,85 @@ test("a cancellable exit blocks effect reinstallations and resumes the newest so
   exit.resume(); assert.equal(owner.calls.at(-1)!.target.src, "/local/c.png");
   h.ack(); assert.equal(h.render().presentedData.source, "c");
   h.unmount();
+});
+
+test("cancelled departure clears a changed cloud identity before installing the newest image", async () => {
+  const h = harness();
+  h.set({ retentionKey: "cloud:a", label: "云量" });
+  assert.equal(h.render().clearingPriorIdentity, true);
+  h.ack(); h.render(); h.ack();
+  assert.equal(h.render().presentedData.source, "a");
+  const exit = h.render().suspendForExit(), owner = h.coordinators[0]!;
+  const commands = owner.calls.length;
+  h.set({ retentionKey: "cloud:b", identity: "b", src: "/local/b.png", data: { source: "b" } });
+  assert.equal(h.render().clearingPriorIdentity, true);
+  assert.equal(owner.calls.length, commands, "departure still owns native removal");
+  h.finishSuspension(true); assert.equal(await exit.ready, true);
+  exit.resume();
+  assert.equal(owner.calls.at(-1)!.target, null);
+  h.ack();
+  const cleared = h.render();
+  assert.equal(cleared.clearingPriorIdentity, false, "resume must bind the clear acknowledgment to the new identity");
+  assert.equal(owner.calls.at(-1)!.target.src, "/local/b.png");
+  assert.equal(cleared.presentedData, null, "clearing pixels does not yet certify the new image");
+  h.ack(); assert.equal(h.render().presentedData.source, "b");
+  h.unmount();
+});
+
+const settleNative = () => new Promise<void>(resolve => setImmediate(resolve));
+
+test("cloud identity changes retain actual old source and file until native removal, then admit only the latest identity", async () => {
+  const h = harness(true, true);
+  h.set({ retentionKey: "cloud:a", label: "云量" });
+  h.render(); await settleNative(); h.render(); await settleNative();
+  assert.equal(h.nativeCalls.at(-1)!.kind, "add");
+  h.nativeReply("add"); await settleNative();
+  assert.equal(h.render().presentedData.source, "a");
+  h.set({ retentionKey: "cloud:b", identity: "b", src: "/local/b.png", data: { source: "b" } });
+  let state = h.render(); await settleNative();
+  assert.equal(state.clearingPriorIdentity, true);
+  assert.equal(state.presentedData.source, "a", "a clear request does not relabel or retire known old pixels");
+  assert.equal(h.nativeCalls.at(-1)!.kind, "remove");
+  assert.equal(h.pins.get("/local/a.png"), 1);
+  assert.equal(h.pins.has("/local/b.png"), false, "new identity never reaches the native file owner early");
+  h.set({ retentionKey: "cloud:c", identity: "c", src: "/local/c.png", data: { source: "c" } });
+  h.render(); await settleNative();
+  assert.equal(h.nativeCalls.length, 2, "new intent waits for the outstanding native remove");
+  h.nativeReply("remove"); await settleNative(); state = h.render(); await settleNative();
+  assert.equal(state.clearingPriorIdentity, false);
+  assert.equal(state.presentedData, null);
+  assert.equal(h.pins.has("/local/a.png"), false);
+  assert.equal(h.nativeCalls.at(-1)!.kind, "add");
+  assert.equal(h.nativeCalls.at(-1)!.options.src, "/local/c.png");
+  assert.equal(h.nativeCalls.some(call => call.options.src === "/local/b.png"), false);
+  h.nativeReply("add"); await settleNative(); assert.equal(h.render().presentedData.source, "c");
+  h.unmount(); await settleNative(); h.nativeReply("remove"); await settleNative();
+  assert.equal(h.pins.size, 0);
+});
+
+test("a failed cloud clearance keeps the old native pin and blocks replacement until a successful retry", async () => {
+  const h = harness(true, true);
+  h.set({ retentionKey: "cloud:a", label: "云量" });
+  h.render(); await settleNative(); h.render(); await settleNative();
+  h.nativeReply("add"); await settleNative(); h.render();
+  h.set({ retentionKey: "cloud:b", identity: "b", src: "/local/b.png", data: { source: "b" } });
+  h.render(); await settleNative(); h.nativeReply("remove", new Error("native removal rejected")); await settleNative();
+  let state = h.render();
+  assert.equal(state.clearingPriorIdentity, true); assert.equal(state.requiresMapRecovery, true);
+  assert.ok(state.error); assert.equal(state.presentedData, null, "failed native removal has an unknown presentation");
+  assert.equal(h.pins.get("/local/a.png"), 1);
+  assert.equal(h.pins.has("/local/b.png"), false);
+  const commands = h.nativeCalls.length;
+  h.render(); await settleNative(); assert.equal(h.nativeCalls.length, commands, "a failure is not an automatic busy loop");
+  h.set({ retry: 1 }); h.render(); await settleNative();
+  assert.equal(h.nativeCalls.at(-1)!.kind, "remove");
+  h.nativeReply("remove"); await settleNative(); state = h.render(); await settleNative();
+  assert.equal(state.clearingPriorIdentity, false); assert.equal(state.error, null);
+  assert.equal(h.pins.has("/local/a.png"), false);
+  assert.equal(h.nativeCalls.at(-1)!.options.src, "/local/b.png");
+  h.nativeReply("add"); await settleNative(); assert.equal(h.render().presentedData.source, "b");
+  h.unmount(); await settleNative(); h.nativeReply("remove"); await settleNative();
+  assert.equal(h.pins.size, 0);
 });
 
 test("failed cleanup keeps the current owner retryable and a cancelled ticket cannot alter its successor", async () => {

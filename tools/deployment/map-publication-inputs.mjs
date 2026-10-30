@@ -1,5 +1,8 @@
 import { tsImport } from "tsx/esm/api";
 import { readPlainSkyFile, skyStaticHash } from "./sky-static-bundle.mjs";
+import { readCloudMapPublication } from "./cloud-map-publication-input.mjs";
+import { readEogMapPublication } from "./eog-map-publication-input.mjs";
+import { isPublicMapSource } from "./map-publication-source.mjs";
 
 // Reuse the real Map publication validators. The deployment adapter does not
 // render terrain, compose numerical light cells, choose coverage or activate DB
@@ -9,11 +12,11 @@ const publicationOwners = () => owners ??= Promise.all([
   tsImport("../../workers/miniapp-api/src/terrain-fixed-publication.ts", import.meta.url),
   tsImport("../../workers/miniapp-api/src/night-light-publication.ts", import.meta.url),
   tsImport("../../workers/miniapp-api/src/night-light-window.ts", import.meta.url),
+  tsImport("../../workers/miniapp-api/src/map-static-manifest.ts", import.meta.url),
 ]);
 const fail = code => { throw new Error(`map_static_${code}`); };
 const payloadFields = new Set(["schemaVersion", "datasetVersion", "methodVersion", "styleVersion", "policy", "policySha256", "minimumCloudFreeObservations", "source", "rasterInventory",
   "aoi", "dataYear", "productName", "radianceUnit", "calibratedSkyClass"]);
-const sourceFields = new Set(["attribution", "id", "kind", "provider", "title", "sourceUrl", "license", "licenseUrl", "publishedAt", "retrievedAt", "validFrom", "validTo", "state", "confidence", "precision", "limitations"]);
 const descriptor = (file, bytes) => ({ file, bytes: bytes.length, sha256: skyStaticHash(bytes) });
 const headers = (family, publicationId) => ({ "content-type": "image/png",
   "cache-control": "public, max-age=604800, immutable", "x-content-type-options": "nosniff",
@@ -23,8 +26,17 @@ const headers = (family, publicationId) => ({ "content-type": "image/png",
  * not a hand-maintained object list. Night-light additionally requires an
  * explicit PUBLISHED DB-record export; its bytes alone never establish that a
  * selected runtime database has activated it. No secrets/private input is read. */
-export async function readMapPublication({ family, directory, publishedRecord, displayWindowTargets }) {
-  const [terrain, light, windows] = await publicationOwners();
+export async function readMapPublication({ family, directory, publishedRecord, displayWindowTargets, cloudSource, nightLightSharded, signal }) {
+  if (nightLightSharded !== undefined) {
+    if (family !== "night-light" || publishedRecord !== undefined || cloudSource !== undefined) fail("sharded_input_invalid");
+    return readEogMapPublication({ directory, nightLightSharded, displayWindowTargets, signal });
+  }
+  if (family === "cloud") {
+    if (publishedRecord !== undefined || displayWindowTargets !== undefined) fail("cloud_record_invalid");
+    return readCloudMapPublication({ directory, cloudSource });
+  }
+  if (cloudSource !== undefined) fail("cloud_source_unexpected");
+  const [terrain, light, windows, declaration] = await publicationOwners();
   const inventoryBytes = await readPlainSkyFile(directory, "inventory.json");
   const metadata = [{ ...descriptor("inventory.json", inventoryBytes), sourceDirectory: directory }];
   const records = [];
@@ -52,8 +64,7 @@ export async function readMapPublication({ family, directory, publishedRecord, d
     if (Object.keys(publishedRecord).sort().join() !== "record,state" ||
         Object.keys(publishedRecord.record).sort().join() !== "coverageSha256,datasetVersion,payload,radianceSha256,source" ||
         Object.keys(publishedRecord.record.payload).some(name => !payloadFields.has(name)) ||
-        Object.keys(publishedRecord.record.source).some(name => !sourceFields.has(name)) ||
-        publishedRecord.record.source.attribution && Object.keys(publishedRecord.record.source.attribution).sort().join() !== "name,statements,url") fail("published_record_invalid");
+        !isPublicMapSource(publishedRecord.record.source)) fail("published_record_invalid");
     const recordBytes = Buffer.from(JSON.stringify(publishedRecord, null, 2) + "\n");
     metadata.push({ ...descriptor("published-record.json", recordBytes), data: recordBytes });
     inventory = await light.readFixedNightLightInventory(directory, dataset);
@@ -70,9 +81,7 @@ export async function readMapPublication({ family, directory, publishedRecord, d
         headers: headers(family, proof.publicationId) });
     }
     if (displayWindowTargets !== undefined) {
-      if (!Array.isArray(displayWindowTargets) || !displayWindowTargets.length || displayWindowTargets.length > 16 ||
-          displayWindowTargets.some(target => !target || Object.keys(target).sort().join() !== "boundsGcj02,name" ||
-            typeof target.name !== "string" || !target.name.trim() || target.name.length > 120)) fail("window_targets_invalid");
+      declaration.assertMapStaticDisplayWindowTargets(displayWindowTargets);
       const prepared = new Set(records.map(record => record.file));
       for (const target of displayWindowTargets) {
         const window = windows.nightLightWindowForBounds(proofs, target.boundsGcj02);

@@ -1,5 +1,5 @@
 import type { AccountAvatarSaveRequest, AccountNicknameSaveRequest } from "@starward/miniapp-contracts";
-import { isBodyImageKind, isDeepSkyCatalogVersion, isDeepSkyObjectReference, isNightLightDisplayStyle, MINIAPP_API_OPERATIONS, type BodyImageKind } from "@starward/miniapp-contracts";
+import { isBodyImageKind, isDeepSkyCatalogVersion, isDeepSkyObjectReference, isNightLightDisplayStyle, mapCloudReadInstant, MINIAPP_API_OPERATIONS, type BodyImageKind } from "@starward/miniapp-contracts";
 import {
   Body,
   BadRequestException,
@@ -294,6 +294,7 @@ export class MiniappController {
     @Query("viewportBounds") viewportBounds?: string,
     @Headers("authorization") authorization?: string,
     @Res({ passthrough: true }) reply?: FastifyReply,
+    @Query("selectedAt") selectedAt?: string,
   ) {
     const userId = await this.service.auth.optionalPrincipal(authorization);
     const viewport = parseViewport({
@@ -303,9 +304,11 @@ export class MiniappController {
       ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
     });
     if (!viewport?.bounds) throw new BadRequestException("map_viewport_required");
+    const requestedAt = selectedAt === undefined ? undefined : mapCloudReadInstant(selectedAt);
     return withTerrainRead(reply, signal => this.service.getMapCloud({
       contextId: required(contextId, "observation_context_required"),
       viewport: { ...viewport, bounds: viewport.bounds! }, ...(userId ? { userId } : {}),
+      ...(requestedAt === undefined ? {} : { selectedAt: requestedAt }),
     }, signal));
   }
 

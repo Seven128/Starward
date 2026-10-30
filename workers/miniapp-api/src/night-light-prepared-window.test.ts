@@ -33,7 +33,7 @@ type Input = {
   prepared: PreparedNightLightPublication; manifest: MapStaticManifest; proofPath: string; imagePath: string;
   fresh: (record?: FixedNightLightDataset, prepared?: PreparedNightLightPublication | null) => NightLightService;
 };
-async function fixture(run: (input: Input) => Promise<void>) {
+async function fixture(run: (input: Input) => Promise<void>, partitioned = false) {
   const root = await mkdtemp(path.join(tmpdir(), "starward-nightlight-prepared-"));
   const services: NightLightService[] = [];
   try {
@@ -46,12 +46,12 @@ async function fixture(run: (input: Input) => Promise<void>) {
     const publication = await nightLightFixture(root, { columns: 3 });
     const bundle = await prepareMapStaticBundle({ publications: [{ ...publication,
       displayWindowTargets: [{ name: "existing public fixture cross-cell viewport", boundsGcj02: view(w) }] }],
-    outputDirectory: path.join(root, "sealed-map") });
+    outputDirectory: path.join(root, "sealed-map"), ...(partitioned ? { indexLayout: "partitioned" } : {}) });
     const record = publication.publishedRecord.record as FixedNightLightDataset;
     const inventory = await readFixedNightLightInventory(publication.directory, record), proofs = [];
     for (const entry of inventory.assets) proofs.push(await readFixedNightLightProof(publication.directory, record, entry));
     const prepared = { directory: bundle.directory, publicationHash: bundle.publicationHash };
-    const manifest = JSON.parse(await readFile(path.join(prepared.directory, "index.json"), "utf8")) as MapStaticManifest;
+    const manifest = (partitioned ? bundle : JSON.parse(await readFile(path.join(prepared.directory, "index.json"), "utf8"))) as MapStaticManifest;
     const source = manifest.sources.find(source => source.family === "night-light")!;
     const windowEntry = source.metadata.find(entry => entry.file.startsWith("nightlight-v2-window-"))!;
     const proofPath = path.join(prepared.directory, "publications", mapStaticSourceId(source), windowEntry.file);
@@ -71,7 +71,7 @@ async function fixture(run: (input: Input) => Promise<void>) {
 }
 const filename = (layer: Awaited<ReturnType<NightLightService["layer"]>>) => path.basename(layer!.raster!.imageUrl);
 
-test("sealed prepared window and fixed URLs serve exactly the original published metadata/PNG without calling the live producer", async t => fixture(async input => {
+for (const partitioned of [false, true]) test(`${partitioned ? "partitioned" : "flat"}: sealed prepared window and fixed URLs serve exactly the original published metadata/PNG without calling the live producer`, async t => fixture(async input => {
   const { record, proofs, fresh, directory } = input, original = fresh(record, null);
   const expected = await original.layer(record.datasetVersion, view(w)); assert.ok(expected?.raster);
   const expectedAsset = await original.asset(record.datasetVersion, filename(expected)); assert.ok(expectedAsset);
@@ -85,7 +85,7 @@ test("sealed prepared window and fixed URLs serve exactly the original published
   assert.deepEqual(await service.asset(record.datasetVersion, proofs[0].image.file), fixed, "existing fixed URL is unchanged");
   assert.equal(encode.mock.callCount(), 0);
   assert.equal(await service.asset(record.datasetVersion, filename(expected).replace(/-[a-f0-9]{64}\.png$/u, `-${"0".repeat(64)}.png`)), null);
-}));
+}, partitioned));
 
 test("contrast display consumes the verified prepared image without changing the prepared publication or its V1 URL", async () => fixture(async ({ record, proofs, fresh, directory, imagePath }) => {
   const service = fresh(), original = await service.layer(record.datasetVersion, view(w)); assert.ok(original?.raster);

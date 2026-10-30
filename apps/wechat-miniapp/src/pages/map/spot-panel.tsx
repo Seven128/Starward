@@ -17,11 +17,13 @@ import type {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Taro, { useResize } from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
+import type { ResourceFailureEpisode } from "@/services/resource-failure-episode";
 import { WeatherAlerts } from "@/components/weather-alerts";
 import { RecentWeather } from "@/components/recent-weather";
 import { SourceAttribution } from "@/components/source-attribution";
 import { SourceEntry } from "@/components/source-entry";
 import { SourceButton, SourceNavigationPreparation } from "@/components/source-button";
+import { hasIndependentTotalCloud, selectedTotalCloud, totalCloudCoverage, totalCloudMissingLabel, weatherCreditSources, weatherSourceSections } from "@/components/weather-source-presentation";
 import { AirQuality } from "@/components/air-quality";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { SpotPanelActions } from "./spot-panel-actions";
@@ -121,6 +123,7 @@ function formatSourceTime(value: string | null | undefined, timezone: string) {
 export function SpotInformationPanel({
   spot,
   visible = true,
+  weatherFailureEpisodes,
   settling = false,
   detail,
   detailPending,
@@ -140,6 +143,7 @@ export function SpotInformationPanel({
   timeContextPending,
   astronomyAt,
   skyReport,
+  forecastClockOffsetMs = 0,
   skyPending,
   skyRefreshing = false,
   skyError,
@@ -184,6 +188,11 @@ export function SpotInformationPanel({
 }: {
   spot: SpotSummary;
   visible?: boolean;
+  weatherFailureEpisodes?: {
+    recentWeather: ResourceFailureEpisode;
+    airQuality: ResourceFailureEpisode;
+    weatherAlerts: ResourceFailureEpisode;
+  };
   settling?: boolean;
   detail: SpotDetail | null;
   detailPending: boolean;
@@ -203,6 +212,7 @@ export function SpotInformationPanel({
   timeContextPending: boolean;
   astronomyAt: string;
   skyReport: SkyReport | null;
+  forecastClockOffsetMs?: number;
   skyPending: boolean;
   skyRefreshing?: boolean;
   skyError: unknown;
@@ -232,7 +242,7 @@ export function SpotInformationPanel({
   onClose: () => void;
   onLoadingCancel?: () => void;
   onRecover: () => void;
-  onSkyRecover: () => void;
+  onSkyRecover: () => boolean | void;
   onFavorite: () => void;
   requireAccount: ReturnType<typeof import("@/hooks/use-wechat-login").useWechatLogin>["requireAccount"];
   onShare: () => void;
@@ -411,13 +421,24 @@ export function SpotInformationPanel({
   }, null) ?? null;
   const weatherStale = Boolean(skyError || skyStale || visibleWeatherRuns.some(run => run.state === "STALE_USABLE"));
   const weatherTimezone = context?.timezone ?? effectiveSpot.timezone;
+  const independentCloud = Boolean(skyReport && hasIndependentTotalCloud(skyReport));
+  const cloudIntervals = useMemo(() => skyReport ? totalCloudCoverage(skyReport, Date.now() + forecastClockOffsetMs) : undefined,
+    [skyReport, forecastClockOffsetMs]);
+  const selectedCloud = useMemo(() => skyReport ? selectedTotalCloud(skyReport, astronomyAt, Date.now() + forecastClockOffsetMs) : null,
+    [skyReport, astronomyAt, forecastClockOffsetMs]);
+  const weatherSections = useMemo(() => skyReport
+    ? weatherSourceSections(skyReport, astronomyAt, weatherTimezone, weatherStale, Date.now() + forecastClockOffsetMs, cloudIntervals) : [],
+    [skyReport, astronomyAt, weatherTimezone, weatherStale, cloudIntervals, forecastClockOffsetMs]);
+  const weatherCredits = skyReport ? weatherCreditSources(skyReport, Boolean(skyRow?.weatherAt), Boolean(selectedCloud)) : [];
   const weatherTime = formatSourceTime(skyRow?.weatherAt, weatherTimezone);
   const weatherUpdated = formatSourceTime(latestWeatherFetch, weatherTimezone);
   const weatherMissing = skyRow?.state === "EXPIRED" ? "已过期" : "暂无覆盖";
-  const renderWeatherValue = (value: number | null | undefined, unit: string, digits = 0) =>
-    renderMetricValue(value, unit, digits, "type-data", skyRow?.weatherAt ? EMPTY_FIELD_VALUE : weatherMissing);
+  const cloudMissing = skyReport ? totalCloudMissingLabel(skyReport, Date.now() + forecastClockOffsetMs) : "暂无覆盖";
+  const cloudPercent = independentCloud ? selectedCloud?.cloudPercent ?? null : skyRow?.cloudPercent;
+  const renderWeatherValue = (value: number | null | undefined, unit: string, digits = 0, fallback?: string) =>
+    renderMetricValue(value, unit, digits, "type-data", fallback ?? (skyRow?.weatherAt ? EMPTY_FIELD_VALUE : weatherMissing));
   const weatherCells = [
-    { label: "总云量", value: skyRow?.cloudPercent, unit: "%" },
+    { label: "总云量", value: cloudPercent, unit: "%", fallback: independentCloud ? cloudMissing : undefined },
     { label: "气温", value: skyRow?.temperatureC, unit: "°C", digits: 1 },
     { label: "湿度", value: skyRow?.relativeHumidityPercent, unit: "%" },
     { label: "露点", value: skyRow?.dewPointC, unit: "°C", digits: 1 },
@@ -427,7 +448,7 @@ export function SpotInformationPanel({
     { label: "降水量", value: skyRow?.precipitationMm, unit: " mm", digits: 1 },
     { label: "降水概率", value: skyRow?.precipitationProbabilityPercent, unit: "%" },
   ].map(field => <View className="spot-panel__metric" key={field.label}>
-    <Text className="type-secondary">{field.label}</Text>{renderWeatherValue(field.value, field.unit, field.digits)}
+    <Text className="type-secondary">{field.label}</Text>{renderWeatherValue(field.value, field.unit, field.digits, field.fallback)}
   </View>);
   const cloudReady = Boolean(
     detail && !timeSaving &&
@@ -657,7 +678,8 @@ export function SpotInformationPanel({
               <SpotAdditionalInformation spotId={effectiveSpot.spotId} detail={detail} facilities={facilities}
                 facilityLabel={facilityLabel} onLayoutChange={() => setLayoutVersion(value => value + 1)} />
             </View>
-            <RecentWeather id="spot-panel-reading-recent-weather" spotId={effectiveSpot.spotId} timezone={effectiveSpot.timezone} visible={visible} onLayoutChange={onReadingLayoutChange} />
+            <RecentWeather id="spot-panel-reading-recent-weather" spotId={effectiveSpot.spotId} timezone={effectiveSpot.timezone} visible={visible} onLayoutChange={onReadingLayoutChange}
+              failureEpisode={weatherFailureEpisodes?.recentWeather} />
           </View>
           <View id="spot-panel-terrain-anchor" className="spot-panel__chapter-anchor" aria-hidden="true" />
           <View id="spot-panel-terrain" className="spot-panel__section spot-panel__section--terrain" ariaLabel="地形">
@@ -681,6 +703,7 @@ export function SpotInformationPanel({
               {...(retainWarningSpace ? { style: { minHeight: `${warningPresentation!.height}px`, flexShrink: 0 } } : {})}>
               <WeatherAlerts compact evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
                 active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)}
+                failureEpisode={weatherFailureEpisodes?.weatherAlerts}
                 onRecover={onSkyRecover} onContentChange={onWarningLayoutChange} />
             </View>
             <View id="spot-panel-reading-time" className="spot-panel__block spot-panel__block--astronomy-card panel-reading-anchor">
@@ -756,19 +779,16 @@ export function SpotInformationPanel({
             {skyReport ? <View id="spot-panel-reading-weather" className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix panel-reading-anchor" data-control="sky-professional-matrix">
               <View className="spot-panel__compact-heading"><Text className="type-label spot-panel__weather-heading">气象条件</Text>
                 <SourceEntry key={effectiveSpot.spotId} id="weather-data-source" label="气象来源与有效时间"
-                  sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} sections={[
-                    { kind: "forecast", starts: skyReport.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []), stale: weatherStale, timezone: weatherTimezone },
-                    { kind: "text", paragraphs: ["所选时刻的天气取自对应小时；缺少天气覆盖时，天文仍按所选时刻计算。获取时间不代表预报发布时间。"] },
-                  ]} />
+                  sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} sections={weatherSections} />
               </View>
-              {weatherStale ? <StatusPanel state="STALE" detail={skyRow?.weatherAt ? "更新未完成，保留仍有效的预报。" : "更新未完成，所选时刻暂无有效预报。"}
+              {weatherStale ? <StatusPanel state="STALE" detail={skyRow?.weatherAt || selectedCloud ? "更新未完成，保留仍有效的预报。" : "更新未完成，所选时刻暂无有效预报。"}
                 recoveryLabel="重试天气与天文" onRecover={onSkyRecover} /> : null}
-              <Text className="type-caption">{formatSourceTime(astronomyAt, weatherTimezone)} · {weatherTime ? `对应小时 ${weatherTime}` : weatherMissing}
+              <Text className="type-caption">{formatSourceTime(astronomyAt, weatherTimezone)} · {weatherTime ? `${independentCloud ? "其他天气" : ""}对应小时 ${weatherTime}` : `${independentCloud ? "其他天气" : ""}${weatherMissing}`}
                 {weatherTime && weatherUpdated ? ` · ${weatherStale ? "上次获取" : "获取"} ${weatherUpdated}` : ""}</Text>
               {dayMode ? <View className="spot-panel__weather-matrix">{weatherCells}</View> : <View className="spot-panel__forecast-groups">
                 <View className="spot-panel__evidence-group" ariaLabel="总云量">
                   <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" presentation="forecast" /><Text className="type-label">{dayMode ? "云量" : "总云量"}</Text></View>
-                  {renderWeatherValue(skyRow?.cloudPercent, "%")}
+                  {renderWeatherValue(cloudPercent, "%", 0, independentCloud ? cloudMissing : undefined)}
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="温湿">
                   <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "temperature" : "sun"} presentation="forecast" /><Text className="type-label">温湿</Text></View>
@@ -814,19 +834,18 @@ export function SpotInformationPanel({
             </View>
             <View className="spot-panel__astronomy-source" data-control="sky-weather-source">
               <Text className="type-caption">
-                {weatherProviders.length ? `预报：${weatherProviders.join("、")}` : "预报来源暂无数据"}
+                {weatherProviders.length || independentCloud && skyReport.weatherEvidence?.totalCloud?.source.provider ? `预报：${[...new Set([...weatherProviders,
+                  ...(independentCloud && skyReport.weatherEvidence?.totalCloud?.source.provider ? [skyReport.weatherEvidence.totalCloud.source.provider] : [])])].join("、")}` : "预报来源暂无数据"}
               </Text>
               <Text className="type-caption">天体位置按所选时刻计算</Text>
             </View>
             <View className="spot-panel__sky-source-reading">
-              {skyRow?.weatherAt ? <SourceAttribution presentation="credit" sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} /> : null}
-              <SourceEntry key={effectiveSpot.spotId} id="sky-data-source" label="天文气象来源与有效时间" sources={skyReport.sources} sections={[
-                { kind: "forecast", starts: skyReport.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []), stale: weatherStale, timezone: weatherTimezone },
-                { kind: "text", paragraphs: ["所选时刻的天气取自对应小时；缺少天气覆盖时，天文仍按所选时刻计算。获取时间不代表预报发布时间。"] },
-              ]} />
+              {weatherCredits.length ? <SourceAttribution presentation="credit" sources={weatherCredits} /> : null}
+              <SourceEntry key={effectiveSpot.spotId} id="sky-data-source" label="天文气象来源与有效时间" sources={skyReport.sources} sections={weatherSections} />
             </View>
             </> : null}
-            <AirQuality id="spot-panel-reading-air-quality" spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} onLayoutChange={onReadingLayoutChange} />
+            <AirQuality id="spot-panel-reading-air-quality" spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} onLayoutChange={onReadingLayoutChange}
+              failureEpisode={weatherFailureEpisodes?.airQuality} />
           </View>
 
           <View className={`spot-panel__disclosure${skyReport ? " spot-panel__disclosure--with-astronomy-source" : ""}`} data-control="data-source-disclosure">

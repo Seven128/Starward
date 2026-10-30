@@ -1,5 +1,7 @@
 # R17 probe v3: explicit elapsed time and unknown coverage
 
+**Current resumption note, 2026-10-28:** the “not integrated / next integration” statements below record the 2026-10-19 stage. The current `build-r17-normal-baseline-v3.mjs` already selects the v3 runtime in `preparedSources`; do not repeat that integration or invoke a frozen generation from this historical checklist. Current candidate and collector qualification belong to `../HANDOFF.md`. The newly prepared plain phone candidate has diagnostics disabled and cannot provide R17/r25/r26 counts. Gen34 remains protected and must not be rebuilt.
+
 2026-10-19. This task-only observation contract implements the performance-method correction. It does not identify a product cause, change a product scheduler, or complete target-device acceptance. The v3 template has **not** been copied into a candidate, built, sent to the phone or run on the phone. Current v1/v2 receipts, templates and validators retain their original meanings.
 
 ## Clock and interval contract

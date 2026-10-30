@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
@@ -12,6 +14,53 @@ const declaration = source.statements.find(node => ts.isFunctionDeclaration(node
 assert.ok(declaration);
 const code = ts.transpileModule(`${declaration.getText(source).replace(/^export\s+/, "")}\nSkyObjectSearch;`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText;
+
+test("cached celestial search keeps request identity without retaining the retired selection callback", () => {
+  // The complete result component keeps its real JSX callback scopes. Only
+  // the real Query cache remains after its returned render tree is discarded.
+  // Explicit GC is isolated here; this does not measure phone memory.
+  const probe = String.raw`
+    const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
+    const {QueryClient}=require('@tanstack/react-query');
+    const source=ts.createSourceFile('search.tsx',fs.readFileSync(process.argv[1],'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+    const declaration=source.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='SkySearchResults');
+    assert(declaration);
+    const client=new QueryClient({defaultOptions:{queries:{retry:false}}}),calls=[];
+    const response=Promise.resolve({received:true});
+    const adapt=fn=>({signal})=>fn(signal);
+    let cached,weak;
+    const component=vm.runInNewContext(ts.transpileModule(declaration.getText(source)+'\nSkySearchResults;',
+      {compilerOptions:{target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.React}}).outputText,{
+      React:{createElement:(type,props,...children)=>({type,props,children})},
+      View:'View',Text:'Text',StatusPanel:'StatusPanel',SkySearchRow:'SkySearchRow',
+      SKY_LUMINARY_CATALOG_VERSION:'current',skyObjectKindLabel:()=> 'Star',
+      searchCelestialObjects:(query,signal)=>{calls.push({query,signal});return response;},
+      useResourceQuery(options){
+        cached=client.getQueryCache().build(client,{...options,queryFn:adapt(options.queryFn),enabled:false});
+        return {isPending:false,isError:false,data:{dataState:'FRESH',data:{
+          results:[{reference:'HR:1',displayName:'Star',kind:'STAR'}],truncated:false,unavailableCatalogs:[]}},
+          refetch:()=>Promise.resolve(undefined)};
+      }
+    });
+    (()=>{const selectionOwner={marker:'page-selection-owner'},onSelect=()=>selectionOwner;
+      weak={selectionOwner:new WeakRef(selectionOwner),onSelect:new WeakRef(onSelect)};
+      component({query:'HR 1',onSelect,active:true});})();
+    (async()=>{try{
+      await new Promise(setImmediate);global.gc();await new Promise(setImmediate);global.gc();
+      assert(client.getQueryCache().getAll().includes(cached),'the actual cached query stays live');
+      assert.equal(cached.gcTime,60000,'the existing search reuse window is unchanged');
+      for(const [name,ref] of Object.entries(weak))assert.equal(ref.deref(),undefined,'query retained '+name);
+      const signal=new AbortController().signal;
+      assert.equal(cached.options.queryFn({signal}),response,'preserve the service Promise');
+      assert.equal(calls.length,1);assert.equal(calls[0].query,'HR 1');assert.equal(calls[0].signal,signal);
+    }finally{client.clear();}})().catch(error=>{console.error(error);process.exitCode=1;});
+  `;
+  const result = spawnSync(process.execPath, ["--expose-gc", "-e", probe,
+    fileURLToPath(new URL("./sky-object-search.tsx", import.meta.url))],
+  { encoding: "utf8", timeout: 20_000, windowsHide: true });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
 
 type Element = { type: string; props: Record<string, any>; children: unknown[] };
 function find(tree: unknown, type: string): Element | undefined {
@@ -31,7 +80,7 @@ function search(queryOwner = { value: "" }) {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
     Taro: { hideKeyboard: async () => undefined },
-    View: "View", Text: "Text", Input: "Input", ScrollView: "ScrollView", Button: "Button", SemanticIcon: "SemanticIcon", SkySearchResults: "Results",
+    View: "View", Text: "Text", SkyControlledInput: "Input", ScrollView: "ScrollView", Button: "Button", SemanticIcon: "SemanticIcon", SkySearchResults: "Results",
     useState(initial: unknown) {
       const index = cursor++;
       if (!(index in state)) state[index] = initial;

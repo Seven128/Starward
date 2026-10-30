@@ -21,7 +21,10 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
   input = terrainRequestForCoverage(normalizeTerrainOverlayRequest(input), coverage.current);
   const identity = terrainOverlayRequestIdentity(input);
   const query = useResourceQuery({
-    queryKey: ["terrain-overlay", identity],
+    // A closed Map layer must release its own pending reader. Switching the
+    // observer, rather than globally cancelling terrain, leaves an independent
+    // spot-panel subscriber alive if it still needs the same product.
+    queryKey: ["terrain-overlay", enabled ? identity : "inactive"],
     // A same-window pending read or cached revisit may have started at another
     // camera centre. Carry its issued request with the cached response instead
     // of attributing that response to the hook's latest input.

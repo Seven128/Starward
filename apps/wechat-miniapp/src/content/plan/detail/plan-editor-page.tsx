@@ -1262,6 +1262,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               />
             ) : null}
             {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
+              forecastClockOffsetMs={skyQuery.forecastClockOffsetMs}
               failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
               stale={Boolean(sky && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"))}
               onRetry={() => void skyQuery.refetch()} loading={Boolean(

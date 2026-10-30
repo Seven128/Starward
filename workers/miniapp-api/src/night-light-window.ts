@@ -14,22 +14,33 @@ export type NightLightWindow = { proof: NightLightView; bytes: Buffer };
 export const overlapsNightLight = (a: RasterBounds, b: RasterBounds) => a.west < b.east && a.east > b.west && a.north > b.south && a.south < b.north;
 const cell = (p: FixedNightLightRaster) => p.grid.window.columns === 1 && p.grid.window.rows === 1;
 
+/** Select the existing numerical LOD without clipping the requested coverage.
+ * Callers must validate their own window budget after any permitted clipping. */
+export function nightLightWindowForLevels(levels: number[], bounds: RasterBounds): DisplayRasterWindow | null {
+  const desired = displayRasterWindowForBounds(bounds);
+  if (!levels.length) return null;
+  if (levels.some(level => !Number.isInteger(level) || level < 0 || level > 12)) throw new Error("nightlight_window_level_invalid");
+  const ordered = [...new Set(levels)].sort((a, b) => a - b);
+  const zoom = ordered.filter(z => z <= desired.zoom).at(-1) ?? ordered[0];
+  const factor = 2 ** (zoom - desired.zoom), x = Math.floor(desired.x * factor), y = Math.floor(desired.y * factor);
+  return { grid: desired.grid, tilePixels: desired.tilePixels, zoom, x, y,
+    columns: Math.ceil((desired.x + desired.columns) * factor) - x,
+    rows: Math.ceil((desired.y + desired.rows) * factor) - y };
+}
+
 /** Select a published numerical LOD, then snap in that existing pyramid.
  * Coarse, continent-wide requests are clipped to published extent rather than
  * allocating a continent-sized image or stretching a small cell over it. */
 export function nightLightWindowForBounds(proofs: FixedNightLightRaster[], bounds: RasterBounds): DisplayRasterWindow | null {
-  const desired = displayRasterWindowForBounds(bounds), cells = proofs.filter(cell);
-  const levels = [...new Set(cells.map(p => p.grid.window.zoom))].sort((a, b) => a - b);
-  if (!levels.length) return null;
-  const zoom = levels.filter(z => z <= desired.zoom).at(-1) ?? levels[0];
-  const available = cells.filter(p => p.grid.window.zoom === zoom);
+  const cells = proofs.filter(cell), desired = nightLightWindowForLevels(cells.map(p => p.grid.window.zoom), bounds);
+  if (!desired) return null;
+  const available = cells.filter(p => p.grid.window.zoom === desired.zoom);
   if (!available.some(p => overlapsNightLight(p.grid.boundsGcj02, bounds))) return null;
-  const factor = 2 ** (zoom - desired.zoom);
-  const x = Math.max(Math.floor(desired.x * factor), Math.min(...available.map(p => p.grid.window.x)));
-  const y = Math.max(Math.floor(desired.y * factor), Math.min(...available.map(p => p.grid.window.y)));
-  const right = Math.min(Math.ceil((desired.x + desired.columns) * factor), Math.max(...available.map(p => p.grid.window.x + 1)));
-  const bottom = Math.min(Math.ceil((desired.y + desired.rows) * factor), Math.max(...available.map(p => p.grid.window.y + 1)));
-  const window = { grid: desired.grid, tilePixels: desired.tilePixels, zoom, x, y, columns: right - x, rows: bottom - y };
+  const x = Math.max(desired.x, Math.min(...available.map(p => p.grid.window.x)));
+  const y = Math.max(desired.y, Math.min(...available.map(p => p.grid.window.y)));
+  const right = Math.min(desired.x + desired.columns, Math.max(...available.map(p => p.grid.window.x + 1)));
+  const bottom = Math.min(desired.y + desired.rows, Math.max(...available.map(p => p.grid.window.y + 1)));
+  const window = { ...desired, x, y, columns: right - x, rows: bottom - y };
   validateNightLightWindow(window);
   return window;
 }
@@ -78,16 +89,17 @@ export function nightLightWindowView(inventorySha256: string, proofs: FixedNight
 
 /** Image-only composition: all statistics and quality remain those of the
  * pinned numerical cells. This is not another published numerical proof. */
-export async function composeNightLightWindow(directory: string, inventorySha256: string,
+export async function composeNightLightWindow(directory: string | ((proof: FixedNightLightRaster) => string), inventorySha256: string,
   proofs: FixedNightLightRaster[], window: DisplayRasterWindow, signal: AbortSignal,
   displayStyle: NightLightDisplayStyle = NIGHT_LIGHT_LEGACY_DISPLAY): Promise<NightLightWindow | null> {
   validateNightLightWindow(window); signal.throwIfAborted();
+  const directoryFor = typeof directory === "string" ? () => directory : directory;
   const selected = windowCells(proofs, window);
   if (!selected.some(p => p !== null)) return null;
   const exact = proofs.find(p => displayRasterWindowKey(p.grid.window) === displayRasterWindowKey(window));
   if (exact) {
-    if (displayStyle === NIGHT_LIGHT_LEGACY_DISPLAY) return { proof: exact, bytes: await readFixedNightLightImage(directory, exact, signal) };
-    const image = await readFixedNightLightImagePixels(directory, exact, signal);
+    if (displayStyle === NIGHT_LIGHT_LEGACY_DISPLAY) return { proof: exact, bytes: await readFixedNightLightImage(directoryFor(exact), exact, signal) };
+    const image = await readFixedNightLightImagePixels(directoryFor(exact), exact, signal);
     return projectNightLightDisplay({ proof: exact, bytes: image.bytes }, inventorySha256, displayStyle, signal, image.pixels);
   }
   const png = new PNG({ width: window.columns * 256, height: window.rows * 256 });
@@ -95,7 +107,7 @@ export async function composeNightLightWindow(directory: string, inventorySha256
     signal.throwIfAborted();
     const proof = selected[index];
     if (!proof) continue;
-    const image = await readFixedNightLightImagePixels(directory, proof, signal); signal.throwIfAborted();
+    const image = await readFixedNightLightImagePixels(directoryFor(proof), proof, signal); signal.throwIfAborted();
     copyFixedRasterPixels(png, image.pixels, index % window.columns, Math.floor(index / window.columns));
   }
   signal.throwIfAborted();

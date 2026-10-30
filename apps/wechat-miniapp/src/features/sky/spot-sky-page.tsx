@@ -708,9 +708,10 @@ function orientationRulerLabel(
   row: SkyTimeRulerRow | undefined,
   timezone: string,
   index: number,
+  formattedTime?: string,
 ) {
   return row
-    ? `${formatTime(row.at, timezone)}，第 ${index + 1} 个真实观测时刻`
+    ? `${formattedTime ?? formatTime(row.at, timezone)}，第 ${index + 1} 个真实观测时刻`
     : `第 ${index + 1} 个真实观测时刻`;
 }
 
@@ -769,6 +770,9 @@ function OrientationTimeRuler({
   interactionAllowed.current = !interactionDisabled;
   const safeActiveIndex = clampIndex(activeIndex, rows.length);
   const safeCommittedIndex = clampIndex(committedIndex, rows.length);
+  // The supplied ticks stay fixed while accepted Play frames advance. Retain
+  // only this window's text; current time, selection and gesture state stay live.
+  const rowTimeLabels = useMemo(() => rows.map(row => formatTime(row.at, timezone)), [rows, timezone]);
   const rowIdentity = rows.map(row => row.at).join("|");
   const [visualIndex, setVisualIndex] = useState(safeActiveIndex);
   const [alignedRows, setAlignedRows] = useState<string | null>(null);
@@ -1097,7 +1101,7 @@ function OrientationTimeRuler({
         aria-valuemin={0}
         aria-valuemax={maxIndex}
         aria-valuenow={previewValue}
-        aria-valuetext={orientationRulerLabel(rows[previewValue], timezone, previewValue)}
+        aria-valuetext={orientationRulerLabel(rows[previewValue], timezone, previewValue, rowTimeLabels[previewValue])}
         onTouchStart={(event) => {
           if (interactionDisabled || (event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) {
             cancelInteraction();
@@ -1147,14 +1151,14 @@ function OrientationTimeRuler({
                 style={{
                   transform: `translateY(${Math.round(distance * distance * 18)}rpx)`,
                 }}
-                ariaLabel={`${orientationRulerLabel(row, timezone, index)}${isSelected ? "，当前已选择" : "，选择此时刻"}`}
+                ariaLabel={`${orientationRulerLabel(row, timezone, index, rowTimeLabels[index])}${isSelected ? "，当前已选择" : "，选择此时刻"}`}
                 disabled={interactionDisabled}
                 onClick={() => selectTick(index)}
               >
                 <View className="sky-orientation-time-ruler__tick-mark" aria-hidden="true" />
                 {(index % 4 === 0 && Math.abs(index - previewValue) >= 4) ? (
                   <Text className="sky-orientation-time-ruler__tick-label">
-                    {formatTime(row.at, timezone)}
+                    {rowTimeLabels[index]}
                   </Text>
                 ) : null}
               </Button>
@@ -1957,14 +1961,16 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       if (attempt.camera?.navigation && (!navigationCurrentRef.current() || !browsingCamera.current(attempt.camera))) return;
       const surface = canvasSurfaceRef.current;
       if (!surface) throw new Error("sky_canvas_surface_unavailable");
-      const selectionCurrent=attempt.selection === objectSelection.snapshot().object;
+      const liveSelection=objectSelection.snapshot();
+      const selectionCurrent=attempt.selection === liveSelection.object;
+      const selectionActive=Boolean(liveSelection.object && frame.data && liveSelection.spotId === frame.data.context.spotId);
       const retired=selectionCurrent?[]:attempt.controlNames.filter(name=>name.action.kind==='selected');
       const excludedNameKeys=retired.map(name=>name.key);
       if(retired.length) {
         attempt.captions=attempt.captions.filter(caption=>!retired.some(name=>name.captions.includes(caption)));
         attempt.controlNames=attempt.controlNames.filter(name=>!excludedNameKeys.includes(name.key));
       }
-      surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions);
+      surface.present(selectionCurrent ? attempt.reticle : null, attempt.captions, selectionActive);
       attempt.publish(excludedNameKeys);
       setCanvasSize(previous => previous.width === size.width && previous.height === size.height ? previous : size);
       if (frame.sceneReady) {
@@ -2112,6 +2118,10 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     });
   const timeModel = carriedReport ? timeCommitContinuity.model() ?? previewGeometry.model : previewGeometry.model;
   const timeGeometrySources = carriedReport ? timeCommitContinuity.sources() : previewGeometry.sources;
+  // A held field keeps its original permission/Context callback. Its current
+  // geometry can change before that same touch repeats in the new window.
+  const timeModelRef = useRef(timeModel);
+  timeModelRef.current = timeModel;
   const preparedTimeSample = previewGeometry.heldSample;
   const presentationAt = preparedTimeSample && timeIntent.editing.length === 1 && timeIntent.editing[0] === "fields" &&
     skyObservationFrameCurrent(timeIntent, preparedTimeSample.at, preparedTimeSample.generation, acceptedMotionPresentation?.row.at)
@@ -2203,12 +2213,6 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   });
   const reportData = useMemo(() => geometryReport ? attachSkyCatalog(geometryReport, stellarCatalog.data?.data) : undefined,
     [geometryReport, stellarCatalog.data?.data]);
-  const positionPresentation = useMemo<SkyPositionPresentation | undefined>(() =>
-    reportData && report.data && !carriedReport
-      ? { source: report.data, rendered: reportData, anchorAt: registrationAt,
-        ...(timePresentation?.mode === "MODEL" && timePresentation.model ? { timeModelAlgorithmVersion: timePresentation.model.algorithmVersion } : {}) }
-      : undefined,
-    [reportData, report.data, carriedReport, registrationAt, timePresentation?.mode, timePresentation?.model?.algorithmVersion]);
   const constellationCatalog = useResourceQuery({
     queryKey: ["constellation-catalog", CONSTELLATION_CATALOG_VERSION], queryFn: getConstellationCatalog,
     enabled: pageVisible && Boolean(stellarReference) && constellationsEnabled, staleTime: Infinity,
@@ -2322,6 +2326,12 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     basis:currentViewBasis,width:canvasSize.width,height:canvasSize.height,verticalFovDeg:presentedFov,center:presentedCenter}:null,
     pageVisible&&Boolean(rawReportData)&&report.data?.dataState!=='EXPIRED'&&report.data?.dataState!=='UNAVAILABLE'&&!report.isError,
     starSunAltitudeDeg,mode);
+  const positionPresentation = useMemo<SkyPositionPresentation | undefined>(() =>
+    reportData && report.data && !carriedReport
+      ? { source: report.data, rendered: reportData, anchorAt: registrationAt, stellarSupplement: stellarSupplement.frame,
+        ...(timePresentation?.mode === "MODEL" && timePresentation.model ? { timeModelAlgorithmVersion: timePresentation.model.algorithmVersion } : {}) }
+      : undefined,
+    [reportData, report.data, carriedReport, registrationAt, stellarSupplement.frame, timePresentation?.mode, timePresentation?.model?.algorithmVersion]);
   const optical=useSkyOpticalHips(geometryReport,row?.at,currentViewBasis?{
     basis:currentViewBasis,verticalFovDeg:presentedFov,center:presentedCenter}:null,
     canvasSize.width,canvasSize.height,canvasNodeRef.current,canvasNodeRevision,
@@ -2803,8 +2813,9 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     cancelSkyCalibration();
     const accepted = acceptedTimePresentationFor(presentedSkyFrameRef.current);
     const elapsedAt = Date.now();
-    observationTime.bind(timeBinding, committedAt, timeModel,
-      { coverage: skyContinuousTimeCoverage(timeModel, accepted?.model ?? null), elapsedAt });
+    const currentModel = timeModelRef.current;
+    observationTime.bind(timeBinding, committedAt, currentModel,
+      { coverage: skyContinuousTimeCoverage(currentModel, accepted?.model ?? null), elapsedAt });
     setTimeIntent(observationTime.preview(at, accepted ? { fromAt: accepted.row.at, elapsedAt, reducedMotion: reducedMotionRef.current } : undefined));
     return true;
   };
@@ -3030,11 +3041,11 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const paintedRow = exactSkyTimeFrame(paintedData?.hourly, paintedAt);
   const paintedPositionPresentation = useMemo<SkyPositionPresentation | undefined>(() =>
     paintedData && report.data && !carriedReport
-      ? { source: report.data, rendered: paintedData, anchorAt: registrationAt,
+      ? { source: report.data, rendered: paintedData, anchorAt: registrationAt, stellarSupplement: presentedSkyFrame?.stellarSupplement ?? null,
         ...(presentedSkyFrame?.timePresentation?.mode === "MODEL" && presentedSkyFrame.timePresentation.model
           ? { timeModelAlgorithmVersion: presentedSkyFrame.timePresentation.model.algorithmVersion } : {}) }
       : undefined,
-    [paintedData, report.data, carriedReport, registrationAt, presentedSkyFrame?.timePresentation]);
+    [paintedData, report.data, carriedReport, registrationAt, presentedSkyFrame?.stellarSupplement, presentedSkyFrame?.timePresentation]);
 
   // DOM projections and their mask share the committed camera/frame. The
   // mutable Canvas hit snapshot can already belong to a later native draw.

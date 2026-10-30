@@ -13,13 +13,13 @@ const baseSources = Object.fromEntries(await Promise.all(baseNames.map(async nam
   await fs.readFile(new URL(name + '.ts', import.meta.url), 'utf8')])));
 
 export async function memoryCheckpointHarness({ extraNames = [], transformAdapter = addR26MemoryOwnerLinks,
-  validate = validateR26MemoryCheckpoint, imports: suppliedImports = {}, generation = 30 } = {}) {
+  validate = validateR26MemoryCheckpoint, imports: suppliedImports = {}, generation = 30, weakRefSupported = true } = {}) {
   const sources = { ...baseSources, ...Object.fromEntries(await Promise.all(extraNames.map(async name => [name,
     await fs.readFile(new URL(name + '.ts', import.meta.url), 'utf8')]))) };
   let elapsed = 0, nextTimer = 0, lookups = 0;
   const timers = new Map(), requests = [], nodes = new Map();
   class Reference { constructor(value) { this.value = value; } deref() { return this.value; } }
-  const context = vm.createContext({ WeakRef: Reference, __R25_BUILD_GENERATION__: generation, __MINIAPP_API_BASE__: 'http://127.0.0.1:8798',
+  const context = vm.createContext({ WeakRef: weakRefSupported ? Reference : undefined, __R25_BUILD_GENERATION__: generation, __MINIAPP_API_BASE__: 'http://127.0.0.1:8798',
     Date: class extends Date { static now() { return 1000000 + elapsed; } },
     setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, { callback, at: elapsed + delay }); return id; },
     clearTimeout(id) { timers.delete(id); } });

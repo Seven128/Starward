@@ -80,7 +80,7 @@ async function retryMap(activeContext: object | null, mapContextFailed: boolean,
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     activeContext: activeContext ? confirmed : null, mapContextFailed, bootstrapReplacementBlocked: false, selected: null,
-    analysisOverlay: "NONE", nativeViewport: { bounds: null },
+    analysisOverlay: "NONE", lightEnabled: false, nativeViewport: { bounds: null },
     navigationEpoch: { current: 0 }, retryObservationScene,
     useAppStore: { getState: () => ({ accountOwnerId: "owner", mapResetVersion: 0 }) },
     failedMapRegion: { current: null }, mapPointIntent: { current: 0 },
@@ -149,7 +149,7 @@ test("Map empty availability and error recovery keep provider diagnostics out of
   assert.equal(sceneFeedback({ pageState: "EMPTY" }), null, "ordinary availability uses its floating message, without a persistent error card");
   const emptyNotice = vm.runInNewContext(notice, {
     pageVisible: true, mapRuntimeError: null, mapContextFailed: false, mapSceneFailed: false,
-    scene: { isPending: false, isFetching: false, data: { warnings: [diagnostic] } }, analysisOverlay: "NORMAL",
+    scene: { isPending: false, isFetching: false, data: { warnings: [diagnostic] } }, analysisOverlay: "NONE", lightEnabled: false, cloudLayerEnabled: false,
     bottomPresentation: "none", pageState: "EMPTY", hasGeographicLayer: false,
   });
   assert.equal(emptyNotice, "当前区域暂无观星点"); assert.equal(emptyNotice.includes(diagnostic), false);

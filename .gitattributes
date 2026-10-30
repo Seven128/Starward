@@ -34,6 +34,8 @@ tools/miniapp/semantic-art.mjs text eol=lf
 .codex/work-items/cloud-sky-native-2026-09-22/tmp/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 .codex/work-items/cloud-sky-native-2026-09-22/sources/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 .codex/work-items/cloud-sky-native-2026-09-22/*HISTORY*.md -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+# Preserve raw Query-retention countercheck/test output byte-for-byte.
+tmp/sky-time-query-retention-20261028/*.log -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 # These existing publication/provenance bytes are part of recorded Sky identities.
 packages/astronomy-core/data/bsc5p-bright-stars.v3.manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 packages/astronomy-core/data/stellarium-modern-v24.4.v3.manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol

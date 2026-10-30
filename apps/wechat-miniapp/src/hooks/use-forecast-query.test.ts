@@ -8,6 +8,7 @@ import type { HourlySkyRow, MapSceneData, ObservationPlan, SkyReport } from "@st
 import { mapCloudForecastPresentation, mapForecastPresentation, skyForecastPresentation } from "../services/forecast-presentation";
 import { planReference } from "../content/plan/detail/plan-reference-model";
 import { cloudTimeFrameChoices, projectedLayerPolygons, projectMapEvaluations } from "../pages/map/map-time-frame";
+import { totalCloudClientFixture } from "../services/total-cloud-test-support";
 
 const boundary = Date.parse("2026-09-20T12:00:00Z");
 const weatherAt = "2026-09-20T11:00:00Z", at = "2026-09-20T11:30:00Z";
@@ -92,6 +93,27 @@ function mountedQuery(sourceData: SkyReport | MapSceneData, map: boolean | "clou
     return result;
   }, dispose() { slots.forEach(slot => slot?.cleanup?.()); } };
 }
+
+test("the existing idle clock expires native header coverage even with no compact cloud row", t => {
+  const cloud = totalCloudClientFixture(), end = Date.parse(cloud.binding.supports240HoursUntil);
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: end - 10 });
+  const original = { ...sky(), hourly: [{ ...hourly(cloud.stamp(124.5), cloud.stamp(124)), cloudEvidence: null, cloudPercent: null }],
+    sources: [cloud.forecast.source], weatherEvidence: { ...sky().weatherEvidence, totalCloud: cloud.forecast } };
+  const host = mountedQuery(original);
+  try {
+    const initial = host.render();
+    assert.equal(initial.data.data.weatherEvidence.totalCloud.state, "FRESH");
+    t.mock.timers.tick(10);
+    assert.equal(host.render().data.data.weatherEvidence.totalCloud.state, "FRESH", "until is inclusive");
+    t.mock.timers.tick(1);
+    const expired = host.render().data.data;
+    assert.equal(expired.weatherEvidence.totalCloud.state, "EXPIRED");
+    assert.equal(expired.weatherEvidence.totalCloud.value, cloud.series);
+    assert.equal(expired.hourly, original.hourly);
+    assert.equal(original.weatherEvidence.totalCloud.state, "FRESH");
+    assert.equal(host.query.data.data, original, "query cache is not rewritten by the presentation clock");
+  } finally { host.dispose(); }
+});
 
 for (const queryOwner of [true, "cloud"] as const) test(`cloud receipt clock and offline expiry remain correct for ${queryOwner === true ? "legacy Scene" : "independent cloud"}`, t => {
   t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: boundary - 1000 });

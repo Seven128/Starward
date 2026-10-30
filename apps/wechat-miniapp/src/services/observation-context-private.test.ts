@@ -5,12 +5,15 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as recovery from "./observation-context-recovery";
 import type { ObservationContext } from "@starward/miniapp-contracts";
+import { TOTAL_CLOUD_POLICY } from "@starward/miniapp-contracts";
 
 const ast = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
 const names = ["resolveObservationContext", "getObservationContext", "restoreObservationContext", "updateObservationContext", "rebuildObservationContext", "replaceRetiredObservationContext"];
 const functions = ast.statements.filter(node => ts.isFunctionDeclaration(node) && names.includes(node.name?.text ?? ""));
 assert.equal(functions.length, names.length);
-const code = ts.transpileModule(functions.map(node => node.getText(ast).replace(/^export /u, "")).join("\n") + `\n({${names.join(",")}});`,
+const adoption = ast.statements.find(node => ts.isVariableStatement(node) &&
+  node.declarationList.declarations.some(declaration => declaration.name.getText(ast) === "legacyCloudAdoption"))!;
+const code = ts.transpileModule(adoption.getText(ast) + "\n" + functions.map(node => node.getText(ast).replace(/^export /u, "")).join("\n") + `\n({${names.join(",")}});`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 class ApiError extends Error { constructor(readonly code: string, readonly statusCode = 409) { super(code); } }
 class Cancelled extends Error {}
@@ -27,7 +30,7 @@ function context(): ObservationContext {
 function load(requestOperation: (...args: any[]) => Promise<any>, state = { user: "user:a", reset: 1 }) {
   const api = vm.runInNewContext(code, { ...recovery, MiniappApiError: ApiError, MiniappRequestCancelled: Cancelled,
     currentDraftUserId: () => state.user, useAppStore: { getState: () => ({ mapResetVersion: state.reset }) },
-    requestOperation, idempotencyKey: () => "context-key", invalidateApiCache: () => {} });
+    requestOperation, TOTAL_CLOUD_POLICY, idempotencyKey: () => "context-key", invalidateApiCache: () => {} });
   return { api, state };
 }
 test("supported private expiry sends only original attempt under the owner and cannot downgrade coordinates", async () => {
@@ -64,4 +67,13 @@ test("an explicit publication conflict permits one requested time edit; an uncer
     else { await assert.rejects(api.updateObservationContext(initial, { selectedAt: at })); assert.equal(writes, 1); }
     assert.equal(reads, 1);
   }
+});
+
+test("all ordinary resolve consumers negotiate the shared total-cloud policy at the one API boundary", async () => {
+  const calls: any[] = [], initial = context();
+  const { api } = load(async (...args) => { calls.push(args); return { dataState: "FRESH", data: initial }; });
+  await api.resolveObservationContext({ location: { kind: "FORMAL_SPOT", spotId: "spot:a" },
+    localDate: initial.localDate, selectedAt: initial.selectedAtUtc });
+  assert.equal(calls[0][2].body.totalCloudPolicy, TOTAL_CLOUD_POLICY);
+  assert.equal(calls[0][2].cache, false);
 });

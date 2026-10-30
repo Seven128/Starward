@@ -10,25 +10,41 @@
 .map-layer-sheet__header { flex: 0 0 auto; min-width: 0; padding: 0 16Px; }
 .map-layer-sheet__heading { display: flex; align-items: center; justify-content: space-between; gap: 12Px; min-height: 46Px; }
 .map-layer-sheet__heading > .type-label { flex: 1; min-width: 0; font-size: 17Px; font-weight: 600; }
-.map-layer-sheet__heading .map-layer-sheet__terrain-choice { width: auto; min-width: 0; margin: 0; padding: 0; border: 0; }
-.map-layer-sheet__heading .map-layer-sheet__terrain-row { display: flex; align-items: center; gap: 7Px; min-width: 0; min-height: 44Px; width: auto; margin: 0; padding: 0; border: 0; background: transparent; }
-.map-layer-sheet__heading .map-layer-sheet__terrain-row > .semantic-icon { width: 21Px; height: 21Px; flex: 0 0 21Px; }
-.map-layer-sheet__heading .map-layer-sheet__choice-copy { flex: 0 0 auto; min-width: 0; }
-.map-layer-sheet__heading .map-layer-sheet__choice-title { font-size: 14Px; font-weight: 400; line-height: 21Px; }
-.map-layer-sheet__heading .map-layer-sheet__choice-copy .type-caption { display: none; }
-.map-layer-sheet__heading .map-layer-sheet__terrain-check { width: 18Px; height: 18Px; flex: 0 0 18Px; margin: 0; }
+.map-layer-sheet .map-layer-sheet__choices--terrain { display: flex; }
+.map-layer-sheet__choice--terrain { flex: 1; width: 100%; }
+.map-layer-sheet__choice--terrain::before { display: none; }
 
 .theme-day.map-page .map-layer-sheet {
-  .map-layer-sheet__heading .map-layer-sheet__choice-title { padding-left: 0; font-size: 14Px; font-weight: 400; line-height: 21Px; }
-  .map-layer-sheet__heading .map-layer-sheet__choice-copy { gap: 0; flex: 0 0 auto; }
-  .map-layer-sheet__heading .map-layer-sheet__terrain-row { min-height: 44Px; padding: 0; gap: 7Px; }
   .map-layer-sheet__content { padding: 0 16Px max(20Px, env(safe-area-inset-bottom)); }
-  .map-layer-sheet__content > .map-layer-sheet__terrain-choice { border: 0; }
   .map-layer-sheet__header .map-layer-sheet__choices { margin: 0 0 8Px; padding: 0; gap: 10Px; }
   .map-layer-sheet__header .map-layer-sheet__choice { height: auto; min-height: 56Px; padding: 8Px 12Px; }
+  .map-layer-sheet__header .map-layer-sheet__choices--terrain { margin-bottom: 10Px; }
+  .map-layer-sheet__header .map-layer-sheet__choice--terrain { min-height: 60Px; gap: 8Px; }
+  .map-layer-sheet__choice--terrain > .semantic-icon:not(.map-layer-sheet__choice-check) {
+    position: static; width: 27Px; height: 27Px; flex: 0 0 27Px;
+  }
+  .map-layer-sheet__choice--terrain .map-layer-sheet__choice-title { padding-left: 0; font-size: 16Px; font-weight: 500; }
+  .map-layer-sheet__choice--terrain .map-layer-sheet__choice-copy .type-caption { font-size: 12Px; color: #74828e; }
+  .map-layer-sheet__choice--terrain.map-layer-sheet__choice--active { border-color: #729da5; background: #f4fafa; }
   .map-layer-sheet__source-note { margin: 0; font-size: 12Px; line-height: 20Px; }
   .map-layer-sheet__legend-heading { display: block; padding-top: 4Px; color: var(--text-secondary); font-size: 12Px; line-height: 20Px; text-align: center; }
   .map-layer-sheet__legend { padding: 4Px 0 0; gap: 12Px; }
   .map-layer-sheet__legend-item .type-caption { font-size: 12Px; line-height: 20Px; }
   .map-layer-sheet__content > .source-attribution--credit { margin: 6Px 0 0; }
+}
+
+// The adopted Map recovery notice is the shared actionable notification in a
+// compact row. Scope this visual delta to Map; other pages retain their profile.
+.map-page .notification--floating.notification--actionable {
+  grid-template-columns: 16Px minmax(0, 1fr) auto 44Px;
+  gap: 8Px; padding: 8Px 8Px 8Px 14Px; border: 0; border-radius: 16Px;
+  .notification__icon, .notification__icon .semantic-icon { width: 16Px; height: 16Px; }
+  .notification__copy { display: block; }
+  .notification__title, .notification__body { display: inline; font-size: 12Px; font-weight: 400; line-height: 18Px; }
+  .notification__action { grid-column: 3; grid-row: 1; font-size: 11Px; font-weight: 400; line-height: 16Px; padding: 0; min-width: 44Px; }
+  .notification__dismiss { grid-column: 4; grid-row: 1; width: 44Px; min-width: 44Px; padding: 0; font-size: 18Px; }
+}
+.theme-day.map-page .notification--floating.notification--actionable {
+  color: #17212b; background: #fff;
+  .notification__title, .notification__body, .notification__action { color: inherit; }
 }

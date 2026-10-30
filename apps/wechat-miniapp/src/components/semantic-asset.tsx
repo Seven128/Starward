@@ -223,7 +223,7 @@ export function SemanticIcon({
     const forecastKind = presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet" || name === "warning" || name === "conditions")
       ? name === "conditions" ? "low-cloud" : name : null;
     // Keep icon-only controls local; these deferred ornaments have text peers.
-    const mainKind = state === "default" && !packageAssetPrefix(router?.path ?? "") && (name === "images" || name === "plan-suv" || name === "clock" || name === "sun" || name === "telescope" || name === "share")
+    const mainKind = state === "default" && !packageAssetPrefix(router?.path ?? "") && (name === "images" || name === "plan-suv" || name === "clock" || name === "sun" || name === "telescope" || name === "share" || name === "place-pin" || name === "cloud" || name === "bulb" || name === "terrain" || name === "moon" || name === "meteor")
       ? name : null;
     const packagedKind = forecastKind ?? mainKind;
     if (packagedKind) {

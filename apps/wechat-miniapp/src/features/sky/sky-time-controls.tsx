@@ -1,9 +1,10 @@
-import { Input, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
 import { SharedButton as Button } from "@/components/shared-button-press";
 import Taro, { useDidHide } from "@tarojs/taro";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { localParts } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { SkyControlledInput } from "./sky-controlled-input";
 import { createSkyTimeRepeat, skyCivilInstant, skyTimeInputAllowed, stepSkyCivilTime, type SkyTimeField } from "./sky-time-input";
 
 type TimeStepRect = { left: number; right: number; top: number; bottom: number };
@@ -124,7 +125,8 @@ export function SkyTimeControls({ at, timezone, active, current, editingCurrent,
           onTouchMove={event => { hold.current.point = event.touches[0] ?? null; moveOutside(); }} onTouchEnd={stopHold} onTouchCancel={stopHold}
           onClick={() => repeat.click(() => { if (!live.current.active || !live.current.current()) return false; onPause(); return step(field, delta); })}>
           <SemanticIcon name={delta > 0 ? "sky-up" : "sky-down"} /></Button>)}
-        <Input className="sky-time-value" ariaLabel={fieldLabels[field]} type="number" maxlength={field === "year" ? 4 : 2}
+        <SkyControlledInput active={active} editingGeneration={editingGeneration}
+          className="sky-time-value" ariaLabel={fieldLabels[field]} type="number" maxlength={field === "year" ? 4 : 2}
           disabled={!active} value={inputText[field] ?? String(parts[field]).padStart(field === "year" ? 4 : 2, "0")}
           onFocus={() => { stopHold(); if (live.current.active && live.current.current()) onPause(); }}
           onInput={event => { if (live.current.active && live.current.current()) { stopHold(); updateInput({ ...inputRef.current, [field]: event.detail.value }); } }}

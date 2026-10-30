@@ -10,9 +10,9 @@ import { StatusPanel } from "./status-panel";
 import { SourceAttribution } from "./source-attribution";
 import { SourceEntry } from "./source-entry";
 import { SemanticIcon } from "./semantic-asset";
-import { createResourceFailureEpisode } from "@/services/resource-failure-episode";
+import { createResourceFailureEpisode, type ResourceFailureEpisode } from "@/services/resource-failure-episode";
 
-export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = false, refreshFailed = false, refreshing = false, reportHandlesFailure = false, onRecover, onRefresh, onContentChange }: {
+export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = false, refreshFailed = false, refreshing = false, reportHandlesFailure = false, onRecover, onRefresh, onContentChange, failureEpisode: retainedFailureEpisode }: {
   evidence: WeatherEvidenceSummary | undefined;
   timezone: string;
   active: boolean;
@@ -29,11 +29,13 @@ export function WeatherAlerts({ evidence, timezone, active, scopeKey, compact = 
   onRefresh?: () => void;
   /** A measured parent can respond to local activation/expiry without polling. */
   onContentChange?: () => void;
+  failureEpisode?: ResourceFailureEpisode | undefined;
 }) {
   const now = useWeatherAlertClock(evidence, active, onRefresh ?? onRecover);
   const view = weatherAlertState(evidence, now, refreshFailed);
   const notify = useAppStore(state => state.notify);
-  const failureEpisode = useMemo(() => createResourceFailureEpisode(), []);
+  const localFailureEpisode = useMemo(() => createResourceFailureEpisode(), []);
+  const failureEpisode = retainedFailureEpisode ?? localFailureEpisode;
   const [expandedWarnings, setExpandedWarnings] = useState<readonly string[]>([]);
   // Reading a source hides this page; returning keeps the same warning reading.
   useEffect(() => setExpandedWarnings([]), [scopeKey]);

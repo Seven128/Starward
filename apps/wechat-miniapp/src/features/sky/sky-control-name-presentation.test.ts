@@ -22,13 +22,15 @@ function setup(selected=false,below=false,failCopy=false) {
     view:{basis,verticalFovDeg:fov,landscape:below?PROCEDURAL_SKY_LANDSCAPE:null}};
   const position={data:{...context,reference:object.reference,at,position:{...catalog,azimuthDeg:0,altitudeDeg:below?-30:45}},catalog,report:data};
   let selection=selected?object:null,accepted:any=null;
-  const copies:{reticle:any;captions:any[]}[]=[],owner=createSkyNameLayouts();
+  const positionRef={current:selected?position:null};
+  const copies:{reticle:any;captions:any[];selectionActive:boolean}[]=[],owner=createSkyNameLayouts();
   const paint=skyPagePaintCommit(source,{basis,zoomRef:{current:fov},reducedMotionRef:{current:true},nameLayouts:owner,
-    objectSelection:{snapshot:()=>({object:selection,spotId:context.spotId})},skySelectionPositionRef:{current:selected?position:null},
+    objectSelection:{snapshot:()=>({object:selection,spotId:context.spotId})},skySelectionPositionRef:positionRef,
     frame:{data,frameAt:at,mode:'NIGHT',sceneReady:true,constellations:null,constellationsEnabled:false},
-    canvasSurfaceRef:{current:{present(reticle:any,captions:any[]){if(failCopy)throw Error('controlled-copy-failure');copies.push({reticle,captions});}}},
+    canvasSurfaceRef:{current:{present(reticle:any,captions:any[],selectionActive:boolean){if(failCopy)throw Error('controlled-copy-failure');copies.push({reticle,captions,selectionActive});}}},
     setPresentedCamera(){},setPresentedSkyFrame(update:(previous:any)=>any){accepted=update(accepted);}});
-  return {paint,snapshot,data,owner,copies,get accepted(){return accepted;},clearSelection(){selection=null;}};
+  return {paint,snapshot,data,owner,copies,get accepted(){return accepted;},clearSelection(){selection=null;},
+    pendingPosition(){positionRef.current=null;},restorePosition(){positionRef.current=position;}};
 }
 
 test('actual page copies complete guide text/metadata before publishing its independent current-frame action',()=>{
@@ -53,5 +55,16 @@ test('failed copy and a replaced selection never publish unpainted selected text
   assert.throws(()=>failed.paint.complete(),/controlled-copy-failure/);assert.equal(failed.accepted,null);
   const stale=setup(true);stale.paint.stage(stale.snapshot,{});stale.clearSelection();stale.paint.complete();
   assert.equal(stale.copies[0]!.reticle,null);assert.equal(stale.copies[0]!.captions.length,0);
+  assert.equal(stale.copies[0]!.selectionActive,false,'publication uses the current selection, not the staged one');
   assert.equal(stale.accepted.controlNames.length,0);
+});
+
+test('actual page preserves live selection ownership while its exact-time position is pending',()=>{
+  const run=setup(true);run.pendingPosition();run.paint(run.snapshot,{});
+  assert.equal(run.copies[0]!.reticle,null);
+  assert.equal(run.copies[0]!.captions.length,0,'pending position cannot publish an old selected name');
+  assert.equal(run.copies[0]!.selectionActive,true,'missing coordinates do not retire the selected object');
+  run.restorePosition();run.paint(run.snapshot,{});
+  assert(run.copies[1]!.reticle);
+  assert.equal(run.copies[1]!.selectionActive,true);
 });

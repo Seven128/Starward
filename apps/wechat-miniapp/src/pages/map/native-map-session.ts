@@ -12,6 +12,8 @@ export interface NativeMapSession {
   mapId: string;
   isCurrent(): boolean;
   canInstallRasters(): boolean;
+  /** Keep a fault predecessor's native node available for real late removals. */
+  retiringMapIds(): string[];
   registerRaster(owner: NativeMapRasterOwner): () => void;
   retire(): void;
   recover(): NativeMapSession | null;
@@ -59,6 +61,8 @@ export function createNativeMapSessions() {
       mapId: state.mapId,
       isCurrent: () => state.active,
       canInstallRasters,
+      retiringMapIds: () => state.active && state.predecessor && retired.has(state.predecessor)
+        ? [state.predecessor.mapId] : [],
       registerRaster(owner: NativeMapRasterOwner) {
         state.resources.add(owner);
         void owner.retired.then(() => {

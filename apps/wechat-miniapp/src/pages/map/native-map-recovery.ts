@@ -20,6 +20,9 @@ export function useNativeMapRecovery() {
   }, []);
   return {
     mapId: state.session.mapId,
+    // Retiring nodes stay keyed in the same host until their actual native
+    // removals settle. The new node can recover without awaiting that debt.
+    mapIds: [...state.session.retiringMapIds(), state.session.mapId],
     generation: state.generation,
     error: state.status === "error",
     pending: state.status === "pending",

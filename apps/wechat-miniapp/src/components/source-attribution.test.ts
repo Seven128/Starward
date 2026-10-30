@@ -115,3 +115,14 @@ test("the compact source entry keeps every required credit while detailed readin
   await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(h.copied(), "https://www.qweather.com/");
 });
+
+test("an explicit credit-only disclosure split preserves the declared name and complete reading notices", () => {
+  const h = harness(), current = source(), original = structuredClone(current);
+  const credit = h.render({ sources: [current], presentation: "credit", statementsInReading: true });
+  assert.equal(renderedText(credit), current.attribution!.name, "the name stays exact; no truncation or inferred alias");
+  assert.deepEqual(current, original, "presentation cannot edit the source record");
+  for (const presentation of ["default", "disclosure"]) {
+    const reading = h.render({ sources: [current], presentation, statementsInReading: true });
+    assert.ok(renderedText(reading).includes(notice), "deferral never suppresses the detailed reader or ordinary consumers");
+  }
+});

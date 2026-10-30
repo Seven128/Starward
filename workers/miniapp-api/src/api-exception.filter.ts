@@ -12,6 +12,10 @@ export function classifyExceptionMessage(message: string) {
     return { status: 400, code: "INVALID_INPUT", retryable: false, message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION", recovery: ["CHOOSE_SUPPORTED_LOCATION"] } as const;
   if (message === "observation_timezone_resolution_ambiguous")
     return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
+  if (/^observation_cloud_(?:policy_invalid|binding_invalid|refresh_invalid|refresh_requires_policy)$/u.test(message))
+    return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
+  if (message === "cloud_publication_read_queue_full")
+    return { status: 429, code: "BUDGET_EXCEEDED", retryable: true } as const;
   if (/^(?:plan_(?:end_must_follow_start|departure_must_precede_start|timing_invalid)|observation_local_(?:date_invalid|time_invalid|time_nonexistent_or_ambiguous))$/u.test(message))
     return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
   if (/^event_article_(?:source_unavailable|dns_unavailable|timeout)$/u.test(message)) return { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true } as const;

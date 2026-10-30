@@ -118,6 +118,39 @@ test('queued pan cannot dispatch after a newer formal selection', async () => {
     assert.deepEqual(m.viewport, afterSelection, 'queued pan cannot move the selected camera');
     assert.equal(m.selected, 'spot:new');
 });
+
+test('a native gesture ended after a newer selection cannot replace its camera or Context work', async () => {
+    const m = runtime();
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    const selected = m.openDetail(newSpot);
+    const selectedCamera = structuredClone(m.viewport);
+    m.onRegionChange({ ...drag, detail: { centerLocation: center, scale: 8 } });
+    assert.deepEqual(m.viewport, selectedCamera, 'the retired native gesture cannot zoom the selected point back out');
+    assert.equal(m.attempt.pending, true, 'the current selection keeps its Context request');
+    m.fire();
+    assert.equal(m.requests.length, 1, 'a late end cannot dispatch old map conditions');
+    m.requests[0].resolve({ data: { location: { kind: 'FORMAL_SPOT' }, contextId: 'new' } });
+    await selected;
+    assert.equal(m.selected, 'spot:new');
+    assert.equal(m.context.contextId, 'new');
+});
+
+test('a fresh gesture after selection still takes over even when an earlier gesture has no end', async () => {
+    const m = runtime();
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    const selected = m.openDetail(newSpot);
+    m.requests[0].resolve({ data: { location: { kind: 'FORMAL_SPOT' }, contextId: 'new' } });
+    await selected;
+    m.onRegionChange({ type: 'begin', causedBy: 'gesture', detail: {} });
+    const latest = { latitude: 24, longitude: 116 };
+    m.onRegionChange({ type: 'end', causedBy: 'scale', detail: { centerLocation: latest, scale: 17.25 } });
+    assert.deepEqual(m.viewport.center, latest);
+    assert.equal(m.viewport.zoom, 17.25);
+    m.fire();
+    assert.equal(m.requests.length, 2);
+    m.requests[1].resolve({ data: { contextId: 'fresh-gesture' } }); await settle();
+    assert.equal(m.context.contextId, 'fresh-gesture');
+});
 test('already dispatched old pan cannot overwrite a newer formal selection or publish its late error', async () => {
     for (const fail of [false, true]) {
         const m = runtime();

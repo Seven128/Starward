@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
@@ -19,6 +19,61 @@ test("the actual contract entry remains forwarding-only; initialization cannot a
   for (const code of ["import './setup'; export * from './value';", "globalThis.registered = true; export * from './value';",
     "export const value = register();", "export * from './value' with { type: 'json' };", "export * from '"])
     assert.throws(() => assertContractReexports(code, "index.ts"), /miniapp_contract_entry_requires_pure_reexports/u);
+});
+
+test("only the selected contract entry can recursively audit its coordinate workspace", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "starward-contract-workspace-"));
+  try {
+    const config = path.join(root, "apps/wechat-miniapp/config");
+    const contracts = path.join(root, "packages/miniapp-contracts/src");
+    const coordinates = path.join(root, "packages/coordinate-system/src");
+    const unrelated = path.join(root, "unrelated");
+    for (const directory of [config, contracts, coordinates, unrelated]) await mkdir(directory, { recursive: true });
+    const source = await readFile(new URL("../../apps/wechat-miniapp/config/contracts-reexports.cjs", import.meta.url), "utf8");
+    // Evaluate the actual guard in an isolated repository layout. TypeScript
+    // stays the installed dependency; no production source is mutated and no
+    // test-only path override is added to the guard's public API.
+    const module = { exports: {} };
+    vm.runInNewContext(source, { require, module, __dirname: config }, { filename: path.join(config, "contracts-reexports.cjs"), timeout: 1000 });
+    const audit = module.exports.assertContractInitialization;
+    const entry = path.join(contracts, "index.ts"), cloud = path.join(contracts, "cloud.ts");
+    const raster = path.join(coordinates, "raster-grid.ts");
+    const reference = "import { grid } from '@starward/coordinate-system'; export const value = grid;\n";
+    await writeFile(entry, "export * from './cloud.ts';\n");
+    await writeFile(cloud, reference);
+    await writeFile(path.join(coordinates, "index.ts"), "export { grid } from './raster-grid.ts';\n");
+    await writeFile(raster, "export const grid = 'native-grid';\n");
+    assert.doesNotThrow(() => audit(entry));
+    if (process.platform === "win32") assert.doesNotThrow(() => audit(entry.toUpperCase()));
+
+    for (const code of [
+      "globalThis.registered = true; export const grid = 'native-grid';\n",
+      "export const grid = register();\n",
+      "import { readFileSync } from 'node:fs'; export const grid = 'native-grid';\n",
+      "import { value } from 'unknown-package'; export const grid = value;\n",
+      "import { value } from '@noble/hashes/sha2.js'; export const grid = value;\n",
+      "import '../../miniapp-contracts/src/cloud.ts'; export const grid = 'native-grid';\n",
+      "const FILTER_OPTIONS = { map: () => { globalThis.registered = true; return 'native-grid'; } }; export const grid = FILTER_OPTIONS.map(() => 1);\n",
+    ]) {
+      await writeFile(raster, code);
+      assert.throws(() => audit(entry), /miniapp_contract_initialization_requires_review/u);
+    }
+    await writeFile(raster, "export const grid = 'native-grid';\n");
+    assert.doesNotThrow(() => audit(entry));
+    assert.throws(() => audit(cloud), /miniapp_contract_initialization_requires_review/u);
+    const other = path.join(unrelated, "index.ts");
+    await writeFile(other, reference);
+    assert.throws(() => audit(other), /miniapp_contract_initialization_requires_review/u);
+    for (const specifier of ["@starward/coordinate-system/unsafe", "unknown-coordinate-system"]) {
+      await writeFile(cloud, reference.replace("@starward/coordinate-system", specifier));
+      assert.throws(() => audit(entry), /miniapp_contract_initialization_requires_review/u);
+    }
+  } finally {
+    const resolved = path.resolve(root), temporary = path.resolve(os.tmpdir());
+    if (path.dirname(resolved) !== temporary || !path.basename(resolved).startsWith("starward-contract-workspace-"))
+      throw Error("contract_workspace_fixture_cleanup_scope_invalid");
+    await rm(resolved, { recursive: true, force: true });
+  }
 });
 
 async function compile(root, hint) {

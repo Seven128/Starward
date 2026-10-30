@@ -1,11 +1,15 @@
 import { zonedLocalToUtc, type ObservationPlan, type SkyReport } from "@starward/miniapp-contracts";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../../../utils/zoned-date";
+import { currentTotalCloudEvidence } from "../../../services/forecast-presentation";
+import { totalCloudCoverage } from "../../../components/weather-source-presentation";
+import type { ForecastInterval } from "../../../components/forecast-coverage";
 
-export function planReference(plan: ObservationPlan, report: SkyReport | null) {
+export function planReference(plan: ObservationPlan, report: SkyReport | null, now = Date.now()) {
   const timezone = plan.contextSnapshot.timezone;
   const empty = { nightRange: null as string | null, dusk: "暂无数据", dawn: "暂无数据",
     moonrise: "暂无数据", moonset: "暂无数据", illumination: "暂无数据",
-    cloud: "暂无数据", wind: "暂无数据", temperature: "暂无数据", weatherStarts: [] as string[] };
+    cloud: "暂无数据", wind: "暂无数据", temperature: "暂无数据", weatherStarts: [] as string[],
+    cloudIntervals: undefined as ForecastInterval[] | undefined, hasCloud: false };
   const start = Date.parse(plan.contextSnapshot.selectedAtUtc);
   let end: number;
   try {
@@ -34,14 +38,19 @@ export function planReference(plan: ObservationPlan, report: SkyReport | null) {
     const time = Date.parse(at ?? "");
     return nightValid && time >= nightStart && time < nightEnd ? stamp(time) : "暂无数据";
   };
+  const clouds = rows.map(row => row.cloudEvidence === undefined
+    ? weatherRows.includes(row) ? row.cloudPercent : null
+    : currentTotalCloudEvidence(row.cloudEvidence, row.at, now)?.cloudPercent ?? null);
   return {
     nightRange: nightValid ? `${stamp(nightStart)}–${stamp(nightEnd)}` : null,
     dusk: event(report.nightFacts?.astronomicalDuskAt), dawn: event(report.nightFacts?.astronomicalDawnAt),
     moonrise: event(report.lunarFacts.moonriseAt), moonset: event(report.lunarFacts.moonsetAt),
     illumination: range(rows.map(row => row.moonIllumination === null ? null : row.moonIllumination * 100), "%", 0, 100),
-    cloud: range(weatherRows.map(row => row.cloudPercent), "%", 0, 100),
+    cloud: range(clouds, "%", 0, 100),
     wind: range(weatherRows.map(row => row.windKph), " km/h", 0),
     temperature: range(weatherRows.map(row => row.temperatureC), "°C"),
     weatherStarts: [...new Set(weatherRows.map(row => row.weatherAt!))],
+    cloudIntervals: totalCloudCoverage(report, now, { start: new Date(start).toISOString(), end: new Date(end).toISOString() }),
+    hasCloud: clouds.some(value => value !== null && Number.isFinite(value) && value >= 0 && value <= 100),
   };
 }

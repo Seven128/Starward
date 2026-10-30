@@ -1,0 +1,481 @@
+{
+  "scope": "TASK_ONLY_D2_CURRENT_GPU_RESOURCE_RECEIPT_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_D2_GPU_RESOURCES_UNACTIVATED_PHONE_UNVERIFIED",
+  "preparedAt": "2026-10-28T21:30:50.089Z",
+  "mode": "normal",
+  "variant": "baseline",
+  "buildGeneration": 36,
+  "probeVersion": "d2-gpu-resources-v1",
+  "selection": "UNACTIVATED_PREPARATION",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/manifest.json",
+  "sourceManifestSha256": "1750df887732900d3deef713622705c2d06b42878c625e400a5677ac8e1a6378",
+  "sourceDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/source",
+  "sourceFiles": 1684,
+  "sourceSnapshotSha256": "5258ef5696fab4d7949e5f06abb2fcb6e8e2c00c812fa5a8edd4aef01cbcfa2c",
+  "buildSourceSha256": "5b32a7b94545ae13b4e66456f7c83688233027962aa68621b85317efccdebe03",
+  "bindingInput": {
+    "meaning": "pre-build-current-production-source-and-task-template-binding-not-bundle-bytes",
+    "mode": "normal",
+    "variant": "baseline",
+    "buildGeneration": 36,
+    "probeVersion": "d2-gpu-resources-v1",
+    "productionHead": "1fd25800fb624d39fd98248f1aa3ac1da33c7de2",
+    "productionSourceSha256": "8bc4fbe23abcd41452e38c6874ef146b2b90009899b91e706dac0ae245ae328e",
+    "builderSha256": "1a74257caef23ae12047981a09b4fa863ef93a71ef5f0334bfd9139769468cb3",
+    "templateBindings": {
+      "d2-decode-observation.ts": "babad34264cc22acf682b74ab08ee851f0c216cad2c4693e83ab4905134bc1ae",
+      "d2-decode-checkpoint-instrumentation.mjs": "16165b14bba2487f9bace3397c0a91c04bc984f3ac144344e92bddba1844ef70",
+      "d2-decode-checkpoint-protocol.mjs": "bb41392e59005a554d68408f98be23c7ede63e200cdf40e769bf8bd6ecdfbb60",
+      "d2-decode-checkpoint.test.mjs": "8d69ecb73dbaf17cbaffc62763093e12d8788ffb83426f4521f0a3667f9ca366",
+      "d2-current-preparation.test.mjs": "d1cdff9f20de4fb355e9ff58ff45830e54aa5bdd2c8387aff1d66512c1f915a7",
+      "d2-normal-lifecycle-controls.tsx": "34afe58d2ef2b426228a2079618dbbcd80d921f66e396e67fab2048c2deb8234",
+      "d2-normal-lifecycle.ts": "349667843521dc73624be32780316ecc22858974190cd43de10cf2edab38da59",
+      "d2-normal-lifecycle-instrumentation.mjs": "6551bc7764f001dae2901da00323df341a6210434cdc119b8a50f58b7909f390",
+      "d2-normal-lifecycle.test.mjs": "c03945a0bd947ac017ad4f130c19e35a4989fff049a3e98fd215d1fc947c666c",
+      "r17-normal-observations.ts": "1dc45a4dd69986f692080d000c2567659ec6f96d62322087defd6598a4ee8508",
+      "r25-memory-lifetime-observer.ts": "e35941df1f6da14e34ebb3bb2e4492ce52bc1c344a265792c0cadc65913bd35b",
+      "r25-memory-lifetime-adapter.ts": "75550f7117a124180c29023527c95c4b1578f86d56eab3c2df692f430fd78f2a",
+      "r17-ruler-entry-runtime.ts": "18a24ab8f02359b5a94bfc4e620b597e2adc32eee25606e53c722d6e1537e5f5",
+      "r25-stellar-owner-observer.ts": "eb4a16eab35c68689d8fb254e1d7a762e19ff71979908d12fd358fea2c4048ba",
+      "r25-memory-lifetime-protocol.mjs": "c040da6754a5d52035bf4123bcba05ba1cb689a06c54b4d9f32a47f8d3350de1",
+      "r25-memory-checkpoint-protocol.mjs": "309182c2b5e177a2427ceb12896e11846277fc9f9a5055853f2d0f3f158816cf",
+      "r17-phone-probe-collector.mjs": "c59df6e27f9b100d319ec8b3065af9ca1c935a13d0e3fa81d9ae748090227649",
+      "r26-memory-checkpoint-protocol.mjs": "031e7662ebc655c88129dc3f6d9952169cc9a24aeba39e700dd588d5f5d4c5ec",
+      "r27-memory-checkpoint-protocol.mjs": "a8107cebbdc388d27ed009942b6396ee667fdfd6d89ffc8f9bf5fc813795344e",
+      "r17-normal-input-protocol.mjs": "5ea1a8b36eeaa5addd68e30c659ce63a42d1dff832a3b8cf18cfb29f83520527",
+      "r17-ruler-entry-protocol.mjs": "9566ef6d60c3e50ab80307a35fae3350d6a893e4123649503dfa39b9dbc0102d",
+      "r17-a-correlation-protocol.mjs": "9377749d481e5948e8d205696b39f361453eca472678646736a0143b10d0f57d",
+      "r17-phone-probe-v3-protocol.mjs": "4f0bd78b8930be8e2df2561abd450b3ccb98fb3e09db881a1481abc7862754f6",
+      "r17-phone-probe-v2-protocol.mjs": "85339f39c2c5af90a0698f7fa62da03c7a3066117ba7e455472b7fa7255fd9c7",
+      "r17-phone-probe-protocol.mjs": "25197647f2fd71d778e70eba8588d2a78482a62fb29882e1743872a78086b708",
+      "r28-first-accepted-protocol.mjs": "07b5ec0a628432775d66ad1ac930541d0db4c8208675b11740a7e2a2679cb52e",
+      "memory-checkpoint-test-support.mjs": "977cb70d46e6a0a4a6682fa49c24f736b1a0ce09b506df7e93ff2d2d38c81883",
+      "d2-gpu-resource-instrumentation.mjs": "89d130da8e4d5c7e906342a864eb7a5921379bf9d5d4c50800c75b484eaef55c",
+      "d2-gpu-resource-instrumentation.test.mjs": "9731873c660befca292ef26abfbcd6a3fcb6cef3bdad0d5b6814dbecd95f7510",
+      "d2-gpu-resource-receipt.ts": "0250da51a37e07ce7b40e0cfcea75bfdf7381383ee4b01e6c0b27bd4f586a461",
+      "d2-gpu-lifecycle-instrumentation.mjs": "1bdcd4eb9ae20d991277cadf8106166761f98de42d47ba74e3b590cd7151605e",
+      "d2-gpu-lifecycle.test.mjs": "108c2864fad6461e10ccd3736bdb2fe1c22282d82de9f0bacd38ea806bfa94b4"
+    },
+    "bridgePort": 8798,
+    "transport": "lan",
+    "compiledBridgeOriginSha256": "a6dffb9858c0ce609041e5ef072c57512b2d17f079c411e2674f28b5ffe8b72d",
+    "uiSource": "current-production-source",
+    "d2Decode": "module-load-logical-claims-checkpoint-v2-no-r26-r27-or-map-observers",
+    "d2GpuResources": "owner-scalars-fixed-phases-surface-retirement-v2"
+  },
+  "sourceDeltas": [
+    {
+      "file": "apps/wechat-miniapp/config/index.ts",
+      "productionSha256": "08e41edec3274b9a55b06c7290b912897e68aa439b28fa720f8c3002a7663a3c",
+      "diagnosticSha256": "15bf03add83d6d1563a5131728ce61cc63099064ed6feab95b7e1b0081503df4"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-artwork-request.ts",
+      "productionSha256": "926b89053918ec8cd4eb68d9b76695c6f8dca48a9fa797cd7faba6dacc1fea9c",
+      "diagnosticSha256": "90ae76149d124058949e768e1e221c4378b685016d3970d51e2c0d0ba06f05dd"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "productionSha256": "32a37fb4cf3c73f055edc04ac4ab1467617d9fe6f092d6c0083675309bc60c4f",
+      "diagnosticSha256": "64913833e6f2e8984690e1836ee63f237f8486b3b4a3a18336011f88e60f83d3"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+      "productionSha256": "c8b9c61ea179e1a79c969d39ac5217752a1cb6b797efcdcd5565594dfa8089cf",
+      "diagnosticSha256": "b110e2d54c108f83f7ab42254dd42a0a53452f22bb8d54a1e722aa624a7fce6e"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "productionSha256": "242f468541b48e324ab52d3cd190eaa716f1550c10cc6a97fc32c465c9d94854",
+      "diagnosticSha256": "dbcdc598e9b805d791adef013679a1c7035e7518964cac67b34a59e43d506d3f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "productionSha256": "3beceb05f72b15a39929166e203b003382e0c9e04e317803ca522173eb68529e",
+      "diagnosticSha256": "4ac2a6d9b841d8163ec6056babf876cf571fecf22d045fe3b125a7ca92042f1f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "productionSha256": "8a6dd317316cc22f254b062ae1cb1961af15242f35b9b2c26c0b837726cef624",
+      "diagnosticSha256": "e7f8d020296fe76bc753f523261b160ee0984eb100fd2d8aefb03eb768bd00df"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "productionSha256": "83f716c268ad2e9d00d9bbff80b64ec264a2f61b0f86cb1ccae190453ccc5f5a",
+      "diagnosticSha256": "7a632a46b4f74be1791a21092cd62f2a31c261c2568e0f47a99ed9271ecca864"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-normal-observations.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "e59542b7b2461dda36ea466fcb3fedfee6b2291c782adf9c14155423111f89f6"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r25-memory-lifetime-adapter.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "247173e9dcdf407d5311953900b0843dbf61ad6aa281b77ed899ed5ef294cf9e"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/d2-normal-lifecycle-controls.tsx",
+      "productionSha256": null,
+      "diagnosticSha256": "ef7d4cea28370beef7404efb9b526c5fe5059b0dd5b1f206868570a1978663db"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/d2-decode-observation.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "babad34264cc22acf682b74ab08ee851f0c216cad2c4693e83ab4905134bc1ae"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/d2-normal-lifecycle.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "8cf98f00d6f68ff109db891c03f13b3db09730aa7e53752e0fbcd2998baac37e"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r25-memory-lifetime-observer.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "4dee6ac9653dcbbd8031818648b9b5d26227d68814f11498ba333d27598c720e"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r25-stellar-owner-observer.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "cd40b974de1440d96feed11fb088c431c6e98e53c566e3d165b3989d74c028b9"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-ruler-entry-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "887fa78a1be7aee59f647439e4c6557b3b13e69c0bbdcce20964c25d122d3972"
+    }
+  ],
+  "templateBindings": {
+    "d2-decode-observation.ts": "babad34264cc22acf682b74ab08ee851f0c216cad2c4693e83ab4905134bc1ae",
+    "d2-decode-checkpoint-instrumentation.mjs": "16165b14bba2487f9bace3397c0a91c04bc984f3ac144344e92bddba1844ef70",
+    "d2-decode-checkpoint-protocol.mjs": "bb41392e59005a554d68408f98be23c7ede63e200cdf40e769bf8bd6ecdfbb60",
+    "d2-decode-checkpoint.test.mjs": "8d69ecb73dbaf17cbaffc62763093e12d8788ffb83426f4521f0a3667f9ca366",
+    "d2-current-preparation.test.mjs": "d1cdff9f20de4fb355e9ff58ff45830e54aa5bdd2c8387aff1d66512c1f915a7",
+    "d2-normal-lifecycle-controls.tsx": "34afe58d2ef2b426228a2079618dbbcd80d921f66e396e67fab2048c2deb8234",
+    "d2-normal-lifecycle.ts": "349667843521dc73624be32780316ecc22858974190cd43de10cf2edab38da59",
+    "d2-normal-lifecycle-instrumentation.mjs": "6551bc7764f001dae2901da00323df341a6210434cdc119b8a50f58b7909f390",
+    "d2-normal-lifecycle.test.mjs": "c03945a0bd947ac017ad4f130c19e35a4989fff049a3e98fd215d1fc947c666c",
+    "r17-normal-observations.ts": "1dc45a4dd69986f692080d000c2567659ec6f96d62322087defd6598a4ee8508",
+    "r25-memory-lifetime-observer.ts": "e35941df1f6da14e34ebb3bb2e4492ce52bc1c344a265792c0cadc65913bd35b",
+    "r25-memory-lifetime-adapter.ts": "75550f7117a124180c29023527c95c4b1578f86d56eab3c2df692f430fd78f2a",
+    "r17-ruler-entry-runtime.ts": "18a24ab8f02359b5a94bfc4e620b597e2adc32eee25606e53c722d6e1537e5f5",
+    "r25-stellar-owner-observer.ts": "eb4a16eab35c68689d8fb254e1d7a762e19ff71979908d12fd358fea2c4048ba",
+    "r25-memory-lifetime-protocol.mjs": "c040da6754a5d52035bf4123bcba05ba1cb689a06c54b4d9f32a47f8d3350de1",
+    "r25-memory-checkpoint-protocol.mjs": "309182c2b5e177a2427ceb12896e11846277fc9f9a5055853f2d0f3f158816cf",
+    "r17-phone-probe-collector.mjs": "c59df6e27f9b100d319ec8b3065af9ca1c935a13d0e3fa81d9ae748090227649",
+    "r26-memory-checkpoint-protocol.mjs": "031e7662ebc655c88129dc3f6d9952169cc9a24aeba39e700dd588d5f5d4c5ec",
+    "r27-memory-checkpoint-protocol.mjs": "a8107cebbdc388d27ed009942b6396ee667fdfd6d89ffc8f9bf5fc813795344e",
+    "r17-normal-input-protocol.mjs": "5ea1a8b36eeaa5addd68e30c659ce63a42d1dff832a3b8cf18cfb29f83520527",
+    "r17-ruler-entry-protocol.mjs": "9566ef6d60c3e50ab80307a35fae3350d6a893e4123649503dfa39b9dbc0102d",
+    "r17-a-correlation-protocol.mjs": "9377749d481e5948e8d205696b39f361453eca472678646736a0143b10d0f57d",
+    "r17-phone-probe-v3-protocol.mjs": "4f0bd78b8930be8e2df2561abd450b3ccb98fb3e09db881a1481abc7862754f6",
+    "r17-phone-probe-v2-protocol.mjs": "85339f39c2c5af90a0698f7fa62da03c7a3066117ba7e455472b7fa7255fd9c7",
+    "r17-phone-probe-protocol.mjs": "25197647f2fd71d778e70eba8588d2a78482a62fb29882e1743872a78086b708",
+    "r28-first-accepted-protocol.mjs": "07b5ec0a628432775d66ad1ac930541d0db4c8208675b11740a7e2a2679cb52e",
+    "memory-checkpoint-test-support.mjs": "977cb70d46e6a0a4a6682fa49c24f736b1a0ce09b506df7e93ff2d2d38c81883",
+    "d2-gpu-resource-instrumentation.mjs": "89d130da8e4d5c7e906342a864eb7a5921379bf9d5d4c50800c75b484eaef55c",
+    "d2-gpu-resource-instrumentation.test.mjs": "9731873c660befca292ef26abfbcd6a3fcb6cef3bdad0d5b6814dbecd95f7510",
+    "d2-gpu-resource-receipt.ts": "0250da51a37e07ce7b40e0cfcea75bfdf7381383ee4b01e6c0b27bd4f586a461",
+    "d2-gpu-lifecycle-instrumentation.mjs": "1bdcd4eb9ae20d991277cadf8106166761f98de42d47ba74e3b590cd7151605e",
+    "d2-gpu-lifecycle.test.mjs": "108c2864fad6461e10ccd3736bdb2fe1c22282d82de9f0bacd38ea806bfa94b4"
+  },
+  "productionSourceReadback": {
+    "files": 1676,
+    "bindingsSha256": "8bc4fbe23abcd41452e38c6874ef146b2b90009899b91e706dac0ae245ae328e",
+    "unchanged": true
+  },
+  "completeSourceBuildNotGeneratedPatch": true,
+  "currentSourceReadback": true,
+  "bothBundleCopiesReadback": {
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/source/apps/wechat-miniapp/dist/weapp-check-d2-gpu-resources-20261029": "5140b813e1a4aee37cd1f36c8eb1c7887034e7c7991b81d620bfba181f117116",
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/project/weapp": "5140b813e1a4aee37cd1f36c8eb1c7887034e7c7991b81d620bfba181f117116"
+  },
+  "checks": {
+    "scope": "GPU_RESOURCE_SOURCE_BINDINGS_READ_BACK",
+    "sourceBindingsReadBack": true,
+    "fullTimeSceneCostMetrics": "NOT_INSTRUMENTED",
+    "targetRuntime": "UNVERIFIED"
+  },
+  "deltaTypecheck": {
+    "productionDiagnostics": 0,
+    "currentDiagnostics": 0,
+    "addedDiagnostics": [],
+    "noAddedDiagnostics": true,
+    "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/source/apps/wechat-miniapp/dist/weapp-check-d2-gpu-resources-20261029",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/project",
+    "bundleSha256": "5140b813e1a4aee37cd1f36c8eb1c7887034e7c7991b81d620bfba181f117116",
+    "fileCount": 341,
+    "totalBytes": 5239262,
+    "packages": {
+      "main": {
+        "bytes": 1992992,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1125931,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 701454,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1418885,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 104160,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    },
+    "compiledBridgeOriginSha256": "a6dffb9858c0ce609041e5ef072c57512b2d17f079c411e2674f28b5ffe8b72d",
+    "inheritedOriginSha256": "a6dffb9858c0ce609041e5ef072c57512b2d17f079c411e2674f28b5ffe8b72d",
+    "bridgePort": 8798,
+    "originReadback": {
+      "originSha256": "a6dffb9858c0ce609041e5ef072c57512b2d17f079c411e2674f28b5ffe8b72d",
+      "bridgePort": 8798,
+      "literalUses": 7,
+      "filesWithOrigin": 4,
+      "otherOrigins": 0
+    },
+    "sourceMaps": {
+      "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-gpu-resources-20261029/source-maps",
+      "count": 30,
+      "bytes": 7772299,
+      "records": [
+        {
+          "file": "app.js.map",
+          "bytes": 248301,
+          "sha256": "ced91a8fba2e1fbeca8940cd1acffe1c001fd06ee595fea29b16d18b5ebcd723",
+          "sourceCount": 8,
+          "mappings": 130492
+        },
+        {
+          "file": "common.js.map",
+          "bytes": 1587980,
+          "sha256": "306a7cd479d1a7961093908251bfde4a675a9e136374fc348e8f069aa57376be",
+          "sourceCount": 203,
+          "mappings": 555944
+        },
+        {
+          "file": "content/achievement/index.js.map",
+          "bytes": 19090,
+          "sha256": "8735c01402008cf15b70c0b7e25afc48d2a9f1e80a4126e63759cc7212236074",
+          "sourceCount": 3,
+          "mappings": 7191
+        },
+        {
+          "file": "content/article/detail/index.js.map",
+          "bytes": 29696,
+          "sha256": "e4c0b54bcad9e599d673951f520b9811676a796ee637de2cdd4cbe7a210dcf8f",
+          "sourceCount": 3,
+          "mappings": 10547
+        },
+        {
+          "file": "content/contribution/index.js.map",
+          "bytes": 52845,
+          "sha256": "fd4a2437fb4211c427a0b9950f0069fc6b385d57746f3d3bd5a42f371b459aee",
+          "sourceCount": 6,
+          "mappings": 19535
+        },
+        {
+          "file": "content/event/detail/index.js.map",
+          "bytes": 1698,
+          "sha256": "4c75edc671f2affa337f6c8ef6958dcc4e7ace84a50efcf53abee26b045e3e17",
+          "sourceCount": 2,
+          "mappings": 335
+        },
+        {
+          "file": "content/event/list/index.js.map",
+          "bytes": 1646,
+          "sha256": "aa68df0c12c6293c565a4a608a7b84709556c3db76d60fd382bb5a3b08569f3e",
+          "sourceCount": 2,
+          "mappings": 323
+        },
+        {
+          "file": "content/plan/detail/index.js.map",
+          "bytes": 1679,
+          "sha256": "1199dc97a5ac1560100bc01414a2023932ebec6afa5ffc0214ad31cb124e892d",
+          "sourceCount": 2,
+          "mappings": 321
+        },
+        {
+          "file": "content/plan/edit/index.js.map",
+          "bytes": 1835,
+          "sha256": "e680c5583790378be67e5de694c0a7030af96a9d81d3f3ca77e3c22d604b28ca",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "content/plan/list/index.js.map",
+          "bytes": 22693,
+          "sha256": "969c73e2dce8f3f42d267519c83792fb8edddfd044f95b5d423053b0b7fc34a6",
+          "sourceCount": 3,
+          "mappings": 8091
+        },
+        {
+          "file": "content/settings/index.js.map",
+          "bytes": 112243,
+          "sha256": "b35cb1b388a76f4e4328ea649a823efd752790293dc1c998823788a59bbd26f6",
+          "sourceCount": 11,
+          "mappings": 39449
+        },
+        {
+          "file": "content/share/index.js.map",
+          "bytes": 110074,
+          "sha256": "74370cb841e88aef6582d96fbc24ab32f6cc5e8df3412eeba37f2a8bc82d3df0",
+          "sourceCount": 12,
+          "mappings": 42788
+        },
+        {
+          "file": "content/spot-feedback/index.js.map",
+          "bytes": 111416,
+          "sha256": "12e26b456e1b3eb40ee9f0605be7c728755bf5a272bd5ecd1c3855795049e5ff",
+          "sourceCount": 7,
+          "mappings": 43841
+        },
+        {
+          "file": "content/sub-vendors.js.map",
+          "bytes": 380827,
+          "sha256": "5250e5f4a93a929add4e8467816151e64daa3f0ff056ad9d25162809f4877794",
+          "sourceCount": 26,
+          "mappings": 148404
+        },
+        {
+          "file": "pages/auth/index.js.map",
+          "bytes": 20816,
+          "sha256": "e06a610b83f4a53abb4d1b2c5768935482614c5c4513c60d6bf0381042615dbf",
+          "sourceCount": 2,
+          "mappings": 7061
+        },
+        {
+          "file": "pages/map/index.js.map",
+          "bytes": 1001722,
+          "sha256": "a7cadbb2d7e0cf11d8c88bfdcff03cf2aa6314e88a1ddccf8b2a60b5778f99f7",
+          "sourceCount": 73,
+          "mappings": 372452
+        },
+        {
+          "file": "pages/my/index.js.map",
+          "bytes": 4158,
+          "sha256": "641a237dce10ccdc0b3b9a76239442e3675ee89ca80d7f6aef9549796dc0d15b",
+          "sourceCount": 2,
+          "mappings": 1144
+        },
+        {
+          "file": "runtime.js.map",
+          "bytes": 10714,
+          "sha256": "c00e515ad476ebaf6fee6b557752e622cc717b9e82c06988df2275aa24c0fa94",
+          "sourceCount": 10,
+          "mappings": 2954
+        },
+        {
+          "file": "sky/detail/index.js.map",
+          "bytes": 2706019,
+          "sha256": "31a85a2b45be2d251d6a5da30b91b879916c86c849e31734d3b32b6bc37f9822",
+          "sourceCount": 177,
+          "mappings": 793622
+        },
+        {
+          "file": "sky/sources/index.js.map",
+          "bytes": 32918,
+          "sha256": "1cd8439617cd3b4820fbb9de9aea1f869fd7cbd8bcdad5c8b3ac68882019e4c1",
+          "sourceCount": 6,
+          "mappings": 11501
+        },
+        {
+          "file": "sky/sub-vendors.js.map",
+          "bytes": 419379,
+          "sha256": "a933306c01304433c640d63a7fe7eecba26dc6c0538e61ce5ed90c2f188cf84c",
+          "sourceCount": 52,
+          "mappings": 123369
+        },
+        {
+          "file": "spot/data-source/index.js.map",
+          "bytes": 21201,
+          "sha256": "210524d7dbc1ddd341703c225e5eeb335dbd4d519bb0f130e925bfc1c018e54c",
+          "sourceCount": 4,
+          "mappings": 7227
+        },
+        {
+          "file": "spot/field/index.js.map",
+          "bytes": 1624,
+          "sha256": "2f7cc637020713dccfb04809685de042d3acb1773ad01f21757706d656b09cee",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/guides/index.js.map",
+          "bytes": 1632,
+          "sha256": "d10fa7b4780c601b91f2cb07ed2a17603ebce3bdd8601de3aa9913a54b1d679f",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/native/packaged-icon/index.js.map",
+          "bytes": 1404,
+          "sha256": "edafe8246394f8e1d5b1e49989ce68d5a84b65f45f7347166922a8d4df44626a",
+          "sourceCount": 1,
+          "mappings": 378
+        },
+        {
+          "file": "spot/plan/index.js.map",
+          "bytes": 7764,
+          "sha256": "50a507ad8d51a774a1835057f7f302f4f6f67cf53e6c0085a19fa6c710fe025b",
+          "sourceCount": 2,
+          "mappings": 2417
+        },
+        {
+          "file": "spot/search/index.js.map",
+          "bytes": 90536,
+          "sha256": "57ff095475470a241ec2880e247be7147a5c268eeba51e740830a62d8ad4eb7c",
+          "sourceCount": 7,
+          "mappings": 32035
+        },
+        {
+          "file": "spot/sub-vendors.js.map",
+          "bytes": 48332,
+          "sha256": "eb17738333a2c1230d6cae6501322dc1c4f2fc32aa0c0f24871a7dca2da9f9e8",
+          "sourceCount": 1,
+          "mappings": 17398
+        },
+        {
+          "file": "taro.js.map",
+          "bytes": 450871,
+          "sha256": "300d9487bb4e8d3765de0ed4f4d2d3131f45a9b7fe980fe96531151dbef71d42",
+          "sourceCount": 84,
+          "mappings": 139850
+        },
+        {
+          "file": "vendors.js.map",
+          "bytes": 271186,
+          "sha256": "424430d7f55b732540e27cc80a386b768f66fad39dc11aa1e2d1b10f88b8f78a",
+          "sourceCount": 79,
+          "mappings": 72517
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "This is an unactivated task-only GPU logical-owner observation using the existing decode/lifecycle branch, not product acceptance or a complete R17 timing/Scene probe.",
+    "No phone, DevTools, feedback binding, service, account, database, firewall or active candidate was changed.",
+    "Only current artwork-request callbacks and explicit image claims are counted from module load; cancellation without callback is cumulative unconfirmed work, not current native in-flight work.",
+    "Weak image identity and logical pixels do not establish native/GPU bytes or physical release. Stellar/upload witness sites are not instrumented; zero calls are not a population count.",
+    "The user arms the existing bounded checkpoints before normal product Play; diagnostics never start or pause product playback. Pause/drain/exit, ordinary sustained Play and OOM still need target evidence.",
+    "The existing collector route, 32768-byte and 32-file limits remain. Historical NativeRegion validator input is missing locally and that packet family fails explicitly with 503 until the original input is restored.",
+    "The future LAN origin and collector/HTTP readback remain unverified. Hidden source maps stay outside the phone bundle."
+  ]
+}

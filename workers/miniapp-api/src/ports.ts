@@ -38,6 +38,8 @@ import type {
   UserPreferencesRecord,
   UserId,
   Wgs84Point,
+  CloudPointForecast,
+  TotalCloudContext,
 } from "@starward/miniapp-contracts";
 
 export interface ProviderResult<T> {
@@ -108,10 +110,15 @@ export interface WeatherEvidenceResult
   timelineRole: "PRIMARY" | "PRIMARY_FALLBACK" | "UNAVAILABLE";
   modelRuns: readonly WeatherModelRunSummary[];
   warnings: readonly string[];
+  /** Independent total-cloud source; absent is the explicit legacy contract. */
+  totalCloud?: CloudPointForecast;
 }
 
 export interface WeatherPort {
   readonly key: string;
+  /** A contextless background operation selects once, then passes that binding
+   * to all of its point reads. null is the deliberately unconfigured lane. */
+  selectTotalCloud?(signal?: AbortSignal): Promise<TotalCloudContext | null>;
   getHourly(input: {
     point: Wgs84Point;
     localDate: string;
@@ -119,7 +126,14 @@ export interface WeatherPort {
     /** Explicit UTC range for rolling background forecasts; end is exclusive.
      * Without it the requested date means the local noon-to-noon observation night. */
     windowUtc?: { start: string; end: string };
+    /** null is an explicitly legacy Context; undefined is a contextless read
+     * whose configured cloud owner selects one publication for this operation. */
+    totalCloud?: TotalCloudContext | null;
     signal?: AbortSignal;
+    /** A composition may expose completed independent sources while another
+     * is pending. Only use this snapshot if this acquisition's deadline ends;
+     * it is not a final response or permission to commit a pending source. */
+    onIndependentResult?: (result: WeatherEvidenceResult) => void;
   }): Promise<WeatherEvidenceResult>;
   /** Same full-hourly cache as formal-point weather, without an alert read. */
   getForecastHourly?(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherForecastResult>;
@@ -127,6 +141,8 @@ export interface WeatherPort {
 
 export interface WeatherForecastResult extends ProviderResult<readonly CanonicalWeatherHour[]> {
   modelRun: WeatherModelRunSummary | null;
+  totalCloud?: CloudPointForecast;
+  sources?: readonly SourceSummary[];
   acquisition?: {
     providerTag: string | null;
     sourceRequestId: string | null;

@@ -1,7 +1,8 @@
 import { Text, View } from "@tarojs/components";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useRecentWeatherQuery } from "@/hooks/use-recent-weather-query";
 import { useAppStore } from "@/state/app-store";
+import { createResourceFailureEpisode, type ResourceFailureEpisode } from "@/services/resource-failure-episode";
 import { SourceEntry } from "./source-entry";
 import { SourceAttribution } from "./source-attribution";
 import { SoftButton } from "./soft-button";
@@ -10,17 +11,23 @@ import { recentWeatherDetails, recentWeatherFacts, recentWeatherImplications } f
 import "./recent-weather.scss";
 
 /** Regional history in the current map's formal-spot document. */
-export function RecentWeather({ spotId, timezone, visible = true, id, onLayoutChange }: {
+export function RecentWeather({ spotId, timezone, visible = true, id, onLayoutChange, failureEpisode: retainedFailureEpisode }: {
   spotId: string; timezone: string; visible?: boolean; id?: string; onLayoutChange?: () => void;
+  failureEpisode?: ResourceFailureEpisode | undefined;
 }) {
-  const { active, enabled, liveFailed, query, envelope, data, failed, stale, retry } = useRecentWeatherQuery({ spotId, timezone, visible });
+  const { active, liveFailed, query, envelope, data, failed, stale, retry: retryQuery } = useRecentWeatherQuery({ spotId, timezone, visible });
   const notify = useAppStore(state => state.notify);
+  const localFailureEpisode = useMemo(() => createResourceFailureEpisode(), []);
+  const failureEpisode = retainedFailureEpisode ?? localFailureEpisode;
   useEffect(() => { onLayoutChange?.(); }, [active, data, failed, stale, query.isPending, onLayoutChange]);
   useEffect(() => {
-    if (!enabled || !failed) return;
+    if (!failureEpisode.observe({ scope: spotId, active,
+      pending: query.isFetching || (query.isPending && !liveFailed), failed,
+      healthy: Boolean(envelope && !failed) })) return;
     notify({ owner: "recent-weather", placement: "floating", tone: "info", title: "近期天气数据异常",
       body: "暂时无法取得完整地区记录，可在近期天气中重试。", dedupeKey: spotId });
-  }, [enabled, failed, notify, spotId]);
+  }, [active, failed, query.isFetching, query.isPending, liveFailed, envelope, notify, spotId, failureEpisode]);
+  const retry = () => { if (retryQuery()) failureEpisode.retry(); };
   if (!spotId.startsWith("spot:")) return null;
   const days = data?.days ?? [];
   const dates = data ? [...new Set([...days.map(day => day.localDate), ...data.missingDates])].sort() : [];

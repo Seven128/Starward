@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ApiEnvelope, MapCloudData } from "@starward/miniapp-contracts";
 import { currentMapCloudFrame, mapCloudBoundaries } from "../services/map-cloud-presentation";
 
-type CloudView = Pick<MapCloudData, "layer" | "timeFrames" | "cloudSnapshot"> & Pick<ApiEnvelope<MapCloudData>, "sources"> & { clockOffsetMs: number };
+type CloudView = Pick<MapCloudData, "layer" | "timeFrames" | "cloudSnapshot" | "gridTimeline"> & Pick<ApiEnvelope<MapCloudData>, "sources"> & { clockOffsetMs: number };
 type Input = { scene: ApiEnvelope<MapCloudData> | undefined; scope: string | null; enabled: boolean; selectedAtUtc: string; clockOffsetMs?: number };
 
 /** One public acquisition survives a viewport request. It never supplies old
@@ -13,6 +13,7 @@ export function useMapCloudPresentation({ scene, scope, enabled, selectedAtUtc, 
   const [, wake] = useState(0);
   const current = useMemo<CloudView | undefined>(() => scene?.data.layer.kind === "CLOUD" ? {
     layer: scene.data.layer, timeFrames: scene.data.timeFrames, cloudSnapshot: scene.data.cloudSnapshot ?? null,
+    ...(scene.data.gridTimeline ? { gridTimeline: scene.data.gridTimeline } : {}),
     sources: scene.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST"), clockOffsetMs,
   } : undefined, [scene, clockOffsetMs]);
   const retained = useMemo<CloudView | undefined>(() => current?.cloudSnapshot ? {
@@ -38,6 +39,9 @@ export function useMapCloudPresentation({ scene, scope, enabled, selectedAtUtc, 
   return useMemo(() => {
     if (!candidate) return undefined;
     const now = Date.now() + candidate.clockOffsetMs, timeFrames = candidate.timeFrames.map(frame => currentMapCloudFrame(frame, candidate.cloudSnapshot, now));
+    // A precise grid image has its own instant and native confirmation. The
+    // legacy per-hour polygon projection cannot relabel that image's time.
+    if (candidate.gridTimeline) return { ...candidate, timeFrames, retaining };
     const selected = timeFrames.find(frame => Date.parse(frame.atUtc) === Date.parse(selectedAtUtc))?.dynamicLayer;
     const layer = { ...candidate.layer, validAt: selectedAtUtc, polygons: selected?.kind === "CLOUD" ? selected.polygons : [],
       state: selected?.kind === "CLOUD" ? selected.state : "UNAVAILABLE" as const };

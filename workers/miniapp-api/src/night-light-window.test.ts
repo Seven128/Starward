@@ -10,7 +10,7 @@ import { fastifyDeploymentOptions } from "./release-metadata.ts";
 import { displayRasterWindowBounds, WEB_MERCATOR_CIRCUMFERENCE_M, type DisplayRasterWindow } from "@starward/coordinate-system";
 import { NIGHT_LIGHT_CONTRAST_DISPLAY, NIGHT_LIGHT_FIXED_SCALE as policy, nightLightDisplayLegend, type SourceSummary } from "@starward/miniapp-contracts";
 import { NightLightService } from "./night-light-service.ts";
-import { projectNightLightDisplay } from "./night-light-display-image.ts";
+import { nightLightContrastView, projectNightLightDisplay, validateNightLightContrastDisplay } from "./night-light-display-image.ts";
 import type { FixedNightLightDataset, FixedNightLightRaster } from "./night-light-publication.ts";
 
 const hash = (value: Buffer | string) => createHash("sha256").update(value).digest("hex");
@@ -199,10 +199,14 @@ test("display projection maps all five classes, keeps transparent pixels and rej
   const original = await readFile(path.join(directory, proofs[0].image.file)), png = PNG.sync.read(original);
   for (let pixel = 0; pixel < 6; pixel++) {
     const band = policy.bands[pixel];
-    const rgba = band ? [1, 3, 5].map(offset => parseInt(band.color.slice(offset, offset + 2), 16)).concat(policy.alpha) : [0, 0, 0, 0];
+    const rgba = band ? [1, 3, 5].map(offset => parseInt(band.color.slice(offset, offset + 2), 16)).concat(policy.alpha) : [17, 22, 43, 0];
     png.data.set(rgba, pixel * 4);
   }
-  const bytes = PNG.sync.write(png), proof = { ...proofs[0], image: { ...proofs[0].image, sha256: hash(bytes), bytes: bytes.length } };
+  const bytes = PNG.sync.write(png), proof = { ...proofs[0], image: { ...proofs[0].image, sha256: hash(bytes), bytes: bytes.length },
+    // This controlled source changed one formerly valid zero to transparent
+    // and four others to non-zero classes; its image support must match that.
+    quality: { ...proofs[0].quality, validPixelCount: 65535, validZeroPixelCount: 65531,
+      qualityMaskCounts: { "1": 65535, "2": 0, "3": 0, "4": 0, "5": 1, "6": 0 } } };
   const transformed = projectNightLightDisplay({ proof, bytes }, "a".repeat(64), NIGHT_LIGHT_CONTRAST_DISPLAY.styleVersion, new AbortController().signal);
   assert.equal("numeric" in transformed.proof, false, "a display image is not a new numerical publication");
   const output = PNG.sync.read(transformed.bytes);
@@ -211,8 +215,21 @@ test("display projection maps all five classes, keeps transparent pixels and rej
     assert.deepEqual([...output.data.subarray(index * 4, index * 4 + 4)],
       [1, 3, 5].map(offset => parseInt(mapped.color.slice(offset, offset + 2), 16)).concat(mapped.alpha));
   });
-  assert.deepEqual([...output.data.subarray(20, 24)], [0, 0, 0, 0]);
+  assert.deepEqual([...output.data.subarray(20, 24)], [17, 22, 43, 0]);
   assert.equal(hash(bytes), proof.image.sha256, "source bytes must stay immutable");
+  const source = { proof, bytes }, inventory = "a".repeat(64), signal = new AbortController().signal;
+  const encode = PNG.sync.write;
+  try {
+    PNG.sync.write = () => { throw new Error("validation_must_not_encode"); };
+    validateNightLightContrastDisplay(source, transformed.proof, transformed.bytes, inventory, signal);
+  } finally { PNG.sync.write = encode; }
+  output.data[0] ^= 1;
+  const forged = PNG.sync.write(output), forgedView = nightLightContrastView(proof, inventory, { sha256: hash(forged), bytes: forged.length });
+  assert.throws(() => validateNightLightContrastDisplay(source, forgedView, forged, inventory, signal), /nightlight_display_pixel_mismatch/u,
+    "rehashed metadata cannot qualify a display with the wrong actual RGBA mapping");
+  const badCrc = Buffer.from(transformed.bytes); badCrc[29] ^= 1;
+  const badCrcView = nightLightContrastView(proof, inventory, { sha256: hash(badCrc), bytes: badCrc.length });
+  assert.throws(() => validateNightLightContrastDisplay(source, badCrcView, badCrc, inventory, signal), /nightlight_display_png_invalid/u);
   png.data.set([255, 0, 255, 102], 0);
   const invalid = PNG.sync.write(png), invalidProof = { ...proof, image: { ...proof.image, sha256: hash(invalid), bytes: invalid.length } };
   assert.throws(() => projectNightLightDisplay({ proof: invalidProof, bytes: invalid }, "a".repeat(64),

@@ -1,0 +1,429 @@
+{
+  "scope": "TASK_ONLY_D2_CURRENT_TIME_CHAIN_NOT_PRODUCT_ACCEPTANCE",
+  "status": "BUILD_READY_D2_TIME_OBSERVATION_UNACTIVATED_PHONE_UNVERIFIED",
+  "preparedAt": "2026-10-29T09:18:56.907Z",
+  "mode": "normal",
+  "variant": "baseline",
+  "buildGeneration": 37,
+  "probeVersion": "d2-time-observation-v1",
+  "selection": "UNACTIVATED_PREPARATION",
+  "sourceManifest": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/manifest.json",
+  "sourceManifestSha256": "9e7a794dd9039c0a6826c649176bfb3fea54896f56b460bd45f599d0752f0a64",
+  "sourceDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/source",
+  "sourceFiles": 1682,
+  "sourceSnapshotSha256": "4c4e86e86b42c671453f93fae5c63e857ff962b86edf43671fc114420e649f1d",
+  "buildSourceSha256": "fbeb65b9b304366c885301eea74dbef46922e19b1233601275c0b06c9e69fb86",
+  "bindingInput": {
+    "meaning": "pre-build-current-production-source-and-task-template-binding-not-bundle-bytes",
+    "mode": "normal",
+    "variant": "baseline",
+    "buildGeneration": 37,
+    "probeVersion": "d2-time-observation-v1",
+    "productionHead": "1fd25800fb624d39fd98248f1aa3ac1da33c7de2",
+    "productionSourceSha256": "0228c1899f581cd7dfb0ba016b1b7e86286f2b65b7ae71f5e11ac376e3334332",
+    "builderSha256": "7bccbfcda8d43ff05c3be3b26d4183e7b2c509b89a5a01e79b530fa02371f982",
+    "templateBindings": {
+      "d2-time-observation.ts": "0804ec7323bea6ea3e92c3c149978ed838d2c0497953b89890e909faacb5997a",
+      "d2-time-observation-controls.tsx": "aba2f43f2dfb1541d83cc6be3b9fc9199b4712be686a866334c4b73dc3f23d9d",
+      "d2-time-observation-instrumentation.mjs": "39579971a34934ab18bb6b9258265ab0ea6550cfb12cf9501b3f7b3e4aaf3d0a",
+      "d2-time-observation-protocol.mjs": "1655c16c4910d944e223bfe54d1eff98a3d636609f1eb9df90a42b68876dddd9",
+      "d2-time-observation.test.mjs": "d9066dde053044db5a767605b00fa37a667d31177bd5dd0801118ca29d27f411",
+      "r17-phone-probe-v3-runtime.ts": "0271e33e9985605f863c6ed6f75c712967f8e11c234195efdaf41f8841c2118c",
+      "r17-geometry-stage-runtime.ts": "5bd25d6e1734f758b53185a8e8d043ec99fb3ef8a226a154559f0d621319650b",
+      "r17-ruler-entry-runtime.ts": "18a24ab8f02359b5a94bfc4e620b597e2adc32eee25606e53c722d6e1537e5f5",
+      "r17-phone-probe-v3-protocol.mjs": "c094dd7557d3449a549e627976cc2a843fcb7d3f4cabb85a5df90b289a6e761a",
+      "r17-phone-probe-v2-protocol.mjs": "85339f39c2c5af90a0698f7fa62da03c7a3066117ba7e455472b7fa7255fd9c7",
+      "r17-phone-probe-protocol.mjs": "25197647f2fd71d778e70eba8588d2a78482a62fb29882e1743872a78086b708",
+      "r17-normal-input-protocol.mjs": "d06379c8ee0ced8375b989dc0816514060c6fd26d5eff51a1d04a4624423f5eb",
+      "r17-ruler-entry-protocol.mjs": "9566ef6d60c3e50ab80307a35fae3350d6a893e4123649503dfa39b9dbc0102d",
+      "r17-a-correlation-protocol.mjs": "9377749d481e5948e8d205696b39f361453eca472678646736a0143b10d0f57d",
+      "r28-first-accepted-protocol.mjs": "07b5ec0a628432775d66ad1ac930541d0db4c8208675b11740a7e2a2679cb52e",
+      "r17-phone-probe-collector.mjs": "5b9674870152b6a5ad577787f057b94540ad2dc70c14d078e889b2a1cc6bf49f",
+      "r17-phone-probe-http.mjs": "1e6ede0d7c0f5044f52885e32cc56aa7a4d3c900bb9d1a6f114d3c973877a9de",
+      "r25-memory-lifetime-protocol.mjs": "c040da6754a5d52035bf4123bcba05ba1cb689a06c54b4d9f32a47f8d3350de1",
+      "r25-memory-checkpoint-protocol.mjs": "309182c2b5e177a2427ceb12896e11846277fc9f9a5055853f2d0f3f158816cf",
+      "d2-decode-checkpoint-protocol.mjs": "bb41392e59005a554d68408f98be23c7ede63e200cdf40e769bf8bd6ecdfbb60",
+      "r26-memory-checkpoint-protocol.mjs": "031e7662ebc655c88129dc3f6d9952169cc9a24aeba39e700dd588d5f5d4c5ec",
+      "r27-memory-checkpoint-protocol.mjs": "a8107cebbdc388d27ed009942b6396ee667fdfd6d89ffc8f9bf5fc813795344e"
+    },
+    "bridgePort": 8799,
+    "transport": "lan",
+    "compiledBridgeOriginSha256": "3fce16a89637f21c806aa5f1ff67462f4b1c887e87b6e737b4a0b8b1adde417e",
+    "uiSource": "current-production-source",
+    "d2TimeObservation": "current-input-preparation-accepted-chain-with-geometry-v1"
+  },
+  "sourceDeltas": [
+    {
+      "file": "apps/wechat-miniapp/config/index.ts",
+      "productionSha256": "08e41edec3274b9a55b06c7290b912897e68aa439b28fa720f8c3002a7663a3c",
+      "diagnosticSha256": "15bf03add83d6d1563a5131728ce61cc63099064ed6feab95b7e1b0081503df4"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+      "productionSha256": "c164b7e3f73dd58ee10f9e97332d392a918d41f4f7c3ff71c66f50913ed7410a",
+      "diagnosticSha256": "eb3ab5fcc6731507044b9f7e8571bcc959a3e49802075d425cf1dd56ca5abd77"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "productionSha256": "8a6dd317316cc22f254b062ae1cb1961af15242f35b9b2c26c0b837726cef624",
+      "diagnosticSha256": "c63c5ce526937922659920bb67c4873997e7206ec47fe41afffafab3342bfb92"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "productionSha256": "83f716c268ad2e9d00d9bbff80b64ec264a2f61b0f86cb1ccae190453ccc5f5a",
+      "diagnosticSha256": "8a0a96a67b00330e7bfec4d0f79c17599cf531a13fc64a2c5b06fcd3afd68149"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/use-sky-time-geometry.ts",
+      "productionSha256": "bdb0ffb1c95ac942c99557ead1147c99c6a953c2f4d75b557a4f7fa1a38efac4",
+      "diagnosticSha256": "290f8c19bd8925a626ef61d44fa97f557017cd76eb3751d295e5a93a691b56c7"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-phone-probe-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "58737e44f52add33d76d472431570fa39a9174a9fc0616d099593feba42be76c"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/d2-time-observation.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "0804ec7323bea6ea3e92c3c149978ed838d2c0497953b89890e909faacb5997a"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-geometry-stage-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "0efa5e5e7626fc6b804908f646b96372bbcea77828694277a25de69c2e8eafaf"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/r17-ruler-entry-runtime.ts",
+      "productionSha256": null,
+      "diagnosticSha256": "887fa78a1be7aee59f647439e4c6557b3b13e69c0bbdcce20964c25d122d3972"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/d2-time-observation-controls.tsx",
+      "productionSha256": null,
+      "diagnosticSha256": "0ebaf55d5a986c44f2910b903744253654cb80d40278bed8586de990b7e3c026"
+    }
+  ],
+  "templateBindings": {
+    "d2-time-observation.ts": "0804ec7323bea6ea3e92c3c149978ed838d2c0497953b89890e909faacb5997a",
+    "d2-time-observation-controls.tsx": "aba2f43f2dfb1541d83cc6be3b9fc9199b4712be686a866334c4b73dc3f23d9d",
+    "d2-time-observation-instrumentation.mjs": "39579971a34934ab18bb6b9258265ab0ea6550cfb12cf9501b3f7b3e4aaf3d0a",
+    "d2-time-observation-protocol.mjs": "1655c16c4910d944e223bfe54d1eff98a3d636609f1eb9df90a42b68876dddd9",
+    "d2-time-observation.test.mjs": "d9066dde053044db5a767605b00fa37a667d31177bd5dd0801118ca29d27f411",
+    "r17-phone-probe-v3-runtime.ts": "0271e33e9985605f863c6ed6f75c712967f8e11c234195efdaf41f8841c2118c",
+    "r17-geometry-stage-runtime.ts": "5bd25d6e1734f758b53185a8e8d043ec99fb3ef8a226a154559f0d621319650b",
+    "r17-ruler-entry-runtime.ts": "18a24ab8f02359b5a94bfc4e620b597e2adc32eee25606e53c722d6e1537e5f5",
+    "r17-phone-probe-v3-protocol.mjs": "c094dd7557d3449a549e627976cc2a843fcb7d3f4cabb85a5df90b289a6e761a",
+    "r17-phone-probe-v2-protocol.mjs": "85339f39c2c5af90a0698f7fa62da03c7a3066117ba7e455472b7fa7255fd9c7",
+    "r17-phone-probe-protocol.mjs": "25197647f2fd71d778e70eba8588d2a78482a62fb29882e1743872a78086b708",
+    "r17-normal-input-protocol.mjs": "d06379c8ee0ced8375b989dc0816514060c6fd26d5eff51a1d04a4624423f5eb",
+    "r17-ruler-entry-protocol.mjs": "9566ef6d60c3e50ab80307a35fae3350d6a893e4123649503dfa39b9dbc0102d",
+    "r17-a-correlation-protocol.mjs": "9377749d481e5948e8d205696b39f361453eca472678646736a0143b10d0f57d",
+    "r28-first-accepted-protocol.mjs": "07b5ec0a628432775d66ad1ac930541d0db4c8208675b11740a7e2a2679cb52e",
+    "r17-phone-probe-collector.mjs": "5b9674870152b6a5ad577787f057b94540ad2dc70c14d078e889b2a1cc6bf49f",
+    "r17-phone-probe-http.mjs": "1e6ede0d7c0f5044f52885e32cc56aa7a4d3c900bb9d1a6f114d3c973877a9de",
+    "r25-memory-lifetime-protocol.mjs": "c040da6754a5d52035bf4123bcba05ba1cb689a06c54b4d9f32a47f8d3350de1",
+    "r25-memory-checkpoint-protocol.mjs": "309182c2b5e177a2427ceb12896e11846277fc9f9a5055853f2d0f3f158816cf",
+    "d2-decode-checkpoint-protocol.mjs": "bb41392e59005a554d68408f98be23c7ede63e200cdf40e769bf8bd6ecdfbb60",
+    "r26-memory-checkpoint-protocol.mjs": "031e7662ebc655c88129dc3f6d9952169cc9a24aeba39e700dd588d5f5d4c5ec",
+    "r27-memory-checkpoint-protocol.mjs": "a8107cebbdc388d27ed009942b6396ee667fdfd6d89ffc8f9bf5fc813795344e"
+  },
+  "productionSourceReadback": {
+    "files": 1677,
+    "bindingsSha256": "0228c1899f581cd7dfb0ba016b1b7e86286f2b65b7ae71f5e11ac376e3334332",
+    "unchanged": true
+  },
+  "completeSourceBuildNotGeneratedPatch": true,
+  "currentSourceReadback": true,
+  "bothBundleCopiesReadback": {
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/source/apps/wechat-miniapp/dist/weapp-check-d2-time-observation-20261029": "451cc53494223e4a361baec4171065f000dac1cf414c8eb4c2d011a16a3eb485",
+    ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/project/weapp": "451cc53494223e4a361baec4171065f000dac1cf414c8eb4c2d011a16a3eb485"
+  },
+  "checks": {
+    "scope": "CURRENT_TIME_CHAIN_SOURCE_BINDINGS_READ_BACK",
+    "sourceBindingsReadBack": true,
+    "fullSceneCpuGpuMemoryObservation": "NOT_INSTRUMENTED",
+    "targetRuntime": "UNVERIFIED"
+  },
+  "deltaTypecheck": {
+    "productionDiagnostics": 0,
+    "currentDiagnostics": 0,
+    "addedDiagnostics": [],
+    "noAddedDiagnostics": true,
+    "comparison": "relative-file-code-message-multiset-line-independent-source-root-normalized"
+  },
+  "result": {
+    "bundleDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/source/apps/wechat-miniapp/dist/weapp-check-d2-time-observation-20261029",
+    "projectDirectory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/project",
+    "bundleSha256": "451cc53494223e4a361baec4171065f000dac1cf414c8eb4c2d011a16a3eb485",
+    "fileCount": 341,
+    "totalBytes": 5248217,
+    "packages": {
+      "main": {
+        "bytes": 1993380,
+        "source_map_bytes": 0
+      },
+      "content": {
+        "bytes": 1125933,
+        "source_map_bytes": 0
+      },
+      "spot": {
+        "bytes": 701459,
+        "source_map_bytes": 0
+      },
+      "sky": {
+        "bytes": 1427445,
+        "source_map_bytes": 0
+      }
+    },
+    "mainHeadroomBytes": 103772,
+    "staticChecks": {
+      "native_project": true,
+      "filter_population": true,
+      "curated_spots": true,
+      "capability_flags": true,
+      "no_direct_provider": true,
+      "no_html_delivery": true,
+      "recovery_semantics": true,
+      "explicit_location_only": true,
+      "response_cache_entity_identity": true,
+      "package_budget": true,
+      "route_files": true
+    },
+    "compiledBridgeOriginSha256": "3fce16a89637f21c806aa5f1ff67462f4b1c887e87b6e737b4a0b8b1adde417e",
+    "inheritedOriginSha256": "3fce16a89637f21c806aa5f1ff67462f4b1c887e87b6e737b4a0b8b1adde417e",
+    "bridgePort": 8799,
+    "originReadback": {
+      "originSha256": "3fce16a89637f21c806aa5f1ff67462f4b1c887e87b6e737b4a0b8b1adde417e",
+      "bridgePort": 8799,
+      "literalUses": 7,
+      "filesWithOrigin": 4,
+      "otherOrigins": 0
+    },
+    "sourceMaps": {
+      "directory": ".codex/work-items/sky-map-performance-2026-10-18/tmp/r17-d2-time-observation-20261029/source-maps",
+      "count": 30,
+      "bytes": 7772743,
+      "records": [
+        {
+          "file": "app.js.map",
+          "bytes": 248301,
+          "sha256": "ced91a8fba2e1fbeca8940cd1acffe1c001fd06ee595fea29b16d18b5ebcd723",
+          "sourceCount": 8,
+          "mappings": 130492
+        },
+        {
+          "file": "common.js.map",
+          "bytes": 1588288,
+          "sha256": "c849d8b6cfb3e9f27d5637d4b9cde1215dd6a266a046baab7f9fe204ec527f19",
+          "sourceCount": 203,
+          "mappings": 556016
+        },
+        {
+          "file": "content/achievement/index.js.map",
+          "bytes": 19090,
+          "sha256": "8735c01402008cf15b70c0b7e25afc48d2a9f1e80a4126e63759cc7212236074",
+          "sourceCount": 3,
+          "mappings": 7191
+        },
+        {
+          "file": "content/article/detail/index.js.map",
+          "bytes": 29696,
+          "sha256": "e4c0b54bcad9e599d673951f520b9811676a796ee637de2cdd4cbe7a210dcf8f",
+          "sourceCount": 3,
+          "mappings": 10547
+        },
+        {
+          "file": "content/contribution/index.js.map",
+          "bytes": 52845,
+          "sha256": "fd4a2437fb4211c427a0b9950f0069fc6b385d57746f3d3bd5a42f371b459aee",
+          "sourceCount": 6,
+          "mappings": 19535
+        },
+        {
+          "file": "content/event/detail/index.js.map",
+          "bytes": 1698,
+          "sha256": "4c75edc671f2affa337f6c8ef6958dcc4e7ace84a50efcf53abee26b045e3e17",
+          "sourceCount": 2,
+          "mappings": 335
+        },
+        {
+          "file": "content/event/list/index.js.map",
+          "bytes": 1646,
+          "sha256": "aa68df0c12c6293c565a4a608a7b84709556c3db76d60fd382bb5a3b08569f3e",
+          "sourceCount": 2,
+          "mappings": 323
+        },
+        {
+          "file": "content/plan/detail/index.js.map",
+          "bytes": 1679,
+          "sha256": "1199dc97a5ac1560100bc01414a2023932ebec6afa5ffc0214ad31cb124e892d",
+          "sourceCount": 2,
+          "mappings": 321
+        },
+        {
+          "file": "content/plan/edit/index.js.map",
+          "bytes": 1835,
+          "sha256": "e680c5583790378be67e5de694c0a7030af96a9d81d3f3ca77e3c22d604b28ca",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "content/plan/list/index.js.map",
+          "bytes": 22693,
+          "sha256": "969c73e2dce8f3f42d267519c83792fb8edddfd044f95b5d423053b0b7fc34a6",
+          "sourceCount": 3,
+          "mappings": 8091
+        },
+        {
+          "file": "content/settings/index.js.map",
+          "bytes": 112243,
+          "sha256": "b35cb1b388a76f4e4328ea649a823efd752790293dc1c998823788a59bbd26f6",
+          "sourceCount": 11,
+          "mappings": 39449
+        },
+        {
+          "file": "content/share/index.js.map",
+          "bytes": 110074,
+          "sha256": "74370cb841e88aef6582d96fbc24ab32f6cc5e8df3412eeba37f2a8bc82d3df0",
+          "sourceCount": 12,
+          "mappings": 42788
+        },
+        {
+          "file": "content/spot-feedback/index.js.map",
+          "bytes": 111416,
+          "sha256": "12e26b456e1b3eb40ee9f0605be7c728755bf5a272bd5ecd1c3855795049e5ff",
+          "sourceCount": 7,
+          "mappings": 43841
+        },
+        {
+          "file": "content/sub-vendors.js.map",
+          "bytes": 380827,
+          "sha256": "5250e5f4a93a929add4e8467816151e64daa3f0ff056ad9d25162809f4877794",
+          "sourceCount": 26,
+          "mappings": 148404
+        },
+        {
+          "file": "pages/auth/index.js.map",
+          "bytes": 20816,
+          "sha256": "e06a610b83f4a53abb4d1b2c5768935482614c5c4513c60d6bf0381042615dbf",
+          "sourceCount": 2,
+          "mappings": 7061
+        },
+        {
+          "file": "pages/map/index.js.map",
+          "bytes": 1002583,
+          "sha256": "fd6aad77df1a9e980cb86cb71455f34e43854220b7bbcbb4b2a67ded10786528",
+          "sourceCount": 73,
+          "mappings": 372822
+        },
+        {
+          "file": "pages/my/index.js.map",
+          "bytes": 4158,
+          "sha256": "641a237dce10ccdc0b3b9a76239442e3675ee89ca80d7f6aef9549796dc0d15b",
+          "sourceCount": 2,
+          "mappings": 1144
+        },
+        {
+          "file": "runtime.js.map",
+          "bytes": 10713,
+          "sha256": "7c7064e688b9a905cbf83bfeb97311a03830f8fd1568016ff1e1a6dc958f5ec2",
+          "sourceCount": 10,
+          "mappings": 2954
+        },
+        {
+          "file": "sky/detail/index.js.map",
+          "bytes": 2705295,
+          "sha256": "a3a46ba117ca40718b9535841c507d53dca8f4586ef3be6f44656f817307ed5d",
+          "sourceCount": 174,
+          "mappings": 805310
+        },
+        {
+          "file": "sky/sources/index.js.map",
+          "bytes": 32918,
+          "sha256": "1cd8439617cd3b4820fbb9de9aea1f869fd7cbd8bcdad5c8b3ac68882019e4c1",
+          "sourceCount": 6,
+          "mappings": 11501
+        },
+        {
+          "file": "sky/sub-vendors.js.map",
+          "bytes": 419379,
+          "sha256": "a933306c01304433c640d63a7fe7eecba26dc6c0538e61ce5ed90c2f188cf84c",
+          "sourceCount": 52,
+          "mappings": 123369
+        },
+        {
+          "file": "spot/data-source/index.js.map",
+          "bytes": 21201,
+          "sha256": "210524d7dbc1ddd341703c225e5eeb335dbd4d519bb0f130e925bfc1c018e54c",
+          "sourceCount": 4,
+          "mappings": 7227
+        },
+        {
+          "file": "spot/field/index.js.map",
+          "bytes": 1624,
+          "sha256": "2f7cc637020713dccfb04809685de042d3acb1773ad01f21757706d656b09cee",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/guides/index.js.map",
+          "bytes": 1632,
+          "sha256": "d10fa7b4780c601b91f2cb07ed2a17603ebce3bdd8601de3aa9913a54b1d679f",
+          "sourceCount": 2,
+          "mappings": 334
+        },
+        {
+          "file": "spot/native/packaged-icon/index.js.map",
+          "bytes": 1404,
+          "sha256": "edafe8246394f8e1d5b1e49989ce68d5a84b65f45f7347166922a8d4df44626a",
+          "sourceCount": 1,
+          "mappings": 378
+        },
+        {
+          "file": "spot/plan/index.js.map",
+          "bytes": 7764,
+          "sha256": "50a507ad8d51a774a1835057f7f302f4f6f67cf53e6c0085a19fa6c710fe025b",
+          "sourceCount": 2,
+          "mappings": 2417
+        },
+        {
+          "file": "spot/search/index.js.map",
+          "bytes": 90536,
+          "sha256": "57ff095475470a241ec2880e247be7147a5c268eeba51e740830a62d8ad4eb7c",
+          "sourceCount": 7,
+          "mappings": 32035
+        },
+        {
+          "file": "spot/sub-vendors.js.map",
+          "bytes": 48332,
+          "sha256": "eb17738333a2c1230d6cae6501322dc1c4f2fc32aa0c0f24871a7dca2da9f9e8",
+          "sourceCount": 1,
+          "mappings": 17398
+        },
+        {
+          "file": "taro.js.map",
+          "bytes": 450871,
+          "sha256": "300d9487bb4e8d3765de0ed4f4d2d3131f45a9b7fe980fe96531151dbef71d42",
+          "sourceCount": 84,
+          "mappings": 139850
+        },
+        {
+          "file": "vendors.js.map",
+          "bytes": 271186,
+          "sha256": "424430d7f55b732540e27cc80a386b768f66fad39dc11aa1e2d1b10f88b8f78a",
+          "sourceCount": 79,
+          "mappings": 72517
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Current-source task-only input/preparation/request/copy-and-publish chain, not physical presentation or product acceptance.",
+    "R17 v3 wall clock, weak identities, 45-second diagnostic cutoff and 32-KiB immutable single-flight export are reused; diagnostics never start or pause product Play.",
+    "Unobserved Page, GPU, memory, BSC/SAO population and image workload facts are omitted, not synthesized as zero.",
+    "Explicit chain truncation, unknown links and clock intervals remain unverified. Geometry client validation is distinct from current hook admission.",
+    "A separately declared non-8787/non-8798 bridge port is required; old GPU collector/evidence are not restarted or reused.",
+    "No phone, service, database, account, firewall, active candidate or frozen generation is changed by preparation. Hidden source maps stay outside the phone package."
+  ]
+}

@@ -229,7 +229,7 @@ test("explicit spot resolution owns the shared POST while cold recovery can supp
 
 test("a cold non-retired selection uses a rebuilt bootstrap reference to obtain its actual spot summary", () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = new Set(["bootstrapReference", "restoredContext", "activeContext", "scene", "spots", "selectedFromScene", "selected"]);
+  const names = new Set(["bootstrapReference", "restoredContext", "activeContext", "mapSceneQueryKey", "scene", "spots", "selectedFromScene", "selected"]);
   const statements: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.has(d.name.getText(source)))) statements.push(node.getText(source));
@@ -316,7 +316,7 @@ test("a non-retired intermediate render reads the synchronous explicit owner bef
 
 test("retired selection retains cached formal markers without requesting its unsafe Context", () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = new Set(["scene", "spots"]), statements: string[] = [];
+  const names = new Set(["mapSceneQueryKey", "scene", "spots"]), statements: string[] = [];
   const visit = (node: ts.Node) => { if (ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.has(d.name.getText(source)))) statements.push(node.getText(source));ts.forEachChild(node, visit); };
   visit(source);assert.equal(statements.length, names.size);
   const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };

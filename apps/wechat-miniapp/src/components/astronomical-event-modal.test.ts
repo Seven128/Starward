@@ -39,8 +39,10 @@ function harness(mutate = (source: string) => source, overrides: Record<string, 
     useReducedMotion: () => false,
     useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events" ? resource : { isPending: false, isError: true, refetch: () => {} },
     getAstronomicalEvents: () => {},
+    nativeNavigationInsets: () => ({ safeTop: 88, statusBarHeight: 44 }),
     ...overrides,
   };
+  Object.assign(context, { useAstronomicalEventCatalog: (enabled: boolean) => context.useResourceQuery({ queryKey: ["astronomical-events"], enabled }) });
   const component = vm.runInNewContext(ts.transpileModule(body + "\n({AstronomicalEventModal, EventModalDetail});", {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, context);
@@ -88,6 +90,26 @@ test("selection detail hides list confirmation until the viewed event is staged 
   assert.equal(find(list, node => node.props.className === "event-modal__footer").length, 1);
   assert.deepEqual(committed, []);
   assert.equal(find(list, node => node.type === "Button" && text(node) === "确认选择").length, 1);
+});
+
+test("Map browse page has no modal backdrop or portal and only detail consumes native Back", () => {
+  const ui = harness();
+  let returns = 0;
+  const props = { open: true, mode: "browse", presentation: "page", initialMonth: "2026-12", context: null,
+    onClose: () => { returns++; } };
+  const list = ui.render(props);
+  assert.equal(find(list, node => node.type === "RootPortal").length, 0);
+  assert.equal(find(list, node => node.props.className === "event-modal__backdrop").length, 0);
+  assert.equal(find(list, node => node.type === "NativeBackBoundary")[0]!.props.active, false);
+  assert.equal(find(list, node => node.props.ariaLabel === "天文事件列表")[0]!.props.scrollIntoView, "event-month-2026-12");
+  find(list, node => node.props.ariaLabel === "查看小熊座流星雨详情")[0]!.props.onClick();
+  const detail = ui.render(props);
+  const nativeBack = find(detail, node => node.type === "NativeBackBoundary")[0]!;
+  assert.equal(nativeBack.props.active, true);
+  nativeBack.props.onBack();
+  assert.equal(returns, 0, "detail Back keeps the same event page and list");
+  find(ui.render(props), node => node.props.ariaLabel === "返回地图")[0]!.props.onClick();
+  assert.equal(returns, 1, "the list delegates route return to its host");
 });
 
 test("detail selection stages the viewed identity, then only confirmation commits it", () => {

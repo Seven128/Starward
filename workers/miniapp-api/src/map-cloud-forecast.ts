@@ -41,6 +41,7 @@ export async function readMapCloudForecast(
   signal?: AbortSignal,
 ): Promise<readonly MapCloudSample[]> {
   signal?.throwIfAborted();
+  if (context.weatherView.totalCloud !== undefined) throw new Error("cloud_grid_provider_not_ready");
   const cells = mapCloudQueryPoints(center, bounds);
   return Promise.all(cells.map(async point => {
     const startedAt = new Date().toISOString();
@@ -54,6 +55,7 @@ export async function readMapCloudForecast(
         point: { system: "WGS84", latitude: wgs84.lat, longitude: wgs84.lon },
         localDate: context.localDate, timezone: context.timezone,
         windowUtc: { start: context.nightStartUtc, end: context.nightEndUtc }, signal,
+        totalCloud: null,
       }), remaining, signal);
     } catch {
       signal?.throwIfAborted();

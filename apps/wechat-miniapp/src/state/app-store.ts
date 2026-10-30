@@ -3,6 +3,7 @@ import {
   EMPTY_FILTER_STATE,
   DEFAULT_USER_PREFERENCES,
   cloneFilterState,
+  copyTotalCloudContext,
   type DisplayMode,
   type FilterState,
   type ObservationContext,
@@ -36,6 +37,8 @@ import {
 } from "./notification";
 import { currentNotificationPageRoute } from "./notification-page-route";
 import acceptanceBootstrapJson from "./acceptance-bootstrap.json";
+import { normalizeAnalysisOverlay, type AnalysisOverlay } from "./map-layer-state";
+export type { AnalysisOverlay } from "./map-layer-state";
 
 const STORAGE_KEY = "starward.wechat-miniapp.state.current";
 const ACCOUNT_STORAGE_PREFIX = "starward.wechat-miniapp.state.account.";
@@ -50,7 +53,6 @@ export interface MapViewportState {
   cardIndex: number;
 }
 
-export type AnalysisOverlay = "NONE" | "LIGHT" | "TOTAL_CLOUD" | "OPPORTUNITY";
 export type SourceLiftOwner = "FINDER" | "CONDITIONS";
 export type SourceLiftPhase =
   "IDLE" | "LIFTING" | "FOCUSED" | "RESTORING" | "CANCELLED";
@@ -368,8 +370,13 @@ function usableObservationContext(value: unknown, ownerId: string | null = null)
     (Date.parse(value.expiresAt) > Date.now() || privateContext);
   // A persisted Context remains a recovery hint until the server restores it.
   // Keep its location/time/identity, but never restore retired display selections.
+  let totalCloud: ObservationContext["weatherView"]["totalCloud"];
+  try {
+    if (weatherView.totalCloud !== undefined) totalCloud = copyTotalCloudContext(weatherView.totalCloud);
+  } catch { return null; } // A broken new binding must never become legacy QWeather.
   return valid ? { ...(value as unknown as ObservationContext), weatherView: {
     primaryPolicy: "QWEATHER", comparisonModels: [], selectedModel: null, cloudLayer: "TOTAL",
+    ...(totalCloud === undefined ? {} : { totalCloud }),
   } } : null;
 }
 
@@ -438,7 +445,7 @@ export const useAppStore = create<AppState>((set, get) => {
     ),
     retiredObservationContextId: usableRetiredContextId(BOOTSTRAP_STATE, BOOTSTRAP_STATE.accountOwnerId ?? null),
     pendingObservationContextEdit: null,
-    analysisOverlay: BOOTSTRAP_STATE.analysisOverlay ?? "NONE",
+    analysisOverlay: normalizeAnalysisOverlay(BOOTSTRAP_STATE.analysisOverlay),
     terrainEnabled: BOOTSTRAP_STATE.terrainEnabled ?? false,
     committedFilters: BOOTSTRAP_FILTERS,
     draftFilters: cloneFilterState(BOOTSTRAP_FILTERS),
@@ -485,7 +492,7 @@ export const useAppStore = create<AppState>((set, get) => {
         ),
         retiredObservationContextId: usableRetiredContextId(saved, saved.accountOwnerId ?? null),
         pendingObservationContextEdit: null,
-        analysisOverlay: saved.analysisOverlay ?? "NONE",
+        analysisOverlay: normalizeAnalysisOverlay(saved.analysisOverlay),
         terrainEnabled: saved.terrainEnabled ?? false,
         committedFilters: cloneFilterState(
           saved.committedFilters ?? EMPTY_FILTER_STATE,
@@ -648,7 +655,7 @@ export const useAppStore = create<AppState>((set, get) => {
       if (get().pendingObservationContextEdit === edit) set({ pendingObservationContextEdit: null });
     },
     setAnalysisOverlay(analysisOverlay) {
-      commit({ analysisOverlay });
+      commit({ analysisOverlay: normalizeAnalysisOverlay(analysisOverlay) });
     },
     setTerrainEnabled(terrainEnabled) {
       commit({ terrainEnabled });
@@ -871,7 +878,7 @@ export const useAppStore = create<AppState>((set, get) => {
         observationContext: retainAnonymousMap ? previous.observationContext : usableObservationContext(saved.observationContext, ownerId),
         retiredObservationContextId: retainAnonymousMap ? previous.retiredObservationContextId ?? null : usableRetiredContextId(saved, ownerId),
         pendingObservationContextEdit: null,
-        analysisOverlay: retainAnonymousMap ? previous.analysisOverlay : saved.analysisOverlay ?? "NONE",
+        analysisOverlay: normalizeAnalysisOverlay(retainAnonymousMap ? previous.analysisOverlay : saved.analysisOverlay),
         terrainEnabled: retainAnonymousMap ? previous.terrainEnabled : saved.terrainEnabled ?? false,
         committedFilters: filters,
         draftFilters: cloneFilterState(filters),

@@ -31,12 +31,24 @@ function setup() {
     unmount() { cleanup?.(); } };
 }
 
-function nativeElement(nativeMap: any, events: string[] = [], focus = { pending: false }, boundaries = createMapPageTestBoundaries()) {
+function nativeElements(nativeMap: any, events: string[] = [], focus = { pending: false }, boundaries = createMapPageTestBoundaries()) {
   const source = fs.readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
-  const jsx = source.match(/<Map\b[\s\S]*?\/>/u)?.[0];
-  // Deliberately execute the real rendered native element, not a copied key rule.
-  assert.ok(jsx);
-  return vm.runInNewContext(ts.transpileModule(`(${jsx})`, { compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 } }).outputText, {
+  const tree = ts.createSourceFile("index.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let rendered: string | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxExpression(node) && node.expression && ts.isCallExpression(node.expression)
+      && node.expression.expression.getText(tree) === "nativeMap.mapIds.map") {
+      rendered = node.expression.getText(tree); return;
+    }
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(tree) === "Map") {
+      rendered ??= node.getText(tree); return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tree);
+  // Execute the actual native host, including its keyed retirement list.
+  assert.ok(rendered);
+  const elements = vm.runInNewContext(ts.transpileModule(`(${rendered})`, { compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 } }).outputText, {
     ...boundaries.scope, nativeMap, Map: "Map", viewport: { center: { latitude: 22, longitude: 113 }, zoom: 9 },
     markerList: [], layerPolygons: [], locationState: "GRANTED", spotEditorPhase: "open",
     editorPresentation: {isClosing: () => false},
@@ -45,6 +57,11 @@ function nativeElement(nativeMap: any, events: string[] = [], focus = { pending:
     readTerrainViewport: () => events.push("viewport"), mapTerrainBounds: null,
     React: { createElement: (_type: any, props: any) => props },
   });
+  return Array.isArray(elements) ? Array.from(elements) : [elements];
+}
+
+function nativeElement(nativeMap: any, events: string[] = [], focus = { pending: false }, boundaries = createMapPageTestBoundaries()) {
+  return nativeElements(nativeMap, events, focus, boundaries).find(element => element.id === nativeMap.mapId);
 }
 
 test("a marker's delayed generic native touch event cannot cancel its newly selected camera intent", () => {
@@ -88,4 +105,25 @@ test("unmount cancels pending retry and late callbacks cannot revive its state",
   const t = setup(); t.render().onError(); t.render().retry(); const old = t.render();
   t.unmount(); assert.equal(t.timers.size, 0); old.onUpdated(); old.onError(); old.retry();
   assert.equal(t.render().mapId, old.mapId); assert.equal(t.render().pending, true); assert.equal(old.isCurrent(), false);
+});
+
+test("fault recovery keeps the original native node until real removal and fences all its events", async () => {
+  const t = setup(), initial = t.render(), boundaries = createMapPageTestBoundaries(), events: string[] = [];
+  let remaining = true, finish!: () => void;
+  const retired = new Promise<void>(resolve => { finish = resolve; });
+  initial.registerRaster({ retired, hasResources: () => remaining, dispose: async () => undefined });
+  initial.onError(); assert.equal(t.render().retry(), true);
+  const recovered = t.render(), nodes = nativeElements(recovered, events, undefined, boundaries);
+  assert.deepEqual(nodes.map(node => node.id), [initial.mapId, recovered.mapId]);
+  assert.equal(nodes[0].key, initial.mapId, "the original native node keeps its identity through recovery");
+  assert.equal(nodes[0].enableScroll, false); assert.equal(nodes[0].enableZoom, false);
+  const previous = [...boundaries.calls];
+  nodes[0].onError(); nodes[0].onUpdated(); nodes[0].onTap(); nodes[0].onMarkerTap({}); nodes[0].onRegionChange({});
+  assert.deepEqual(events, []); assert.deepEqual(boundaries.calls, previous);
+  assert.equal(t.render().pending, true);
+  nodes[1].onUpdated(); assert.equal(t.render().pending, false);
+  assert.equal(nativeElements(t.render()).length, 2, "a ready successor cannot certify old cleanup");
+  remaining = false; finish(); await retired; await Promise.resolve();
+  assert.deepEqual(nativeElements(t.render()).map(node => node.id), [recovered.mapId]);
+  assert.equal(t.render().retry(), false, "real overlay removal still does not certify physical Map destruction");
 });

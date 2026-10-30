@@ -23,7 +23,7 @@ export function harness(component = "useSkyOverlayMotion") {
   const exports = vm.runInNewContext(ts.transpileModule(source + `\n({${names}});`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, {
-    React: { createElement: (type: any, props: any, ...children: any[]) => ({ type, props, children }) }, View: "View", Button: "Button", Input: "Input", Text: "Text", SemanticIcon: "SemanticIcon",
+    React: { createElement: (type: any, props: any, ...children: any[]) => ({ type, props, children }) }, View: "View", Button: "Button", SkyControlledInput: "Input", Text: "Text", SemanticIcon: "SemanticIcon",
     useDidHide: (callback: () => void) => { hidden = callback; },
     skyRetainedLayerStyle, localParts, createSkyTimeRepeat, skyCivilInstant, skyTimeInputAllowed, stepSkyCivilTime,
     Date: class extends Date { static now() { return Date.parse("2026-10-17T12:00:00.000Z") + clock; } },

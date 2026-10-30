@@ -9,11 +9,13 @@ import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
   cloudForecastStarts,
+  cloudForecastIntervals,
   mapTimeFrameAt,
   projectedLayerPolygons,
   projectMapEvaluations,
 } from "./map-time-frame.ts";
 import { forecastCoverage } from "../../components/forecast-coverage.ts";
+import { totalCloudClientFixture } from "../../services/total-cloud-test-support";
 
 const baseEvaluation: MapSpotEvaluation = {
   spotId: "spot:test" as MapSpotEvaluation["spotId"],
@@ -218,4 +220,37 @@ test("cloud coverage uses true source hours, preserving the tail and missing-hou
   ]);
   assert.deepEqual(cloudForecastStarts([{ ...frames[1]!, dynamicLayer: null,
     spotSignals: { "spot:test": baseEvaluation } }]), [baseEvaluation.weatherAt]);
+});
+
+test("independent cloud-only frames remain selectable and never become QWeather source hours", () => {
+  const cloud = totalCloudClientFixture(), evidence = cloud.evidence(1.5);
+  const frame: MapSceneTimeFrame = { atUtc: cloud.stamp(1.5), moonPhase: null, dynamicLayer: null,
+    spotSignals: { "spot:test": { ...baseEvaluation, weatherAt: null, cloudEvidence: evidence,
+      cloudPercent: evidence.cloudPercent, state: "PARTIAL" } } };
+  assert.deepEqual(cloudTimeFrameChoices([frames[0]!, frame], cloud.now).map(choice => choice.sourceIndex), [1]);
+  assert.deepEqual(cloudForecastStarts([frame]), []);
+  assert.deepEqual(cloudForecastIntervals([frame], cloud.now), [{ start: cloud.stamp(0), end: cloud.stamp(3) }]);
+  const expired = Date.parse(cloud.binding.supports240HoursUntil) + 1;
+  assert.deepEqual(cloudTimeFrameChoices([frame], expired), []);
+  assert.deepEqual(cloudForecastIntervals([frame], expired), []);
+  const missing: MapSceneTimeFrame = { ...frame, spotSignals: { "spot:test": { ...frame.spotSignals["spot:test"]!,
+    weatherAt: cloud.stamp(1), cloudEvidence: null, cloudPercent: 80 } } };
+  assert.deepEqual(cloudTimeFrameChoices([missing], cloud.now), []);
+  assert.deepEqual(cloudForecastStarts([missing]), []);
+  assert.deepEqual(cloudForecastIntervals([missing], cloud.now), []);
+  assert.equal(cloudForecastIntervals(frames, cloud.now), undefined, "old frames retain their source-hour contract");
+});
+
+test("a missing or unavailable frame retires the prior compact cloud source identity", () => {
+  const cloud = totalCloudClientFixture(), evaluation = { ...baseEvaluation, cloudEvidence: cloud.evidence(0) };
+  const missing = { ...frames[0]!, spotSignals: {} };
+  const projected = projectMapEvaluations({ "spot:test": evaluation }, missing)["spot:test"]!;
+  assert.equal(projected.cloudEvidence, null); assert.equal(projected.cloudPercent, null);
+  const unavailable = { ...missing, spotSignals: { "spot:test": { ...evaluation, state: "UNAVAILABLE" as const } } };
+  assert.equal(projectMapEvaluations({ "spot:test": evaluation }, unavailable)["spot:test"]?.cloudEvidence, null);
+  assert.equal(evaluation.cloudEvidence.cloudPercent, 0);
+  assert.equal(projectMapEvaluations({ "spot:test": baseEvaluation }, missing)["spot:test"]?.cloudEvidence, undefined);
+  const legacySignal = { ...frames[1]!, spotSignals: { "spot:test": baseEvaluation } };
+  assert.equal(projectMapEvaluations({ "spot:test": evaluation }, legacySignal)["spot:test"]?.cloudEvidence, undefined,
+    "a replacement legacy signal cannot retain a previous time's compact evidence");
 });

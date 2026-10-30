@@ -108,6 +108,7 @@ function geometryStages(v) {
     prior.ended = true; prior.validated = code === 4; return true;
   });
 }
+export { geometryStages as validateR17GeometryStages };
 function drawReasons(value) {
   const v = value.drawReasons;
   if (!object(v, ['schemaVersion','metricsSchema','meaning','identityLimit','ringCapacity','requests','paints',

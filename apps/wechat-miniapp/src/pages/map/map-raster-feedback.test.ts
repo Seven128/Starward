@@ -4,6 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { createResourceFailureEpisode } from '../../services/resource-failure-episode';
+import { analysisLayerEnabled } from './map-layer-selection';
 
 const source=ts.createSourceFile('map.tsx',readFileSync(new URL('./index.tsx',import.meta.url),'utf8'),
   ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -14,7 +15,7 @@ function evaluate(name:string,scope:Record<string,unknown>,effect=false){
     if(!effect&&ts.isBinaryExpression(node)&&node.operatorToken.kind===ts.SyntaxKind.EqualsToken&&
       node.left.getText(source)===name)value=node.right;
     if(effect&&ts.isCallExpression(node)&&node.expression.getText(source)==='useEffect'&&
-      node.arguments[0]?.getText(source).includes(`dedupeKey: "${name}"`))value=node.arguments[0];
+      node.arguments[0]?.getText(source).includes(`${name}.observe(`))value=node.arguments[0];
     ts.forEachChild(node,visit);
   }
   visit(source);assert(value,name);
@@ -25,17 +26,18 @@ function evaluate(name:string,scope:Record<string,unknown>,effect=false){
 for(const layer of ['terrain','light'] as const)test(`${layer} failure episode survives new work and hide until current native success`,()=>{
   const episode=createResourceFailureEpisode(),notices:unknown[]=[],current={preview:false},old={preview:false};
   const state:any={
-    pageVisible:true,terrainEnabled:true,analysisOverlay:'LIGHT',rasterFailureScope:'owner:map',
+    pageVisible:true,terrainEnabled:true,lightEnabled:true,analysisOverlay:'LIGHT',rasterFailureScope:'owner:map',
     terrainFailureEpisode:episode,lightFailureEpisode:episode,nativeMap:{pending:false},mapRuntimeError:null,
     terrain:{data:{data:current}},terrainNativeError:null,mapTerrainFailed:true,mapTerrainLoading:false,
     mapTerrainBounds:{},mapTerrainMissing:false,presentedTerrainData:old,
-    terrainInstallation:{settled:true,retirementPending:false},
+    terrainInstallation:{settled:true,retirementPending:false},terrainRequiresMapRecovery:false,
     lightReadFailed:true,lightFailurePending:false,nativeViewport:{bounds:{}},nightLayer:current,nightRaster:{},lightUnavailable:false,
     lightInstallation:{settled:true,presentedData:old,error:null,retirementPending:false},
     notify:(notice:unknown)=>notices.push(notice),reportRuntimeError(){},
   };
   const health=layer==='terrain'?'terrainFailureHealthy':'lightFailureHealthy';
-  const emit=()=>{state[health]=evaluate(health,state);evaluate(`map-${layer}-failed`,state,true)();};
+  state[layer==='terrain'?'showTerrainFailure':'showLightFailure']=evaluate(layer==='terrain'?'showTerrainFailure':'showLightFailure',state);
+  const emit=()=>{state[health]=evaluate(health,state);evaluate(`${layer}FailureEpisode`,state,true)();};
   emit();emit();assert.equal(notices.length,1);
   if(layer==='terrain')state.mapTerrainLoading=true;else state.lightFailurePending=true;
   emit();if(layer==='terrain')state.mapTerrainLoading=false;else state.lightFailurePending=false;
@@ -72,7 +74,7 @@ test('real layer recovery commands rearm feedback only after the live owner acce
       navigationEpoch:{current:3},foregroundLife:{current:{visible:true,lease:{}}},
       useMemo:(compute:()=>unknown)=>compute(),pageVisible:true,selectedSpotId:null,activeContext:null,
       nativeMap:{isCurrent:()=>true},currentNativeMapRef:{current:{pending:false}},
-      useAppStore:{getState:()=>current},accountOwnerId:'owner',mapResetVersion:0,
+      useAppStore:{getState:()=>current},accountOwnerId:'owner',mapResetVersion:0,analysisLayerEnabled,
       terrainRequiresMapRecovery:false,
       terrainFailureEpisode:{retry:()=>calls.push('episode')},lightFailureEpisode:{retry:()=>calls.push('episode')},
       terrain:{isError:true,refetch:()=>calls.push('metadata')},setTerrainNativeRetry:()=>calls.push('native'),
@@ -103,7 +105,7 @@ test('Context retirement effects bind the current retry without waiting for anot
     foregroundLife:{current:{visible:true,lease:{}}},nativeMap:{mapId:'map',isCurrent:()=>true},
     currentNativeMapRef:{current:{pending:false}},accountOwnerId:'owner',mapResetVersion:0,pageVisible:true,
     selectedSpotId:'spot',activeContext:{contextId:'current'},
-    useAppStore:{getState:()=>({accountOwnerId:'owner',mapResetVersion:0,terrainEnabled:true})}};
+    useAppStore:{getState:()=>({accountOwnerId:'owner',mapResetVersion:0,terrainEnabled:true})},analysisLayerEnabled};
   state.rasterRetryTicket=evaluate('rasterRetryTicket',state);
   state.currentRasterRetryTicket={current:state.rasterRetryTicket};
   const current=evaluate('rasterRetryCurrent',state);

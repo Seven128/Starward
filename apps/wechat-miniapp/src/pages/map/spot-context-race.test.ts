@@ -1,4 +1,4 @@
-import { createMapPageTestBoundaries } from "./map-page-test-support";
+import { createMapLayerInspectionTestBoundaries, createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -30,7 +30,7 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
   const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveSpotContext, openDetail, closeSpotPanel, cancelSpotLoading, openLayerSheet});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    ...createMapPageTestBoundaries().scope, sameContextVersion, spotNeighborhoodCamera,
+    ...createMapPageTestBoundaries().scope, ...createMapLayerInspectionTestBoundaries(), sameContextVersion, spotNeighborhoodCamera,
     setViewport() {},
     detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 },
     mapPointIntent: { current: 0 }, regionTimer: { current: null },

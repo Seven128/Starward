@@ -17,6 +17,69 @@ export interface NightLightWarpSpec {
 }
 const sha = (data: Buffer | string) => createHash("sha256").update(data).digest("hex");
 const radians = Math.PI / 180;
+const sourceFootprintInputLimit = 4 * 1024 * 1024;
+
+type SourceFootprint = { west: number; south: number; east: number; north: number };
+type InverseBranches = ReturnType<typeof gcj02ToWgs84RasterBranches>;
+
+/** The geometry producer and input declaration must use precisely the same
+ * pixel corners and continuous inverse branches. No per-window array is kept
+ * by declaration; the actual warp owns its numerical arrays separately. */
+function forEachTargetCorner(window: DisplayRasterWindow, visit: (index: number, branches: InverseBranches) => void) {
+  const width = window.columns * 256, height = window.rows * 256, worldPixels = 256 * 2 ** window.zoom;
+  for (let row = 0; row <= height; row++) for (let column = 0; column <= width; column++) {
+    visit(row * (width + 1) + column, gcj02ToWgs84RasterBranches({ system: "GCJ-02",
+      lon: (window.x * 256 + column) / worldPixels * 360 - 180,
+      lat: latitudeForMercatorY((window.y * 256 + row) / worldPixels) }));
+  }
+}
+
+function assertSourceFootprintParts(value: unknown): asserts value is DisplayRasterWindow[][] {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 4096) throw new Error("nightlight_source_footprint_parts_invalid");
+  let encodedBytes = 2 + value.length - 1;
+  // Admit the entire declaration before its first potentially expensive corner
+  // traversal. A bad later part cannot leave earlier generated output behind.
+  for (const part of value) {
+    if (!Array.isArray(part) || part.length < 1 || part.length > 4096) throw new Error("nightlight_source_footprint_parts_invalid");
+    encodedBytes += 2 + part.length - 1;
+    for (const window of part) {
+      if (!window || typeof window !== "object" || Array.isArray(window) ||
+        Object.keys(window).sort().join() !== "columns,grid,rows,tilePixels,x,y,zoom")
+        throw new Error("nightlight_source_footprint_window_invalid");
+      try { displayRasterWindowBounds(window); }
+      catch { throw new Error("nightlight_source_footprint_window_invalid"); }
+      encodedBytes += Buffer.byteLength(JSON.stringify(window));
+      if (encodedBytes > sourceFootprintInputLimit) throw new Error("nightlight_source_footprint_input_budget_exceeded");
+    }
+  }
+}
+
+/** Conservative WGS84 support for each explicitly supplied part. Both inverse
+ * branches matter at the GCJ footprint edge; this is neither a country outline
+ * nor a claim of source-pixel resolution, available data or published coverage. */
+export function nightLightSourceFootprints(value: unknown): SourceFootprint[] {
+  assertSourceFootprintParts(value);
+  return value.map(part => {
+    const bounds: SourceFootprint = { west: Infinity, south: Infinity, east: -Infinity, north: -Infinity };
+    const include = (point: InverseBranches["identity"]) => {
+      bounds.west = Math.min(bounds.west, point.lon); bounds.east = Math.max(bounds.east, point.lon);
+      bounds.south = Math.min(bounds.south, point.lat); bounds.north = Math.max(bounds.north, point.lat);
+    };
+    for (const window of part) forEachTargetCorner(window, (_index, branches) => {
+      include(branches.shifted); include(branches.identity);
+    });
+    return bounds;
+  });
+}
+
+export async function declareNightLightSourceFootprints(value: unknown) {
+  const parts = nightLightSourceFootprints(value);
+  const sources = ["data-pipelines/dark-sky/project_display_grid.mts", "packages/coordinate-system/src/index.ts",
+    "packages/coordinate-system/src/raster-grid.ts", "packages/coordinate-system/src/mercator.ts"];
+  const sourceBindings = Object.fromEntries(await Promise.all(sources.map(async file =>
+    [file, sha(await readFile(new URL(`../../${file}`, import.meta.url)))])));
+  return { parts, sourceBindings };
+}
 type GridFile = { file: string; sha256: string; bytes: number };
 const sourceKeys = ["sourceX", "sourceY", "identityX", "identityY"] as const;
 
@@ -117,14 +180,11 @@ export async function projectNightLightGrid(spec: NightLightWarpSpec, directory:
   const worldPixels = 256 * 2 ** window.zoom;
   const cornersLon = new Float64Array((width + 1) * (height + 1)), cornersSinLat = new Float64Array(cornersLon.length);
   const identityLon = new Float64Array(cornersLon.length), identitySinLat = new Float64Array(cornersLon.length);
-  for (let row = 0; row <= height; row++) for (let column = 0; column <= width; column++) {
-    const branches = gcj02ToWgs84RasterBranches({ system: "GCJ-02", lon: (window.x * 256 + column) / worldPixels * 360 - 180,
-      lat: latitudeForMercatorY((window.y * 256 + row) / worldPixels) });
+  forEachTargetCorner(window, (at, branches) => {
     const point = branches.shifted;
-    const at = row * (width + 1) + column;
     cornersLon[at] = point.lon * radians; cornersSinLat[at] = Math.sin(point.lat * radians);
     identityLon[at] = branches.identity.lon * radians; identitySinLat[at] = Math.sin(branches.identity.lat * radians);
-  }
+  });
   const targetArea = new Float64Array(width * height);
   const targetBranch = new Uint8Array(width * height);
   for (let row = 0; row < height; row++) for (let column = 0; column < width; column++) {
@@ -161,8 +221,19 @@ export async function projectNightLightGrid(spec: NightLightWarpSpec, directory:
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const args = process.argv.slice(2);
-  if (![4, 6].includes(args.length) || args[0] !== "--spec" || args[2] !== "--output" || !path.isAbsolute(args[1]!)
-    || args.length === 6 && (args[4] !== "--source-cache" || !path.isAbsolute(args[5]!))) throw new Error("nightlight_projection_arguments_invalid");
-  const result = await projectNightLightGrid(JSON.parse(await readFile(args[1]!, "utf8")), args[3]!, { sourceCacheDirectory: args[5] });
-  console.log(JSON.stringify({ width: result.width, height: result.height, transform: result.transform }));
+  if (args.length === 1 && args[0] === "--source-footprints") {
+    const chunks: Buffer[] = []; let bytes = 0;
+    for await (const chunk of process.stdin) {
+      const value = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      bytes += value.length;
+      if (bytes > sourceFootprintInputLimit) throw new Error("nightlight_source_footprint_input_budget_exceeded");
+      chunks.push(value);
+    }
+    console.log(JSON.stringify(await declareNightLightSourceFootprints(JSON.parse(Buffer.concat(chunks).toString("utf8")))));
+  } else {
+    if (![4, 6].includes(args.length) || args[0] !== "--spec" || args[2] !== "--output" || !path.isAbsolute(args[1]!)
+      || args.length === 6 && (args[4] !== "--source-cache" || !path.isAbsolute(args[5]!))) throw new Error("nightlight_projection_arguments_invalid");
+    const result = await projectNightLightGrid(JSON.parse(await readFile(args[1]!, "utf8")), args[3]!, { sourceCacheDirectory: args[5] });
+    console.log(JSON.stringify({ width: result.width, height: result.height, transform: result.transform }));
+  }
 }

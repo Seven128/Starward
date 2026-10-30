@@ -4,9 +4,11 @@ import dataclasses
 import hashlib
 import json
 import os
+import re
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 from urllib.parse import urlparse
 
 import numpy as np
@@ -16,11 +18,14 @@ from rasterio.transform import from_origin
 from psycopg.types.json import Jsonb
 
 import publish_eog_viirs as pipeline
+import eog_sharded_inventory as sharded
+from prepare_fixed_eog import prepare_release
 from test_eog_fixed_publication import prepare_fixture
 import eog_fixed_method as fixed
 
 
-def seed_spot(database_url: str, run_id: str) -> tuple[str, str]:
+def seed_spot(database_url: str, run_id: str, *, longitude: float = 114.0,
+              latitude: float = 23.0) -> tuple[str, str]:
     source_id = f"source:test:eog-{run_id}"
     spot_id = f"spot:test:eog-{run_id}"
     source = {
@@ -50,11 +55,12 @@ def seed_spot(database_url: str, run_id: str) -> tuple[str, str]:
               spot_id, name, region, timezone, geom_wgs84, gcj02_lat, gcj02_lng,
               status, visibility_policy, source_id, payload, display_order
             ) VALUES (
-              %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(114.0, 23.0), 4326)::geography,
-              23.0, 114.0, 'PUBLISHED', 'PUBLIC_EXACT', %s, %s, 1
+              %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography,
+              %s, %s, 'PUBLISHED', 'PUBLIC_EXACT', %s, %s, 1
             )
             """,
-            (spot_id, spot["name"], spot["region"], spot["timezone"], source_id, Jsonb(spot)),
+            (spot_id, spot["name"], spot["region"], spot["timezone"], longitude, latitude,
+             latitude, longitude, source_id, Jsonb(spot)),
         )
         connection.execute(
             """
@@ -87,6 +93,45 @@ def seed_spot(database_url: str, run_id: str) -> tuple[str, str]:
     return source_id, spot_id
 
 
+def prepare_joined_parts(root: Path, dataset_version: str):
+    """Small actual prepared parts sharing one native 3x3 sampling boundary."""
+    root.mkdir()
+    legacy, first = prepare_fixture(root, dataset_version, aoi={
+        "west": 113.9, "south": 23.1, "east": 114.0, "north": 23.2,
+    })
+    right_source = root / "right-source.json"
+    raw = json.loads(legacy.read_bytes())
+    raw["aoi"] = {"west": 114.0, "south": 23.1, "east": 114.1, "north": 23.2}
+    right_source.write_text(json.dumps(raw), encoding="utf8")
+    second_root = root / "right-part"
+    prepare_release(right_source, dataset_version, [{
+        "grid": "gcj02-mercator-pixel-centres-v1", "tilePixels": 256,
+        "zoom": 10, "x": 836, "y": 445, "columns": 1, "rows": 1,
+    }], second_root)
+    output = root / "joined"
+    paths = (first, second_root / "manifest.json")
+    sealed = sharded.prepare_index(paths, output)
+    return pipeline.prepare_sharded(paths, output / "index.json", sealed["index"]["sha256"])
+
+
+class EogDatabaseTargetGuardTest(unittest.TestCase):
+    def test_connection_target_overrides_are_rejected_before_connect(self) -> None:
+        base = "postgresql://localhost:5432/starward_eog_test_a0"
+        redirect_environment = ("PGHOSTADDR", "PGSERVICE", "PGSERVICEFILE")
+        cases = [(base + suffix, {}) for suffix in (
+            "?host=203.0.113.1", "?hostaddr=203.0.113.1", "?service=other", "#other",
+        )]
+        cases += [(base, {key: "other"}) for key in redirect_environment]
+        for database_url, redirect in cases:
+            with self.subTest(query=bool(urlparse(database_url).query), redirect_keys=tuple(redirect)):
+                environment = {key: "" for key in redirect_environment}
+                environment.update({"DATABASE_URL": database_url, **redirect})
+                with mock.patch.dict(os.environ, environment), mock.patch.object(psycopg, "connect") as connect:
+                    with self.assertRaisesRegex(RuntimeError, "fresh_disposable_eog_database_required"):
+                        EogViirsDatabaseIntegrationTest.setUpClass()
+                    connect.assert_not_called()
+
+
 @unittest.skipUnless(os.environ.get("DATABASE_URL", "").strip(), "DATABASE_URL not configured")
 class EogViirsDatabaseIntegrationTest(unittest.TestCase):
     @classmethod
@@ -95,9 +140,16 @@ class EogViirsDatabaseIntegrationTest(unittest.TestCase):
         # must own a fresh disposable database and drop it after this suite;
         # immutable history is never deleted or its guards relaxed by tests.
         cls.database_url = os.environ["DATABASE_URL"].strip()
-        if not urlparse(cls.database_url).path.startswith("/starward_eog_test_"):
+        target = urlparse(cls.database_url)
+        if (target.hostname not in ("127.0.0.1", "localhost") or not target.port
+                or target.query or target.fragment
+                or any(os.environ.get(key) for key in ("PGHOSTADDR", "PGSERVICE", "PGSERVICEFILE"))
+                or re.fullmatch(r"/starward_eog_test_[a-f0-9][a-f0-9_]*", target.path) is None
+                or len(target.path[1:]) > 63):
             raise RuntimeError("fresh_disposable_eog_database_required")
         with psycopg.connect(cls.database_url) as connection:
+            if connection.execute("SELECT current_database(), current_schema()").fetchone() != (target.path[1:], "public"):
+                raise RuntimeError("fresh_disposable_eog_database_required")
             if connection.execute("SELECT count(*) FROM spots").fetchone()[0]:
                 raise RuntimeError("fresh_disposable_eog_database_required")
 
@@ -288,6 +340,130 @@ class EogViirsDatabaseIntegrationTest(unittest.TestCase):
                 self.assertEqual(connection.execute(
                     f"SELECT count(*) FROM {table} WHERE dataset_version = %s", (self.dataset_version,),
                 ).fetchone()[0], 0)
+
+    def test_fixed_sharded_transaction_commit_rollback_and_idempotency(self) -> None:
+        manifest, selected, thresholds, cells = prepare_joined_parts(
+            self.root / "sharded", self.dataset_version + "-sharded",
+        )
+        run_id = hashlib.sha256(os.urandom(32)).hexdigest()[:16]
+        _, left_id = seed_spot(self.database_url, run_id + "-a", longitude=113.995, latitude=23.155)
+        _, joined_id = seed_spot(self.database_url, run_id + "-b", longitude=114.0, latitude=23.155)
+        _, outside_id = seed_spot(self.database_url, run_id + "-c",
+                                  longitude=selected.manifests[1].aoi.east, latitude=23.155)
+        light_snapshot, terrain_snapshot = "eog-light:" + run_id, "eog-terrain:" + run_id
+        touched_tables = (
+            "data_source_registry", "dark_sky_dataset_publications", "dark_sky_grid_cells",
+            "light_pollution_samples", "spots", "spot_overview_read_models", "spot_revisions",
+            "map_spot_summaries", "favorite_spot_summaries", "map_layer_snapshots", "published_dataset_versions",
+        )
+
+        def database_state():
+            with psycopg.connect(self.database_url) as connection:
+                return {table: connection.execute(
+                    f"SELECT to_jsonb(t) FROM {table} t ORDER BY to_jsonb(t)::text",
+                ).fetchall() for table in touched_tables}
+
+        actual_connect = psycopg.connect
+        connections, statements = [], []
+
+        class ObservedConnection:
+            """Only count statements; every result and transaction is PostgreSQL's."""
+            def __init__(self, connection): self.connection = connection
+            def __enter__(self): self.connection.__enter__(); return self
+            def __exit__(self, *args): return self.connection.__exit__(*args)
+            def execute(self, sql, parameters=()):
+                statements.append((sql, parameters))
+                return self.connection.execute(sql, parameters)
+
+        def observed_connect(*args, **kwargs):
+            connection = actual_connect(*args, **kwargs)
+            connections.append(connection)
+            return ObservedConnection(connection)
+
+        with psycopg.connect(self.database_url) as connection:
+            for identity, kind in ((light_snapshot, "LIGHT_POLLUTION"), (terrain_snapshot, "TERRAIN")):
+                connection.execute("""INSERT INTO map_layer_snapshots(
+                    snapshot_id, layer_kind, context_fingerprint, dataset_version, state, payload
+                    ) VALUES (%s, %s, %s, 'synthetic-prior', 'AVAILABLE', %s)""",
+                    (identity, kind, run_id, Jsonb({"synthetic": identity})))
+            overview = connection.execute("""SELECT payload, dependency_digest, generated_at
+                FROM spot_overview_read_models WHERE spot_id = %s""", (joined_id,)).fetchone()
+            connection.execute("DELETE FROM spot_overview_read_models WHERE spot_id = %s", (joined_id,))
+        before_failure = database_state()
+        with mock.patch.object(pipeline.psycopg, "connect", side_effect=observed_connect):
+            with self.assertRaisesRegex(pipeline.PipelineError, "nightlight_sharded_publication_not_ready"):
+                pipeline.publish(manifest, selected, thresholds, cells, self.database_url)
+            self.assertEqual(len(connections), 0, "the public gate must precede even the real test connection")
+            with self.assertRaisesRegex(pipeline.PipelineError, "spot_overview_missing"):
+                pipeline._publish_transaction(manifest, selected, thresholds, cells, self.database_url)
+        self.assertEqual(len(connections), 1)
+        self.assertEqual(sum("INSERT INTO spot_revisions" in sql for sql, _ in statements), 1,
+                         "failure must occur after one actual Spot/revision write, not before all work")
+        self.assertEqual(database_state(), before_failure, "a later Spot failure must roll back the entire group")
+        with psycopg.connect(self.database_url) as connection:
+            connection.execute("""INSERT INTO spot_overview_read_models(
+                spot_id, payload, dependency_digest, generated_at) VALUES (%s, %s, %s, %s)""",
+                (joined_id, Jsonb(overview[0]), overview[1], overview[2]))
+        before_success = database_state()
+
+        connections.clear()
+        statements.clear()
+        with mock.patch.object(pipeline.psycopg, "connect", side_effect=observed_connect):
+            result = pipeline._publish_transaction(manifest, selected, thresholds, cells, self.database_url)
+        self.assertEqual((result["sampleCount"], result["changedSpotCount"], result["cellCount"]), (2, 2, 0))
+        self.assertEqual(len(connections), 1)
+        self.assertEqual(sum("pg_advisory_xact_lock" in sql for sql, _ in statements), 1)
+        union = [(sql, parameters) for sql, parameters in statements if "FROM spots s" in sql]
+        self.assertEqual(len(union), 1)
+        self.assertIn("EXISTS", union[0][0])
+        self.assertEqual(union[0][1][0].obj, [part.raw["aoi"] for part in selected.manifests])
+        self.assertEqual(sum("INSERT INTO spot_revisions" in sql for sql, _ in statements), 2)
+        self.assertEqual(sum("INSERT INTO published_dataset_versions" in sql for sql, _ in statements), 1)
+        with psycopg.connect(self.database_url) as connection:
+            published = connection.execute("""SELECT state, manifest_sha256, payload
+                FROM dark_sky_dataset_publications WHERE dataset_version = %s""", (manifest.dataset_version,)).fetchone()
+            self.assertEqual(published[:2], ("PUBLISHED", manifest.digest))
+            self.assertEqual(published[2], pipeline.sharded_publication_payload(manifest, selected))
+            self.assertEqual(connection.execute("""SELECT state, manifest FROM published_dataset_versions
+                WHERE dataset_kind = 'DARK_SKY' AND dataset_version = %s""", (manifest.dataset_version,)).fetchone(),
+                ("PUBLISHED", published[2]))
+            samples = connection.execute("""SELECT spot_id, payload -> 'estimate'
+                FROM light_pollution_samples WHERE dataset_version = %s ORDER BY spot_id""",
+                (manifest.dataset_version,)).fetchall()
+            self.assertEqual([row[0] for row in samples], [left_id, joined_id])
+            for (_, estimate), median in zip(samples, (.5, 50)):
+                self.assertEqual(estimate["radiance"], {"median": median, "p10": .5, "p90": 50, "unit": "nW/cm²/sr"})
+                self.assertEqual(estimate["quality"]["validPixelCount"], 9)
+                self.assertAlmostEqual(estimate["quality"]["publishedAreaFraction"], 1)
+            rows = connection.execute("""SELECT s.spot_id, s.version, s.payload, o.payload,
+                r.spot_payload, r.detail_payload, m.payload, f.payload
+                FROM spots s JOIN spot_overview_read_models o USING (spot_id)
+                JOIN spot_revisions r ON r.revision_id = s.active_revision_id
+                JOIN map_spot_summaries m ON m.spot_id = s.spot_id
+                JOIN favorite_spot_summaries f ON f.spot_id = s.spot_id
+                WHERE s.spot_id = ANY(%s) ORDER BY s.spot_id""", ([left_id, joined_id, outside_id],)).fetchall()
+            self.assertEqual([row[:2] for row in rows], [(left_id, 2), (joined_id, 2), (outside_id, 1)])
+            for row in rows:
+                self.assertEqual(row[2], row[3]["spot"])
+                self.assertEqual((row[2], row[3]), (row[4], row[5]))
+                self.assertEqual((row[6], row[7]), (row[2], row[2]))
+            self.assertEqual(connection.execute("SELECT count(*) FROM map_layer_snapshots WHERE layer_kind = 'LIGHT_POLLUTION'").fetchone()[0], 0)
+            self.assertEqual(connection.execute("SELECT payload FROM map_layer_snapshots WHERE snapshot_id = %s", (terrain_snapshot,)).fetchone(),
+                             ({"synthetic": terrain_snapshot},))
+            # A strictly idempotent replay must not retire a newer valid snapshot.
+            connection.execute("""INSERT INTO map_layer_snapshots(
+                snapshot_id, layer_kind, context_fingerprint, dataset_version, state, payload
+                ) VALUES (%s, 'LIGHT_POLLUTION', %s, %s, 'AVAILABLE', %s)""",
+                (light_snapshot, run_id, manifest.dataset_version, Jsonb({"synthetic": "newer"})))
+        after_success = database_state()
+        original_revisions = {row[0]["revision_id"]: row[0] for row in before_success["spot_revisions"]}
+        revisions = {row[0]["revision_id"]: row[0] for row in after_success["spot_revisions"]}
+        self.assertTrue(all(revisions.get(key) == value for key, value in original_revisions.items()),
+                        "previous immutable baselines must remain exact")
+        self.assertEqual(len(revisions), len(original_revisions) + 2)
+        second = pipeline._publish_transaction(manifest, selected, thresholds, cells, self.database_url)
+        self.assertEqual((second["status"], second["changedSpotCount"]), ("already_published", 0))
+        self.assertEqual(database_state(), after_success, "replay must leave current/history/snapshots and timestamps exact")
 
 
 if __name__ == "__main__":

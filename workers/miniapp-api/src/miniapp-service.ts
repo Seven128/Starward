@@ -7,6 +7,7 @@ import {
   parsePlanReminders,
   parsePlanTravel,
   normalizeAccountNickname,
+  mapCloudReadInstant,
   uniqueSourceRecords as uniqueSources,
   type AccountAvatarSaveRequest,
   type AccountNicknameSaveRequest,
@@ -140,6 +141,7 @@ import {
   summarizeFilterCoverage,
 } from "./filter-evaluation.ts";
 import {
+  assertCloudPublicationRuntime,
   loadRuntimeConfig,
   type MiniappRuntimeConfig,
 } from "./runtime-config.ts";
@@ -148,7 +150,8 @@ import {
   parserGate,
   validateExternalUrl,
 } from "./security.ts";
-import { createWeatherPort } from "./weather-provider.ts";
+import { createWeatherPort, TotalCloudCompositeAdapter } from "./weather-provider.ts";
+import { CloudPointWeather } from "./cloud-point-weather.ts";
 import { readMapCloudForecast, projectMapCloudLayer, mapCloudForecastEnds, mapCloudEvidence, mapCloudSnapshot, type MapCloudSample } from "./map-cloud-forecast.ts";
 import { QWeatherRecentWeatherAdapter, type RecentWeatherPort } from "./recent-weather-provider.ts";
 import { QWeatherAirQualityAdapter, type AirQualityPort } from "./air-quality-provider.ts";
@@ -159,6 +162,7 @@ import { terrainOverlayData } from "./terrain-publication.ts";
 import { TerrainService, type TerrainPort } from "./terrain-service.ts";
 import { terrainHorizonData } from "./terrain-horizon-data.ts";
 import { NightLightService, nightLightUnavailable } from "./night-light-service.ts";
+import { CloudPublicationRegistry } from "./cloud-publication-registry.ts";
 import { terrainBounds, validateTerrainPreviewRequest } from "./terrain-request.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
@@ -386,6 +390,7 @@ function timeSignalFor(
     spotId,
     weatherAt: row?.weatherAt ?? null,
     cloudPercent: row?.cloudPercent ?? null,
+    ...(row?.cloudEvidence !== undefined ? { cloudEvidence: row.cloudEvidence } : {}),
     moonImpact: moonImpact(row),
     opportunityScore: row?.opportunityScore ?? null,
     opportunityConfidence: row?.opportunityConfidence ?? null,
@@ -644,6 +649,7 @@ export class MiniappService {
   readonly spotEnvironment: SpotEnvironmentService;
   readonly terrain: TerrainPort;
   readonly nightLight: NightLightService;
+  readonly cloudPublications: CloudPublicationRegistry;
   private readonly weather: WeatherPort;
   readonly outbox = new MemoryOutbox();
   private readonly usageStore: PostgresVendorUsageStore | undefined;
@@ -679,7 +685,9 @@ export class MiniappService {
     landscape?: SkyLandscapePublicationService;
     usageStore?: PostgresVendorUsageStore;
     terrain?: TerrainPort;
+    cloudPublications?: CloudPublicationRegistry;
   }) {
+    assertCloudPublicationRuntime(input.config, input.cloudPublications?.root);
     // Optical publications currently contain only bounded rights-unresolved
     // trials. Keep the same release boundary even for direct service injection.
     if (input.opticalHips) {
@@ -690,9 +698,12 @@ export class MiniappService {
     }
     this.repository = input.repository;
     this.nightLight = new NightLightService(input.repository, input.config.nightLightPublicationRoot, input.config.mapStaticPublication);
-    this.weather = input.weather;
+    this.cloudPublications = input.cloudPublications ?? new CloudPublicationRegistry(input.config.cloudPublicationRoot ?? null);
+    this.weather = input.weather instanceof TotalCloudCompositeAdapter ? input.weather
+      : new TotalCloudCompositeAdapter(input.weather, new CloudPointWeather(this.cloudPublications));
     this.terrain = input.terrain ?? new TerrainService({
       ...(input.config.terrainPublicationRoot ? { publishedDirectory: input.config.terrainPublicationRoot } : {}),
+      mapStaticPublication: input.config.mapStaticPublication ?? null,
       measured: value => {
         const { publicationId, ...metrics } = value;
         this.telemetry.event("terrain_raster_derived", { ...metrics, assetSha256: publicationId.split(":").at(-1) });
@@ -727,7 +738,7 @@ export class MiniappService {
     this.cache = input.cache ?? new MemoryCache();
     this.eventCatalog = input.eventCatalog ?? new AstronomicalEventCatalogOwner();
     this.astronomy = new AstronomyService(
-      input.weather,
+      this.weather,
       this.repository,
       this.config,
       input.skyCatalog,
@@ -740,6 +751,7 @@ export class MiniappService {
       this.cache,
       this.config,
       this.eventCatalog,
+      this.cloudPublications,
     );
     this.contributions = new ContributionService(
       this.repository,
@@ -805,6 +817,7 @@ export class MiniappService {
   async onModuleDestroy() {
     this.terrain.close();
     this.nightLight.close();
+    await this.cloudPublications.close();
     await this.usageStore?.close();
     await this.repository.close();
     this.astronomy.clearCaches();
@@ -1170,12 +1183,16 @@ export class MiniappService {
     const deadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs;
     const context = await this.observationContexts.get(input.contextId, input.userId);
     signal?.throwIfAborted();
+    const requestedAt = input.selectedAt === undefined ? context.selectedAtUtc : mapCloudReadInstant(input.selectedAt);
+    if (input.selectedAt !== undefined && context.weatherView.totalCloud === undefined)
+      throw new Error("map_cloud_preview_unsupported");
+    if (context.weatherView.totalCloud !== undefined) throw new Error("cloud_grid_provider_not_ready");
     const samples = await readMapCloudForecast(this.weather, input.viewport.center, context, deadlineAt, input.viewport.bounds, signal);
     await this.#assertPrivateContextCurrent(context, input.userId);
     signal?.throwIfAborted();
     // Project after all authorization/async boundaries so waiting cannot extend
     // the acquired source's validity or turn a missing hour into clear sky.
-    const now = Date.now(), layer = projectMapCloudLayer(samples, context.selectedAtUtc, now);
+    const now = Date.now(), layer = projectMapCloudLayer(samples, requestedAt, now);
     const ends = mapCloudForecastEnds(samples, now);
     const timeFrames = observationFrameTimes(context).map(atUtc => {
       const frame = projectMapCloudLayer(samples, atUtc, now);
@@ -1192,7 +1209,7 @@ export class MiniappService {
     }, layer.state, uniqueSources([...browsingTimezoneSources(context),
       ...samples.flatMap(sample => sample.forecast?.sources ?? (sample.forecast ? [sample.forecast.source] : [])),
       ...(layer.source ? [layer.source] : []),
-    ]), layer.source?.limitations ?? [], { validAt: context.selectedAtUtc, contextRevision: context.revision });
+    ]), layer.source?.limitations ?? [], { validAt: requestedAt, contextRevision: context.revision });
   }
 
   async getMapScene(input: {
@@ -1282,7 +1299,7 @@ export class MiniappService {
       ? anchor : { latitude: anchor.lat, longitude: anchor.lon }));
     // Keep the legacy combined contract. New Map consumers use getMapCloud so
     // ready geographic data does not wait for this marker/decision response.
-    const cloudWork = layerKind === "CLOUD" && cloudCenter
+    const cloudWork = layerKind === "CLOUD" && cloudCenter && context.weatherView.totalCloud === undefined
       ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt, input.viewport?.bounds, signal)
       : Promise.resolve([]);
     // Cancellation may settle this independent read before the decision batch.
@@ -1313,7 +1330,7 @@ export class MiniappService {
                   selectedAt: context.selectedAtUtc,
                   eventInstanceId: context.eventInstanceId,
                   targetProfile: context.targetProfile,
-                });
+                }, undefined, { totalCloud: context.weatherView.totalCloud });
           signal?.throwIfAborted();
           const detail = await this.repository.getDetail(spot.spotId);
           signal?.throwIfAborted();
@@ -1382,12 +1399,14 @@ export class MiniappService {
     });
     const cloudEnds = mapCloudForecastEnds(cloudSamples, startedAt);
     const forecastEnds = [...cloudEnds, ...Object.values(evaluations)
-      .map((evaluation) => Date.parse(evaluation.weatherAt ?? "") + 3_600_000)
+      .flatMap((evaluation) => [Date.parse(evaluation.weatherAt ?? "") + 3_600_000,
+        Date.parse(evaluation.cloudEvidence?.validUntil ?? "")])
       .filter(Number.isFinite)];
     const forecastValidUntil = forecastEnds.length
       ? new Date(Math.min(...forecastEnds)).toISOString() : null;
     const deliveryBoundary = Math.min(...cloudEnds, ...Object.values(reports).flatMap(report => [
       ...report.data.hourly.map(row => Date.parse(row.weatherAt ?? "") + 3_600_000),
+      ...report.data.hourly.map(row => Date.parse(row.cloudEvidence?.validUntil ?? "")),
       ...report.sources.map(source => Date.parse(source.validTo ?? "")),
       ...report.data.weatherEvidence.alerts.filter(alert => alert.status === "ACTIVE")
         .map(alert => Date.parse(alert.expiresAt ?? "")),
@@ -2399,7 +2418,7 @@ export class MiniappService {
       localDate: observationNightForCivilDate(input.localDate, input.localTime),
       selectedAt,
       targetProfile: "DAILY",
-    });
+    }, userId, { totalCloud: sourceContext.weatherView.totalCloud });
     if (context.location.kind !== "FORMAL_SPOT")
       throw new Error("formal_spot_context_required");
     const {

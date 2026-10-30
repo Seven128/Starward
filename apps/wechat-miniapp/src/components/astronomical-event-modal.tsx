@@ -3,12 +3,13 @@ import { RootPortal, ScrollView, Text, View } from "@tarojs/components";
 import { SharedButton as Button } from "@/components/shared-button-press";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import type { AstronomicalEventLocalVisibility, AstronomicalEventOccurrence, ObservationContext, SourceSummary } from "@starward/miniapp-contracts";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { eventDatePosition, eventDatePresentation, eventDayLabel, eventKindLabel, eventTypeLabel, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "@/content/event/event-model";
 import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useAstronomicalEventCatalog } from "@/hooks/use-astronomical-event-catalog";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { getAstronomicalEvent, getAstronomicalEvents, resolveObservationContext } from "@/services/api-client";
+import { getAstronomicalEvent, resolveObservationContext } from "@/services/api-client";
 import { eventPreviewContextInput } from "@/services/event-preview-context";
 import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "./native-back-boundary";
@@ -18,6 +19,7 @@ import { SourceAttribution } from "./source-attribution";
 import { SourceEntry } from "./source-entry";
 import { FloatingNotificationHost } from "./notification";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
+import { nativeNavigationInsets } from "@/theme/native-metrics";
 
 type ModalMode = "browse" | "select-one";
 type ModalPhase = "opening" | "open" | "closing";
@@ -27,7 +29,7 @@ export interface AstronomicalEventModalHandle {
   back: () => boolean;
 }
 
-export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
+interface AstronomicalEventSurfaceProps {
   open: boolean;
   mode: ModalMode;
   context: ObservationContext | null;
@@ -38,33 +40,38 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   nativeBackBoundary?: boolean;
   portal?: boolean;
   onPresenceChange?: (present: boolean) => void;
-}>(function AstronomicalEventModal({
+  presentation?: "modal" | "page";
+  initialMonth?: string;
+}
+
+export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, AstronomicalEventSurfaceProps>(function AstronomicalEventModal({
   open, mode, context, initialOccurrenceIds = [], initialDetailId = null, onClose, onConfirm,
-  nativeBackBoundary = true, portal = true, onPresenceChange,
-}: {
-  open: boolean;
-  mode: ModalMode;
-  context: ObservationContext | null;
-  initialOccurrenceIds?: readonly string[];
-  initialDetailId?: string | null;
-  onClose: () => void;
-  onConfirm?: (occurrenceId: string | null) => void;
-  nativeBackBoundary?: boolean;
-  portal?: boolean;
-  onPresenceChange?: (present: boolean) => void;
-}, ref) {
+  nativeBackBoundary = true, portal = true, onPresenceChange, presentation = "modal", initialMonth,
+}: AstronomicalEventSurfaceProps, ref) {
+  const fullPage = presentation === "page";
+  const { safeTop, statusBarHeight } = fullPage ? nativeNavigationInsets() : {};
   const reducedMotion = useReducedMotion();
   const themeClass = useAppStore((state) => `theme-${state.mode.toLowerCase()}`);
   const largeText = useAppStore((state) => state.preferences.largeText);
   const [pageVisible, setPageVisible] = useState(true);
-  useDidHide(() => {
-    setPageVisible(false);
-    useAppStore.getState().clearNotifications("event-modal");
-  });
-  useDidShow(() => setPageVisible(true));
   const [mounted, setMounted] = useState(open);
   const [phase, setPhase] = useState<ModalPhase>("opening");
   const [detailId, setDetailId] = useState<string | null>(initialDetailId);
+  const listPosition = useRef<number | undefined>(undefined);
+  const listCanRecord = useRef(open && !initialDetailId);
+  const listRecordEpoch = useRef(0);
+  const [listReturnTop, setListReturnTop] = useState<number | undefined>(undefined);
+  useDidHide(() => {
+    listRecordEpoch.current++;
+    listCanRecord.current = false;
+    setPageVisible(false);
+    useAppStore.getState().clearNotifications("event-modal");
+  });
+  useDidShow(() => {
+    listRecordEpoch.current++;
+    listCanRecord.current = open && !detailId;
+    setPageVisible(true);
+  });
   const [previewSelection, setPreviewSelection] = useState<{ occurrenceId: string; date: string } | null>(null);
   const [draftSelection, setDraftSelection] = useState<string | null>(
     initialOccurrenceIds.length === 1 ? initialOccurrenceIds[0]! : null,
@@ -77,13 +84,20 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   // Only an actual open edge initializes business state. A motion input can
   // change while the user is choosing an event or previewing another night.
   useEffect(() => {
-    if (!open) return;
+    if (!open) { listCanRecord.current = false; return; }
     confirming.current = false;
+    listPosition.current = undefined;
+    listCanRecord.current = pageVisible && !initialDetailId;
+    setListReturnTop(undefined);
     setMounted(true);
     setPhase("opening");
     setDetailId(initialDetailId);
     setPreviewSelection(null);
     setDraftSelection(initialOccurrenceIds.length === 1 ? initialOccurrenceIds[0]! : null);
+    return () => {
+      listRecordEpoch.current++;
+      listCanRecord.current = false;
+    };
   }, [open]);
 
   useEffect(() => {
@@ -108,10 +122,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
     return () => retire(timer);
   }, [open, reducedMotion]);
 
-  const catalog = useResourceQuery({
-    queryKey: ["astronomical-events"], queryFn: getAstronomicalEvents,
-    enabled: mounted && pageVisible, staleTime: 6 * 60 * 60 * 1000,
-  });
+  const catalog = useAstronomicalEventCatalog(mounted && pageVisible);
   const catalogDetail = catalog.data?.data.events.find(item => item.occurrenceId === detailId);
   const previewDate = mode === "browse" && previewSelection?.occurrenceId === detailId
     ? previewSelection.date : context?.localDate ?? catalogDetail?.peakDate;
@@ -130,6 +141,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
     enabled: mounted && pageVisible && Boolean(detailId) && Boolean(context && previewDate), staleTime: 60_000,
   });
   const groups = useMemo(() => groupEventsByPeakMonth(catalog.data?.data.events ?? []), [catalog.data?.data.events]);
+  const initialListMonth = fullPage && initialMonth ? groups.find(group => group.month >= initialMonth)?.month ?? groups.at(-1)?.month : undefined;
   const record = eventRecord.data?.data.event.occurrenceId === detailId ? eventRecord.data.data : undefined;
   const selectedDetail = record?.event ?? catalogDetail;
   const matchingGeometry = detail.data?.data.event.occurrenceId === detailId && detail.data.data.catalogVersion === record?.catalogVersion ? detail.data.data.localVisibility : null;
@@ -146,8 +158,8 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   useEffect(() => {
     if (!pageVisible || !open || !(detailId ? detailFailed : catalogFailed)) return;
     notify({ owner: "event-modal", placement: "floating", tone: "info", title: "天文事件数据异常",
-      body: "部分资料暂未更新，可在弹窗中重试。", dedupeKey: detailId ? `${detailId}:${previewDate}` : "catalog" });
-  }, [pageVisible, open, detailId, previewDate, detailFailed, catalogFailed, notify]);
+      body: fullPage ? "部分资料暂未更新，可在页面中重试。" : "部分资料暂未更新，可在弹窗中重试。", dedupeKey: detailId ? `${detailId}:${previewDate}` : "catalog" });
+  }, [pageVisible, open, detailId, previewDate, detailFailed, catalogFailed, notify, fullPage]);
   useEffect(() => {
     if (open) return;
     useAppStore.getState().clearNotifications("event-modal");
@@ -156,8 +168,23 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
 
   const requestClose = () => {
     if (phase === "closing") return;
-    if (detailId) { setDetailId(null); return; }
+    if (detailId) { returnToList(); return; }
     onClose();
+  };
+  const openDetail = (occurrenceId: string) => {
+    // Enhanced ScrollView may reset its native offset when its page becomes
+    // hidden. Keep only the last visible offset; hidden reset events are not
+    // a new reading position. Withdraw the previous command on every handoff.
+    listRecordEpoch.current++;
+    listCanRecord.current = false;
+    setListReturnTop(undefined);
+    setDetailId(occurrenceId);
+  };
+  const returnToList = () => {
+    listRecordEpoch.current++;
+    setListReturnTop(listPosition.current);
+    listCanRecord.current = open && pageVisible;
+    setDetailId(null);
   };
   const confirm = () => {
     if (!onConfirm || confirming.current) return;
@@ -170,23 +197,34 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
       if (phase !== "closing") requestClose();
       return true;
     },
-  }), [detailId, mounted, onClose, phase]);
+  }), [detailId, mounted, onClose, open, pageVisible, phase]);
 
   if (!mounted) return null;
+  const renderedListEpoch = listRecordEpoch.current;
 
-  const surface = <View className={`theme-token-scope event-modal ${themeClass}${largeText ? " large-text" : ""} event-modal--${phase}${reducedMotion ? " event-modal--reduced" : ""}`}
-      role="dialog" aria-modal="true" ariaLabel={mode === "browse" ? "浏览天文事件" : "选择一个天文事件"}
-      catchMove data-control="astronomical-event-modal">
+  const surface = <View className={`theme-token-scope event-modal ${themeClass}${largeText ? " large-text" : ""} event-modal--${phase}${fullPage ? " event-modal--page" : ""}${reducedMotion ? " event-modal--reduced" : ""}`}
+      style={{ ...(safeTop === undefined ? {} : { "--event-page-safe-top": `${safeTop}px` }),
+        ...(statusBarHeight === undefined ? {} : { "--event-page-title-top": `${statusBarHeight}px` }) } as CSSProperties}
+      {...(fullPage ? {} : { role: "dialog", "aria-modal": "true" })} ariaLabel={mode === "browse" ? "浏览天文事件" : "选择一个天文事件"}
+      catchMove={!fullPage} data-control={fullPage ? "astronomical-event-page" : "astronomical-event-modal"}>
       <FloatingNotificationHost />
-      <View className="event-modal__backdrop" onClick={() => { if (phase !== "closing") onClose(); }} />
+      {fullPage ? <View className="event-page-brand"><Text>今晚去观星</Text></View>
+        : <View className="event-modal__backdrop" onClick={() => { if (phase !== "closing") onClose(); }} />}
       <View className="event-modal__shell">
         <View className="event-modal__header">
-          {detailId ? <Button pressVariant="icon" className="event-modal__icon-button" ariaLabel="返回事件列表" onClick={() => setDetailId(null)}><SemanticIcon name="arrow-left" /></Button> : <View className="event-modal__icon-spacer" />}
+          {detailId || fullPage ? <Button pressVariant="icon" className="event-modal__icon-button" ariaLabel={detailId ? "返回事件列表" : "返回地图"} onClick={requestClose}><SemanticIcon name="arrow-left" /></Button> : <View className="event-modal__icon-spacer" />}
           <Text className="event-modal__title">{detailId ? "天文事件详情" : "天文事件"}</Text>
-          <Button pressVariant="icon" className="event-modal__icon-button" ariaLabel="关闭天文事件" onClick={onClose}><SemanticIcon name="close" /></Button>
+          {!fullPage ? <Button pressVariant="icon" className="event-modal__icon-button" ariaLabel="关闭天文事件" onClick={onClose}><SemanticIcon name="close" /></Button> : null}
         </View>
         <View className={`event-modal__pages${detailId ? " event-modal__pages--detail" : ""}`}>
-          <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__list" ariaLabel="天文事件列表">
+          <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__list" ariaLabel="天文事件列表"
+            {...(!detailId && listReturnTop !== undefined ? { scrollTop: listReturnTop }
+              : !detailId && initialListMonth ? { scrollIntoView: `event-month-${initialListMonth}` } : {})}
+            onScroll={event => {
+              const top = event.detail.scrollTop;
+              if (renderedListEpoch === listRecordEpoch.current && open && pageVisible && listCanRecord.current
+                && !detailId && Number.isFinite(top) && top >= 0) listPosition.current = top;
+            }}>
             <View className="event-modal__content">
               {catalog.isPending ? <StatusPanel state="LOADING" detail="正在读取事件目录。" /> : null}
               {catalogFailed ? <StatusPanel state={canKeepCatalog ? "STALE" : "ERROR"} detail={canKeepCatalog ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
@@ -194,10 +232,10 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
               {catalog.data?.dataState === "FRESH" && !catalogFailed && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
               {mode === "select-one" && initialOccurrenceIds.length > 1 ? <StatusPanel state="PARTIAL" detail={`此历史计划保留了 ${initialOccurrenceIds.length} 个关联；只有确认新选择或清除时才会改为最多一个。`} /> : null}
               {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 天文事件</Text><Text>按月份</Text></View> : null}
-              {groups.map((group) => <View key={group.month} className="event-modal__month">
+              {groups.map((group) => <View key={group.month} id={`event-month-${group.month}`} className="event-modal__month">
                 <View className="event-modal__month-label"><Text>{Number(group.month.slice(5, 7))}月</Text><Text>{group.month.slice(0, 4)}</Text></View>
                 {group.events.map((event) => <View key={event.occurrenceId} className={`event-modal__row${mode === "select-one" && draftSelection === event.occurrenceId ? " is-selected" : ""}`}>
-                  <Button className="event-modal__row-main" onClick={() => setDetailId(event.occurrenceId)} ariaLabel={`查看${event.displayName}详情`}>
+                  <Button className="event-modal__row-main" onClick={() => openDetail(event.occurrenceId)} ariaLabel={`查看${event.displayName}详情`}>
                     <View className="event-modal__date"><Text>{Number(event.peakDate.slice(5, 7))}月</Text><Text>{eventDayLabel(event.peakDate)}</Text><Text>{eventDatePresentation(event).ticket}</Text></View>
                     <View className="event-modal__row-copy"><Text className="event-modal__row-title">{event.displayName}</Text><Text>{event.code} · {eventTypeLabel(event)}{mode === "select-one" && draftSelection === event.occurrenceId ? <Text className="event-modal__chosen-label"> · 已选</Text> : null}</Text><Text>{eventDatePresentation(event).range} {event.activeStartDate.slice(5).replace("-", ".")} — {event.activeEndDate.slice(5).replace("-", ".")}</Text></View>
                     <SemanticIcon name="chevron-right" />
@@ -211,7 +249,8 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
               {catalog.data ? <Text className="event-modal__source">{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件。" : "年度资料。"}{productSourceNames(catalog.data.data.sources) ? `来源：${productSourceNames(catalog.data.data.sources)}。` : ""}目录日期不等于所在地可见性预报；日食必须使用合格太阳观测防护。</Text> : null}
             </View>
           </ScrollView>
-          <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__detail" ariaLabel="天文事件详情">
+          <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__detail" ariaLabel="天文事件详情"
+            {...(detailId ? { scrollTop: 0 } : {})}>
             <View className="event-modal__content">
               {eventRecord.isPending ? <StatusPanel state="LOADING" detail="正在读取事件资料。" /> : null}
               {recordFailed ? <StatusPanel state={record ? "STALE" : "ERROR"} detail="事件资料暂未更新；可以返回列表或重试。" recoveryLabel="重试事件资料" onRecover={() => void eventRecord.refetch()} /> : null}
@@ -225,7 +264,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                 canPreviewDate={Boolean(context)}
                 onPreviewDate={(date) => setPreviewSelection({ occurrenceId: selectedDetail.occurrenceId, date })} /> : null}
               {mode === "select-one" && selectedDetail ? <Button className="event-modal-detail__select" disabled={phase === "closing"}
-                onClick={() => { setDraftSelection(selectedDetail.occurrenceId); setDetailId(null); }}>选择此事件</Button> : null}
+                onClick={() => { setDraftSelection(selectedDetail.occurrenceId); returnToList(); }}>选择此事件</Button> : null}
             </View>
           </ScrollView>
         </View>
@@ -236,8 +275,8 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
       </View>
     </View>;
   return <>
-    {nativeBackBoundary ? <NativeBackBoundary active onBack={requestClose} /> : null}
-    {portal ? <RootPortal>{surface}</RootPortal> : surface}
+    {nativeBackBoundary ? <NativeBackBoundary active={!fullPage || Boolean(detailId)} onBack={requestClose} /> : null}
+    {portal && !fullPage ? <RootPortal>{surface}</RootPortal> : surface}
   </>;
 });
 

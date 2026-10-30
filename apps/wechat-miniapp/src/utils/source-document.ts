@@ -1,12 +1,14 @@
 import { uniqueSourceRecords, type SourceSummary } from "@starward/miniapp-contracts";
 import { isProductSource, SOURCE_KIND_LABEL } from "./source-presentation";
+import type { ForecastInterval } from "../components/forecast-coverage";
+import { cloudInstant } from "@starward/miniapp-contracts";
 
 /** Reading data only. Native navigation never carries React nodes or query closures. */
 export type SourceSection =
   | { kind: "text"; title?: string; paragraphs: readonly string[] }
   | { kind: "facts"; title?: string; items: readonly { label: string; value: string }[] }
   | { kind: "links"; title?: string; items: readonly { label: string; url: string; download?: boolean }[] }
-  | { kind: "forecast"; starts: readonly string[]; timezone: string; scope?: "spot" | "map" | "air"; stale?: boolean };
+  | { kind: "forecast"; starts: readonly string[]; cloudIntervals?: readonly ForecastInterval[]; timezone: string; scope?: "spot" | "map" | "air"; stale?: boolean };
 
 export interface SourceDocument {
   title: string;
@@ -60,6 +62,8 @@ function section(value: unknown): value is SourceSection {
   if (!record(value) || !optionalString(value.title)) return false;
   if (value.kind === "text") return strings(value.paragraphs);
   if (value.kind === "forecast") return strings(value.starts) && typeof value.timezone === "string" &&
+    (value.cloudIntervals === undefined || Array.isArray(value.cloudIntervals) && value.cloudIntervals.every(interval => record(interval) &&
+      Boolean(cloudInstant(interval.start)) && Boolean(cloudInstant(interval.end)) && Date.parse(interval.end as string) >= Date.parse(interval.start as string))) &&
     (value.scope === undefined || ["spot", "map", "air"].includes(String(value.scope))) &&
     (value.stale === undefined || typeof value.stale === "boolean");
   if (value.kind !== "facts" && value.kind !== "links" || !Array.isArray(value.items)) return false;
@@ -82,6 +86,7 @@ function copySection(value: SourceSection): SourceSection {
   if (value.kind === "links") return { kind: value.kind, ...title, items: value.items.map(item => ({ label: item.label, url: item.url,
     ...(item.download === undefined ? {} : { download: item.download }) })) };
   return { kind: value.kind, starts: [...value.starts], timezone: value.timezone,
+    ...(value.cloudIntervals === undefined ? {} : { cloudIntervals: value.cloudIntervals.map(interval => ({ start: interval.start, end: interval.end })) }),
     ...(value.scope === undefined ? {} : { scope: value.scope }), ...(value.stale === undefined ? {} : { stale: value.stale }) };
 }
 

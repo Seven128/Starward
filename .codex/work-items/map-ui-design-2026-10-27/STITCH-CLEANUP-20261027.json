@@ -1,0 +1,142 @@
+{
+  "checkedAt": "2026-10-27T11:14:17.732Z",
+  "projectId": "7144519510537620825",
+  "authorization": "User explicitly authorized cleanup of obsolete and previously failed-to-delete resources on 2026-10-27.",
+  "method": "Official Stitch website: select each exact node, verify only that ID selected, More > Delete; official CLI no-cache readback.",
+  "deletionSemantics": "Native Delete removes active canvas membership and retains hidden:true undo/history. No raw hidden mutation or permanent purge.",
+  "deleted": [
+    {
+      "id": "3995519477980461148",
+      "title": "已采用 10-22｜局部修订·原页保留｜可编辑源与审阅图",
+      "reason": "10-22旧增量；有效四文件及五张参考已完整迁入当前采用稿",
+      "beforeActive": true,
+      "afterHidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "6749335154041636852",
+      "title": "当前待选 r2｜10-27 地图 A/B · 完整宿主与可编辑源",
+      "reason": "r2 A/B整合候选；已被采用稿替代",
+      "beforeActive": true,
+      "afterHidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "11146718692192685410",
+      "title": "待选｜10-27 地图局部修订 A/B · 完整宿主与可编辑源",
+      "reason": "首版整合候选；ZIP问题后的废弃版本",
+      "beforeActive": true,
+      "afterHidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "7195722235979517378",
+      "title": "10-27 局部修订｜当前采用稿参考（非候选）",
+      "reason": "本轮一次性参考板",
+      "beforeActive": true,
+      "afterHidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "5a612ae8c4dc4d3d82d4e6f14d108774",
+      "title": "Starward · 4屏审阅看板 方案A (顶部事件横幅)",
+      "reason": "原始A方向稿；采用稿已有完整宿主和可编辑源",
+      "beforeActive": true,
+      "afterHidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "922acbd2b69f4d438c56d167e43dddca",
+      "title": "Starward · 4屏审阅看板 方案B (左下集成横幅)",
+      "reason": "未采用的原始B方向稿",
+      "beforeActive": true,
+      "afterHidden": true,
+      "absentFromActiveList": true
+    }
+  ],
+  "before": {
+    "totalInstances": 104,
+    "activeInstances": 28,
+    "listedScreens": 28,
+    "truncated": false
+  },
+  "after": {
+    "totalInstances": 104,
+    "activeInstances": 22,
+    "listedScreens": 22,
+    "truncated": false
+  },
+  "remainingActiveScreenIdentityAndTitlesUnchanged": true,
+  "protectedResources": [
+    {
+      "id": "4203568869937199387",
+      "title": "已采用 10-27｜上方banner·书签·视野卡片·独立层叠｜完整可编辑增量",
+      "active": true
+    },
+    {
+      "id": "5205988829884632961",
+      "title": "小程序完整可编辑多文件源｜2026-10-17合并",
+      "active": true
+    },
+    {
+      "id": "5385664345158066168",
+      "title": "云观星菜单与弹窗｜已采用·完整交互·2026-10-17",
+      "active": true
+    },
+    {
+      "id": "46a9936c70664e4381411573ab6b34da",
+      "title": "08｜共享 Info 提醒与暂无数据",
+      "active": true
+    },
+    {
+      "id": "1f98910c16f84444b4aec58bb7ad741c",
+      "title": "15｜周边环境·山体遮挡｜当前局部源",
+      "active": true
+    }
+  ],
+  "nonTargetInstances": {
+    "count": 98,
+    "allFieldsUnchangedCount": 97,
+    "fieldDifferences": [
+      {
+        "id": "4203568869937199387",
+        "field": "height",
+        "before": 7578,
+        "after": 7565
+      }
+    ],
+    "explanation": "The current adopted HTML canvas instance automatically remeasured its full-height container while rendering. No resize, content edit or upload was performed; source file, full HTML and embedded ZIP are unchanged."
+  },
+  "adoptedScreenRecordUnchanged": true,
+  "adoptedContent": {
+    "htmlBytes": 1224787,
+    "htmlSha256": "b906eee5127129b809ed48ce1b42c100be4f83f4cc6f9600d121140121d0b65f",
+    "zipBytes": 509924,
+    "zipSha256": "91e642dca8a167a9766f47da5bbf7d1ee855b681199391f21e756a9d6d3cceb5"
+  },
+  "historicalCleanupRechecked": [
+    {
+      "id": "48b5fb53ec86468d86544ee6eecea064",
+      "hidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "6054859b666a4bf4a708d5d16e18c6de",
+      "hidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "1029654656181953306",
+      "hidden": true,
+      "absentFromActiveList": true
+    },
+    {
+      "id": "a729b4eb833c4190b3d26f1962c007bf",
+      "hidden": true,
+      "absentFromActiveList": true
+    }
+  ],
+  "historicalHiddenInstancesUnchanged": true,
+  "proofScreenshot": "tmp/stitch-cleanup-current.png",
+  "scope": "This cleanup completes these six obsolete design-node deletions only; no product source, private original, frozen build, independent App, N05 or R6 changes. Overall Goal remains incomplete."
+}

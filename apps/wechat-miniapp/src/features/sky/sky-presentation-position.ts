@@ -6,18 +6,21 @@ import { assertStellarGeometryFrame, assertStellarGeometryMotion, isBrightStarRe
 import { projectStellarMotion, type StellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import type { CelestialPositionBinding } from "../../services/celestial-position-response";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
+import { currentStellarSupplement, isAdmittedSkyStellarSupplementFrame, type SkyStellarSupplementFrame } from "./sky-stellar-supplement-scene";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 
 export interface SkyPositionPresentation {
   source: ApiEnvelope<SkyReport>;
   rendered: ResolvedSkyReport;
+  stellarSupplement?: SkyStellarSupplementFrame | null;
   anchorAt: string;
   timeModelAlgorithmVersion?: string;
 }
 
 /** Same authorized publication, observer and rendered instant as Canvas. The
- * only lazy input is an identity-bound star motion, not a new ephemeris or a
- * remotely fetched position for each elapsed frame. Negative altitude remains. */
+ * loaded SAO uses that frame's admitted tile transform. An unloaded star may
+ * use an identity-bound lazy motion, never a remote position for each elapsed
+ * frame. Negative altitude remains. */
 export function skyPresentationPosition(binding: CelestialPositionBinding,
   catalog: { catalogVersion: string; catalogHash: string } | null,
   presentation: SkyPositionPresentation | undefined,
@@ -49,15 +52,22 @@ export function skyPresentationPosition(binding: CelestialPositionBinding,
         catalog.catalogVersion === scene.catalog.catalogVersion) {
         const star = scene.publication.rows.find(row => row[0] === binding.reference);
         if (star) motion = [star[4], star[5], star[6], star[7], star[8], star[9]];
-      } else if (isSaoStarReference(binding.reference) && anchor && ["FRESH", "STALE_USABLE"].includes(anchor.dataState)) {
-        const data = anchor.data;
-        if (data.reference === binding.reference && data.at === presentation.anchorAt &&
-          ["spotId", "contextId", "contextRevision", "contextFingerprint", "dataRevision", "algorithmVersion"].every(
-            key => data[key as keyof CelestialPositionBinding] === binding[key as keyof CelestialPositionBinding]) &&
-          data.position?.catalogVersion === catalog.catalogVersion && data.position.catalogHash === catalog.catalogHash &&
-          data.stellarMotion?.referenceAt === STELLAR_GEOMETRY_REFERENCE_AT) {
-          assertStellarGeometryMotion(data.stellarMotion.factors);
-          motion = data.stellarMotion.factors;
+      } else if (isSaoStarReference(binding.reference)) {
+        const supplement = currentStellarSupplement(presentation.stellarSupplement, scene, binding.at);
+        const point = supplement && isAdmittedSkyStellarSupplementFrame(supplement) &&
+          supplement.catalogVersion === catalog.catalogVersion && supplement.catalogHash === catalog.catalogHash
+          ? supplement.pointForReference?.(binding.reference) : null;
+        if (point) position = { azimuthDeg: point[2], altitudeDeg: point[3], ...catalog };
+        else if (anchor && ["FRESH", "STALE_USABLE"].includes(anchor.dataState)) {
+          const data = anchor.data;
+          if (data.reference === binding.reference && data.at === presentation.anchorAt &&
+            ["spotId", "contextId", "contextRevision", "contextFingerprint", "dataRevision", "algorithmVersion"].every(
+              key => data[key as keyof CelestialPositionBinding] === binding[key as keyof CelestialPositionBinding]) &&
+            data.position?.catalogVersion === catalog.catalogVersion && data.position.catalogHash === catalog.catalogHash &&
+            data.stellarMotion?.referenceAt === STELLAR_GEOMETRY_REFERENCE_AT) {
+            assertStellarGeometryMotion(data.stellarMotion.factors);
+            motion = data.stellarMotion.factors;
+          }
         }
       }
       if (motion) position = { ...projectStellarMotion(motion, frame.geometry.julianYears, frame.geometry.equatorialToEnu), ...catalog };

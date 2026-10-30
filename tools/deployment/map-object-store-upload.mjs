@@ -10,7 +10,7 @@ import { assertNeverVersionedOss, ensureImmutableOssObject } from "./object-stor
 const fail = code => { throw new Error(`map_object_store_${code}`); };
 const active = signal => { if (signal?.aborted) fail("aborted"); };
 const known = new Set(["versioning_invalid", "remote_metadata_mismatch", "remote_identity_mismatch", "put_result_missing",
-  "source_changed", "package_changed", "client_target_mismatch", "aborted"]);
+  "source_changed", "package_changed", "client_target_mismatch", "aborted", "cloud_source_qualification_not_ready", "sharded_nightlight_publication_not_ready"]);
 const safeError = error => known.has(error?.message?.replace(/^map_object_store_/u, "")) ? error.message : "map_object_store_provider_or_readback_failed";
 
 /** Explicit writing operator, separate from ordinary build/deployment. Reuses
@@ -22,6 +22,12 @@ const safeError = error => known.has(error?.message?.replace(/^map_object_store_
 export async function uploadMapObjectStore({ receiptDirectory, bucket, region, credentials, signal, clientFactory = createSkyOssClient, ...args }) {
   active(signal); const target = assertSkyOssTarget({ bucket, region });
   const prepared = await readMapObjectStorePackage(args), { plan } = prepared;
+  // The current cloud family is deliberately local DEVELOPMENT_ONLY. Numeric
+  // readiness/pilot pixels do not establish source-group or full map readiness.
+  // There is no boolean override or accepted "qualified" variant. Reject before
+  // opening a journal, constructing a client or performing any remote request.
+  if (prepared.sourceAdmissions.some(source => source.family === "cloud")) fail("cloud_source_qualification_not_ready");
+  if (prepared.sourceAdmissions.some(source => source.family === "night-light" && source.publicationVersion.startsWith("nightlight-sharded:"))) fail("sharded_nightlight_publication_not_ready");
   if (!path.isAbsolute(receiptDirectory ?? "")) fail("receipt_path_invalid");
   const receiptRoot = path.resolve(receiptDirectory), info = await lstat(receiptRoot);
   const comparable = value => process.platform === "win32" ? value.toLowerCase() : value;

@@ -1,0 +1,84 @@
+✖ precise target cache releases the retired page callback on hide (605.4695ms)
+✖ precise target cache releases the retired page callback on unmount (451.9047ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1336.2478
+
+✖ failing tests:
+
+test at src\features\sky\sky-time-query-retention.test.ts:52:40
+✖ precise target cache releases the retired page callback on hide (605.4695ms)
+  AssertionError [ERR_ASSERTION]: AssertionError [ERR_ASSERTION]: hide cache retains pageOwner
+  + actual - expected
+  
+  + {
+  +   marker: 'retired-page-frame-owner'
+  + }
+  - undefined
+  
+      at [eval]:43:54 {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [Object],
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (E:\dev\Starward\apps\wechat-miniapp\src\features\sky\sky-time-query-retention.test.ts:67:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-time-query-retention.test.ts:52:40
+✖ precise target cache releases the retired page callback on unmount (451.9047ms)
+  AssertionError [ERR_ASSERTION]: AssertionError [ERR_ASSERTION]: unmount cache retains pageOwner
+  + actual - expected
+  
+  + {
+  +   marker: 'retired-page-frame-owner'
+  + }
+  - undefined
+  
+      at [eval]:43:54 {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [Object],
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (E:\dev\Starward\apps\wechat-miniapp\src\features\sky\sky-time-query-retention.test.ts:67:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

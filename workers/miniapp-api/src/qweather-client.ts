@@ -25,16 +25,7 @@ export function qweatherRequestPoint(input: { point: Wgs84Point }) {
 }
 
 /** Explicit-offset ISO instant with a real source calendar date; Date.parse alone rolls invalid days forward. */
-export function qweatherInstant(value: unknown): string | null {
-  const raw = typeof value === "string" ? value.trim() : "";
-  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-](\d{2}):(\d{2}))$/u.exec(raw);
-  if (!match || Number(match[2]) > 23 || Number(match[3]) > 59 || Number(match[4] ?? 0) > 59 ||
-    Number(match[5] ?? 0) > 23 || Number(match[6] ?? 0) > 59) return null;
-  const calendar = Date.parse(`${match[1]}T00:00:00Z`);
-  if (!Number.isFinite(calendar) || new Date(calendar).toISOString().slice(0, 10) !== match[1]) return null;
-  const parsed = Date.parse(raw);
-  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
-}
+export { sourceInstant as qweatherInstant } from "@starward/miniapp-contracts";
 
 export async function fetchJson<T>(url: URL, init: RequestInit, transport: typeof fetch,
   deadlineMs: number = WEATHER_DEADLINES.requestMs): Promise<T> {

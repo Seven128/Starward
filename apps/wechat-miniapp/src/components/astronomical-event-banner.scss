@@ -1,0 +1,26 @@
+.event-banner {
+  position: absolute; z-index: 32; top: var(--event-banner-top, calc(env(safe-area-inset-top) + 128Px)); left: 16Px;
+  box-sizing: border-box; width: 66.666667%; min-height: 70Px; padding: 10Px 13Px; margin: 0; border: 0; text-align: left; white-space: normal;
+  display: flex; align-items: center; gap: 10Px; overflow: hidden; border-radius: 18Px;
+  background: var(--surface); color: var(--text-primary);
+}
+.theme-day .event-banner { background: #fffffff5; color: #33434e; }
+.event-banner::after { border: 0; }
+.event-banner__open { flex: 0 0 38Px; width: 38Px; height: 44Px; display: flex; align-items: center; }
+.event-banner__open .semantic-icon { width: 38Px; height: 38Px; flex-basis: 38Px; }
+.event-banner__body { flex: 1; min-width: 0; }
+.event-banner .event-banner__copy { display: flex; flex-direction: column; justify-content: center; width: 100%; min-height: 44Px; text-align: left; white-space: normal; }
+.event-banner__copy--out { opacity: 0; transition: transform 130ms ease-in, opacity 130ms ease-in; }
+.event-banner__copy--in-start { opacity: 0; transition: none; }
+.event-banner__copy--in { opacity: 1; transition: transform 180ms cubic-bezier(.2,.7,.2,1), opacity 180ms cubic-bezier(.2,.7,.2,1); }
+.event-banner__title { display: block; font-size: 15Px; font-weight: 600; line-height: 21Px; }
+.event-banner__date { display: block; margin-top: 2Px; color: var(--text-secondary); font-size: 11Px; font-weight: 400; line-height: 16Px; white-space: nowrap; }
+.theme-day .event-banner__date { color: #78848d; }
+.event-banner__dots { display: flex; gap: 4Px; height: 3Px; margin-top: 3Px; overflow: hidden; }
+.event-banner__dots view { width: 3Px; height: 3Px; flex: 0 0 3Px; border-radius: 50%; background: var(--border); }
+.event-banner__dots .is-current { background: var(--text-tertiary); }
+.theme-day .event-banner__dots view { background: #d4dedf; }
+.theme-day .event-banner__dots .is-current { background: #9caeaa; }
+.event-banner__retained { display: block; color: var(--text-secondary); font-size: 10Px; line-height: 14Px; }
+.event-banner__chevron { flex: 0 0 10Px; width: 10Px; height: 44Px; display: flex; align-items: center; justify-content: center; }
+.event-banner__chevron .semantic-icon { width: 10Px; height: 14Px; flex-basis: 10Px; }

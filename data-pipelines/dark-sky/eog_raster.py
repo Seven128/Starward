@@ -13,7 +13,7 @@ from typing import Any, Iterable, Mapping, Sequence
 import numpy as np
 import rasterio
 from rasterio.errors import RasterioIOError
-from rasterio.windows import Window, from_bounds
+from rasterio.windows import Window, from_bounds, transform as window_transform
 
 
 SOURCE_PAGE = "https://eogdata.mines.edu/products/vnl/"
@@ -23,6 +23,7 @@ RADIANCE_UNIT = "nW/cm²/sr"
 SOURCE_PROVIDER = "Earth Observation Group (EOG)"
 METHOD_VERSION = "starward-eog-annual-vnl-relative-band-current"
 MAX_NATIVE_GRID_CELLS = 512
+BOUNDED_SOURCE_LAYOUT = "BOUNDED_SOURCE_CORES_V1"
 MANIFEST_KEYS = {
     "schemaVersion",
     "datasetVersion",
@@ -92,6 +93,25 @@ class RasterSelection:
     window: Window
     transform: Any
     resolution_degrees: tuple[float, float]
+
+
+@dataclass(frozen=True)
+class RasterGrid:
+    """The admitted source footprint, without loading its pixel arrays."""
+    window: Window
+    transform: Any
+    resolution_degrees: tuple[float, float]
+    width: int
+    height: int
+    raster_transform: Any
+
+    def transform_for_window(self, window: Window) -> Any:
+        """Use original-raster arithmetic, identical to Dataset.window_transform.
+
+        Translating an already cropped affine can round an origin differently
+        from the actual pixel reader, even for the same integer source window.
+        """
+        return window_transform(window, self.raster_transform)
 
 
 def canonical_json(value: Any) -> str:
@@ -282,32 +302,54 @@ def _bounded_window(dataset: Any, aoi: Aoi) -> Window:
     return window
 
 
-def read_selection(manifest: PublicationManifest) -> RasterSelection:
+def _selection_grid(manifest: PublicationManifest, radiance_dataset: Any, coverage_dataset: Any) -> RasterGrid:
+    for label, dataset, item in (
+        ("radiance", radiance_dataset, manifest.radiance),
+        ("coverage", coverage_dataset, manifest.coverage),
+    ):
+        if dataset.crs is None or dataset.crs.to_epsg() != 4326:
+            raise PipelineError(f"{label}_crs_must_be_epsg4326")
+        if item.band > dataset.count:
+            raise PipelineError(f"{label}_band_out_of_range")
+        if dataset.transform.b != 0 or dataset.transform.d != 0:
+            raise PipelineError(f"{label}_rotated_grid_unsupported")
+        if dataset.transform.a <= 0 or dataset.transform.e >= 0:
+            raise PipelineError(f"{label}_grid_orientation_invalid")
+    if (radiance_dataset.width != coverage_dataset.width or radiance_dataset.height != coverage_dataset.height
+            or not _same_transform(radiance_dataset.transform, coverage_dataset.transform)):
+        raise PipelineError("radiance_coverage_grid_mismatch")
+    window = _bounded_window(radiance_dataset, manifest.aoi)
+    if window != _bounded_window(coverage_dataset, manifest.aoi):
+        raise PipelineError("radiance_coverage_aoi_window_mismatch")
+    return RasterGrid(window, radiance_dataset.window_transform(window),
+                      (abs(float(radiance_dataset.transform.a)), abs(float(radiance_dataset.transform.e))),
+                      int(window.width), int(window.height), radiance_dataset.transform)
+
+
+def read_grid(manifest: PublicationManifest) -> RasterGrid:
+    try:
+        with rasterio.open(raster_uri(manifest.radiance.path)) as radiance, rasterio.open(raster_uri(manifest.coverage.path)) as coverage:
+            return _selection_grid(manifest, radiance, coverage)
+    except RasterioIOError as error:
+        raise PipelineError("raster_unreadable") from error
+
+
+def read_selection(manifest: PublicationManifest, *, source_window: Window | None = None) -> RasterSelection:
     try:
         with rasterio.open(raster_uri(manifest.radiance.path)) as radiance_dataset, rasterio.open(
             raster_uri(manifest.coverage.path)
         ) as coverage_dataset:
-            for label, dataset, item in (
-                ("radiance", radiance_dataset, manifest.radiance),
-                ("coverage", coverage_dataset, manifest.coverage),
-            ):
-                if dataset.crs is None or dataset.crs.to_epsg() != 4326:
-                    raise PipelineError(f"{label}_crs_must_be_epsg4326")
-                if item.band > dataset.count:
-                    raise PipelineError(f"{label}_band_out_of_range")
-                if dataset.transform.b != 0 or dataset.transform.d != 0:
-                    raise PipelineError(f"{label}_rotated_grid_unsupported")
-                if dataset.transform.a <= 0 or dataset.transform.e >= 0:
-                    raise PipelineError(f"{label}_grid_orientation_invalid")
-            if (
-                radiance_dataset.width != coverage_dataset.width
-                or radiance_dataset.height != coverage_dataset.height
-                or not _same_transform(radiance_dataset.transform, coverage_dataset.transform)
-            ):
-                raise PipelineError("radiance_coverage_grid_mismatch")
-            window = _bounded_window(radiance_dataset, manifest.aoi)
-            if window != _bounded_window(coverage_dataset, manifest.aoi):
-                raise PipelineError("radiance_coverage_aoi_window_mismatch")
+            grid = _selection_grid(manifest, radiance_dataset, coverage_dataset)
+            window = grid.window
+            if source_window is not None:
+                if (any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value != int(value)
+                        for value in source_window.flatten()) or min(source_window.width, source_window.height) < 1
+                        or source_window.width * source_window.height > 2402 ** 2
+                        or source_window.col_off < window.col_off or source_window.row_off < window.row_off
+                        or source_window.col_off + source_window.width > window.col_off + window.width
+                        or source_window.row_off + source_window.height > window.row_off + window.height):
+                    raise PipelineError("source_chunk_window_invalid")
+                window = source_window
             radiance = radiance_dataset.read(
                 manifest.radiance.band, window=window, masked=True
             ).astype("float64")
@@ -330,6 +372,34 @@ def read_selection(manifest: PublicationManifest) -> RasterSelection:
         transform=transform,
         resolution_degrees=resolution,
     )
+
+
+def read_native_point_selection(manifest: PublicationManifest, longitude: float, latitude: float) -> RasterSelection:
+    """Read one original 3x3 neighbourhood without loading a part's full AOI.
+
+    The publisher separately supplies the union of published native footprints.
+    Boundless masked cells keep the original nine-cell denominator at a source
+    edge; neither this reader nor a neighbouring part invents source values.
+    """
+    longitude, latitude = _number(longitude, "spot.longitude"), _number(latitude, "spot.latitude")
+    try:
+        with rasterio.open(raster_uri(manifest.radiance.path)) as radiance, rasterio.open(
+            raster_uri(manifest.coverage.path)
+        ) as coverage:
+            grid = _selection_grid(manifest, radiance, coverage)
+            column_float, row_float = ~radiance.transform * (longitude, latitude)
+            column, row = math.floor(column_float), math.floor(row_float)
+            if not 0 <= column < radiance.width or not 0 <= row < radiance.height:
+                raise PipelineError("spot_outside_source_grid")
+            window = Window(column - 1, row - 1, 3, 3)
+            values = radiance.read(manifest.radiance.band, window=window, masked=True, boundless=True).astype("float64")
+            coverages = coverage.read(manifest.coverage.band, window=window, masked=True, boundless=True).astype("float64")
+            transform = radiance.window_transform(window)
+    except RasterioIOError as error:
+        raise PipelineError("raster_unreadable") from error
+    if values.shape != (3, 3) or coverages.shape != (3, 3):
+        raise PipelineError("native_point_window_shape_invalid")
+    return RasterSelection(values, coverages, window, transform, grid.resolution_degrees)
 
 
 def valid_mask(selection: RasterSelection, minimum_coverage: int) -> np.ndarray:
