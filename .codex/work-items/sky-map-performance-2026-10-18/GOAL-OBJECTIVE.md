@@ -1,5 +1,7 @@
 # 当前Goal正文：仅微信小程序
 
+**2026-10-31最新覆盖：本任务已原位封存。** 先完成[独立原生迁移](../wechat-native-migration-2026-10-31/INDEX.md)，再按[封存规则](HANDOFF.md#native-migration-freeze)重写旧计划并续办。下方Goal正文保留历史完整目标，其“直接恢复实施、不重新规划、旧优先级”不再是当前执行指令；不得仅因读到旧Goal或提示词自动开工。当前聊天无Goal，本次未操作其它线程Goal，历史paused不冒当前工具读回。
+
 2026-10-30本日最终handoff：同一Goal（threadId `01a18a43-d31c-7ee3-a724-71d100acd6bf`）实读paused、无预算；用户再次暂停后要求交接，本轮仅保存资料。地形/Sky这轮性能、交互和故障修复已收口：真实山体遮挡验收取消；D2按用户要求完成、后续实际卡顿再处理；实体转动用户已确认；F04旧图层remove/pin/退休及后继恢复已有实测。物理native/GPU字节及容量UNKNOWN不改写为通过，也不形成新的采集门槛。原话和有效范围见[当前委托](RESUME-20261030.md#本日后续范围裁决与当前两项核验)，结果及其它未完义务只归[HANDOFF](HANDOFF.md)。完整Goal未完成，不能以本轮收口或交接标complete。
 
 本文件保存完整目标正文，工具状态以get_goal实读为准。工具正文仍有较早的“不开subagent”及旧范围文字，工具不支持正文修改，本轮没有改写它；下方文件正文也保持原字节。用户后来明确允许多agent、取消山体遮挡、收口D2、授权地形/Sky自主设备操作及F04用户回归，覆盖冲突旧条款；最新完整修订归[REQUIREMENTS](REQUIREMENTS.md)。新对话收到明确恢复提示后先get_goal，同范围可用Goal直接续用；无Goal才创建同一最终目标，不设预算。用户已明确允许“引用全文创建Goal”：工具长度不足时可用精简记录，引用本文件全文、最新有效修订及唯一索引绝对路径 `E:/Dev/Starward/.codex/work-items/sky-map-performance-2026-10-18/INDEX.md`，不缩减目标范围。

@@ -1,3 +1,4 @@
+# Automated test suites retired for native migration; remaining steps do not claim automated product-test coverage.
 name: Context structure
 
 on:
@@ -30,5 +31,3 @@ jobs:
         run: npm ci --ignore-scripts --workspace @starward/context-check --include-workspace-root=false
       - if: steps.scope.outputs.context == 'true'
         run: npm run context:validate
-      - if: steps.scope.outputs.context == 'true'
-        run: node --test tools/run-node.test.mjs tools/ci/*.test.mjs tools/miniapp/project-skills.test.mjs tools/miniapp/workflow-conformance.test.mjs

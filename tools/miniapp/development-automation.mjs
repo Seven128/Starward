@@ -19,14 +19,14 @@ export function validAutomationPort(value) {
   return number;
 }
 export function developmentOptions(argv) {
-  const result = { apiPort: 8787, automationPort: null, noOpen: false, memory: false };
+  const result = { apiPort: 8787, automationPort: null, noOpen: false };
   for (let i = 0; i < argv.length; i++) {
     const value = argv[i];
     if (value === "--api-port" || value === "--automation-port") {
       const port = validAutomationPort(argv[++i]);
       result[value === "--api-port" ? "apiPort" : "automationPort"] = port;
     } else if (value === "--no-open") result.noOpen = true;
-    else if (value === "--memory") result.memory = true;
+    else if (value === "--memory") observerFail("test_runtime_retired_use_published_data");
     else observerFail("unknown_development_option");
   }
   if (result.automationPort !== null && (result.noOpen || result.automationPort === result.apiPort)) observerFail("automation_port_conflict");

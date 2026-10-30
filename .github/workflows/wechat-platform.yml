@@ -1,3 +1,4 @@
+# Automated test suites retired for native migration; remaining steps do not claim automated product-test coverage.
 name: WeChat platform candidate
 
 on:
@@ -102,8 +103,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm run test:miniapp:release
-          npm run test:miniapp:platform
           npm run check:miniapp:release-code
           npm run miniapp:bundle -- \
             --lane "$WECHAT_LANE" \
@@ -111,8 +110,6 @@ jobs:
             --sky-resource-origin "${WECHAT_SKY_RESOURCE_ORIGIN:-$WECHAT_API_ORIGIN}" \
             --app-id "$WECHAT_APP_ID" \
             --source-revision "$GITHUB_SHA"
-          MINIAPP_BUILT_CANDIDATE_MANIFEST="$GITHUB_WORKSPACE/artifacts/miniapp/release/$WECHAT_LANE.manifest.json" \
-            node --test tools/miniapp/built-candidate.test.mjs
       - name: Preview or upload verified bundle
         shell: bash
         env:

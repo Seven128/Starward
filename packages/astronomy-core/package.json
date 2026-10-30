@@ -64,7 +64,6 @@
   "scripts": {
     "build:release": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
     "typecheck": "node ../../tools/run-node.cjs ../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
-    "test": "node ../../tools/run-node.cjs --import tsx --test",
     "build:gaia-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/gaia-star-catalog.ts",
     "build:hipparcos-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/hipparcos-bright-star-catalog.ts",
     "build:deep-sky-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/opengc-messier-deep-sky-catalog.ts"

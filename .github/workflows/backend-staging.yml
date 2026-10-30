@@ -1,3 +1,4 @@
+# Automated test suites retired for native migration; remaining steps do not claim automated product-test coverage.
 name: Backend staging release
 
 on:
@@ -124,7 +125,6 @@ jobs:
           npm ci --ignore-scripts --prefix tools/deployment/oss-runtime
       - name: Recheck release owners at the promoted revision
         run: |
-          npm run test:deployment
           npm run check:miniapp:release-code
           npm run build:miniapp:release
           sh -n infrastructure/deployment/run-remote-promotion.sh
@@ -132,11 +132,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           npm audit --omit=dev --workspace @starward/miniapp-api --audit-level=high
-          npm run test:miniapp:release
-          npm run test:miniapp:platform
           npm run miniapp:bundle -- --lane ci --api-origin https://api.starward-ci.invalid --source-revision "$REVISION"
-          node --test tools/miniapp/built-candidate.test.mjs
-          npm run test:miniapp:infrastructure
       - name: Build and publish the immutable release image
         id: image
         shell: bash

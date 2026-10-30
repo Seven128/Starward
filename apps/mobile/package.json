@@ -8,8 +8,7 @@
     "android": "node ../../tools/run-node.cjs --bin expo expo run:android",
     "ios": "node ../../tools/run-node.cjs --bin expo expo run:ios",
     "web": "node ../../tools/run-node.cjs --bin expo expo start --web",
-    "typecheck": "node ../../tools/run-node.cjs --bin typescript tsc --noEmit",
-    "test": "node ../../tools/run-node.cjs --bin vitest vitest run"
+    "typecheck": "node ../../tools/run-node.cjs --bin typescript tsc --noEmit"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.6",
@@ -54,8 +53,7 @@
   "devDependencies": {
     "@types/node": "^26.1.1",
     "@types/react": "19.2.14",
-    "typescript": "~6.0.3",
-    "vitest": "^4.1.10"
+    "typescript": "~6.0.3"
   },
   "engines": {
     "node": ">=22.13.0"

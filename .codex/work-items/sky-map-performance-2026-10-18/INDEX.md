@@ -1,4 +1,10 @@
-# Starward 小程序剩余工作入口
+# Starward 小程序剩余工作入口（原位封存）
+
+**2026-10-31当前控制状态：封存，等待独立原生迁移完成后重写方案。** 迁移入口为[微信全原生迁移](../wechat-native-migration-2026-10-31/INDEX.md)，已确定前端原生＋TypeScript、后端语言/框架保留，迁移方案尚待编制。本目录保留旧P1–P6未完义务与新增优化，当前不实施；迁移完成后先重写PLAN、对账未完义务与有效证据，再继续实施。旧“直接恢复、不重新规划、优先EOG”顺序已失效，不能通过旧Goal正文或旧提示绕过。
+
+本次采纳去向见[优化覆盖表](PLAN.md#stack-review-optimization-coverage)，状态见[封存HANDOFF](HANDOFF.md#native-migration-freeze)，封存文档校验值见[FREEZE](FREEZE-20261031.json)。封存不删除代码/WIP/数据/证据，也不宣布完整产品完成。
+
+## 封存前的最后交付与有效证据
 
 **当前范围：** [性能维护四点](PLAN.md#performance-maintenance)已完成，**已按用户要求停止**。第1、2点以实际代码/消费者及Map58、Sky98项现有行为回归核对；第3、4点已接入原开发skill与Context，唯一PLAN同步。本轮没有新生产代码修补或设备采集。当前Goal工具为paused，完整Goal未完成，不恢复全国EOG及其它任务。授权归[RESUME](RESUME-20261030.md#性能维护四点授权)，结果归[核对记录](PERFORMANCE-MAINTENANCE-20261030.md)，当前状态只看[HANDOFF](HANDOFF.md)。
 
@@ -14,11 +20,11 @@
 
 1. [GOAL-OBJECTIVE](GOAL-OBJECTIVE.md)：新对话创建无预算目标使用的完整小程序Goal正文。当前Goal为小程序、无预算，状态以get_goal实读为准；新对话先get_goal，用户最新允许subagent，继续分析/修复/优化；执行顺序归现行PLAN，不恢复更早App范围。
 2. [REQUIREMENTS](REQUIREMENTS.md)、[INHERITED-REQUIREMENTS](INHERITED-REQUIREMENTS.md)：当前边界和原小程序剩余结果映射。
-3. [PLAN](PLAN.md)：唯一活跃实施方案，只留未完成结果、产品约束及有条件分支；最新性能去重直接收进[同机制收敛规则](PLAN.md#performance-scenario-consolidation)、[D1](PLAN.md#terrain-performance)与[D2](PLAN.md#sky-time-performance)。执行时完整读取，不恢复旧场景枚举或外部报告的优先清单。
+3. [PLAN](PLAN.md)：已封存的唯一后续方案底稿，保未完结果、产品约束、条件分支与本次采纳优化；迁移后在本文件重写，不另建竞争计划。性能去重、D1/D2收口和原重开条件继续保留，不恢复旧场景枚举。
 4. [HANDOFF](HANDOFF.md)：唯一当前状态、源码/候选、服务、保全及下一步。
 5. [最新交接核对](HANDOFF-VALIDATION-20261030.md)：本轮paused、收口及剩余义务、整理前快照、1679源输入/六份候选/七份F04原件、当前API ready与文档保全；同日早交接原文保在本轮快照。[10-29核对](HANDOFF-VALIDATION-20261029.md)、[10-28核对](HANDOFF-VALIDATION-20261028.md)和[10-25核对](HANDOFF-VALIDATION-20261025.md)只作历史证据，不恢复旧状态/指令。
 6. [REVIEW-IMPLEMENTATION-AUDIT](REVIEW-IMPLEMENTATION-AUDIT-20261025.md)：Web GPT Pro全仓审查F01–F15/三重构/条件建议的去向，已完成历史与新增小程序判别。
-7. [NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)：地形/Sky收口后的完整续接提示，明确durable-goal、已授权阶段、暂停后恢复、P2下一动作及多agent分工；用户复制发送后恢复完整任务。本轮不自动创建或向新对话发消息。
+7. [NEXT-CHAT-PROMPT](NEXT-CHAT-PROMPT.md)：封存后的恢复说明，先核独立原生迁移完成，再重写本计划并按有效授权续办；已替换旧直接恢复EOG提示，本轮不创建或向新对话发消息。
 8. [换机说明](CROSS-MACHINE-HANDOFF-20261027.md)、[交接包身份](HANDOFF-TRANSFER-20261027.json)、[本机接收回执](HANDOFF-RECEIVE-20261027.json)：19/19性能分片、私有恢复包及独立密钥均已在本机下载、认证解密、重组并逐文件校验解压；当前main已安全快进1fd25800，dirty保留。接收后的[最新任务库恢复](LOCAL-SOURCE-RUNTIME-20261027.md)和[Sky图像Query修复](SKY-IMAGE-QUERY-RETENTION-20261027.md)分别持有结果；服务/产品验收未完，不照搬源机历史状态。
 
 本线程实际续办、最终普通候选和校正后的验证边界见[普通微信入口恢复](R20-WEAPP-ENTRY-RECOVERY-20261025.md)；该证据不构成第二份计划，当前状态/唯一下一步仍只归HANDOFF。最小管理输入判别已完成，沿HTTP/独审证据复用。

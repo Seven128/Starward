@@ -1,5 +1,7 @@
 # Deployment Current State
 
+2026-10-31自动化测试套件与模拟供应成功分支已退役。现行CI保类型、构建、真实数据/依赖与发布保护，不再证明自动化测试通过；以下旧CI/隔离测试回执仍只代表当时结果。operator-preview缺少正式地点时不再用合成地点模拟成功，真实供给资格保持未验/失败；发布身份、网络暴露、凭据与资源完整性保护不变。
+
 This on-demand deployment node records established capabilities, external decisions and historical delivery milestones. It is not a live service-health dashboard or a deployment receipt; structural rules remain in the sibling deployment nodes routed by `project_context/deployment.md`. Each historical result retains its original time, candidate and scope. Current operation receipts and attributable host/runtime observations own whether an API is running now; the active task handoff owns current failures and next actions.
 
 ## Current Status

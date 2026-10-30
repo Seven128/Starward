@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { identityScript, runtimeScript, providerScript, imageryScript, sanitizeIdentityReport, sanitizeRuntimeReport, sanitizeProviderSimulationReport } from "./runtime-diagnostics.mjs";
+import { identityScript, runtimeScript, imageryScript, sanitizeIdentityReport, sanitizeRuntimeReport } from "./runtime-diagnostics.mjs";
 import { sanitizeImageryReport, imageryProbeSucceeded } from "./imagery-runtime-probe.mjs";
 import { releaseReferenceScript, sanitizeReleaseReferenceReport, releaseReferenceSucceeded } from "./release-reference-diagnostics.mjs";
 import { hostStorageScript, sanitizeHostStorageReport, hostStorageSucceeded } from "./host-storage-diagnostics.mjs";
@@ -12,7 +12,7 @@ import { connectionKeys, parseDeploymentConnection } from "./deployment-connecti
 
 const preflight = readFileSync(new URL("../../infrastructure/deployment/host-preflight.sh", import.meta.url), "utf8");
 const programs = Object.freeze({ host: preflight, identity: identityScript, runtime: runtimeScript,
-  providers: providerScript, imagery: imageryScript, "release-reference": releaseReferenceScript, "host-storage": hostStorageScript, "host-cache": hostCacheScript });
+  imagery: imageryScript, "release-reference": releaseReferenceScript, "host-storage": hostStorageScript, "host-cache": hostCacheScript });
 const failureCodes = new Set([...Object.values(programs).join("\n").matchAll(/(?:host_preflight|runtime_diagnostic|release_reference|host_storage|host_cache)_[a-z0-9_]+/gu)].map(([code]) => code));
 
 // Only these repository-owned fixed programs may run. Imagery invokes normal
@@ -56,7 +56,6 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
     if (mode === "host-storage") return sanitizeHostStorageReport(report);
     if (mode === "release-reference") return sanitizeReleaseReferenceReport(report);
     if (mode === "imagery") return sanitizeImageryReport(report);
-    if (mode === "providers") return sanitizeProviderSimulationReport(report);
     if (mode === "runtime") return sanitizeRuntimeReport(report);
     if (mode === "identity") return sanitizeIdentityReport(report);
     if (report.status !== "ready" || report.os !== "ubuntu-24.04" || report.architecture !== "x86_64" ||

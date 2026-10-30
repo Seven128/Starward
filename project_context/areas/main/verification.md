@@ -1,5 +1,7 @@
 # Verification Context: main
 
+2026-10-31用户最新规则：已编写的项目自有测试代码全部退役；微信原生迁移期间不得新增、恢复或改名重建单元、集成、合同、E2E测试及专用夹具/模拟器/测试脚本。旧“复用/适配/补写测试”指令被此规则覆盖。代码质量约束、真实业务的参数/权限/完整性校验保持；使用类型检查、编译、既有资源/发布保护和必要真实运行观察，不以空测试或模拟结果声明通过。历史报告/原始采集可在原条件内作为证据，不能冒当前测试覆盖。
+
 This on-demand Context is the entry point for Starward verification. It records the shortest recovery path and routes specialized development, acceptance/runtime, and Android/native detail to registered on-demand verification Context; it is not a test report or a second definition of product acceptance.
 
 ## Owner
@@ -33,11 +35,18 @@ This on-demand Context is the entry point for Starward verification. It records 
 - **Spend verification effort where it adds evidence.** Use focused owner-level checks for logic and faithful runtime journeys for integration; use target devices where platform behavior matters. Reuse evidence whose relevant inputs and requirements remain valid. Investigate causal failures, batch related fixes and broader builds, and rerun affected layers when changes or unresolved risks justify them. Follow existing runtime acceptance requirements without inventing additional gates or frameworks.
 - **Keep gaps specific.** Controlled functional tests, actual platform/device behavior and external service/deployment readiness prove different things. Substitute uncontrollable dependencies only at existing adapter boundaries. Scope unavailable prerequisites to the affected checks and continue the rest; empty test data or recoverable local services are preparation work. Record remaining coverage in the existing plan or ledger, without adding routine reports.
 
+## Test Design And Maintenance
+
+Test authoring requires explicit user authorization under [Development execution](../../../AGENTS.md#development-execution). Only then read [starward-write-tests](../../../.codex/skills/starward-write-tests/SKILL.md) for test design, implementation, regression counterchecks and E2E evidence. Running existing checks, required runtime verification and minimal adaptations that preserve existing coverage do not invoke that Skill.
+
+When existing checks fail, distinguish product defects from harness failures or outdated contracts. Preserve the intended behavior assertions; do not restore obsolete production structure or weaken assertions merely to satisfy a fixture. A fixture redesign that expands test infrastructure follows the authoring authorization rule.
+
 ## Universal Evidence Boundary
 
 - Cross-product check selection and completion decisions follow [Project-local Implementation Decisions](../../../AGENTS.md#project-local-implementation-decisions): trace changed responsibilities, sample meaningful implementation differences, and expand on findings. Reuse existing evidence and targeted checks; no per-page scenario catalogue, additional report or quality score is required. UI output, business outcomes and architecture effects need observations at their respective owners, not a common source-marker proxy.
-- The repository-root `npm test` currently validates Context only. Product code uses the owning workspace tests and applicable runtime checks; neither the root alias nor a single workspace test proves the full product.
+- Automated test entrypoints, including the old root `npm test`, were retired on 2026-10-31. Use the current package scripts for Context, types, build and resource/release validation; actual product acceptance remains a separately observed result. A green pipeline now makes no automated product-test coverage claim.
 - Do not treat static preview appearance, Context prose, or a command exit code as proof of live weather, routing, deployment, or human acceptance.
+- Source extraction and runtime simulation provide bounded evidence and cannot replace required runtime acceptance.
 - Do not treat a fixed user/time/place/result, process-local repository, success label/evidence card, metadata-only upload, manifest-only offline pack, declaration-only native adapter, or prewritten trace/restore report as proof that a business loop ran.
 - Fixtures may isolate uncontrollable providers or device APIs in automated tests, but they must be injected behind the same production adapter and cannot replace the production route, state transition, sink write, restart readback, or failure behavior.
 - For data-dependent capabilities, distinguish a controlled positive path, failure/recovery behavior, and usability in the intended delivery environment. Select checks from the promised effect, including a representative supported input whose required data is actually available; a suite containing only safe empty/fallback cases leaves the capability unverified. Inspect assertions, not just test names: suppressing the effect or keeping old content must not still establish success. Existing fixtures/provider simulations retain their limited scope; a missing live prerequisite is addressed within authorization or reported as the concrete remaining dependency, not waived because the simulated path passed.

@@ -1,4 +1,3 @@
-import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
 import { imageryRuntimeProbe } from "./imagery-runtime-probe.mjs";
 
 // Runs on the host, without entering a container or loading application config.
@@ -190,28 +189,6 @@ if (observation.runtimeEnvironment !== 'staging' || observation.databaseState !=
 const result = await (${imageryRuntimeProbe.toString()})(process.env, undefined, undefined, deadlineAt);
 process.stdout.write(JSON.stringify(result) + '\\n', () => { clearTimeout(watchdog); process.exit(0); });
 `);
-
-// Reuse the existing operator-preview program only after a current read-only
-// observation proves that this is its expressly supported empty-population lane.
-export const providerScript = stagingApiScript(`
-const observation = await (${apiRuntimeProbe.toString()})();
-if (observation.runtimeEnvironment !== 'staging' || observation.databaseState !== 'ready' || observation.configState !== 'ready' || observation.healthStatus !== 200 || observation.spotsQualifiedNonFixture !== 0) throw new Error('diagnostic_simulation_lane_invalid');
-process.env.STARWARD_PROVIDER_SMOKE_LOCAL_DATE = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-${operatorPreviewProviderSimulationProgram}
-`);
-
-export function sanitizeProviderSimulationReport(report) {
-  if (report?.status !== "passed" || report.evidenceScope !== "ISOLATED_TEST_SIMULATION" || report.productPopulation !== "FORMAL_POPULATION_MISSING" ||
-      !Number.isInteger(report.hourlyCount) || report.hourlyCount < 1 || report.hourlyCount > 384 ||
-      report.weather?.provider !== "和风天气" || !["FRESH", "PARTIAL", "STALE_USABLE"].includes(report.weather.state) ||
-      report.astronomy?.provider !== "Astronomy Engine" || report.astronomy.state !== "FRESH" ||
-      !["FRESH", "PARTIAL", "STALE_USABLE", "EXPIRED", "UNAVAILABLE", "ESTIMATED"].includes(report.alerts?.state) ||
-      ![report.composedTotalCloudHours, report.alerts?.count].every(count => Number.isSafeInteger(count) && count >= 0 && count <= 1000)) throw new Error("diagnostic_simulation_response_invalid");
-  return { status: "passed", evidenceScope: "ISOLATED_TEST_SIMULATION", productPopulation: "FORMAL_POPULATION_MISSING", hourlyCount: report.hourlyCount,
-    composedTotalCloudHours: report.composedTotalCloudHours,
-    weather: { provider: "和风天气", state: report.weather.state }, astronomy: { provider: "Astronomy Engine", state: "FRESH" },
-    alerts: { state: report.alerts.state, count: report.alerts.count } };
-}
 
 const enums = {
   status: ["observed"], runtimeEnvironment: ["staging", "invalid"], configState: ["ready", "failed"], databaseState: ["ready", "failed"],

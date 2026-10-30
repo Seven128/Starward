@@ -762,22 +762,12 @@ export class MiniappService {
 
   static async createFromEnvironment() {
     const config = loadRuntimeConfig();
-    const developmentFixtureMode =
-      process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1";
-    const opticalTrialPath=process.env.MINIAPP_OPTICAL_HIPS_TRIAL_MANIFEST?.trim();
-    if(opticalTrialPath && (!developmentFixtureMode || config.storageMode!=="MEMORY_TEST" ||
-      config.releaseProfile!=="LOCAL"))throw new Error("optical_trial_requires_local_memory_fixture");
-    const opticalHips=opticalTrialPath ? new OpticalHipsPublicationService(
-      (await import("node:url")).pathToFileURL((await import("node:path")).resolve(opticalTrialPath))) : undefined;
-    if(opticalHips && opticalHips.manifest().scope!=="TRIAL")throw new Error("optical_trial_scope_invalid");
-    const repository =
-      config.storageMode === "MEMORY_TEST"
-        ? new (
-            await import("./test-fixtures/in-memory-repository.ts")
-          ).InMemoryTestRepository()
-        : await new PostgresMiniappRepository(config.databaseUrl!).initialize({
-            migrate: config.autoMigrate,
-          });
+    if (config.storageMode === "MEMORY_TEST" || process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1" ||
+        process.env.MINIAPP_OPTICAL_HIPS_TRIAL_MANIFEST?.trim())
+      throw new Error("miniapp_test_runtime_retired_use_published_postgres_data");
+    const repository = await new PostgresMiniappRepository(config.databaseUrl!).initialize({
+      migrate: config.autoMigrate,
+    });
     const cache = config.redisUrl
       ? await new RedisCache(
           config.redisUrl,
@@ -795,19 +785,12 @@ export class MiniappService {
       repository,
       cache,
       config,
-      weather: developmentFixtureMode
-        ? new (
-            await import("./test-fixtures/deterministic-weather-adapter.ts")
-          ).DeterministicWeatherTestAdapter()
-        : createWeatherPort(config, transport),
+      weather: createWeatherPort(config, transport),
       route: createRoutePort(config, transport),
-      recentWeather: developmentFixtureMode
-        ? new (await import("./test-fixtures/deterministic-recent-weather-adapter.ts")).DeterministicRecentWeatherAdapter()
-        : new QWeatherRecentWeatherAdapter(config, transport),
+      recentWeather: new QWeatherRecentWeatherAdapter(config, transport),
       airQuality: new QWeatherAirQualityAdapter(config, transport),
       placeSearch: createPlaceSearchPort(config, transport),
       deepSkyImages: new DeepSkyImageryService(),
-      ...(opticalHips ? {opticalHips} : {}),
       ...(usageStore ? { usageStore } : {}),
       mediaStore: createMediaObjectStore(config),
       eventCatalog,

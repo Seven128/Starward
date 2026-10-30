@@ -19,7 +19,7 @@ const npmCli = process.env.npm_execpath ?? path.join(
   "npm-cli.js",
 );
 
-const { apiPort, automationPort, noOpen, memory: useMemory } = developmentOptions(process.argv.slice(2));
+const { apiPort, automationPort, noOpen } = developmentOptions(process.argv.slice(2));
 
 async function waitFor(predicate, label, timeoutMs = 90_000) {
   const deadline = Date.now() + timeoutMs;
@@ -134,7 +134,6 @@ if (automationPort !== null && !(await canListen(automationPort)))
   throw new Error(`development_automation_port_in_use:${automationPort}`);
 if ((await realpath(projectPath)).toLowerCase() !== projectPath.toLowerCase())
   throw new Error("development_project_must_be_physical");
-if (!useMemory) {
   const infrastructure = spawnSync(
     "docker",
     ["compose", "-f", composePath, "up", "-d", "--wait"],
@@ -147,14 +146,8 @@ if (!useMemory) {
   );
   if (infrastructure.status !== 0)
     throw new Error(`development_infrastructure_failed:${infrastructure.status}`);
-}
 
-const infrastructureEnv = useMemory
-  ? {
-      MINIAPP_STORAGE_MODE: "MEMORY_TEST",
-      MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1",
-    }
-  : {
+const infrastructureEnv = {
       DATABASE_URL:
         "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp",
       REDIS_URL: "redis://127.0.0.1:56379",
@@ -178,13 +171,11 @@ await waitFor(async () => {
   return response.ok;
 }, "miniapp_api_ready");
 
-if (!useMemory) {
   const worker = startNpm("dev:miniapp:worker", infrastructureEnv);
   children.push(worker);
   worker.once("exit", (code) => {
     if (!stopping) stop(code ?? 1);
   });
-}
 
 // The generated WEAPP directory is disposable. Remove the previous compiler
 // output before starting watch mode so an old app.json can never be mistaken
@@ -197,7 +188,6 @@ if (stopping) throw new Error("development_session_stopped");
 await rm(outputDirectory, { recursive: true, force: true });
 const compiler = startNpm("dev:miniapp:weapp", {
   MINIAPP_API_BASE: `http://127.0.0.1:${apiPort}`,
-  ...(useMemory ? { MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1" } : {}),
 });
 children.push(compiler);
 compiler.once("exit", (code) => {

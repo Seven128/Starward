@@ -2,7 +2,6 @@ import { assertSkyScene, STELLAR_SCENE_FORMAT, type SkyScene, type DeepSkyScene,
 import type { SkyCatalogProvider } from "./sky-scene-catalog-provider.ts";
 import { buildDeepSkyScene } from "./deep-sky-scene-provider.ts";
 export { createBsc5pSkyCatalogProvider, type SkyCatalogFrameInput, type SkyCatalogProvider, type SkyCatalogSnapshot } from "./sky-scene-catalog-provider.ts";
-export { createTestSkyCatalogProvider } from "./sky-scene-test-provider.ts";
 
 function unavailableScene(hourlyAt: readonly string[], reason: string, deepSky?: DeepSkyScene): SkyScene {
   return { format: STELLAR_SCENE_FORMAT, state: "UNAVAILABLE", observer: null, catalog: null,

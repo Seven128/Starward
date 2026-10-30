@@ -71,47 +71,8 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     "content/spot-feedback/index",
     "content/settings/index",
   ];
-  const expectedFilterCount = 14;
   const project = await readJson("apps/wechat-miniapp/project.config.json");
-  const appConfig = await readJson(
-    `${bundleDirectory}/app.json`,
-  ).catch(() => null);
-  const contracts = await readFile(
-    repositoryPath("packages/miniapp-contracts/src/filters.ts"),
-    "utf8",
-  );
-  const catalog = await readFile(
-    repositoryPath("packages/miniapp-contracts/src/catalog.ts"),
-    "utf8",
-  );
-  const flags = await readFile(
-    repositoryPath("packages/miniapp-contracts/src/feature-flags.ts"),
-    "utf8",
-  );
-  const oneShotLocation = await readFile(
-    repositoryPath("apps/wechat-miniapp/src/services/one-shot-location.ts"),
-    "utf8",
-  );
-  const appStore = await readFile(
-    repositoryPath("apps/wechat-miniapp/src/state/app-store.ts"),
-    "utf8",
-  );
-  const mapPage = await readFile(
-    repositoryPath("apps/wechat-miniapp/src/pages/map/index.tsx"),
-    "utf8",
-  );
-  const cachePolicy = await readFile(
-    repositoryPath("apps/wechat-miniapp/src/services/cache-policy.ts"),
-    "utf8",
-  );
-  const appSources = await listFiles("apps/wechat-miniapp/src", (file) =>
-    /\.(?:ts|tsx)$/u.test(file) && !/\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(file),
-  );
-  const appText = (
-    await Promise.all(
-      appSources.map((file) => readFile(repositoryPath(file), "utf8")),
-    )
-  ).join("\n");
+  const appConfig = await readJson(`${bundleDirectory}/app.json`).catch(() => null);
   const weappFiles = await listFiles(bundleDirectory);
   const sizes = await Promise.all(
     weappFiles.map(async (file) => ({
@@ -143,75 +104,11 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
   const routeTopologyMatches =
     routes.length === expectedRoutes.length &&
     routes.every((route, index) => route === expectedRoutes[index]);
-  const seedStart = catalog.indexOf(
-    "const SEEDS: readonly OsmSpotSeed[] = Object.freeze([",
-  );
-  const seedEnd = seedStart < 0 ? -1 : catalog.indexOf("\n]);", seedStart);
-  const seedBlock =
-    seedStart < 0 || seedEnd < 0 ? "" : catalog.slice(seedStart, seedEnd + 4);
-  const seedIds = [...seedBlock.matchAll(/^\s+id:\s*"([a-z0-9-]+)",$/gmu)].map(
-    (match) => match[1],
-  );
-  const catalogProjectionBound =
-    catalog.includes("spotId: `spot:${seed.id}` as SpotId") &&
-    catalog.includes("SEEDS.map(toSpot)");
-  const spotIds = catalogProjectionBound
-    ? seedIds.map((seedId) => `spot:${seedId}`)
-    : [];
-  const filterIds = [...contracts.matchAll(/id:\s*"([^"]+)"/gu)].map(
-    (match) => match[1],
-  );
-  const expectedFlags = [
-    "GLOBAL_NIGHT_TAB_ENABLED",
-    "ORDINARY_PLACE_SKY_ENABLED",
-    "DARK_SKY_CANDIDATES_ENABLED",
-    "SKY_EVENT_ENABLED",
-    "REAL_WEATHER_ENABLED",
-    "LAYERED_CLOUD_ENABLED",
-    "WEATHER_MODEL_COMPARISON_ENABLED",
-    "LIGHT_POLLUTION_LAYER_ENABLED",
-    "SKY_OPPORTUNITY_LAYER_ENABLED",
-    "DYNAMIC_SKY_MAP_ENABLED",
-    "WECHAT_AUTH_ENABLED",
-    "EVENT_SUBSCRIPTION_ENABLED",
-    "PROFILE_LINKS_ENABLED",
-    "OWN_POST_IMPORT_ENABLED",
-  ];
   const checks = {
     native_project:
       project.compileType === "miniprogram" &&
       project.miniprogramRoot === "dist/weapp/" &&
       routeTopologyMatches,
-    filter_population:
-      filterIds.length === expectedFilterCount &&
-      new Set(filterIds).size === filterIds.length,
-    curated_spots:
-      catalogProjectionBound &&
-      spotIds.length === 26 &&
-      new Set(spotIds).size === spotIds.length,
-    capability_flags:
-      expectedFlags.every((flag) => flags.includes(`"${flag}"`)) &&
-      flags.includes("assertFeatureFlagClosure"),
-    no_direct_provider: !/fetch\(\s*["'`]https?:\/\//u.test(appText),
-    no_html_delivery:
-      project.compileType === "miniprogram" &&
-      !appText.includes("<iframe") &&
-      !appText.includes("<WebView"),
-    recovery_semantics: [
-      "PERMISSION_DENIED",
-      "STALE",
-      "PARTIAL",
-      "ERROR",
-      "EMPTY",
-    ].every((state) => appText.includes(state)),
-    explicit_location_only:
-      !mapPage.includes("useLoad") &&
-      mapPage.includes('from "@/services/one-shot-location"') &&
-      mapPage.includes("requestOneShotLocation(Taro)") &&
-      (oneShotLocation.match(/platform\.getLocation\(/gu) ?? []).length === 1 &&
-      appStore.includes('locationState: "DEFAULT_REGION"'),
-    response_cache_entity_identity:
-      cachePolicy.includes("responseCacheKey") && cachePolicy.includes("path"),
     package_budget: packageBudgetPassed,
     // Taro can emit every route wrapper while an entry-cache failure removes
     // the actual application modules. Reuse the release owner's required
@@ -234,8 +131,6 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     checks,
     route_count: routeCount,
     routes,
-    spot_ids: spotIds,
-    filter_ids: filterIds,
     weapp_total_bytes: totalBytes,
     packages,
     package_limits: {

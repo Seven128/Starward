@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-31",
+  "status": "FROZEN_PENDING_NATIVE_MIGRATION_AND_REPLAN",
+  "sourceRevision": "f09da5e2762c6f80f387ded5a5de853b160e9924",
+  "sourceWorktreeWasClean": true,
+  "hashEncoding": "UTF-8 without BOM, CRLF normalized to LF",
+  "migrationEntry": "../wechat-native-migration-2026-10-31/INDEX.md",
+  "plan": "PLAN.md",
+  "stateOwner": "HANDOFF.md#native-migration-freeze",
+  "resumeSequence": [
+    "Complete the independent native Mini Program migration.",
+    "Reconcile every preserved obligation and adopted optimization against the actual native implementation, then rewrite PLAN.md in place.",
+    "Continue implementation under the then-valid user authorization; do not execute the frozen sequence directly."
+  ],
+  "preservation": "Original control documents and code are recoverable at sourceRevision. Current edits are documentation only and were uncommitted when this freeze was recorded. No source, WIP, data, candidate, or evidence was deleted or moved. Private inputs and runtime/remote states were not reverified or uploaded.",
+  "goalObservation": "This chat returned goal=null. No Goal was created or changed; old-thread paused records remain historical.",
+  "files": [
+    {
+      "path": "INDEX.md",
+      "sha256": "09174390f40c226ae218fd53c07fb39bc4ae29b4cab068bba903e8596476e9f0",
+      "normalizedUtf8Bytes": 11973
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "5bfc0268836edcfdab1ec29b74bf267dc4b8b1d2d1743b0063e96be7e5c6592c",
+      "normalizedUtf8Bytes": 59912
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "353374fb0dc67d934b552558d4440e1e0555b8e0af1c1246154ddeec0a4c8d1a",
+      "normalizedUtf8Bytes": 20697
+    },
+    {
+      "path": "GOAL-OBJECTIVE.md",
+      "sha256": "fff690dee0d5bc42199575ec070df80c6f87634c4b36484639f49db8fc9e141f",
+      "normalizedUtf8Bytes": 12493
+    },
+    {
+      "path": "REQUIREMENTS.md",
+      "sha256": "5bbde5f00fc4fea12db109d52554f3e9ab9f81be2bb54dc149d77551798adf22",
+      "normalizedUtf8Bytes": 15883
+    },
+    {
+      "path": "INHERITED-REQUIREMENTS.md",
+      "sha256": "9c87c9d085b18ecde2291b8802d951c907c383f3217d8b464d733ad65dc6e769",
+      "normalizedUtf8Bytes": 4206
+    },
+    {
+      "path": "NEXT-CHAT-PROMPT.md",
+      "sha256": "aac9f766d3eeac47c5e5f580e6ca51a337bd5bf3a17e8dea5358ec8a5c7bf9c7",
+      "normalizedUtf8Bytes": 2998
+    }
+  ],
+  "validation": {
+    "contextValidate": "passed",
+    "gitDiffCheck": "passed",
+    "newAndChangedLinksChecked": 34,
+    "frozenControlHashesVerified": 7,
+    "historicalGoalBody": "unchanged after line-ending normalization",
+    "scope": "documents only; no runtime acceptance was performed"
+  },
+  "subsequentAmendment": {
+    "recordedOn": "2026-10-31",
+    "reason": "User ordered existing test-code retirement and forbade new test code during native migration; latest requirement links updated without unfreezing the backlog.",
+    "record": "../wechat-native-migration-2026-10-31/TEST-RETIREMENT-20261031.md"
+  }
+}

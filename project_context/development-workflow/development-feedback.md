@@ -1,5 +1,7 @@
 # Mini Program Development Feedback
 
+2026-10-31测试代码清理后，`dev:miniapp --memory`、确定性天气/内存测试仓库及专用fixture入口退役；普通开发继续使用PostgreSQL/真实数据路径，现有`dev:miniapp:published`用于已发布数据。代码质量、官方DevTools/手机观察保持，迁移期间不新建自动化测试或fixture。旧案例与命令只保历史含义，不恢复已删除测试。
+
 This on-demand verification node owns the three-tier feedback structure, native-first invariant and development feedback lane. It cannot produce formal candidate or device acceptance.
 
 For agent observations, the matching official `wechatide-skill` is the primary control plane. The project [development skill](../../.codex/skills/starward-miniapp-development/SKILL.md) owns problem-to-tool selection and recovery. `npm run miniapp:devtools:sync` synchronizes the installed official package into the existing agent root; normal development startup and the official observer also invoke it. Package changes require discovery refresh and rereading affected instructions. Keep official files unmodified and project supplements separate. Version equality does not establish byte identity; [maintenance](../../.codex/skills/starward-miniapp-development/references/official-skill-maintenance.md) owns backup, migration and updates.

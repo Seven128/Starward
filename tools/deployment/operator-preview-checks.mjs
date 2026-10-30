@@ -1,7 +1,6 @@
 import https from "node:https";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
 import { publicIpTlsOptions, certificateLifetime } from "./operator-preview-tls.mjs";
 
 function requireCondition(condition, code) {
@@ -152,53 +151,7 @@ function shanghaiLocalDate(now = new Date()) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
-function runIsolatedProviderSimulation({ run, localDate }) {
-  const result = run({
-    args: [
-      "exec",
-      "-T",
-      "-e",
-      `STARWARD_PROVIDER_SMOKE_LOCAL_DATE=${localDate}`,
-      "api",
-      "node",
-      "--input-type=module",
-    ],
-    input: Buffer.from(operatorPreviewProviderSimulationProgram, "utf8"),
-    maxBuffer: 64 * 1024,
-    step: "preview-provider-simulation",
-  });
-  let summary;
-  try {
-    summary = JSON.parse(result.stdout.toString("utf8"));
-  } catch {
-    throw new Error("operator_preview_provider_simulation_output_invalid");
-  }
-  requireCondition(
-    summary?.status === "passed" &&
-      summary?.evidenceScope === "ISOLATED_TEST_SIMULATION" &&
-      summary?.productPopulation === "FORMAL_POPULATION_MISSING" &&
-      Number.isInteger(summary?.hourlyCount) &&
-      summary.hourlyCount > 0 &&
-      summary?.weather?.provider === "和风天气" &&
-      summary.weather.state !== "UNAVAILABLE" &&
-      summary?.astronomy?.provider === "Astronomy Engine" &&
-      summary.astronomy.state === "FRESH",
-    "provider_simulation_evidence_invalid",
-  );
-  return {
-    status: "passed",
-    scenario: "contracts-owned-formal-spot-fixture",
-    evidenceScope: summary.evidenceScope,
-    productPopulation: summary.productPopulation,
-    formalSpotCount: 0,
-    hourlyCount: summary.hourlyCount,
-    weather: summary.weather,
-    astronomy: summary.astronomy,
-    fixtureEvidence: true,
-  };
-}
-
-async function checkProviderSmoke({ run, validation, deploy, request }) {
+async function checkProviderSmoke({ validation, deploy, request }) {
   const token = deploy.STARWARD_OPERATOR_PREVIEW_TOKEN;
   const localDate = shanghaiLocalDate();
   const contextResult = await request({
@@ -250,7 +203,7 @@ async function checkProviderSmoke({ run, validation, deploy, request }) {
     ? scene.data.spots.length
     : 0;
   if (formalSpotCount === 0)
-    return runIsolatedProviderSimulation({ run, localDate });
+    throw new Error("operator_preview_formal_population_missing_test_simulation_retired");
   const weather = sources.find(
     (source) =>
       source?.kind === "THIRD_PARTY_FORECAST" &&

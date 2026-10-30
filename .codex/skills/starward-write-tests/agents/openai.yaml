@@ -1,0 +1,7 @@
+interface:
+  display_name: "Starward 测试编写"
+  short_description: "仅在明确要求时编写单元、集成或端到端测试，并保留必要的结果证据"
+  default_prompt: "Use $starward-write-tests to add tests for the requested Starward behavior, choosing a meaningful scope and reproducible evidence."
+
+policy:
+  allow_implicit_invocation: false

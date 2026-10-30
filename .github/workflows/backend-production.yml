@@ -1,3 +1,4 @@
+# Automated test suites retired for native migration; remaining steps do not claim automated product-test coverage.
 name: Backend production promotion
 
 on:
@@ -75,7 +76,6 @@ jobs:
         run: |
           npm ci
           npm ci --ignore-scripts --prefix tools/deployment/oss-runtime
-          npm run test:deployment
           sh -n infrastructure/deployment/run-remote-promotion.sh
       - name: Prepare production control package and request
         id: control

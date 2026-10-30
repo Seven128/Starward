@@ -7,6 +7,8 @@ description: Develop and maintain Starward WEAPP with performance and memory own
 
 Read `project_context/global.md`, [development feedback](../../../project_context/development-workflow/development-feedback.md), and the affected owner. For UI, follow the adopted Screen Contract and `starward-interaction-design`; this skill does not select a new design or renderer. Acceptance/device obligations remain with `project_context/development-workflow.md`.
 
+During the current native migration, follow the latest no-test-code rule in `project_context/global.md` and `AGENTS.md`. Existing test suites and fixture runtimes are retired; do not recreate them as regression or verification scripts. Reuse historical evidence only within its scope, and use existing type/build tools and proportionate real-runtime observations.
+
 ## Preserve performance during development
 
 For feature or refactor changes involving cached callbacks, shared asynchronous work, page/native lifetimes, frequent state/render updates, large collections or imagery, read [performance and memory maintenance](references/performance-maintenance.md) before extending that boundary. Apply its affected ownership and invalidation rules during implementation, without waiting for a performance complaint. Trace shared changes through their real consumers; preserve independent business state and existing budgets.

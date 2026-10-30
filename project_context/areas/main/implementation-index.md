@@ -1,5 +1,7 @@
 # Implementation Index: main
 
+2026-10-31测试入口已退役：旧`run-wechat-devtools-session`、`verify-miniapp-target`、`verify-native-target`、`verify-structured`及测试fixture不再是可执行入口。当前交互观察使用官方DevTools和`tools/miniapp/development-observer.mjs`/设备观察工具；构建/发布使用当前package scripts。下文涉及这些旧runner的说明只作历史定位，不能据此恢复测试代码。
+
 This on-demand supporting Context is for current code navigation only. Intended product, surface, architecture, and verification semantics remain owned by `project_context/global.md`, `project_context/architecture.md`, the main Area and its role Context; when this index disagrees with code, code is the current implementation truth and the index is stale.
 
 Use [bounded discovery](../../context-maintenance.md#bounded-discovery) to locate current owners before expanding historical Source or run records.

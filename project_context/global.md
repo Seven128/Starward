@@ -20,6 +20,10 @@ Starward owns 《今晚去观星》. Current delivery is the WeChat Mini Program
 - After pulling or synchronizing code, [synchronize the current consumers' required data](development-workflow/resources-and-artifacts.md#receive-required-data-with-code-and-recover-missing-inputs) through the existing commands and authorized transfer tools. If local use later exposes missing data, locate, obtain and verify it before retrying. Context and the development skill direct this agent workflow; no additional synchronization script or custom Git/npm hook is adopted.
 - Keep durable facts with their existing owner; reference exact sources rather than copying implementation. Task progress, logs and optional handoffs stay outside Context. Tiny Context does not manage task state or certify completion.
 
+2026-10-31用户确定小程序前端迁移至微信原生页面/组件＋TypeScript，后端技术栈保持；当前源码仍为Taro/React，尚未迁移。目标、当前实现与公共优化复用的边界归[原生技术栈决策](architecture.md#wechat-native-stack-decision)，详细方案与Context迁移清单归其独立任务入口。保产品/设计/数据合同，不提前把现行实现说明改写成迁移完成。
+
+2026-10-31用户最新规则：已编写的项目自有测试代码全部退役；微信原生迁移期间不得新增、恢复或改名重建单元、集成、合同、E2E测试及专用夹具/模拟器/测试脚本。旧“复用/适配/补写测试”指令被此规则覆盖。代码质量约束、真实业务的参数/权限/完整性校验保持；使用类型检查、编译、既有资源/发布保护和必要真实运行观察，不以空测试或模拟结果声明通过。历史报告/原始采集可在原条件内作为证据，不能冒当前测试覆盖。
+
 ## Read the relevant owner
 
 Only this file is default body Context. Use project_context/context.toml and ordinary search to expand by the task; the following are on-demand entrypoints.

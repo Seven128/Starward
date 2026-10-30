@@ -9,6 +9,8 @@
 - 下文及既有Source/Screen/设计文档中的原生App目标、预算和Android/iOS验收要求仅为保留历史，在当前阶段不生成待办。小程序使用自己的Screen Contract与已采用Stitch范围，不默认读取docs/source-plan.md作为小程序方案。
 - 未来若明确恢复App开发，再按新授权核实际源码和未完状态。当前不删除其源码/依赖/资料，也不为停App削弱小程序或必要共享检查；本次小程序共享改动导致的直接兼容回归在原共享owner处理，不扩展App业务。
 
+小程序前端目标已按2026-10-31用户决策改为微信原生＋TypeScript；现行Taro实现仍待迁移，后端语言/框架和产品范围保持。技术选择及迁移边界归[架构owner](architecture.md#wechat-native-stack-decision)，本决策不恢复独立App或重新选择视觉资源。
+
 ## Project Goal
 
 - Current delivery is the WeChat Mini Program for 《今晚去观星》: trustworthy observing/place/travel facts and user-owned plans, under the current development scope above.
